@@ -35,6 +35,7 @@
       --accent: #06b6d4;
       --accent2: #f59e0b;
       --accent3: #ec4899;
+      --accent4: #8b5cf6;
       --font: 'Outfit', system-ui, sans-serif;
       --font-mono: 'JetBrainsMono', monospace;
       --max: 1200px;
@@ -174,7 +175,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 2rem;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
     }
     #unitCircleCanvas {
@@ -187,17 +188,19 @@
     .angle-info {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      min-width: 200px;
+      gap: 0.8rem;
+      min-width: 220px;
+      flex: 1;
+      max-width: 300px;
     }
     .angle-info .info-row {
       display: flex;
       justify-content: space-between;
-      padding: 0.6rem 1rem;
+      padding: 0.5rem 1rem;
       background: var(--bg3);
       border-radius: 8px;
       font-family: var(--font-mono);
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
     .angle-info .info-row .label {
       color: var(--muted);
@@ -205,6 +208,65 @@
     .angle-info .info-row .value {
       color: var(--accent);
       font-weight: 700;
+    }
+
+    /* Angle presets */
+    .angle-presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .angle-presets button {
+      background: var(--bg3);
+      border: 1px solid var(--rule);
+      color: var(--ink);
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .angle-presets button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .angle-presets button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
+    }
+
+    /* Animation controls */
+    .anim-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.8rem;
+    }
+    .anim-controls button {
+      flex: 1;
+      background: var(--bg3);
+      border: 1px solid var(--rule);
+      color: var(--ink);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+    .anim-controls button:hover {
+      border-color: var(--accent2);
+      color: var(--accent2);
+    }
+    .anim-controls button.playing {
+      border-color: var(--accent2);
+      color: var(--accent2);
     }
 
     /* Charts */
@@ -245,8 +307,34 @@
     }
     .formula-card .fmath {
       font-family: var(--font-mono);
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       color: var(--accent2);
+    }
+
+    /* Property panel */
+    .prop-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .prop-item {
+      background: var(--bg3);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      text-align: center;
+    }
+    .prop-item .pname {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+    }
+    .prop-item .pvalue {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      color: var(--accent2);
+      font-weight: 700;
     }
 
     /* Responsive */
@@ -255,6 +343,7 @@
       .chart-container, .chart-container.large { height: 300px; }
       .controls { flex-direction: column; align-items: stretch; }
       .control-group { min-width: unset; }
+      .angle-info { max-width: 100%; }
     }
 
     /* Footer */
@@ -300,6 +389,24 @@
           <input type="range" id="rangePhi" min="-3.14" max="3.14" step="0.1" value="0">
         </div>
       </div>
+      <div class="prop-panel">
+        <div class="prop-item">
+          <div class="pname">周期 T</div>
+          <div class="pvalue" id="propPeriod">2π</div>
+        </div>
+        <div class="prop-item">
+          <div class="pname">频率 f</div>
+          <div class="pvalue" id="propFreq">1/2π</div>
+        </div>
+        <div class="prop-item">
+          <div class="pname">最大值</div>
+          <div class="pvalue" id="propMax">1.0</div>
+        </div>
+        <div class="prop-item">
+          <div class="pname">最小值</div>
+          <div class="pvalue" id="propMin">-1.0</div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -315,7 +422,32 @@
           <div class="info-row"><span class="label">sin(θ)</span><span class="value" id="infoSin">0.000</span></div>
           <div class="info-row"><span class="label">cos(θ)</span><span class="value" id="infoCos">1.000</span></div>
           <div class="info-row"><span class="label">tan(θ)</span><span class="value" id="infoTan">0.000</span></div>
+          <div class="info-row"><span class="label">cot(θ)</span><span class="value" id="infoCot">∞</span></div>
+          <div class="info-row"><span class="label">sec(θ)</span><span class="value" id="infoSec">1.000</span></div>
+          <div class="info-row"><span class="label">csc(θ)</span><span class="value" id="infoCsc">∞</span></div>
           <div class="info-row"><span class="label">坐标</span><span class="value" id="infoCoord">(1.00, 0.00)</span></div>
+
+          <div style="margin-top: 0.5rem;">
+            <div style="font-size: 0.8rem; color: var(--muted); margin-bottom: 0.3rem;">常见角度</div>
+            <div class="angle-presets">
+              <button data-angle="0">0°</button>
+              <button data-angle="30">30°</button>
+              <button data-angle="45">45°</button>
+              <button data-angle="60">60°</button>
+              <button data-angle="90">90°</button>
+              <button data-angle="120">120°</button>
+              <button data-angle="135">135°</button>
+              <button data-angle="150">150°</button>
+              <button data-angle="180">180°</button>
+              <button data-angle="270">270°</button>
+              <button data-angle="360">360°</button>
+            </div>
+          </div>
+
+          <div class="anim-controls">
+            <button id="btnPlay">▶ 自动旋转</button>
+            <button id="btnReset">⟲ 复位</button>
+          </div>
         </div>
       </div>
     </div>
@@ -376,6 +508,14 @@
         <div class="fname">倍角公式</div>
         <div class="fmath">cos 2x = cos²x - sin²x</div>
       </div>
+      <div class="formula-card">
+        <div class="fname">倒数关系</div>
+        <div class="fmath">sec x = 1/cos x</div>
+      </div>
+      <div class="formula-card">
+        <div class="fname">倒数关系</div>
+        <div class="fmath">csc x = 1/sin x</div>
+      </div>
     </div>
   </section>
 
@@ -400,6 +540,14 @@
     const cy = size / 2;
     const radius = 150;
     let angle = 0;
+    let animating = false;
+    let animId = null;
+
+    const tickRadius = 145;
+    const numTicks = 24; // every 15 degrees
+
+    function toRad(deg) { return deg * Math.PI / 180; }
+    function toDeg(rad) { return rad * 180 / Math.PI; }
 
     function draw() {
       ctx.clearRect(0, 0, size, size);
@@ -416,6 +564,22 @@
       ctx.moveTo(0, cy); ctx.lineTo(size, cy);
       ctx.stroke();
 
+      // 刻度线
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--rule').trim();
+      ctx.lineWidth = 1;
+      for (let i = 0; i < numTicks; i++) {
+        const tAngle = (i / numTicks) * Math.PI * 2;
+        const inner = (i % 6 === 0) ? 135 : 140;
+        const x1 = cx + inner * Math.cos(-tAngle);
+        const y1 = cy + inner * Math.sin(-tAngle);
+        const x2 = cx + tickRadius * Math.cos(-tAngle);
+        const y2 = cy + tickRadius * Math.sin(-tAngle);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+
       // 圆
       ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
       ctx.lineWidth = 2;
@@ -427,7 +591,7 @@
       const y = cy - radius * Math.sin(angle);
 
       // 角度扇形
-      ctx.fillStyle = 'rgba(6,182,212,0.15)';
+      ctx.fillStyle = 'rgba(6,182,212,0.12)';
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.arc(cx, cy, radius, -angle, 0);
@@ -467,7 +631,6 @@
         ctx.moveTo(cx + radius, cy);
         ctx.lineTo(cx + radius, cy - radius * tanVal);
         ctx.stroke();
-        // tan 虚线到圆上
         ctx.setLineDash([4, 4]);
         ctx.strokeStyle = '#8b5cf6';
         ctx.lineWidth = 1;
@@ -511,16 +674,34 @@
       const sinVal = Math.sin(angle);
       const cosVal = Math.cos(angle);
       const tanVal = Math.tan(angle);
+      const cotVal = cosVal / sinVal;
+      const secVal = 1 / cosVal;
+      const cscVal = 1 / sinVal;
 
       document.getElementById('infoAngle').textContent = normDeg.toFixed(1) + '°';
       document.getElementById('infoRad').textContent = angle.toFixed(2);
       document.getElementById('infoSin').textContent = sinVal.toFixed(3);
       document.getElementById('infoCos').textContent = cosVal.toFixed(3);
       document.getElementById('infoTan').textContent = Math.abs(tanVal) > 50 ? '∞' : tanVal.toFixed(3);
+      document.getElementById('infoCot').textContent = Math.abs(cotVal) > 50 ? '∞' : cotVal.toFixed(3);
+      document.getElementById('infoSec').textContent = Math.abs(secVal) > 50 ? '∞' : secVal.toFixed(3);
+      document.getElementById('infoCsc').textContent = Math.abs(cscVal) > 50 ? '∞' : cscVal.toFixed(3);
       document.getElementById('infoCoord').textContent = `(${cosVal.toFixed(2)}, ${sinVal.toFixed(2)})`;
+
+      // Update preset buttons
+      document.querySelectorAll('.angle-presets button').forEach(btn => {
+        const btnAngle = parseFloat(btn.dataset.angle);
+        const diff = Math.abs(normDeg - btnAngle);
+        if (diff < 1 || diff > 359) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
     }
 
     canvas.addEventListener('mousemove', function(e) {
+      if (animating) return;
       const rect = canvas.getBoundingClientRect();
       const mx = e.clientX - rect.left;
       const my = e.clientY - rect.top;
@@ -534,6 +715,7 @@
 
     canvas.addEventListener('touchmove', function(e) {
       e.preventDefault();
+      if (animating) return;
       const rect = canvas.getBoundingClientRect();
       const touch = e.touches[0];
       const mx = touch.clientX - rect.left;
@@ -545,6 +727,49 @@
       draw();
       updateInfo();
     }, { passive: false });
+
+    // Preset buttons
+    document.querySelectorAll('.angle-presets button').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const deg = parseFloat(this.dataset.angle);
+        angle = toRad(deg);
+        draw();
+        updateInfo();
+      });
+    });
+
+    // Animation
+    document.getElementById('btnPlay').addEventListener('click', function() {
+      if (animating) {
+        animating = false;
+        cancelAnimationFrame(animId);
+        this.textContent = '▶ 自动旋转';
+        this.classList.remove('playing');
+      } else {
+        animating = true;
+        this.textContent = '⏸ 暂停';
+        this.classList.add('playing');
+        function step() {
+          if (!animating) return;
+          angle += 0.01;
+          if (angle >= Math.PI * 2) angle -= Math.PI * 2;
+          draw();
+          updateInfo();
+          animId = requestAnimationFrame(step);
+        }
+        step();
+      }
+    });
+
+    document.getElementById('btnReset').addEventListener('click', function() {
+      animating = false;
+      cancelAnimationFrame(animId);
+      document.getElementById('btnPlay').textContent = '▶ 自动旋转';
+      document.getElementById('btnPlay').classList.remove('playing');
+      angle = 0;
+      draw();
+      updateInfo();
+    });
 
     draw();
     updateInfo();

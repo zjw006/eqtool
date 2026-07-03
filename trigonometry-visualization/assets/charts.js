@@ -145,11 +145,29 @@
       'y = ' + aStr + ' · sin(' + wStr + ' · x ' + sign + ' ' + pAbs + ')';
   }
 
+  function updateProperties() {
+    var period = (2 * Math.PI / omega).toFixed(2);
+    var freq = (omega / (2 * Math.PI)).toFixed(3);
+    var maxVal = A.toFixed(1);
+    var minVal = (-A).toFixed(1);
+
+    var periodEl = document.getElementById('propPeriod');
+    var freqEl = document.getElementById('propFreq');
+    var maxEl = document.getElementById('propMax');
+    var minEl = document.getElementById('propMin');
+
+    if (periodEl) periodEl.textContent = period === '6.28' ? '2π' : period;
+    if (freqEl) freqEl.textContent = freq;
+    if (maxEl) maxEl.textContent = maxVal;
+    if (minEl) minEl.textContent = minVal;
+  }
+
   // Event listeners
   document.getElementById('rangeA').addEventListener('input', function(e) {
     A = parseFloat(e.target.value);
     document.getElementById('valA').textContent = A.toFixed(1);
     updateFormula();
+    updateProperties();
     updateCharts();
   });
 
@@ -157,6 +175,7 @@
     omega = parseFloat(e.target.value);
     document.getElementById('valOmega').textContent = omega.toFixed(1);
     updateFormula();
+    updateProperties();
     updateCharts();
   });
 
@@ -176,5 +195,6 @@
   });
 
   // Initial render
+  updateProperties();
   updateCharts();
 })();
