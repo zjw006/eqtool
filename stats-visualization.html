@@ -282,12 +282,49 @@
 
   <!-- 薪酬对比 -->
   <section>
-    <h2>各专业不同学历层次薪酬对比（2024年）</h2>
+    <h2>各专业薪酬趋势（2010-2026年）</h2>
     <div class="card">
       <div class="data-note">
-        薪酬数据基于麦可思2024年报告、各高校就业质量报告及行业调研推算。博士薪酬包含高校教职、科研院所及企业研发岗位。
+        薪酬数据基于麦可思2024年报告、各高校就业质量报告及行业调研推算。博士薪酬包含高校教职、科研院所及企业研发岗位。选择专业查看该专业历年薪酬走势。
+      </div>
+      <div class="major-selector" id="salaryMajorSelector">
+        <button data-salary-major="计算机类" class="active">计算机类</button>
+        <button data-salary-major="软件工程">软件工程</button>
+        <button data-salary-major="电子信息类">电子信息类</button>
+        <button data-salary-major="自动化类">自动化类</button>
+        <button data-salary-major="机械类">机械类</button>
+        <button data-salary-major="新能源类">新能源类</button>
+        <button data-salary-major="土木工程">土木工程</button>
+        <button data-salary-major="医学类">医学类</button>
+        <button data-salary-major="生物医药">生物医药</button>
+        <button data-salary-major="经济学类">经济学类</button>
+        <button data-salary-major="财经类">财经类</button>
+        <button data-salary-major="教育学类">教育学类</button>
+        <button data-salary-major="统计学">统计学</button>
+        <button data-salary-major="材料类">材料类</button>
+        <button data-salary-major="化工类">化工类</button>
+        <button data-salary-major="环境科学">环境科学</button>
+        <button data-salary-major="心理学">心理学</button>
+        <button data-salary-major="人文社科">人文社科</button>
       </div>
       <div class="chart-container large" id="chartSalary"></div>
+      <div class="stat-grid" id="salaryStatGrid">
+        <div class="stat-box"><div class="slabel">2024年本科月薪</div><div class="svalue" id="salStatB">6,800元</div></div>
+        <div class="stat-box"><div class="slabel">2024年硕士月薪</div><div class="svalue" id="salStatM">11,000元</div></div>
+        <div class="stat-box"><div class="slabel">2024年博士月薪</div><div class="svalue" id="salStatD">18,300元</div></div>
+        <div class="stat-box"><div class="slabel">2010-2024薪酬涨幅</div><div class="svalue" id="salStatGrowth">143%</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 薪酬横向对比 -->
+  <section>
+    <h2>18个专业薪酬横向对比（2024年）</h2>
+    <div class="card">
+      <div class="data-note">
+        横向对比18个专业2024年本科、硕士、博士的起薪水平，直观展示学历提升对各专业薪酬的影响幅度。
+      </div>
+      <div class="chart-container large" id="chartSalaryCompare"></div>
     </div>
   </section>
 
@@ -310,7 +347,7 @@
 
   <!-- 产业需求 -->
   <section>
-    <h2>六大产业人才需求指数（2010年=100）</h2>
+    <h2>六大产业人才需求指数（2010-2026年，2010年=100）</h2>
     <div class="card">
       <div class="data-note">
         基于人社部、智联招聘、BOSS直聘等平台发布的行业人才需求报告整理。

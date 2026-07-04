@@ -175,7 +175,7 @@
     });
 
     var opt = commonOption();
-    opt.title = { text: '六大产业人才需求指数变化（2010年=100）', left: 'center', top: 5, textStyle: { color: '#ec4899', fontSize: 13 } };
+    opt.title = { text: '六大产业人才需求指数变化（2010-2026年）', left: 'center', top: 5, textStyle: { color: '#ec4899', fontSize: 13 } };
     opt.xAxis.data = years;
     opt.legend = { data: Object.keys(industryData), top: 25, textStyle: { color: '#94a3b8', fontSize: 11 } };
     opt.series = series;
@@ -285,12 +285,65 @@
     document.getElementById('statSalMin').textContent = Math.round(sSal.min) + '元';
   }
 
-  // ===== 7. Salary Comparison Bar Chart =====
+  var currentSalaryMajor = '计算机类';
+  var eduColors = ['rgba(34,211,238,0.9)', 'rgba(236,72,153,0.9)', 'rgba(245,158,11,0.9)'];
+
+  // ===== 7. Single Major Salary Trend =====
   function initSalaryChart() {
     var dom = document.getElementById('chartSalary');
     if (!dom) return;
     if (charts.salary) charts.salary.dispose();
     charts.salary = echarts.init(dom, null, { renderer: 'svg' });
+
+    var major = currentSalaryMajor;
+    var d = salaryData[major];
+    if (!d) return;
+
+    var series = eduLevels.map(function(edu, idx) {
+      return {
+        type: 'line', name: edu, data: d[edu], showSymbol: true, smooth: true,
+        lineStyle: { color: eduColors[idx], width: 3 },
+        itemStyle: { color: eduColors[idx] },
+        areaStyle: { color: eduColors[idx].replace('0.9', '0.08') }
+      };
+    });
+
+    var opt = commonOption();
+    opt.title = { text: major + ' · 历年薪酬走势（月薪/元）', left: 'center', top: 5, textStyle: { color: '#ec4899', fontSize: 13 } };
+    opt.xAxis.data = years;
+    opt.yAxis.name = '月薪(元)';
+    opt.legend = { data: eduLevels, top: 25, textStyle: { color: '#94a3b8' } };
+    opt.tooltip.formatter = function(params) {
+      var res = params[0].axisValue + '年<br/>';
+      params.forEach(function(p) {
+        res += p.marker + ' ' + p.seriesName + ': ' + p.value.toLocaleString() + ' 元/月<br/>';
+      });
+      return res;
+    };
+    opt.series = series;
+    charts.salary.setOption(opt);
+
+    // Update stat boxes
+    var y2024 = 7; // index for 2024
+    var y2010 = 0;
+    var bSal = d['本科'][y2024], mSal = d['硕士'][y2024], dSal = d['博士'][y2024];
+    var bSal0 = d['本科'][y2010];
+    var elB = document.getElementById('salStatB');
+    var elM = document.getElementById('salStatM');
+    var elD = document.getElementById('salStatD');
+    var elG = document.getElementById('salStatGrowth');
+    if (elB) elB.textContent = bSal.toLocaleString() + '元';
+    if (elM) elM.textContent = mSal.toLocaleString() + '元';
+    if (elD) elD.textContent = dSal.toLocaleString() + '元';
+    if (elG) elG.textContent = Math.round((bSal - bSal0) / bSal0 * 100) + '%';
+  }
+
+  // ===== 7b. All Majors Salary Comparison Bar Chart =====
+  function initSalaryCompare() {
+    var dom = document.getElementById('chartSalaryCompare');
+    if (!dom) return;
+    if (charts.salaryCmp) charts.salaryCmp.dispose();
+    charts.salaryCmp = echarts.init(dom, null, { renderer: 'svg' });
 
     var yearIdx = 7; // 2024
     var majors = Object.keys(salaryData);
@@ -298,18 +351,25 @@
       return {
         type: 'bar', name: edu,
         data: majors.map(function(m){ return salaryData[m][edu][yearIdx]; }),
-        itemStyle: { color: idx === 0 ? 'rgba(34,211,238,0.7)' : idx === 1 ? 'rgba(236,72,153,0.7)' : 'rgba(245,158,11,0.7)' }
+        itemStyle: { color: eduColors[idx] }
       };
     });
 
     var opt = commonOption();
-    opt.title = { text: '2024年 各专业不同学历层次薪酬对比', left: 'center', top: 5, textStyle: { color: '#ec4899', fontSize: 13 } };
+    opt.title = { text: '2024年 18个专业薪酬横向对比（元/月）', left: 'center', top: 5, textStyle: { color: '#ec4899', fontSize: 13 } };
     opt.xAxis.data = majors;
-    opt.xAxis.axisLabel = { color: '#94a3b8', fontSize: 10, rotate: 20 };
+    opt.xAxis.axisLabel = { color: '#94a3b8', fontSize: 9, rotate: 25, fontFamily: 'JetBrainsMono' };
     opt.yAxis.name = '月薪(元)';
     opt.legend = { data: eduLevels, top: 25, textStyle: { color: '#94a3b8' } };
+    opt.tooltip.formatter = function(params) {
+      var res = params[0].axisValue + '<br/>';
+      params.forEach(function(p) {
+        res += p.marker + ' ' + p.seriesName + ': ' + p.value.toLocaleString() + ' 元/月<br/>';
+      });
+      return res;
+    };
     opt.series = series;
-    charts.salary.setOption(opt);
+    charts.salaryCmp.setOption(opt);
   }
 
   // ===== 8. LLN Chart =====
@@ -410,6 +470,7 @@
     initScatterChart();
     initHistChart();
     initSalaryChart();
+    initSalaryCompare();
     calcStats(7);
     initLLNChart();
     initCLTChart();
@@ -479,6 +540,16 @@
       initCLTChart();
     });
   }
+
+  // Salary major selector
+  document.querySelectorAll('#salaryMajorSelector button').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('#salaryMajorSelector button').forEach(function(b){b.classList.remove('active');});
+      this.classList.add('active');
+      currentSalaryMajor = this.dataset.salaryMajor;
+      initSalaryChart();
+    });
+  });
 
   window.addEventListener('resize', function() {
     Object.values(charts).forEach(function(c) { if (c) c.resize(); });
