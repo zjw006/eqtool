@@ -295,6 +295,8 @@
       padding: 1.25rem;
       text-align: center;
       transition: transform 0.2s, border-color 0.2s;
+      position: relative;
+      cursor: default;
     }
     .formula-card:hover {
       transform: translateY(-3px);
@@ -309,6 +311,25 @@
       font-family: var(--font-mono);
       font-size: 1.05rem;
       color: var(--accent2);
+    }
+    .formula-card .fmath::after {
+      content: attr(data-tip);
+      display: block;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease, font-size 0.3s ease;
+      font-size: 0;
+      font-weight: 400;
+      color: var(--muted);
+      margin-top: 0;
+      line-height: 1.5;
+    }
+    .formula-card:hover .fmath::after {
+      max-height: 200px;
+      opacity: 1;
+      margin-top: 0.6rem;
+      font-size: 0.82rem;
     }
 
     /* Property panel */
@@ -486,35 +507,35 @@
     <div class="formula-grid">
       <div class="formula-card">
         <div class="fname">和角公式</div>
-        <div class="fmath">sin(a±b) = sin a cos b ± cos a sin b</div>
+        <div class="fmath" data-tip="两角之和（或差）的正弦，等于第一个角的正弦乘第二个角的余弦，加上（或减去）第一个角的余弦乘第二个角的正弦。可用于将 sin(a+b) 拆解为已知角的三角函数值来求解。">sin(a±b) = sin a cos b ± cos a sin b</div>
       </div>
       <div class="formula-card">
         <div class="fname">和角公式</div>
-        <div class="fmath">cos(a±b) = cos a cos b ∓ sin a sin b</div>
+        <div class="fmath" data-tip="两角之和（或差）的余弦，等于两个角余弦之积，减去（或加上）两个角正弦之积。注意符号与正弦和角公式相反。">cos(a±b) = cos a cos b ∓ sin a sin b</div>
       </div>
       <div class="formula-card">
         <div class="fname">平方关系</div>
-        <div class="fmath">sin²x + cos²x = 1</div>
+        <div class="fmath" data-tip="三角函数中最基本的恒等式，也称为毕达哥拉斯恒等式。由勾股定理推导而来，对任意角 x 都成立。由此还可推出 1 + tan²x = sec²x 和 1 + cot²x = csc²x。">sin²x + cos²x = 1</div>
       </div>
       <div class="formula-card">
         <div class="fname">倒数关系</div>
-        <div class="fmath">tan x = sin x / cos x</div>
+        <div class="fmath" data-tip="正切函数等于同角的正弦除以余弦。当 cos x = 0（即 x = π/2 + kπ）时正切无定义。这一定义将三角函数的三个基本函数联系在一起。">tan x = sin x / cos x</div>
       </div>
       <div class="formula-card">
         <div class="fname">倍角公式</div>
-        <div class="fmath">sin 2x = 2 sin x cos x</div>
+        <div class="fmath" data-tip="二倍角的正弦等于两倍的正弦与余弦的乘积。也可写作 sin 2x = sin x · cos x × 2。这是和角公式中令 b = a 的特例。">sin 2x = 2 sin x cos x</div>
       </div>
       <div class="formula-card">
         <div class="fname">倍角公式</div>
-        <div class="fmath">cos 2x = cos²x - sin²x</div>
+        <div class="fmath" data-tip="二倍角的余弦有三种等价形式：cos²x − sin²x、2cos²x − 1、1 − 2sin²x。在不同场景下选择合适的形式可以简化计算。">cos 2x = cos²x - sin²x</div>
       </div>
       <div class="formula-card">
         <div class="fname">倒数关系</div>
-        <div class="fmath">sec x = 1/cos x</div>
+        <div class="fmath" data-tip="正割 sec x 是余弦 cos x 的倒数。当 cos x = 0 时无定义。sec x 表示单位圆上某点到 x 轴的距离（可正可负）。">sec x = 1/cos x</div>
       </div>
       <div class="formula-card">
         <div class="fname">倒数关系</div>
-        <div class="fmath">csc x = 1/sin x</div>
+        <div class="fmath" data-tip="余割 csc x 是正弦 sin x 的倒数。当 sin x = 0 时无定义。csc x 表示单位圆上某点到 y 轴的距离（可正可负）。">csc x = 1/sin x</div>
       </div>
     </div>
   </section>
