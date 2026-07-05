@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>三角函数解决实际问题案例</title>
+  <style>
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./_shared/fonts/Outfit-Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./_shared/fonts/Outfit-Bold.ttf') format('truetype');
+      font-weight: 700;
+    }
+    @font-face {
+      font-family: 'JetBrainsMono';
+      src: url('./_shared/fonts/JetBrainsMono-Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+  </style>
+  <style>
+    :root {
+      --bg: #0b1120; --bg2: #151e32; --bg3: #1e293b;
+      --ink: #f1f5f9; --muted: #94a3b8; --rule: #334155;
+      --accent: #06b6d4; --accent2: #f59e0b; --accent3: #ec4899; --accent4: #8b5cf6;
+      --font: 'Outfit', system-ui, sans-serif;
+      --font-mono: 'JetBrainsMono', monospace;
+      --max: 1200px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body { font-family: var(--font); color: var(--ink); background: var(--bg); line-height: 1.6; }
+    .container { max-width: var(--max); margin: 0 auto; padding: 0 1.5rem; }
+
+    header {
+      text-align: center; padding: 3rem 1rem 2rem;
+      background: linear-gradient(180deg, rgba(6,182,212,0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--rule);
+    }
+    header h1 {
+      font-size: 2.5rem; font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    header p { color: var(--muted); font-size: 1.1rem; }
+
+    section { margin: 2.5rem 0; }
+    section h2 {
+      font-size: 1.5rem; font-weight: 700; color: var(--ink);
+      margin-bottom: 1.25rem; padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--accent); display: inline-block;
+    }
+
+    .intro {
+      font-size: 1.05rem; color: var(--muted);
+      max-width: 800px; margin: 0 auto 2rem;
+      text-align: center; line-height: 1.8;
+    }
+
+    .card {
+      background: var(--bg2); border: 1px solid var(--rule);
+      border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .card-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .case-text {
+      margin-bottom: 1.25rem; color: var(--muted); font-size: 0.95rem; line-height: 1.8;
+    }
+    .case-text p { margin-bottom: 0.75rem; }
+    .case-text p:last-child { margin-bottom: 0; }
+    .case-text .math {
+      font-family: var(--font-mono); color: var(--accent2); font-size: 0.95em;
+      background: var(--bg3); padding: 0.1rem 0.35rem; border-radius: 4px;
+    }
+
+    .controls {
+      display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center;
+    }
+    .control-group {
+      display: flex; flex-direction: column; gap: 0.35rem;
+      min-width: 200px; flex: 1;
+    }
+    .control-group label {
+      font-size: 0.85rem; color: var(--muted); font-weight: 600;
+      display: flex; justify-content: space-between;
+    }
+    .control-group label span.value {
+      color: var(--accent); font-family: var(--font-mono);
+    }
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 6px; background: var(--bg3);
+      border-radius: 3px; outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 18px; height: 18px; background: var(--accent);
+      border-radius: 50%; cursor: pointer; border: 2px solid var(--bg);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px; height: 18px; background: var(--accent);
+      border-radius: 50%; cursor: pointer; border: 2px solid var(--bg);
+    }
+
+    .season-buttons {
+      display: flex; gap: 0.5rem; flex-wrap: wrap;
+    }
+    .season-btn {
+      background: var(--bg3); border: 1px solid var(--rule);
+      color: var(--muted); padding: 0.4rem 0.9rem; border-radius: 6px;
+      font-family: var(--font); font-size: 0.85rem; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .season-btn:hover { border-color: var(--accent); color: var(--ink); }
+    .season-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
+
+    .result-panel {
+      background: var(--bg3); border: 1px solid var(--rule);
+      border-radius: 8px; padding: 1rem; margin-top: 1rem;
+      font-family: var(--font-mono); font-size: 0.9rem; color: var(--ink);
+      line-height: 1.7;
+    }
+    .result-panel .res-label { color: var(--muted); font-size: 0.8rem; font-family: var(--font); }
+    .result-panel .res-value { color: var(--accent2); font-weight: 700; }
+
+    /* Data panel */
+    .data-panel {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem; margin-top: 1rem;
+    }
+    .data-item {
+      background: var(--bg3); border: 1px solid var(--rule);
+      border-radius: 8px; padding: 0.6rem 0.8rem; text-align: center;
+    }
+    .data-item .dlabel { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.2rem; }
+    .data-item .dvalue { font-family: var(--font-mono); font-size: 0.95rem; color: var(--accent2); font-weight: 700; }
+
+    /* Chart containers */
+    .chart-container {
+      width: 100%; background: var(--bg3);
+      border-radius: 12px; border: 1px solid var(--rule); overflow: hidden;
+    }
+    .chart-container canvas {
+      width: 100%; height: 100%; display: block;
+    }
+    .chart-container.h320 { height: 320px; }
+    .chart-container.h350 { height: 350px; }
+    .chart-container.h300 { height: 300px; }
+    .chart-container.h200 { height: 200px; }
+
+    /* Formula cards */
+    .formula-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .formula-card {
+      background: var(--bg3); border: 1px solid var(--rule);
+      border-radius: 10px; padding: 1.25rem; text-align: center;
+      transition: transform 0.2s, border-color 0.2s;
+      position: relative; cursor: default;
+    }
+    .formula-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+    .formula-card .fname { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.5rem; }
+    .formula-card .fmath {
+      font-family: var(--font-mono); font-size: 1.05rem; color: var(--accent2);
+    }
+    .formula-card .fmath::after {
+      content: attr(data-tip);
+      display: block; max-height: 0; overflow: hidden; opacity: 0;
+      transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease, font-size 0.3s ease;
+      font-size: 0; font-weight: 400; color: var(--muted);
+      margin-top: 0; line-height: 1.5;
+    }
+    .formula-card:hover .fmath::after {
+      max-height: 200px; opacity: 1; margin-top: 0.6rem; font-size: 0.82rem;
+    }
+
+    /* Data table */
+    .data-table {
+      width: 100%; border-collapse: collapse;
+      font-size: 0.9rem; margin-top: 1rem;
+    }
+    .data-table th, .data-table td {
+      padding: 0.75rem 1rem; text-align: left;
+      border-bottom: 1px solid var(--rule);
+    }
+    .data-table th {
+      background: var(--bg3); color: var(--accent);
+      font-weight: 700; font-size: 0.85rem; text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .data-table td { color: var(--muted); }
+    .data-table tr:hover td { color: var(--ink); background: rgba(6,182,212,0.05); }
+    .data-table td .math { font-family: var(--font-mono); color: var(--accent2); }
+
+    /* Case number badge */
+    .case-badge {
+      display: inline-block; background: var(--accent); color: var(--bg);
+      font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700;
+      padding: 0.2rem 0.6rem; border-radius: 4px; margin-right: 0.5rem;
+      vertical-align: middle;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      header h1 { font-size: 1.8rem; }
+      .chart-container, .chart-container.h320, .chart-container.h350, .chart-container.h300, .chart-container.h200 { height: 260px !important; }
+      .controls { flex-direction: column; align-items: stretch; }
+      .control-group { min-width: unset; }
+      .card-grid { grid-template-columns: 1fr; }
+      .data-table { font-size: 0.8rem; }
+      .data-table th, .data-table td { padding: 0.5rem 0.6rem; }
+    }
+
+    footer {
+      text-align: center; padding: 2rem 1rem; color: var(--muted);
+      font-size: 0.85rem; border-top: 1px solid var(--rule); margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>三角函数不是只活在试卷里的符号</h1>
+    <p>从建筑测量到医学影像，探索三角函数在真实世界中的应用</p>
+  </div>
+</header>
+
+<main class="container">
+
+  <p class="intro">
+    正弦、余弦、正切——这些在课本上看似抽象的符号，实际上渗透在我们生活的每一个角落。
+    它们帮助工程师测量不可触及的高度，让航海者确定方位，让医生看清人体内部，让游戏角色在屏幕上流畅旋转。
+    以下七个真实案例，将带你重新认识三角函数的力量。
+  </p>
+
+  <!-- 案例1：测量高度（仰角与正切） -->
+  <section>
+    <h2><span class="case-badge">Case 1</span>测量高度（仰角与正切）</h2>
+    <div class="card">
+      <div class="case-text">
+        <p>场景：你想知道对面那栋楼有多高，但没法爬上去量。</p>
+        <p>做法：<br>- 你站在离楼底 50 米的地方，抬头看楼顶，测得仰角是 60°。<br>- 你的眼睛离地面 1.6 米。</p>
+        <p>计算：<br><span class="math">tan 60° = (楼高 - 1.6) / 50</span><br><span class="math">√3 = (H - 1.6) / 50</span><br><span class="math">H = 50√3 + 1.6 ≈ 50 × 1.732 + 1.6 ≈ 88.2 米</span></p>
+        <p>用到的公式：正切定义 <span class="math">tanθ = 对边/邻边</span></p>
+        <p>> 📐 测绘员、无人机测高、手机 AR 测距都是这个原理。</p>
+      </div>
+      <div class="card-grid">
+        <div class="chart-container h320">
+          <canvas id="buildingCanvas"></canvas>
+        </div>
+        <div>
+          <div class="controls">
+            <div class="control-group">
+              <label>水平距离 (m) <span class="value" id="val-b-dist">50</span></label>
+              <input type="range" id="b-dist" min="10" max="100" step="1" value="50">
+            </div>
+            <div class="control-group">
+              <label>仰角 (°) <span class="value" id="val-b-angle">60°</span></label>
+              <input type="range" id="b-angle" min="10" max="80" step="1" value="60">
+            </div>
+            <div class="control-group">
+              <label>眼睛高度 (m) <span class="value" id="val-b-eye">1.6</span></label>
+              <input type="range" id="b-eye" min="1.0" max="2.0" step="0.1" value="1.6">
+            </div>
+          </div>
+          <div class="result-panel" id="b-result">
+            <div class="res-label">计算过程</div>
+            <div>H = h + L × tan θ = <span class="res-value" id="b-calc">1.6 + 50 × tan(60°)</span></div>
+            <div>建筑高度 = <span class="res-value" id="b-height">88.22</span> m</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 案例2：航海定向（方位角与余弦定理） -->
+  <section>
+    <h2><span class="case-badge">Case 2</span>航海定向（方位角与余弦定理）</h2>
+    <div class="card">
+      <div class="case-text">
+        <p>场景：一艘船从港口 A 出发，先向正东航行 40 km 到 B 点，然后转向北偏东 30° 航行 30 km 到 C 点。现在船要直接返回 A，应该朝哪个方向走？多远？</p>
+        <p>计算：<br>把航线画成三角形 ABC，其中：<br>- AB = 40，BC = 30<br>- ∠ABC = 90° + 30° = 120°（注意不是 30°）</p>
+        <p>用余弦定理求 AC：<br><span class="math">AC² = AB² + BC² - 2 · AB · BC · cos 120°</span><br><span class="math">AC² = 40² + 30² - 2 × 40 × 30 × (-0.5)</span><br><span class="math">AC² = 1600 + 900 + 1200 = 3700</span><br><span class="math">AC ≈ 60.8 km</span></p>
+        <p>再用正弦定理求返回方向：<br><span class="math">BC / sin A = AC / sin 120°</span><br><span class="math">sin A = (30 × sin 120°) / 60.8 ≈ (30 × 0.866) / 60.8 ≈ 0.427</span><br><span class="math">A ≈ 25.3°</span></p>
+        <p>所以船要朝西偏南约 25.3° 的方向航行约 60.8 km。</p>
+        <p>用到的公式：正弦定理、余弦定理</p>
+        <p>> 🚢 航海、飞行航线规划、外卖骑手最优路径（复杂版）都依赖这个。</p>
+      </div>
+      <div class="card-grid">
+        <div class="chart-container h350">
+          <canvas id="navCanvas"></canvas>
+        </div>
+        <div>
+          <div class="result-panel" id="nav-result">
+            <div class="res-label">计算结果</div>
+            <div>AC 距离 = <span class="res-value" id="nav-ac">—</span> km</div>
+            <div>返回方位角 = <span class="res-value" id="nav-bearing">—</span>°</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 案例3：太阳能板安装角度 -->
+  <section>
+    <h2><span class="case-badge">Case 3</span>太阳能板安装角度</h2>
+    <div class="card">
+      <div class="case-text">
+        <p>场景：你家在北纬 40°（比如北京），想装太阳能板，问：板子应该倾斜多少度才能全年接收最多阳光？</p>
+        <p>原理：太阳在冬至正午时高度角最低，此时板子正好垂直对着太阳，效率最高。</p>
+        <p>计算：<br>- 冬至正午太阳高度角 <span class="math">h = 90° - 40° - 23.5° = 26.5°</span><br>- 板子倾斜角 θ 应该满足：板子法线与太阳光线平行<br>- 即 <span class="math">θ = 90° - h = 63.5°</span></p>
+        <p>更精细的做法：<br>全年最优倾斜角约等于当地纬度，即 40° 左右。但如果你想冬天多发电，就按冬至算，约 63.5°；想夏天多发电，就按夏至算：<br><span class="math">h_夏至 = 90° - 40° + 23.5° = 73.5°</span><br><span class="math">θ_夏 = 90° - 73.5° = 16.5°</span></p>
+        <p>用到的公式：角度互补关系、三角函数在直角三角形中的应用</p>
+        <p>> ☀️ 光伏工程师、建筑设计师每天都在算这个。</p>
+      </div>
+      <div class="card-grid">
+        <div class="chart-container h320">
+          <canvas id="solarCanvas"></canvas>
+        </div>
+        <div>
+          <div class="controls">
+            <div class="control-group">
+              <label>当地纬度 (°) <span class="value" id="val-s-lat">40°</span></label>
+              <input type="range" id="s-lat" min="0" max="60" step="1" value="40">
+            </div>
+          </div>
+          <div class="season-buttons" id="s-season" style="margin-top: 1rem;">
+            <button class="season-btn active" data-season="winter">冬至</button>
+            <button class="season-btn" data-season="summer">夏至</button>
+            <button class="season-btn" data-season="average">全年平均</button>
+          </div>
+          <div class="result-panel" id="s-result">
+            <div class="res-label">推荐安装角度</div>
+            <div>最佳倾角 = <span class="res-value" id="s-tilt">40°</span></div>
+            <div>太阳高度角 = <span class="res-value" id="s-elevation">26.6°</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 案例4：声音合成与音乐 -->
+  <section>
+    <h2><span class="case-badge">Case 4</span>声音合成与音乐</h2>
+    <div class="card">
+      <div class="case-text">
+        <p>场景：你弹吉他，发出的不是一个纯净音，而是基音 + 泛音的叠加。</p>
+        <p>原理：<br>- 标准音 A4 的频率是 440 Hz，波形可表示为 <span class="math">y = sin(2π × 440 × t)</span><br>- 吉他弦振动时，还会产生 2 倍频、3 倍频的泛音：<br><span class="math">y_总 = sin(880π t) + 0.5 sin(1760π t) + 0.3 sin(2640π t) + ...</span></p>
+        <p>和差化积的应用：<br>调音时，如果两根弦频率略有差异（比如 440 Hz 和 442 Hz），你会听到"拍音"：<br><span class="math">sin(440 × 2π t) + sin(442 × 2π t) = 2 sin(441 × 2π t) cos(2π t)</span><br>振幅以 2 Hz 的频率起伏，就是你听到的"嗡——嗡——"的拍音。调音师靠这个把弦调到零拍音。</p>
+        <p>用到的公式：和差化积公式 <span class="math">sin A + sin B = 2 sin((A+B)/2) cos((A-B)/2)</span></p>
+        <p>> 🎸 所有电子乐器、MP3 压缩、降噪耳机、声呐探测都基于正弦波的三角分析。</p>
+      </div>
+      <div class="card-grid">
+        <div>
+          <div class="chart-container h300">
+            <div id="chartSound" style="width: 100%; height: 100%;"></div>
+          </div>
+          <div class="chart-container h200" style="margin-top: 1rem;">
+            <div id="chartBeat" style="width: 100%; height: 100%;"></div>
+          </div>
+        </div>
+        <div>
+          <div class="controls">
+            <div class="control-group">
+              <label>基频幅值 <span class="value" id="val-s-a1">1.0</span></label>
+              <input type="range" id="s-a1" min="0" max="1" step="0.1" value="1">
+            </div>
+            <div class="control-group">
+              <label>二次谐波 <span class="value" id="val-s-a2">0.5</span></label>
+              <input type="range" id="s-a2" min="0" max="1" step="0.1" value="0.5">
+            </div>
+            <div class="control-group">
+              <label>三次谐波 <span class="value" id="val-s-a3">0.3</span></label>
+              <input type="range" id="s-a3" min="0" max="1" step="0.1" value="0.3">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 案例5：游戏与3D动画旋转 -->
+  <section>
+    <h2><span class="case-badge">Case 5</span>游戏与3D动画旋转</h2>
+    <div class="card">
+      <div class="case-text">
+        <p>场景：你在玩《原神》或任何 3D 游戏，角色转身、镜头旋转，背后的坐标怎么变？</p>
+        <p>原理：<br>一个点 (x, y) 绕原点旋转角度 θ 后的新坐标：<br><span class="math">x' = x cosθ - y sinθ</span><br><span class="math">y' = x sinθ + y cosθ</span></p>
+        <p>具体例子：<br>角色面朝正北（向量 (0, 1)），你向右转 30°：<br><span class="math">x' = 0 × cos 30° - 1 × sin 30° = -0.5</span><br><span class="math">y' = 0 × sin 30° + 1 × cos 30° ≈ 0.866</span><br>新朝向是 (-0.5, 0.866)，即北偏西 30°。</p>
+        <p>用到的公式：二倍角公式、正弦/余弦的坐标定义</p>
+        <p>> 🎮 你每一次滑动屏幕旋转视角，手机都在以每秒上百万次的频率计算这些三角函数。</p>
+      </div>
+      <div class="card-grid">
+        <div class="chart-container h320">
+          <canvas id="rotateCanvas"></canvas>
+        </div>
+        <div>
+          <div class="controls">
+            <div class="control-group">
+              <label>旋转角度 (°) <span class="value" id="val-r-angle">30°</span></label>
+              <input type="range" id="r-angle" min="0" max="360" step="1" value="30">
+            </div>
+          </div>
+          <div class="result-panel" id="r-result">
+            <div class="res-label">旋转矩阵</div>
+            <div>[ <span class="res-value" id="r-m00">0.866</span>  <span class="res-value" id="r-m01">-0.500</span> ]</div>
+            <div>[ <span class="res-value" id="r-m10">0.500</span>  <span class="res-value" id="r-m11">0.866</span> ]</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 案例6：CT扫描与医学影像 -->
+  <section>
+    <h2><span class="case-badge">Case 6</span>CT扫描与医学影像</h2>
+    <div class="card">
+      <div class="case-text">
+        <p>场景：CT 机绕着你转一圈，拍很多张 X 光片，怎么重建出体内器官的 3D 图像？</p>
+        <p>原理：<br>X 射线穿过身体时，在不同角度 θ 上得到投影数据 p(θ, r)。重建图像需要用到 Radon 变换和逆变换，核心就是：<br><span class="math">f(x,y) = ∫₀^π ∫_{-∞}^{+∞} p(θ, r) · δ(x cosθ + y sinθ - r) dr dθ</span><br>其中 <span class="math">x cosθ + y sinθ = r</span> 正是直线方程的三角函数形式（法线式）。</p>
+        <p>用到的公式：cosθ 和 sinθ 在坐标旋转中的表达</p>
+        <p>> 🏥 没有三角函数，现代医学影像根本不存在。</p>
+      </div>
+      <div class="chart-container h320">
+        <canvas id="ctCanvas"></canvas>
+      </div>
+      <div class="controls" style="margin-top: 1rem;">
+        <div class="control-group">
+          <label>扫描角度 (°) <span class="value" id="val-ct-angle">45°</span></label>
+          <input type="range" id="ct-angle" min="0" max="180" step="1" value="45">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 案例7：楼梯坡度 -->
+  <section>
+    <h2><span class="case-badge">Case 7</span>楼梯坡度</h2>
+    <div class="card">
+      <div class="case-text">
+        <p>场景：国家规定楼梯坡度不能过陡，否则容易摔跤。一般舒适坡度是 30° 左右。</p>
+        <p>计算：<br>- 每级台阶高 15 cm，深 26 cm<br>- 坡度角 <span class="math">θ = arctan(15/26) ≈ arctan(0.577) ≈ 30°</span></p>
+        <p>用到的公式：<span class="math">tanθ = 对边/邻边</span></p>
+        <p>> 🏠 建筑规范、轮椅坡道、盘山公路的弯道设计，都在用三角函数保你安全。</p>
+      </div>
+      <div class="card-grid">
+        <div class="chart-container h300">
+          <canvas id="stairCanvas"></canvas>
+        </div>
+        <div>
+          <div class="controls">
+            <div class="control-group">
+              <label>台阶高度 (cm) <span class="value" id="val-st-h">15.0</span></label>
+              <input type="range" id="st-h" min="10" max="20" step="0.5" value="15">
+            </div>
+            <div class="control-group">
+              <label>台阶深度 (cm) <span class="value" id="val-st-d">26.0</span></label>
+              <input type="range" id="st-d" min="20" max="30" step="0.5" value="26">
+            </div>
+          </div>
+          <div class="result-panel" id="st-result">
+            <div class="res-label">计算结果</div>
+            <div>坡度角 θ = <span class="res-value" id="st-angle">29.98°</span></div>
+            <div>坡度比 = <span class="res-value" id="st-ratio">1 : 1.73</span></div>
+            <div>舒适性评级 = <span class="res-value" id="st-rating">良好</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 总结表 -->
+  <section>
+    <h2>七个案例总结</h2>
+    <div class="card">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>生活问题</th>
+            <th>核心公式</th>
+            <th>关键词</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>测高、测距</td>
+            <td><span class="math">tanθ = 高/远</span></td>
+            <td>仰角、俯角</td>
+          </tr>
+          <tr>
+            <td>导航、定位</td>
+            <td><span class="math">正弦定理、余弦定理</span></td>
+            <td>方位角、距离</td>
+          </tr>
+          <tr>
+            <td>斜坡、安装角</td>
+            <td><span class="math">sinθ, cosθ</span></td>
+            <td>坡度、倾斜角</td>
+          </tr>
+          <tr>
+            <td>声音、电波</td>
+            <td><span class="math">sin(ωt + φ)</span></td>
+            <td>频率、相位、叠加</td>
+          </tr>
+          <tr>
+            <td>旋转、游戏</td>
+            <td><span class="math">旋转矩阵</span></td>
+            <td>角度、坐标变换</td>
+          </tr>
+          <tr>
+            <td>医学影像</td>
+            <td><span class="math">x cosθ + y sinθ = r</span></td>
+            <td>投影、扫描</td>
+          </tr>
+          <tr>
+            <td>楼梯坡度</td>
+            <td><span class="math">tanθ = 对边/邻边</span></td>
+            <td>坡度、安全</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 公式卡片 -->
+  <section>
+    <h2>关键公式速查</h2>
+    <div class="formula-grid">
+      <div class="formula-card">
+        <div class="fname">正切定义</div>
+        <div class="fmath" data-tip="正切定义：直角三角形中，对边与邻边的比值。用于测量高度、计算坡度等。">tanθ = 对边/邻边</div>
+      </div>
+      <div class="formula-card">
+        <div class="fname">正弦定理</div>
+        <div class="fmath" data-tip="任意三角形中，边长与其对角的正弦之比相等。用于已知两角一边或两边一角求其他元素。">正弦定理 a/sinA = b/sinB = c/sinC</div>
+      </div>
+      <div class="formula-card">
+        <div class="fname">余弦定理</div>
+        <div class="fmath" data-tip="任意三角形中，一边的平方等于另两边平方和减去两倍两边乘积与夹角余弦的积。用于已知三边或两边夹角。">余弦定理 c² = a² + b² - 2ab·cosC</div>
+      </div>
+      <div class="formula-card">
+        <div class="fname">和差化积</div>
+        <div class="fmath" data-tip="和差化积公式，描述两个正弦波叠加后产生振幅调制（拍音）的现象。调音师用它校准乐器。">sinA + sinB = 2sin((A+B)/2)cos((A-B)/2)</div>
+      </div>
+      <div class="formula-card">
+        <div class="fname">旋转矩阵</div>
+        <div class="fmath" data-tip="二维旋转矩阵，将点 (x,y) 绕原点旋转角度 θ 后的新坐标。游戏引擎、图形渲染每秒调用数百万次。">旋转矩阵 [cosθ -sinθ; sinθ cosθ]</div>
+      </div>
+      <div class="formula-card">
+        <div class="fname">投影方程</div>
+        <div class="fmath" data-tip="直线的法线式方程，描述直线到原点的距离 r 与法线方向角 θ 的关系。CT扫描重建的核心数学基础。">x·cosθ + y·sinθ = r</div>
+      </div>
+      <div class="formula-card">
+        <div class="fname">简谐运动</div>
+        <div class="fmath" data-tip="简谐运动的通用表达式，ω 为角频率，t 为时间，φ 为初相位。声波、电磁波、弹簧振动都可以用此描述。">sin(ωt + φ)</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    三角函数实际应用案例 · 交互式学习工具
+  </div>
+</footer>
+
+<script src="./_shared/js/echarts.min.js"></script>
+<script src="./assets/trig-cases-charts.js"></script>
+
+</body>
+</html>

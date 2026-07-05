@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>三大变换的通信工程应用</title>
+  <style>
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./_shared/fonts/Outfit-Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./_shared/fonts/Outfit-Bold.ttf') format('truetype');
+      font-weight: 700;
+    }
+    @font-face {
+      font-family: 'JetBrainsMono';
+      src: url('./_shared/fonts/JetBrainsMono-Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+  </style>
+  <style>
+    :root {
+      --bg: #0b1120; --bg2: #151e32; --bg3: #1e293b;
+      --ink: #f1f5f9; --muted: #94a3b8; --rule: #334155;
+      --accent: #8b5cf6; --accent2: #f59e0b; --accent3: #ec4899;
+      --accent4: #22d3ee;
+      --font: 'Outfit', system-ui, sans-serif;
+      --font-mono: 'JetBrainsMono', monospace;
+      --max: 1200px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body { font-family: var(--font); color: var(--ink); background: var(--bg); line-height: 1.6; }
+    .container { max-width: var(--max); margin: 0 auto; padding: 0 1.5rem; }
+
+    header {
+      text-align: center; padding: 3rem 1rem 2rem;
+      background: linear-gradient(180deg, rgba(139,92,246,0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--rule);
+    }
+    header h1 {
+      font-size: 2.5rem; font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    header p { color: var(--muted); font-size: 1.1rem; }
+
+    .intro {
+      max-width: 800px; margin: 2rem auto; text-align: center;
+      color: var(--muted); font-size: 1rem; line-height: 1.8;
+    }
+
+    section { margin: 2.5rem 0; }
+    section h2 {
+      font-size: 1.5rem; font-weight: 700; color: var(--ink);
+      margin-bottom: 1.25rem; padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--accent); display: inline-block;
+    }
+    section h3 {
+      font-size: 1.15rem; font-weight: 700; color: var(--accent);
+      margin-bottom: 0.75rem; margin-top: 1.5rem;
+    }
+
+    .card {
+      background: var(--bg2); border: 1px solid var(--rule);
+      border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .card-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .chart-container {
+      width: 100%; height: 320px; background: var(--bg3);
+      border-radius: 12px; border: 1px solid var(--rule); overflow: hidden;
+    }
+    .chart-container canvas {
+      width: 100%; height: 100%; display: block;
+    }
+
+    .transform-tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; justify-content: center; }
+    .transform-tabs button { background: var(--bg3); border: 1px solid var(--rule); color: var(--ink); padding: 0.6rem 1.5rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 700; transition: all 0.2s; }
+    .transform-tabs button:hover { border-color: var(--accent); color: var(--accent); }
+    .transform-tabs button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    [data-panel] { display: none; }
+    [data-panel].active { display: block; }
+
+    .case-text { margin-bottom: 1.25rem; }
+    .case-text p { color: var(--muted); margin-bottom: 0.5rem; line-height: 1.7; }
+    .case-text .math { font-family: var(--font-mono); color: var(--accent2); font-weight: 600; }
+
+    .result-panel { background: var(--bg3); border: 1px solid var(--rule); border-radius: 10px; padding: 1rem; margin-top: 1rem; }
+    .res-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+    .res-value { color: var(--accent); font-family: var(--font-mono); font-weight: 700; }
+
+    .btn-group { display: flex; gap: 0.4rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .btn-group button { background: var(--bg3); border: 1px solid var(--rule); color: var(--ink); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 600; transition: all 0.2s; }
+    .btn-group button:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-group button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* Controls */
+    .controls { display: flex; flex-wrap: wrap; gap: 1.2rem; align-items: flex-start; }
+    .control-group {
+      display: flex; flex-direction: column; gap: 0.35rem;
+      min-width: 180px; flex: 1;
+    }
+    .control-group label {
+      font-size: 0.85rem; color: var(--muted); font-weight: 600;
+      display: flex; justify-content: space-between;
+    }
+    .control-group label span.value { color: var(--accent); font-family: var(--font-mono); }
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 6px;
+      background: var(--bg3); border-radius: 3px; outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 18px; height: 18px; background: var(--accent); border-radius: 50%;
+      cursor: pointer; border: 2px solid var(--bg);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px; height: 18px; background: var(--accent); border-radius: 50%;
+      cursor: pointer; border: 2px solid var(--bg);
+    }
+
+    /* Data Table */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .data-table th, .data-table td {
+      padding: 0.6rem 0.5rem; text-align: center; border: 1px solid var(--rule);
+    }
+    .data-table th {
+      background: var(--bg3); color: var(--accent); font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .data-table td { color: var(--ink); font-size: 0.85rem; }
+    .data-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+    .data-table td:first-child { font-weight: 700; color: var(--accent2); }
+    .data-table td:nth-child(2) { font-family: var(--font-mono); color: var(--accent4); font-size: 0.82rem; }
+
+    /* Formula Cards */
+    .formula-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .formula-card {
+      background: var(--bg3); border: 1px solid var(--rule);
+      border-radius: 10px; padding: 1.25rem; text-align: center;
+      transition: transform 0.2s, border-color 0.2s;
+      position: relative; cursor: default;
+    }
+    .formula-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+    .formula-card .fname { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.5rem; }
+    .formula-card .fmath { font-family: var(--font-mono); font-size: 1.05rem; color: var(--accent2); }
+    .formula-card .fmath::after {
+      content: attr(data-tip); display: block; max-height: 0; overflow: hidden; opacity: 0;
+      transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease, font-size 0.3s ease;
+      font-size: 0; font-weight: 400; color: var(--muted); margin-top: 0; line-height: 1.5;
+    }
+    .formula-card:hover .fmath::after {
+      max-height: 200px; opacity: 1; margin-top: 0.6rem; font-size: 0.82rem;
+    }
+
+    @media (max-width: 768px) {
+      header h1 { font-size: 1.8rem; }
+      .chart-container { height: 260px; }
+      .data-table { font-size: 0.75rem; }
+      .data-table th, .data-table td { padding: 0.4rem 0.25rem; }
+      .controls { flex-direction: column; align-items: stretch; }
+      .control-group { min-width: unset; }
+    }
+    footer {
+      text-align: center; padding: 2rem 1rem; color: var(--muted);
+      font-size: 0.85rem; border-top: 1px solid var(--rule); margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>三大变换的通信工程应用</h1>
+    <p>傅里叶变换、拉普拉斯变换、Z变换——从数学公式到 5G 信号处理</p>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- 引言 -->
+  <div class="intro">
+    <p>这三种变换是现代通信工程的数学基石，从无线电到 5G，从音频处理到雷达探测，无处不在。</p>
+  </div>
+
+  <!-- Tab 切换器 -->
+  <div class="transform-tabs" id="transformTabs">
+    <button data-tab="fourier" class="active">傅里叶变换</button>
+    <button data-tab="laplace">拉普拉斯变换</button>
+    <button data-tab="z">Z变换</button>
+  </div>
+
+  <!-- ==================== 傅里叶变换 ==================== -->
+  <div data-panel="fourier" class="active">
+
+    <!-- 案例1：信号分解与频谱分析 -->
+    <section>
+      <h2>信号分解与频谱分析</h2>
+      <div class="case-text">
+        <p>傅里叶变换的核心思想——任何信号都可以分解为不同频率正弦波的叠加。通过傅里叶变换，我们可以从时域（时间维度）切换到频域（频率维度），看清信号的频率构成。</p>
+        <p class="math">F(&omega;) = &int; f(t) &middot; e<sup>-j&omega;t</sup> dt</p>
+      </div>
+      <div class="card-grid">
+        <div class="card">
+          <div class="chart-container" id="chartFFT"></div>
+        </div>
+        <div class="card">
+          <div style="font-size:0.85rem; color:var(--muted); margin-bottom:0.5rem;">选择信号类型</div>
+          <div class="btn-group" id="signalType">
+            <button data-type="square" class="active">方波</button>
+            <button data-type="sawtooth">锯齿波</button>
+            <button data-type="pulse">脉冲</button>
+            <button data-type="noisy">噪声+正弦</button>
+          </div>
+          <div class="control-group">
+            <label>谐波分量数 <span class="value" id="fft-harmonics-val">5</span></label>
+            <input type="range" id="fft-harmonics" min="1" max="20" value="5">
+          </div>
+          <div class="result-panel" id="fft-result">
+            <div class="res-label">信号分析</div>
+            <div class="res-value">谐波分量：5 | 基频：1 Hz</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 案例2：OFDM 与 5G -->
+    <section>
+      <h2>OFDM 与 5G</h2>
+      <div class="case-text">
+        <p>OFDM（正交频分复用）是 4G/5G 的核心技术，把高速数据流分成多个低速子载波并行传输，每个子载波就是一个正弦波。傅里叶变换让收发端能同时处理成百上千个子载波。</p>
+        <p class="math">s(t) = &Sigma; a<sub>k</sub> &middot; e<sup>j2&pi;f<sub>k</sub>t</sup>, &nbsp; f<sub>k</sub> = k &middot; &Delta;f</p>
+      </div>
+      <div class="card">
+        <div class="chart-container" id="chartOFDM"></div>
+        <div class="controls" style="margin-top:1rem;">
+          <div class="control-group">
+            <label>子载波数量 <span class="value" id="ofdm-carriers-val">8</span></label>
+            <input type="range" id="ofdm-carriers" min="4" max="64" value="8" step="4">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 案例3：频域滤波 -->
+    <section>
+      <h2>频域滤波</h2>
+      <div class="case-text">
+        <p>如何在频域中滤除噪声——低通滤波器保留低频有用信号，滤除高频噪声。手机通话降噪就是傅里叶变换 → 滤波 → 逆变换的过程。</p>
+        <p class="math">H(f) = 1 / (1 + (f/f<sub>c</sub>)<sup>2n</sup>) &nbsp; (Butterworth 低通)</p>
+      </div>
+      <div class="card-grid">
+        <div class="card">
+          <div class="chart-container" id="chartFilter"></div>
+        </div>
+        <div class="card">
+          <div class="controls">
+            <div class="control-group">
+              <label>截止频率 <span class="value" id="filter-cutoff-val">0.30</span></label>
+              <input type="range" id="filter-cutoff" min="0.1" max="0.9" value="0.3" step="0.05">
+            </div>
+            <div class="control-group">
+              <label>噪声强度 <span class="value" id="filter-noise-val">0.50</span></label>
+              <input type="range" id="filter-noise" min="0" max="1" value="0.5" step="0.1">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ==================== 拉普拉斯变换 ==================== -->
+  <div data-panel="laplace">
+
+    <!-- 案例1：系统传递函数 -->
+    <section>
+      <h2>系统传递函数</h2>
+      <div class="case-text">
+        <p>拉普拉斯变换把微分方程变成代数方程。H(s) = Y(s)/X(s)。在通信中，滤波器、放大器、信道都可以用传递函数描述。极零点的位置决定了系统的频率响应特性。</p>
+        <p class="math">H(s) = Y(s) / X(s) = K &middot; &Pi;(s - z<sub>i</sub>) / &Pi;(s - p<sub>j</sub>)</p>
+      </div>
+      <div class="card-grid">
+        <div class="card">
+          <div class="chart-container" id="canvasPoleZero" style="height:350px;">
+            <canvas id="poleZeroCanvas"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-size:0.85rem; color:var(--muted); margin-bottom:0.5rem;">选择滤波器类型</div>
+          <div class="btn-group" id="filterType">
+            <button data-type="lowpass" class="active">低通</button>
+            <button data-type="highpass">高通</button>
+            <button data-type="bandpass">带通</button>
+          </div>
+          <div class="result-panel" id="pole-result">
+            <div class="res-label">极零点分析</div>
+            <div class="res-value">低通滤波器 | 极点：共轭对 | 截止频率可调</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 案例2：阶跃响应与系统稳定性 -->
+    <section>
+      <h2>阶跃响应与系统稳定性</h2>
+      <div class="case-text">
+        <p>通过拉普拉斯变换可以分析系统的阶跃响应。极点在左半平面→系统稳定，在右半平面→系统发散。通信系统必须稳定，所以所有极点都必须在 s 平面左半部分。</p>
+        <p class="math">y(t) = L<sup>-1</sup>{ Y(s) } = L<sup>-1</sup>{ H(s) &middot; 1/s }</p>
+      </div>
+      <div class="card">
+        <div class="chart-container" id="chartStep"></div>
+        <div class="controls" style="margin-top:1rem;">
+          <div class="control-group">
+            <label>极点实部 <span class="value" id="pole-real-val">-1.0</span></label>
+            <input type="range" id="pole-real" min="-5" max="5" value="-1" step="0.5">
+          </div>
+          <div class="control-group">
+            <label>极点虚部 <span class="value" id="pole-imag-val">2.0</span></label>
+            <input type="range" id="pole-imag" min="-5" max="5" value="2" step="0.5">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 案例3：RLC 电路与带宽 -->
+    <section>
+      <h2>RLC 电路与带宽</h2>
+      <div class="case-text">
+        <p>RLC 电路是通信系统最基本的电路模型。拉普拉斯变换可以直接求出电路的频率响应，确定带宽和谐振频率。收音机调台就是调整 RLC 电路的谐振频率来选择电台。</p>
+        <p class="math">H(s) = (sL) / (R + sL + 1/(sC)) &nbsp; &rightarrow; &nbsp; |H(j&omega;)|</p>
+      </div>
+      <div class="card">
+        <div class="chart-container" id="chartRLC"></div>
+        <div class="controls" style="margin-top:1rem;">
+          <div class="control-group">
+            <label>电阻 R (&Omega;) <span class="value" id="rlc-r-val">10</span></label>
+            <input type="range" id="rlc-r" min="1" max="100" value="10">
+          </div>
+          <div class="control-group">
+            <label>电感 L (mH) <span class="value" id="rlc-l-val">10</span></label>
+            <input type="range" id="rlc-l" min="1" max="100" value="10">
+          </div>
+          <div class="control-group">
+            <label>电容 C (&mu;F) <span class="value" id="rlc-c-val">10</span></label>
+            <input type="range" id="rlc-c" min="1" max="100" value="10">
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ==================== Z变换 ==================== -->
+  <div data-panel="z">
+
+    <!-- 案例1：离散信号与单位圆 -->
+    <section>
+      <h2>离散信号与单位圆</h2>
+      <div class="case-text">
+        <p>Z变换是离散时间信号的傅里叶变换推广。H(z) = &Sigma;h[n]z<sup>-n</sup>。在 z 平面上，单位圆上的值就是系统的频率响应。数字滤波器设计完全依赖 Z 变换。</p>
+        <p class="math">H(z) = &Sigma;<sub>n=0</sub><sup>&infin;</sup> h[n] &middot; z<sup>-n</sup></p>
+      </div>
+      <div class="card-grid">
+        <div class="card">
+          <div class="chart-container" id="canvasUnitCircle" style="height:350px;">
+            <canvas id="unitCircleCanvas"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-size:0.85rem; color:var(--muted); margin-bottom:0.5rem;">选择滤波器类型</div>
+          <div class="btn-group" id="z-filter-type">
+            <button data-type="lowpass" class="active">低通</button>
+            <button data-type="highpass">高通</button>
+            <button data-type="bandpass">带通</button>
+          </div>
+          <div class="result-panel" id="z-filter-result">
+            <div class="res-label">Z平面分析</div>
+            <div class="res-value">低通滤波器 | 极点靠近单位圆 | 频率响应可观测</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 案例2：数字滤波器设计 -->
+    <section>
+      <h2>数字滤波器设计</h2>
+      <div class="case-text">
+        <p>手机里的音频均衡器、噪声消除、回声消除都是数字滤波器。Z 变换把差分方程变成代数方程，通过配置极点和零点来设计滤波器。</p>
+        <p class="math">H(z) = (1 - z<sub>0</sub>z<sup>-1</sup>) / (1 - p<sub>0</sub>z<sup>-1</sup>)</p>
+      </div>
+      <div class="card">
+        <div class="chart-container" id="chartDigitalFilter"></div>
+        <div class="controls" style="margin-top:1rem;">
+          <div class="control-group">
+            <label>极点半径 <span class="value" id="df-pole-val">0.80</span></label>
+            <input type="range" id="df-pole" min="0.1" max="0.99" value="0.8" step="0.05">
+          </div>
+          <div class="control-group">
+            <label>零点半径 <span class="value" id="df-zero-val">0.50</span></label>
+            <input type="range" id="df-zero" min="0.1" max="0.99" value="0.5" step="0.05">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 案例3：语音信号的数字处理 -->
+    <section>
+      <h2>语音信号的数字处理</h2>
+      <div class="case-text">
+        <p>手机通话时，声音先被 ADC 采样变成数字信号，然后用 Z 变换设计的数字滤波器进行处理（降噪、均衡），最后 DAC 还原为模拟信号。整个过程就是 Z 变换在起作用。</p>
+        <p class="math">x[n] = x(t)|<sub>t=nT<sub>s</sub></sub>, &nbsp; T<sub>s</sub> = 1/f<sub>s</sub></p>
+      </div>
+      <div class="card">
+        <div class="chart-container" id="chartVoice" style="height:280px;"></div>
+        <div class="controls" style="margin-top:1rem;">
+          <div class="control-group">
+            <label>采样率倍数 <span class="value" id="voice-sr-val">8</span></label>
+            <input type="range" id="voice-sr" min="2" max="20" value="8">
+          </div>
+          <div class="control-group">
+            <label>滤波强度 <span class="value" id="voice-filter-val">0.5</span></label>
+            <input type="range" id="voice-filter" min="0" max="1" value="0.5" step="0.1">
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ==================== 总结表 ==================== -->
+  <section>
+    <h2>三大变换对比总结</h2>
+    <div class="card" style="overflow-x:auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>变换名称</th>
+            <th>数学定义</th>
+            <th>适用信号</th>
+            <th>典型应用</th>
+            <th>代表人物</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>傅里叶变换</td>
+            <td>F(&omega;)=&int;f(t)e<sup>-j&omega;t</sup>dt</td>
+            <td>连续/周期信号</td>
+            <td>频谱分析、OFDM、滤波</td>
+            <td>J. Fourier</td>
+          </tr>
+          <tr>
+            <td>拉普拉斯变换</td>
+            <td>F(s)=&int;f(t)e<sup>-st</sup>dt</td>
+            <td>因果连续信号</td>
+            <td>系统分析、稳定性、电路</td>
+            <td>P.-S. Laplace</td>
+          </tr>
+          <tr>
+            <td>Z变换</td>
+            <td>H(z)=&Sigma;h[n]z<sup>-n</sup></td>
+            <td>离散时间信号</td>
+            <td>数字滤波器、DSP、采样</td>
+            <td>E. I. Jury</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ==================== 公式卡片 ==================== -->
+  <section>
+    <h2>核心公式</h2>
+    <div class="formula-grid">
+      <div class="formula-card">
+        <div class="fname">傅里叶变换对</div>
+        <div class="fmath" data-tip="傅里叶变换将时域信号 f(t) 变换为频域表示 F(&omega;)。逆变换则从频域恢复时域信号，二者互为对偶。这是信号处理领域最基础的数学工具。">F(&omega;) = &int;f(t)e<sup>-j&omega;t</sup>dt<br>f(t) = (1/2&pi;)&int;F(&omega;)e<sup>j&omega;t</sup>d&omega;</div>
+      </div>
+      <div class="formula-card">
+        <div class="fname">拉普拉斯变换定义</div>
+        <div class="fmath" data-tip="拉普拉斯变换是傅里叶变换的推广，引入复频率 s=&sigma;+j&omega;。&sigma; 提供收敛因子，使变换适用于更广泛的信号（如指数增长信号）。&sigma; 的不同取值对应不同的收敛域。">F(s) = &int;<sub>0</sub><sup>&infin;</sup> f(t)e<sup>-st</sup>dt<br>s = &sigma; + j&omega;</div>
+      </div>
+      <div class="formula-card">
+        <div class="fname">Z变换定义</div>
+        <div class="fmath" data-tip="Z变换是离散时间信号的拉普拉斯变换类比。变量 z=r&middot;e<sup>j&omega;</sup>，单位圆 |z|=1 上的值等于离散时间傅里叶变换(DTFT)。是数字信号处理的核心工具。">X(z) = &Sigma;<sub>n=-&infin;</sub><sup>&infin;</sup> x[n]z<sup>-n</sup><br>z = r &middot; e<sup>j&omega;</sup></div>
+      </div>
+      <div class="formula-card">
+        <div class="fname">欧拉公式</div>
+        <div class="fmath" data-tip="欧拉公式建立了复指数与三角函数的联系，是傅里叶分析的数学基础。e<sup>j&theta;</sup> 在复平面上是单位圆上的点，实部为 cos(&theta;)，虚部为 sin(&theta;)。">e<sup>j&theta;</sup> = cos(&theta;) + j&middot;sin(&theta;)<br>cos(&theta;) = (e<sup>j&theta;</sup> + e<sup>-j&theta;</sup>) / 2</div>
+      </div>
+      <div class="formula-card">
+        <div class="fname">传递函数</div>
+        <div class="fmath" data-tip="传递函数 H(s) 是系统输出与输入的拉普拉斯变换之比（零初始条件下）。极点决定系统固有频率和稳定性，零点影响频率响应的形状。在通信系统中广泛用于描述滤波器和信道。">H(s) = Y(s) / X(s)<br>= K &middot; &Pi;(s-z<sub>i</sub>) / &Pi;(s-p<sub>j</sub>)</div>
+      </div>
+      <div class="formula-card">
+        <div class="fname">离散卷积定理</div>
+        <div class="fmath" data-tip="时域卷积等于频域乘积。这条定理是数字滤波的理论基础：滤波器的输出等于输入信号与滤波器冲激响应的卷积，在 Z 域则简化为乘法运算。">y[n] = x[n] * h[n]<br>Y(z) = X(z) &middot; H(z)</div>
+      </div>
+      <div class="formula-card">
+        <div class="fname">Parseval 定理</div>
+        <div class="fmath" data-tip="Parseval 定理建立了信号时域能量与频域能量的等价关系。这意味着信号的能量可以从频谱中直接计算，是频谱分析和功率谱估计的理论基础。">E = &int;|f(t)|<sup>2</sup>dt = (1/2&pi;)&int;|F(&omega;)|<sup>2</sup>d&omega;</div>
+      </div>
+      <div class="formula-card">
+        <div class="fname">采样定理 (Nyquist)</div>
+        <div class="fmath" data-tip="奈奎斯特采样定理指出，要完全恢复模拟信号，采样频率必须大于信号最高频率的两倍。f<sub>s</sub>/2 称为奈奎斯特频率，是 ADC 设计的基本约束。">f<sub>s</sub> &ge; 2 &middot; f<sub>max</sub><br>&Omega; = 2&pi;f / f<sub>s</sub> (数字角频率)</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">三大变换的通信工程应用 · 交互式学习工具</div>
+</footer>
+
+<script src="./_shared/js/echarts.min.js"></script>
+<script src="./assets/transforms-charts.js"></script>
+
+<script>
+(function() {
+  // ===== Tab 切换 =====
+  var tabs = document.querySelectorAll('#transformTabs button');
+  var panels = document.querySelectorAll('[data-panel]');
+  var initialized = {};
+
+  tabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      var target = this.getAttribute('data-tab');
+
+      tabs.forEach(function(t) { t.classList.remove('active'); });
+      this.classList.add('active');
+
+      panels.forEach(function(p) { p.classList.remove('active'); });
+      document.querySelector('[data-panel="' + target + '"]').classList.add('active');
+
+      // 初始化对应图表
+      if (!initialized[target] && typeof window.initTransformCharts === 'function') {
+        window.initTransformCharts(target);
+        initialized[target] = true;
+      }
+    });
+  });
+
+  // 初始化傅里叶（默认可见）
+  if (typeof window.initTransformCharts === 'function') {
+    window.initTransformCharts('fourier');
+    initialized['fourier'] = true;
+  }
+
+  // ===== 按钮组通用逻辑 =====
+  function setupBtnGroup(groupId, callback) {
+    var group = document.getElementById(groupId);
+    if (!group) return;
+    var buttons = group.querySelectorAll('button');
+    buttons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        buttons.forEach(function(b) { b.classList.remove('active'); });
+        this.classList.add('active');
+        if (callback) callback(this.getAttribute('data-type'));
+      });
+    });
+  }
+
+  setupBtnGroup('signalType', function(type) {
+    if (typeof window.updateFFTSignal === 'function') window.updateFFTSignal(type);
+  });
+  setupBtnGroup('filterType', function(type) {
+    if (typeof window.updatePoleZero === 'function') window.updatePoleZero(type);
+  });
+  setupBtnGroup('z-filter-type', function(type) {
+    if (typeof window.updateUnitCircle === 'function') window.updateUnitCircle(type);
+  });
+
+  // ===== 滑块通用绑定 =====
+  function bindSlider(id, displayId, callback, format) {
+    var slider = document.getElementById(id);
+    var display = document.getElementById(displayId);
+    if (!slider) return;
+    slider.addEventListener('input', function() {
+      var val = parseFloat(this.value);
+      if (display) display.textContent = format ? format(val) : val;
+      if (callback) callback(val);
+    });
+  }
+
+  bindSlider('fft-harmonics', 'fft-harmonics-val', function(v) {
+    if (typeof window.updateFFT === 'function') window.updateFFT(v);
+  });
+  bindSlider('ofdm-carriers', 'ofdm-carriers-val', function(v) {
+    if (typeof window.updateOFDM === 'function') window.updateOFDM(v);
+  });
+  bindSlider('filter-cutoff', 'filter-cutoff-val', function(v) {
+    if (typeof window.updateFilter === 'function') window.updateFilter(v);
+  }, function(v) { return v.toFixed(2); });
+  bindSlider('filter-noise', 'filter-noise-val', function(v) {
+    if (typeof window.updateNoise === 'function') window.updateNoise(v);
+  }, function(v) { return v.toFixed(2); });
+  bindSlider('pole-real', 'pole-real-val', function(v) {
+    if (typeof window.updatePoleReal === 'function') window.updatePoleReal(v);
+  }, function(v) { return v.toFixed(1); });
+  bindSlider('pole-imag', 'pole-imag-val', function(v) {
+    if (typeof window.updatePoleImag === 'function') window.updatePoleImag(v);
+  }, function(v) { return v.toFixed(1); });
+  bindSlider('rlc-r', 'rlc-r-val', function(v) {
+    if (typeof window.updateRLC === 'function') window.updateRLC();
+  });
+  bindSlider('rlc-l', 'rlc-l-val', function(v) {
+    if (typeof window.updateRLC === 'function') window.updateRLC();
+  });
+  bindSlider('rlc-c', 'rlc-c-val', function(v) {
+    if (typeof window.updateRLC === 'function') window.updateRLC();
+  });
+  bindSlider('df-pole', 'df-pole-val', function(v) {
+    if (typeof window.updateDigitalFilter === 'function') window.updateDigitalFilter();
+  }, function(v) { return v.toFixed(2); });
+  bindSlider('df-zero', 'df-zero-val', function(v) {
+    if (typeof window.updateDigitalFilter === 'function') window.updateDigitalFilter();
+  }, function(v) { return v.toFixed(2); });
+  bindSlider('voice-sr', 'voice-sr-val', function(v) {
+    if (typeof window.updateVoice === 'function') window.updateVoice();
+  });
+  bindSlider('voice-filter', 'voice-filter-val', function(v) {
+    if (typeof window.updateVoice === 'function') window.updateVoice();
+  }, function(v) { return v.toFixed(1); });
+})();
+</script>
+
+</body>
+</html>
