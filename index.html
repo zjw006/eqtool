@@ -65,6 +65,17 @@
       border-color: var(--accent);
       box-shadow: 0 12px 40px rgba(6, 182, 212, 0.15);
     }
+    .game-card.disabled {
+      opacity: 0.45;
+      pointer-events: none;
+      cursor: not-allowed;
+      filter: grayscale(0.5);
+    }
+    .game-card.disabled:hover {
+      transform: none;
+      border-color: var(--border);
+      box-shadow: none;
+    }
     .game-icon {
       width: 60px;
       height: 60px;
@@ -186,19 +197,19 @@
     </a>
 
     <!-- 三大变换的通信工程应用 -->
-    <a class="game-card" href="./transforms-visualization.html">
+    <a class="game-card" href="./transforms-app/">
       <div class="game-icon" style="background: rgba(139,92,246,0.15);">📡</div>
       <h3>三大变换的通信工程应用</h3>
       <p>傅里叶变换、拉普拉斯变换、Z变换——从信号分解到5G OFDM，从滤波器设计到数字语音处理，动画演示三大变换的真实应用。</p>
       <span class="game-tag" style="background: rgba(139,92,246,0.15); color: #8b5cf6;">学习工具</span>
     </a>
 
-    <!-- 数学卷积 — 人生卷积计算器 -->
-    <a class="game-card" href="./convolution-life.html">
+    <!-- 数学卷积 — 人生卷积计算器（开发中） -->
+    <a class="game-card disabled" href="javascript:void(0)" onclick="return false;">
       <div class="game-icon" style="background: rgba(244,63,94,0.15);">🧬</div>
       <h3>数学卷积 — 人生卷积计算器</h3>
       <p>输入你的人生事件（时间、强度、衰减类型），用离散卷积画出"性格形成曲线"，直观看到每件事如何叠加成"现在的你"。</p>
-      <span class="game-tag" style="background: rgba(244,63,94,0.15); color: #f43f5e;">学习工具</span>
+      <span class="game-tag" style="background: rgba(244,63,94,0.15); color: #f43f5e;">开发中</span>
     </a>
 
   </div>
