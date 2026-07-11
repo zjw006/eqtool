@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>复指数函数可视化</title>
+
+  <style>
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./_shared/fonts/Outfit-Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./_shared/fonts/Outfit-Bold.ttf') format('truetype');
+      font-weight: 700;
+    }
+    @font-face {
+      font-family: 'JetBrainsMono';
+      src: url('./_shared/fonts/JetBrainsMono-Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+  </style>
+
+  <style>
+    :root {
+      --bg: #0b1120;
+      --bg2: #151e32;
+      --bg3: #1e293b;
+      --ink: #f1f5f9;
+      --muted: #94a3b8;
+      --rule: #334155;
+      --accent: #f59e0b;
+      --accent2: #06b6d4;
+      --accent3: #ec4899;
+      --accent4: #8b5cf6;
+      --font: 'Outfit', system-ui, sans-serif;
+      --font-mono: 'JetBrainsMono', monospace;
+      --max: 1200px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.6;
+    }
+
+    .container { max-width: var(--max); margin: 0 auto; padding: 0 1.5rem; }
+
+    header {
+      text-align: center;
+      padding: 3rem 1rem 2rem;
+      background: linear-gradient(180deg, rgba(245,158,11,0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--rule);
+    }
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    header p { color: var(--muted); font-size: 1.1rem; }
+
+    section { margin: 2.5rem 0; }
+    section h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--accent);
+      display: inline-block;
+    }
+
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--rule);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    /* Controls */
+    .controls { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+    .control-group {
+      display: flex; flex-direction: column; gap: 0.35rem;
+      min-width: 200px; flex: 1;
+    }
+    .control-group label {
+      font-size: 0.85rem; color: var(--muted); font-weight: 600;
+      display: flex; justify-content: space-between;
+    }
+    .control-group label span.value { color: var(--accent); font-family: var(--font-mono); }
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 6px;
+      background: var(--bg3); border-radius: 3px; outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 18px; height: 18px; background: var(--accent); border-radius: 50%;
+      cursor: pointer; border: 2px solid var(--bg);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px; height: 18px; background: var(--accent); border-radius: 50%;
+      cursor: pointer; border: 2px solid var(--bg);
+    }
+
+    .formula-display {
+      font-family: var(--font-mono); font-size: 1.1rem; color: var(--accent);
+      background: var(--bg3); padding: 0.75rem 1rem; border-radius: 8px;
+      text-align: center; margin-bottom: 1rem; letter-spacing: 0.5px;
+    }
+
+    /* Buttons */
+    .btn-group { display: flex; gap: 0.5rem; margin-top: 0.8rem; flex-wrap: wrap; }
+    .btn-group button {
+      flex: 1; background: var(--bg3); border: 1px solid var(--rule);
+      color: var(--ink); padding: 0.5rem 0.8rem; border-radius: 8px;
+      cursor: pointer; font-size: 0.85rem; font-weight: 600;
+      transition: all 0.2s; display: flex; align-items: center;
+      justify-content: center; gap: 0.3rem;
+    }
+    .btn-group button:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-group button.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+    /* Canvas */
+    .canvas-wrapper {
+      display: flex; flex-wrap: wrap; gap: 2rem;
+      align-items: flex-start; justify-content: center;
+    }
+    #complexCanvas {
+      background: var(--bg3); border-radius: 12px;
+      border: 1px solid var(--rule); cursor: default; max-width: 100%;
+    }
+    .canvas-info {
+      display: flex; flex-direction: column; gap: 0.8rem;
+      min-width: 220px; flex: 1; max-width: 300px;
+    }
+    .info-row {
+      display: flex; justify-content: space-between;
+      padding: 0.5rem 1rem; background: var(--bg3);
+      border-radius: 8px; font-family: var(--font-mono); font-size: 0.9rem;
+    }
+    .info-row .label { color: var(--muted); }
+    .info-row .value { color: var(--accent); font-weight: 700; }
+
+    /* Prop panel */
+    .prop-panel {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem; margin-top: 1rem;
+    }
+    .prop-item {
+      background: var(--bg3); border: 1px solid var(--rule);
+      border-radius: 8px; padding: 0.6rem 0.8rem; text-align: center;
+    }
+    .prop-item .pname { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.2rem; }
+    .prop-item .pvalue { font-family: var(--font-mono); font-size: 0.95rem; color: var(--accent2); font-weight: 700; }
+
+    /* Formula cards */
+    .formula-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .formula-card {
+      background: var(--bg3); border: 1px solid var(--rule);
+      border-radius: 10px; padding: 1.25rem; text-align: center;
+      transition: transform 0.2s, border-color 0.2s;
+      position: relative; cursor: default;
+    }
+    .formula-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+    .formula-card .fname { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.5rem; }
+    .formula-card .fmath { font-family: var(--font-mono); font-size: 1.05rem; color: var(--accent2); }
+    .formula-card .fmath::after {
+      content: attr(data-tip); display: block; max-height: 0; overflow: hidden; opacity: 0;
+      transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease, font-size 0.3s ease;
+      font-size: 0; font-weight: 400; color: var(--muted); margin-top: 0; line-height: 1.5;
+    }
+    .formula-card:hover .fmath::after {
+      max-height: 200px; opacity: 1; margin-top: 0.6rem; font-size: 0.82rem;
+    }
+
+    /* Scenario cards */
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+    .scenario-card {
+      background: var(--bg3); border: 1px solid var(--rule);
+      border-radius: 12px; padding: 1.5rem;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .scenario-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+    .scenario-card .sicon {
+      width: 48px; height: 48px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 1rem;
+      background: rgba(245,158,11,0.15); color: var(--accent);
+    }
+    .scenario-card:nth-child(2) .sicon { background: rgba(6,182,212,0.15); color: var(--accent2); }
+    .scenario-card:nth-child(3) .sicon { background: rgba(236,72,153,0.15); color: var(--accent3); }
+    .scenario-card:nth-child(4) .sicon { background: rgba(139,92,246,0.15); color: var(--accent4); }
+    .scenario-card .stitle {
+      font-size: 1.1rem; font-weight: 700; color: var(--ink); margin-bottom: 0.5rem;
+    }
+    .scenario-card .sdesc { font-size: 0.9rem; color: var(--muted); line-height: 1.5; }
+
+    /* Data table */
+    .data-table {
+      width: 100%; border-collapse: collapse;
+      background: var(--bg3); border-radius: 12px; overflow: hidden;
+      border: 1px solid var(--rule);
+    }
+    .data-table th, .data-table td {
+      padding: 0.9rem 1.2rem; text-align: left;
+      border-bottom: 1px solid var(--rule);
+    }
+    .data-table th {
+      background: var(--bg2); color: var(--accent);
+      font-weight: 700; font-size: 0.85rem; text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .data-table td {
+      font-size: 0.9rem; color: var(--ink);
+    }
+    .data-table td:first-child { font-weight: 600; }
+    .data-table td:nth-child(2) {
+      font-family: var(--font-mono); color: var(--accent2);
+    }
+    .data-table td:nth-child(3) { color: var(--muted); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(245,158,11,0.04); }
+
+    @media (max-width: 768px) {
+      header h1 { font-size: 1.8rem; }
+      .controls { flex-direction: column; align-items: stretch; }
+      .control-group { min-width: unset; }
+      .canvas-info { max-width: 100%; }
+      .data-table th, .data-table td { padding: 0.7rem 0.5rem; font-size: 0.8rem; }
+    }
+
+    footer {
+      text-align: center; padding: 2rem 1rem; color: var(--muted);
+      font-size: 0.85rem; border-top: 1px solid var(--rule); margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>复指数函数可视化</h1>
+    <p>探索欧拉公式 e<sup>i&theta;</sup> = cos&theta; + i&middot;sin&theta;，理解复指数在旋转、振荡和信号处理中的核心作用</p>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- 参数控制 -->
+  <section>
+    <h2>参数调节</h2>
+    <div class="card">
+      <div class="formula-display" id="formulaText">e<sup>((&sigma; + i&omega;)t + i&phi;)</sup> = e<sup>&sigma;t</sup> &middot; [cos(&omega;t+&phi;) + i&middot;sin(&omega;t+&phi;)]</div>
+      <div class="controls">
+        <div class="control-group">
+          <label>阻尼系数 &sigma; <span class="value" id="valSigma">0.00</span></label>
+          <input type="range" id="rangeSigma" min="-1" max="1" step="0.05" value="0">
+        </div>
+        <div class="control-group">
+          <label>角频率 &omega; <span class="value" id="valOmega">1.0</span></label>
+          <input type="range" id="rangeOmega" min="0" max="5" step="0.1" value="1">
+        </div>
+        <div class="control-group">
+          <label>初始相位 &phi; <span class="value" id="valPhi">0.00</span></label>
+          <input type="range" id="rangePhi" min="0" max="6.28" step="0.1" value="0">
+        </div>
+        <div class="control-group">
+          <label>时间 t <span class="value" id="valTime">2.00</span></label>
+          <input type="range" id="rangeTime" min="0" max="10" step="0.05" value="2">
+        </div>
+      </div>
+      <div class="btn-group" style="margin-top:1rem;">
+        <button id="btnPlay">&#9658; 播放动画</button>
+        <button id="btnReset">&#8634; 重置</button>
+      </div>
+      <div class="btn-group">
+        <button id="btnModePlane" class="active">复平面旋转</button>
+        <button id="btnModeSpiral">螺旋轨迹</button>
+        <button id="btnModeWave">实部虚部波形</button>
+      </div>
+      <div class="prop-panel">
+        <div class="prop-item">
+          <div class="pname">实部 Re</div>
+          <div class="pvalue" id="propRe">0.42</div>
+        </div>
+        <div class="prop-item">
+          <div class="pname">虚部 Im</div>
+          <div class="pvalue" id="propIm">0.91</div>
+        </div>
+        <div class="prop-item">
+          <div class="pname">模 |z|</div>
+          <div class="pvalue" id="propMod">1.00</div>
+        </div>
+        <div class="prop-item">
+          <div class="pname">幅角 Arg(z)</div>
+          <div class="pvalue" id="propArg">1.14</div>
+        </div>
+        <div class="prop-item">
+          <div class="pname">阻尼 &sigma;</div>
+          <div class="pvalue" id="propSigma">0.00</div>
+        </div>
+        <div class="prop-item">
+          <div class="pname">角频率 &omega;</div>
+          <div class="pvalue" id="propOmega">1.00</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Canvas 动画 -->
+  <section>
+    <h2>Canvas 动画</h2>
+    <div class="card">
+      <div class="canvas-wrapper">
+        <canvas id="complexCanvas" width="800" height="500"></canvas>
+        <div class="canvas-info">
+          <div class="info-row"><span class="label">当前时间 t</span><span class="value" id="infoTime">2.00</span></div>
+          <div class="info-row"><span class="label">Re = e<sup>&sigma;t</sup>cos(&omega;t+&phi;)</span><span class="value" id="infoRe">0.42</span></div>
+          <div class="info-row"><span class="label">Im = e<sup>&sigma;t</sup>sin(&omega;t+&phi;)</span><span class="value" id="infoIm">0.91</span></div>
+          <div class="info-row"><span class="label">模 |z|</span><span class="value" id="infoMod">1.00</span></div>
+          <div class="info-row"><span class="label">幅角 Arg(z)</span><span class="value" id="infoArg">1.14 rad</span></div>
+          <div class="info-row"><span class="label">角速度 &omega;</span><span class="value" id="infoOmega">1.00 rad/s</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 原理讲解 -->
+  <section>
+    <h2>原理讲解</h2>
+    <div class="formula-grid">
+      <div class="formula-card">
+        <div class="fname">欧拉公式</div>
+        <div class="fmath" data-tip="欧拉公式被誉为数学中最美丽的公式之一，它将指数函数、三角函数和虚数单位联系在一起。当 &theta; = &pi; 时，得到 e<sup>i&pi;</sup> + 1 = 0，联系了五个最重要的数学常数。">e<sup>i&theta;</sup> = cos&theta; + i&middot;sin&theta;</div>
+      </div>
+      <div class="formula-card">
+        <div class="fname">一般形式</div>
+        <div class="fmath" data-tip="复指数的一般形式，其中 &sigma; 控制幅度的增长或衰减，&omega; 控制旋转角速度。这是分析线性时不变系统、信号处理和振动的核心工具。">e<sup>((&sigma;+i&omega;)t)</sup> = e<sup>&sigma;t</sup>(cos&omega;t + i&middot;sin&omega;t)</div>
+      </div>
+      <div class="formula-card">
+        <div class="fname">几何意义</div>
+        <div class="fmath" data-tip="复指数 e<sup>i&theta;</sup> 对应复平面上单位圆上的一个点，与实轴夹角为 &theta;。随着时间 t 增加，该点以角速度 &omega; 绕原点逆时针旋转。">复指数 = 复平面上的旋转矢量</div>
+      </div>
+      <div class="formula-card">
+        <div class="fname">模与幅角</div>
+        <div class="fmath" data-tip="复指数的模恒为 1（当 &sigma;=0 时），幅角等于 &theta;。这一性质使复指数成为傅里叶变换和频域分析的理想基函数。">|e<sup>i&theta;</sup>| = 1, arg(e<sup>i&theta;</sup>) = &theta;</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 应用场景 -->
+  <section>
+    <h2>应用场景</h2>
+    <div class="scenario-grid">
+      <div class="scenario-card">
+        <div class="sicon">&#128246;</div>
+        <div class="stitle">信号处理</div>
+        <div class="sdesc">复指数是傅里叶变换的基函数，任何信号都可分解为复指数的叠加。通过频域分析，可以提取信号的频率成分，实现滤波、压缩和调制解调。</div>
+      </div>
+      <div class="scenario-card">
+        <div class="sicon">&#9889;</div>
+        <div class="stitle">交流电路分析</div>
+        <div class="sdesc">用复指数表示正弦电压和电流，可将微分方程转化为代数方程，大幅简化阻抗计算。电容和电感的阻抗分别表示为 1/(i&omega;C) 和 i&omega;L。</div>
+      </div>
+      <div class="scenario-card">
+        <div class="sicon">&#127786;</div>
+        <div class="stitle">振动与波动</div>
+        <div class="sdesc">机械振动、电磁波、声波都可以用复指数描述。波动方程的解本质上是复指数的线性组合，群速度和相速度的概念都源于复指数表示。</div>
+      </div>
+      <div class="scenario-card">
+        <div class="sicon">&#9881;</div>
+        <div class="stitle">控制系统</div>
+        <div class="sdesc">系统特征方程的根为复指数形式，决定系统稳定性。根在左半平面表示衰减稳定，在右半平面表示增长不稳定，在虚轴上表示等幅振荡。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 数学性质 -->
+  <section>
+    <h2>数学性质</h2>
+    <div class="card" style="padding:0; overflow:hidden;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>数学性质</th>
+            <th>表达式</th>
+            <th>几何意义</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>周期性</td>
+            <td>e<sup>i(&theta;+2&pi;)</sup> = e<sup>i&theta;</sup></td>
+            <td>旋转一周回到原点</td>
+          </tr>
+          <tr>
+            <td>乘法</td>
+            <td>e<sup>i&theta;1</sup> &middot; e<sup>i&theta;2</sup> = e<sup>i(&theta;1+&theta;2)</sup></td>
+            <td>角度相加 = 旋转叠加</td>
+          </tr>
+          <tr>
+            <td>导数</td>
+            <td>d/dt e<sup>i&omega;t</sup> = i&omega; &middot; e<sup>i&omega;t</sup></td>
+            <td>求导 = 旋转90度并缩放</td>
+          </tr>
+          <tr>
+            <td>共轭</td>
+            <td>(e<sup>i&theta;</sup>)* = e<sup>-i&theta;</sup></td>
+            <td>关于实轴对称</td>
+          </tr>
+          <tr>
+            <td>欧拉逆</td>
+            <td>cos&theta; = (e<sup>i&theta;</sup> + e<sup>-i&theta;</sup>)/2</td>
+            <td>余弦 = 两个反向旋转的平均</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    复指数函数可视化 &middot; 交互式学习工具
+  </div>
+</footer>
+
+<script src="./assets/complex-exponential-charts.js"></script>
+
+</body>
+</html>
