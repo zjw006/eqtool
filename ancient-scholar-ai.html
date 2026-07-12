@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>古代状元如何看待AI</title>
+
+  <style>
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./_shared/fonts/Outfit-Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./_shared/fonts/Outfit-Bold.ttf') format('truetype');
+      font-weight: 700;
+    }
+    @font-face {
+      font-family: 'JetBrainsMono';
+      src: url('./_shared/fonts/JetBrainsMono-Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+  </style>
+
+  <style>
+    :root {
+      --bg: #0b1120;
+      --bg2: #131b2e;
+      --bg3: #1a2540;
+      --ink: #f1f5f9;
+      --muted: #94a3b8;
+      --rule: rgba(148,163,184,0.12);
+      --accent: #d4a574;
+      --accent2: #8b5cf6;
+      --font: 'Outfit', system-ui, sans-serif;
+      --font-mono: 'JetBrainsMono', monospace;
+      --max: 860px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.9;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--rule);
+    }
+    .back-link {
+      display: inline-block;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--accent); }
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.6rem;
+      letter-spacing: 0.02em;
+    }
+    header .subtitle {
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    /* Tab Navigation */
+    .tab-nav {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--rule);
+      margin-bottom: 2.5rem;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: 0.95rem;
+      padding: 0.8rem 1.2rem;
+      cursor: pointer;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tab-btn:hover { color: var(--ink); }
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* Article Panels */
+    .article-panel {
+      display: none;
+    }
+    .article-panel.active {
+      display: block;
+    }
+
+    /* Sections */
+    .article-section {
+      margin-bottom: 2.5em;
+    }
+    .article-section:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Section titles */
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 1.2em;
+      padding-bottom: 0.5em;
+      border-bottom: 1px solid rgba(212,165,116,0.2);
+    }
+    .sub-section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.8em;
+      margin-top: 1.5em;
+    }
+
+    /* Blockquote - classical Chinese */
+    blockquote {
+      border-left: 3px solid var(--accent);
+      background: rgba(212,165,116,0.06);
+      padding: 1.2em 1.5em;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1.2em;
+      font-size: 17px;
+      line-height: 1.9;
+      color: var(--ink);
+    }
+
+    /* Letter-style blockquote (softer) */
+    blockquote.letter-style {
+      background: rgba(212,165,116,0.04);
+      border-left-color: rgba(212,165,116,0.5);
+    }
+
+    /* Modern translation label */
+    .modern-translation-label {
+      display: inline-block;
+      font-size: 0.78rem;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 0.4em;
+      letter-spacing: 0.05em;
+    }
+    .modern-translation {
+      color: var(--ink);
+      margin-bottom: 1.2em;
+      line-height: 1.9;
+    }
+
+    /* Scholar thinking */
+    .scholar-thinking {
+      border-left: 3px solid var(--accent2);
+      background: rgba(139,92,246,0.08);
+      padding: 1.2em 1.5em;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1.2em;
+      font-size: 0.95rem;
+      line-height: 1.8;
+      color: var(--ink);
+    }
+    .scholar-thinking-label {
+      display: inline-block;
+      font-size: 0.78rem;
+      color: var(--accent2);
+      font-weight: 700;
+      margin-bottom: 0.4em;
+      letter-spacing: 0.05em;
+    }
+
+    /* Highlighted conclusion sentences */
+    .conclusion-highlight {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* Structure diagram */
+    .structure-diagram {
+      border: 1px solid rgba(212,165,116,0.25);
+      border-radius: 12px;
+      padding: 1.5em 2em;
+      background: rgba(212,165,116,0.04);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.8;
+      color: var(--muted);
+      white-space: pre-wrap;
+      margin-bottom: 1.5em;
+    }
+
+    /* Comparison table */
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5em;
+      font-size: 0.95rem;
+    }
+    .comparison-table thead th {
+      background: var(--bg3);
+      color: var(--accent);
+      padding: 0.8em 1em;
+      text-align: left;
+      font-weight: 700;
+      border-bottom: 2px solid rgba(212,165,116,0.2);
+    }
+    .comparison-table tbody td {
+      padding: 0.8em 1em;
+      border-bottom: 1px solid var(--rule);
+      color: var(--ink);
+      vertical-align: top;
+      line-height: 1.7;
+    }
+    .comparison-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    .comparison-table tbody tr:hover {
+      background: rgba(212,165,116,0.04);
+    }
+
+    /* Final conclusion */
+    .final-conclusion {
+      text-align: center;
+      font-size: 1.2rem;
+      color: var(--accent);
+      font-weight: 700;
+      margin-top: 2em;
+      line-height: 1.8;
+      padding: 1.5em;
+      background: rgba(212,165,116,0.06);
+      border-radius: 12px;
+      border: 1px solid rgba(212,165,116,0.15);
+    }
+
+    /* Tea cup title in article 3 */
+    .tea-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.6em;
+      margin-top: 1.5em;
+    }
+
+    /* Ode ending (centered, large, bronze) */
+    .ode-ending {
+      text-align: center;
+      font-size: 1.15rem;
+      color: var(--accent);
+      font-weight: 700;
+      line-height: 2;
+      margin: 2em 0;
+      padding: 1.5em;
+      background: rgba(212,165,116,0.06);
+      border-radius: 12px;
+      border: 1px solid rgba(212,165,116,0.15);
+    }
+
+    .sign-off {
+      text-align: right;
+      color: var(--muted);
+      margin-top: 1.5em;
+    }
+
+    /* Paragraphs in articles */
+    .article-panel p {
+      margin-bottom: 1.5em;
+    }
+    .article-panel blockquote + p {
+      margin-top: 0.5em;
+    }
+
+    /* Spacing between blockquotes */
+    .article-panel blockquote + blockquote {
+      margin-top: 0.3em;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 3rem 1.5rem 2rem;
+      margin-top: 4rem;
+      border-top: 1px solid var(--rule);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      header h1 { font-size: 1.6rem; }
+      .tab-btn { font-size: 0.85rem; padding: 0.7rem 0.8rem; }
+      blockquote { padding: 1em 1.2em; font-size: 16px; }
+      .structure-diagram { font-size: 0.75rem; padding: 1em; }
+      .final-conclusion, .ode-ending { font-size: 1rem; padding: 1em; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <header>
+      <a href="./index.html" class="back-link">&larr; 返回主页</a>
+      <h1>古代状元如何看待AI</h1>
+      <p class="subtitle">当2026年的AI替代潮，遇上王安石、文天祥、苏轼、范仲淹</p>
+    </header>
+
+    <!-- Tab Navigation -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="article1">论机巧代万民之业策</button>
+      <button class="tab-btn" data-tab="article2">正气驭机策</button>
+      <button class="tab-btn" data-tab="article3">与诸生论机巧择业书</button>
+      <button class="tab-btn" data-tab="article4">人机协同赋</button>
+    </nav>
+
+    <!-- ==================== Article 1 ==================== -->
+    <div class="article-panel active" id="article1">
+
+      <!-- 一、破题立论 -->
+      <div class="article-section">
+        <h2 class="section-title">一、破题立论：技术不是敌人，"无制之用"才是</h2>
+
+        <blockquote>
+          臣闻《易》曰："穷则变，变则通，通则久。"又闻《管子》曰："仓廪实而知礼节，衣食足而知荣辱。"<br><br>
+          今机巧之兴，代人之力，其速也如风，其广也如潮。驭者失其车，递者失其骑，码工失其屏，分拣者失其仓，医工失其诊，师儒失其教。此非机巧之过也，乃用机巧者无制、无仁、无教之过也。
+        </blockquote>
+
+        <p class="modern-translation">
+          <span class="modern-translation-label">现代转译</span><br>
+          《周易》说"穷则变，变则通"，技术变革本身不是问题；《管子》说"吃饱穿暖才能讲道德"，如果技术让人吃不饱，那就是制度的问题。现在AI替代司机、外卖员、程序员、分拣员、医生、教师——这不是AI的错，是使用AI的人缺乏制度约束、仁爱之心和教育远见。
+        </p>
+
+        <div class="scholar-thinking">
+          <span class="scholar-thinking-label">状元思维</span><br>
+          先引用经典"占住道德高地"，再定义问题性质——不是反技术，而是反"无制度的技术狂欢"。
+        </div>
+      </div>
+
+      <!-- 二、述弊 -->
+      <div class="article-section">
+        <h2 class="section-title">二、述弊：文天祥式的"五重叠加"排比</h2>
+
+        <blockquote>
+          今之民困矣：<br><br>
+          自无人之车驰于衢而驭者困，自无人之骑奔于巷而递者困，自无人之码生于屏而程序员困，自无人之分拣行于仓而仓储者困，自无人之诊设于堂而医工困，自无人之教播于网而师儒困。<br><br>
+          此六困者，非一端之弊也。其上以机巧为神，以人身为冗；其下以失业为惧，以生计为忧。父不得养其子，子不得奉其亲，壮者流离于道，老者匍匐于途。此诚盛世之隐忧，太平之巨蠹也。
+        </blockquote>
+
+        <p class="modern-translation">
+          <span class="modern-translation-label">现代转译</span><br>
+          用文天祥"民生困矣"的排比句式，列出AI替代的六重困境：无人出租车→司机失业、无人配送→外卖员失业、AI编程→程序员失业、无人分拣→仓储工失业、AI诊断→基层医生失业、AI教师→普通教师失业。
+        </p>
+
+        <div class="scholar-thinking">
+          <span class="scholar-thinking-label">状元思维</span><br>
+          不骂AI，而是用排比层层叠加，让统治者感受到"系统性危机"的压迫感。不是"有人失业了"，而是"父不得养子，子不得奉亲"——把经济问题转化为伦理危机。
+        </div>
+      </div>
+
+      <!-- 三、析因 -->
+      <div class="article-section">
+        <h2 class="section-title">三、析因：三层结构性诊断</h2>
+
+        <!-- 第一层 -->
+        <h3 class="sub-section-title">赵秉忠式的"实政与实心"之辩</h3>
+
+        <blockquote>
+          盖今之治者，以机巧为实政，以效率为实心。不知机巧者，治之具也，非治之本也；效率者，末之利也，非道之源也。<br><br>
+          上以利驱机巧，下以机巧夺民生。上视民如冗费，民视上如仇雠。此所谓"治具虽设而实心不流"也。
+        </blockquote>
+
+        <p class="modern-translation">
+          <span class="modern-translation-label">现代转译</span><br>
+          赵秉忠的核心概念是"实政"（制度）与"实心"（人心）。现在政府和企业把"引进AI"当政绩，把"效率提升"当初心——但AI只是工具，不是治国根本；效率只是末梢利益，不是价值源头。当上层用AI逐利，下层就被AI夺命。上层视百姓为"冗余成本"，百姓就视上层为仇敌。
+        </p>
+
+        <!-- 第二层 -->
+        <h3 class="sub-section-title">王安石式的"结构性冗费"分析</h3>
+
+        <blockquote>
+          昔臣安石论"冗兵、冗官、冗费"，以为非人之冗，乃制之冗。今之论者，以人力为冗，欲以机巧尽代之。殊不知，民非冗也，民之本也；机巧非神也，器之用也。<br><br>
+          以器代本，犹以刃割股。股尽而身亦亡，器存而国谁守？
+        </blockquote>
+
+        <p class="modern-translation">
+          <span class="modern-translation-label">现代转译</span><br>
+          王安石说北宋的危机不是"人太多"，而是"制度设计让人变成冗余"。现在有人说"人力是冗余，要用AI全部替代"——但百姓不是冗余，是国家的根本；AI不是神，只是工具。用工具替代根本，就像用刀割自己的大腿。腿割完了，人也就死了，工具再先进，谁来保卫国家？
+        </p>
+
+        <!-- 第三层 -->
+        <h3 class="sub-section-title">文天祥式的"教育前置腐败"诊断</h3>
+
+        <blockquote>
+          今之教者，教人以码，不教人以仁；教人以技，不教人以道；教人以机巧之操作，不教人以天地之常经。<br><br>
+          以是父兄之所教、师友之所讲，明利而已矣。其能卓然自拔于机巧之锢者，几何人哉？心术既坏于未学之前，则气节可想于既仕之后。
+        </blockquote>
+
+        <p class="modern-translation">
+          <span class="modern-translation-label">现代转译</span><br>
+          文天祥说"心术在入仕前就坏了"。现在教育教人写代码，不教人讲仁爱；教人操作机器，不教人理解天道。家长和老师只教"怎么赚钱"，不教"怎么做人"。这样培养出来的人，被AI替代是迟早的事——因为他们学的本来就是"机器能做的事"。
+        </p>
+      </div>
+
+      <!-- 四、对策 -->
+      <div class="article-section">
+        <h2 class="section-title">四、对策：从"实政"到"仁"的递进方案</h2>
+
+        <!-- 实政 -->
+        <h3 class="sub-section-title">实政——制度设计</h3>
+
+        <blockquote>
+          其一，设机巧之税。凡以机巧代一人之业，岁课其利之十之二，以赡失业之民。此所谓"因天下之力以生天下之财，取天下之财以供天下之费"也。<br><br>
+          其二，立再教之馆。凡失业者，官给廪食，使学新业。不以一次之学定终身，而以终身之学应万变。<br><br>
+          其三，限机巧之域。凡涉人之尊严、涉国之安危、涉老幼之养护者，不得以机巧独任之，必以人机相济。
+        </blockquote>
+
+        <p class="modern-translation">
+          <span class="modern-translation-label">现代转译</span><br>
+          1. AI税：每用AI替代一个岗位，征收其利润的20%用于失业救济。<br>
+          2. 终身教育：失业者由国家供养，学习新技能。<br>
+          3. AI禁区：涉及人的尊严、国家安全、老幼养护的领域，必须人机协作。
+        </p>
+
+        <!-- 实心 -->
+        <h3 class="sub-section-title">实心——人心重塑</h3>
+
+        <blockquote>
+          其四，明贵贱之序。今之世，以码工为贵，以驭者为贱；以屏前之业为清，以衢巷之业为浊。此大谬也。<br><br>
+          夫天下之业，无贵贱之分，有实心之异。驭者之安客，递者之便民，分拣者之通货，皆实心之政也。岂可以机巧之代，而忽其人之实心哉？
+        </blockquote>
+
+        <p class="modern-translation">
+          <span class="modern-translation-label">现代转译</span><br>
+          职业没有贵贱，只有"有没有实心做事"的区别。司机保障出行安全，外卖员便利百姓生活，分拣工疏通物流——这些都是"实心之政"。
+        </p>
+
+        <!-- 教育重构 -->
+        <h3 class="sub-section-title">教育重构——从"教码"到"教道"</h3>
+
+        <blockquote>
+          其五，革贡举之制。今之试者，试以机巧之操作，试以算法之精巧，而不试以经世之略、济民之心。臣请罢机巧之末试，而增策论之实科。<br><br>
+          使学者知：机巧可代人之手，不可代人之心；可代人之算，不可代人之仁。
+        </blockquote>
+
+        <!-- 仁 -->
+        <h3 class="sub-section-title">仁——价值底座</h3>
+
+        <blockquote>
+          其六，以仁驭机。夫机巧者，公器也，不可为私橐；利器也，不可为凶兵。<br><br>
+          凡以机巧夺民生者，虽利百倍，君子不为；凡以机巧济天下者，虽费千金，君子必为。
+        </blockquote>
+      </div>
+
+      <!-- 五、收束 -->
+      <div class="article-section">
+        <h2 class="section-title">五、收束</h2>
+
+        <blockquote>
+          臣不识忌讳，干冒宸严，不胜战栗陨越之至。伏惟圣朝，以仁为本，以民为基，以教为翼，以制为绳。则机巧之利，可为我用；机巧之患，可不为我害。<br><br>
+          天下幸甚，万民幸甚！
+        </blockquote>
+      </div>
+
+      <!-- 六、全文论证结构图 -->
+      <div class="article-section">
+        <h2 class="section-title">六、全文论证结构图</h2>
+
+        <div class="structure-diagram">破题：引用《易》《管子》→ 技术不是问题，"无制之用"才是问题
+述弊：文天祥式"六困"排比 → 无人车/骑/码/分拣/诊/教 → 六业皆困
+析因：三层递进
+  ① 赵秉忠：实政≠实心（制度有，人心无）
+  ② 王安石：民非冗，制之冗（结构性问题）
+  ③ 文天祥：教之以术，不教之以道（教育根源）
+对策：六条，从具体到哲学
+  ① 实政：AI税、再教育、禁区
+  ② 实心：职业无贵贱，劳动有尊严
+  ③ 教育：罢末试、增策论
+  ④ 仁：以仁驭机，公器不为私橐
+收束：回归经典，表达忠诚</div>
+      </div>
+
+      <!-- 七、核心洞察对比表 -->
+      <div class="article-section">
+        <h2 class="section-title">七、核心洞察对比表</h2>
+
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>现代人的反应</th>
+              <th>古代状元的反应</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>"AI会毁灭人类！"</td>
+              <td>"器之用也，非本也"——AI只是工具</td>
+            </tr>
+            <tr>
+              <td>"必须禁止AI！"</td>
+              <td>"限其域，课其税，以仁驭之"——不是禁止，而是驯服</td>
+            </tr>
+            <tr>
+              <td>"学编程才能不被淘汰！"</td>
+              <td>"教人以码，不教人以仁，则心术先坏"——只学技术，死得更快</td>
+            </tr>
+            <tr>
+              <td>"被替代的人活该"</td>
+              <td>"民非冗也，民之本也"——百姓是国家的根本，不是成本</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="final-conclusion">
+          状元的终极答案：AI替代人，不是技术问题，而是"我们有没有把百姓当人"的问题。
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==================== Article 2 ==================== -->
+    <div class="article-panel" id="article2">
+
+      <blockquote>
+        臣闻天地有正气，杂然赋流形。下则为河岳，上则为日星；于人曰浩然，沛乎塞苍冥。今机巧之兴，其势如潮，其速如风，代人之力，夺人之业，正气衰而邪气升，人伦乱而天道危。臣不胜忧愤，谨献愚策，伏惟圣鉴。
+      </blockquote>
+
+      <blockquote>
+        呜呼！今之民困矣！<br><br>
+        无人之车，驰于通衢九陌，驭者失其辔，而父老无车可乘；<br>
+        无人之骑，奔于里巷千门，递者失其履，而妇孺无餐可送；<br>
+        无人之码，生于荧屏寸尺，码工失其键，而系统无魂可托；<br>
+        无人之分拣，行于巨仓万廪，仓储者失其筹，而货殖无序可循；<br>
+        无人之诊，设于杏林堂室，医工失其脉，而病者无温可言；<br>
+        无人之教，播于庠序庋阁，师儒失其铎，而学子无惑可问。<br><br>
+        此六困者，非一端之弊也。壮者流离于道，老者匍匐于途，父不得养其子，子不得奉其亲。此诚盛世之隐忧，太平之巨蠹也！
+      </blockquote>
+
+      <blockquote>
+        夫机巧者，器也，非道也；末也，非本也。<br><br>
+        昔者仓颉造字，天雨粟，鬼夜哭，惧其夺造化之秘也。今之机巧，犹胜于文字百倍，而人反拜之为神，弃人如敝屣，何哉？<br><br>
+        盖以利驱之，以欲导之，以末忘本，以器代道。上以利驭机巧，下以机巧夺民生；上视民如冗费，民视上如寇仇。此臣所谓"治具虽设，而实心不流"者也。<br><br>
+        且夫今之教者，教人以算法，不教人以仁义；教人以操作，不教人以廉耻；教人以机巧之精微，不教人以天地之常经。父兄之所教，师友之所讲，明利而已矣。其能卓然自拔于机巧之锢者，几何人哉？心术既坏于未学之前，则气节可想于既仕之后。
+      </blockquote>
+
+      <blockquote>
+        今臣献六策，以正驭机，以仁济民：<br><br>
+        一曰课机巧之税。<br>
+        凡以机巧代一人之业，岁课其利十之二，以赡失业之民。此所谓"因天下之力，以生天下之财；取天下之财，以供天下之费"也。<br><br>
+        二曰立终身之教。<br>
+        凡失业者，官给廪食，使学新业。不以一次之学定终身，而以终身之学应万变。朝为驭者，暮可为医；夕为递者，旦可为师。流水不腐，户枢不蠹，此其谓也。<br><br>
+        三曰限机巧之域。<br>
+        凡涉人之尊严、涉国之安危、涉老幼之养护、涉生死之决断者，不得以机巧独任之，必以人机相济，仁智相资。机巧司其算，人司其断；机巧司其力，人司其仁。<br><br>
+        四曰明贵贱之序。<br>
+        天下之业，无贵贱之分，有实心之异。驭者之安客，递者之便民，分拣者之通货，码工之维序，皆实心之政也，岂可以机巧之代而忽其人之实心哉？<br><br>
+        五曰革贡举之制。<br>
+        今之试者，试以算法之精巧，不试以经世之略；试以操作之熟练，不试以济民之心。臣请罢机巧之末试，而增策论之实科。使学者知：机巧可代人之手，不可代人之心；可代人之算，不可代人之仁。<br><br>
+        六曰以仁驭机。<br>
+        夫机巧者，公器也，不可为私橐；利器也，不可为凶兵。凡以机巧夺民生者，虽利百倍，君子不为；凡以机巧济天下者，虽费千金，君子必为。以仁驭机，则机为良马；以欲驭机，则机为脱缰。
+      </blockquote>
+
+      <blockquote>
+        臣不识忌讳，干冒宸严，不胜战栗陨越之至。<br><br>
+        伏愿陛下存正气于庙堂，播仁心于寰宇，使机巧为我所用，不为机巧所驱；使万民有其业，不失其本；使千秋有其道，不坠其绪。<br><br>
+        天地正气，沛乎苍冥；人伦不坠，国祚永昌！<br><br>
+        臣谨对。
+      </blockquote>
+
+    </div>
+
+    <!-- ==================== Article 3 ==================== -->
+    <div class="article-panel" id="article3">
+
+      <blockquote class="letter-style">
+        诸生坐，吾且烹茶，与汝等慢慢道来。<br><br>
+        今岁盛夏，诸生聚而问曰："先生，机巧将至，百业将替，吾将何往？吾学数年之技，旦夕可废，岂不悲哉？"<br><br>
+        吾听罢，不觉莞尔，取新火，试新茶，笑而答曰：
+      </blockquote>
+
+      <blockquote class="letter-style">
+        汝等且看那江上之水。<br><br>
+        逝者如斯，昼夜不舍。千年前无此楼船，百年前无此汽笛，十年前无此高铁。然江上还是有人行舟，有人垂钓，有人看月。水变矣，舟亦变矣，而人之需渡、需游、需赏，未尝变也。<br><br>
+        机巧如这江水，汹汹而来，看似要吞没一切。然吾且问汝：江水可替人赏月乎？可替人温酒乎？可替人执手相看泪眼乎？<br>
+        不可也。
+      </blockquote>
+
+      <blockquote class="letter-style">
+        汝等又且看那空中之月。<br><br>
+        盈虚者如彼，而卒莫消长也。机巧代人之算，如月之圆缺，一时之变也；人之所不可代者，如月之恒在，万古之长也。<br><br>
+        何者不可代？<br>
+        父母之抚，不可代也；<br>
+        医者之温，不可代也；<br>
+        师者之诲，不可代也；<br>
+        匠人之手泽，不可代也；<br>
+        文人之灵心，不可代也；<br>
+        友朋之促膝，不可代也。<br><br>
+        此六者，非算也，非码也，乃人情之常，天地之道也。机巧可助之，如借月光读书，然月终是月，人终是人。
+      </blockquote>
+
+      <blockquote class="letter-style">
+        诸生莫慌，吾授汝五盏茶，可解此忧：
+      </blockquote>
+
+      <!-- 第一盏 -->
+      <p class="tea-title">第一盏，曰"莫逆"</p>
+      <blockquote class="letter-style">
+        机巧如潮，逆之者溺，顺之者渡。汝等所学之技，若与机巧争算力，犹以卵击石，徒增笑耳。<br><br>
+        莫若学那江上渔父，潮来则收网，潮退则撒钩。<br>
+        且将旧技换新茶，诗酒趁年华。昔日学码者，今日可学人机之辩；昔日学驭者，今日可学舟楫之智。技如衣也，旧则换之，身不寒即可。<br><br>
+        竹杖芒鞋轻胜马，谁怕？一蓑烟雨任平生。
+      </blockquote>
+
+      <!-- 第二盏 -->
+      <p class="tea-title">第二盏，曰"择味"</p>
+      <blockquote class="letter-style">
+        世间之业，有算味之业，有人味之业。算味之业，机巧嗜之；人味之业，机巧难近。<br><br>
+        何为算味？重复之算，精确之码，海量之筛，此机巧之佳肴也。<br>
+        何为人味？一言之暖，一抚之温，一创之新，一疑之思，一美之赏，一善之择。此人之独擅，机巧之鸡肋也。<br><br>
+        诸生择业，当避算味之腥，就人味之甘。<br><br>
+        此心安处是吾乡。汝心安于何处，何处即汝之业。
+      </blockquote>
+
+      <!-- 第三盏 -->
+      <p class="tea-title">第三盏，曰"通变"</p>
+      <blockquote class="letter-style">
+        人生如逆旅，我亦是行人。汝等今日之所学，不过逆旅之一站，非终点也。<br><br>
+        昔吾在朝，可为学士；贬黄州，可为农夫；居惠州，可为医；老儋州，可为师。一技之废，何足道哉？逆旅之中，换马而行，常事也。<br><br>
+        诸生当以终身为尺，不以三年为限。今日之失，他日之得；此路之塞，彼路之通。塞翁失马，焉知非福？
+      </blockquote>
+
+      <!-- 第四盏 -->
+      <p class="tea-title">第四盏，曰"实心"</p>
+      <blockquote class="letter-style">
+        粗缯大布裹生涯，腹有诗书气自华。诸生莫以文凭为铠甲，莫以薪资为秤砣。<br><br>
+        世间之业，无大小之分，有实心之异。实心者，虽微末之业，亦可做得风生水起；空心者，虽高位之职，终是战战兢兢。<br><br>
+        汝实心做事，人皆感之；汝空心逐利，机巧替之。<br><br>
+        此中取舍，诸生自度。
+      </blockquote>
+
+      <!-- 第五盏 -->
+      <p class="tea-title">第五盏，曰"旷达"</p>
+      <blockquote class="letter-style">
+        吾一生颠沛，几死几生，然每至绝境，反得佳句。何也？盖因吾知：世事如棋，乾坤莫测，而吾心可自定也。<br><br>
+        机巧之来，于某些人乃灭顶之浪，于某些人乃借风之帆。汝若以之为敌，则敌强汝弱；汝若以之为友，则友助汝行。<br><br>
+        回首向来萧瑟处，归去，也无风雨也无晴。
+      </blockquote>
+
+      <!-- 诗歌段 -->
+      <blockquote class="letter-style">
+        诸生，茶尽矣，吾且歌一曲，为汝等送行：<br><br>
+        机巧如江人如舟，<br>
+        不逆不逐自悠悠。<br>
+        算中无月人心有，<br>
+        且向人味深处游。<br>
+        技旧换新寻常事，<br>
+        一蓑烟雨任风流。<br>
+        此心安处是吾业，<br>
+        也无风雨也无愁。
+      </blockquote>
+
+      <!-- 结尾 -->
+      <blockquote class="letter-style">
+        汝等去罢，莫忧，莫惧，莫急。<br><br>
+        天地之大，岂无容身之所？人心之暖，岂无机巧可替？<br>
+        但守汝之正气，养汝之实心，顺流而渡，借月而行。他年回首，今日之萧瑟，不过一蓑烟雨耳。<br><br>
+        轼再拜。
+      </blockquote>
+
+    </div>
+
+    <!-- ==================== Article 4 ==================== -->
+    <div class="article-panel" id="article4">
+
+      <blockquote>
+        浩浩乎！机巧之兴，如星汉之垂象，如江海之汇流。算力通于九垓，数据贯乎八极。或疑人将代焉，或忧业将废焉。吾独曰：不然。器之为用，在善假于物；人之所贵，在能弘其道。<br><br>
+        今夫大匠构厦，不徒手斫千楹，必假斧斤以成其巨；良医治疾，不徒手尝百草，必假针石以尽其妙。机巧者，亦斧斤针石之类也，扩人之能，而非夺人之魂。
+      </blockquote>
+
+      <blockquote>
+        观夫庠序之教，昔者一师之智，难周百生之异；今机巧之算，可辨毫厘之差。<br><br>
+        或生敏于数，或生拙于文，或生强于记，或生弱于思。昔之夫子，疲于应对，虽欲因材施教，而力有不逮。今机巧为之量体裁衣：敏者益之以深，拙者辅之以基，强者启之以疑，弱者温之以渐。师者于是乎脱簿书之劳，而得从容之心，执经问道，春风化雨，所传者非独术也，乃道也，乃仁也，乃所以为人也。<br><br>
+        <span class="conclusion-highlight">此非师之失位，乃师之复位也。</span>
+      </blockquote>
+
+      <blockquote>
+        观夫杏林之业，昔者医者望闻问切，凭乎一心之悟；今机巧之眸，可洞毫发之微。<br><br>
+        肺之结节，眼之翳障，血之异象，昔之良医，或有所遗；今机巧为之照影析微，纤毫不爽。医者于是乎脱搜索之劳，而得仁术之专，执患者之手，问其苦，温其言，察其情。所治者非独病也，乃苦也，乃惧也，乃所以为生之尊严也。<br><br>
+        <span class="conclusion-highlight">此非医之失职，乃医之归本也。</span>
+      </blockquote>
+
+      <blockquote>
+        观夫格物之学，昔者学者穷经皓首，难穷宇宙之奥；今机巧之算，可演万古之变。<br><br>
+        天之星辰，地之板块，物之分子，事之因果。昔之智者，或有所限；今机巧为之模拟推演，瞬息万里。学者于是乎脱算筹之劳，而得穷理之趣，仰观天文，俯察地理，究天人之际，通古今之变。所求者非独知也，乃理也，乃道也，乃所以为天地立心也。<br><br>
+        <span class="conclusion-highlight">此非学之怠惰，乃学之跃迁也。</span>
+      </blockquote>
+
+      <blockquote>
+        观夫艺文之境，昔者文人挥毫，限于一人之目力；今机巧之绘，可摹万象之形色。<br><br>
+        然机巧能绘其形，不能绘其神；能摹其色，不能摹其魂。昔之画工，疲于形似；今机巧为之摹形打底，文人于是乎脱描摹之劳，而得写意之真，泼墨为山，挥毫为云，寄情于笔墨之外，寓意于丹青之先。所传者非独像也，乃意也，乃情也，乃所以为天地传神也。<br><br>
+        <span class="conclusion-highlight">此非艺之消亡，乃艺之新生也。</span>
+      </blockquote>
+
+      <blockquote>
+        观夫庙堂之治，昔者贤者理政，困于案牍之繁；今机巧之治，可理万机之绪。<br><br>
+        赋税之籍，刑狱之牍，民生之数，昔之良吏，或有所蔽；今机巧为之汇总析微，一目了然。贤者于是乎脱簿书之困，而得牧民之仁，巡于阡陌，问其寒暖，察其疾苦，行其仁政。所治者非独事也，乃民也，乃心也，乃所以为生民立命也。<br><br>
+        <span class="conclusion-highlight">此非政之怠荒，乃政之返璞也。</span>
+      </blockquote>
+
+      <blockquote>
+        呜呼！诸生其识之：<br><br>
+        机巧代人之手，而人修其心；<br>
+        机巧扩人之目，而人立其志；<br>
+        机巧增人之力，而人弘其德；<br>
+        机巧速人之算，而人养其思。<br><br>
+        手劳者，心逸；目迷者，志明；力竭者，德进；算繁者，思深。<br><br>
+        <span class="conclusion-highlight">此非人之退，乃人之进也；非器之胜，乃道之弘也。</span>
+      </blockquote>
+
+      <blockquote>
+        昔者庄子曰："物物而不物于物，则胡可得而累邪？"<br><br>
+        今之机巧，亦物也。人能役物，则物为舟楫，渡人于彼岸；人若役于物，则物为樊笼，囚人于其中。<br><br>
+        诸生其勉之哉！<br>
+        假机巧以穷物理，而不失格物之心；<br>
+        假机巧以济苍生，而不失恻隐之仁；<br>
+        假机巧以传大道，而不失教化之本；<br>
+        假机巧以游艺文，而不失灵台之真。
+      </blockquote>
+
+      <div class="ode-ending">
+        大器既成，人为其枢。<br>
+        算通九垓，德贯八区。<br>
+        机巧为翼，人心为舆。<br>
+        乘风而行，不迷其途。<br>
+        物物而不物，胡可得而拘？<br>
+        先天下之忧，后天下之乐，<br>
+        此其所以为大丈夫！
+      </div>
+
+      <p class="sign-off">仲淹再拜。</p>
+
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">古代状元如何看待AI · 策论、书信与赋</div>
+  </footer>
+
+  <!-- Tab Switching Logic -->
+  <script>
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.article-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab).classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

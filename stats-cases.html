@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>高中统计的实际案例演示</title>
+  <style>
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./_shared/fonts/Outfit-Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./_shared/fonts/Outfit-Bold.ttf') format('truetype');
+      font-weight: 700;
+    }
+    @font-face {
+      font-family: 'JetBrainsMono';
+      src: url('./_shared/fonts/JetBrainsMono-Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+  </style>
+  <style>
+    :root {
+      --bg: #0b1120; --bg2: #151e32; --bg3: #1e293b;
+      --ink: #f1f5f9; --muted: #94a3b8; --rule: #334155;
+      --accent: #10b981; --accent2: #f59e0b; --accent3: #06b6d4;
+      --accent4: #ec4899; --accent5: #8b5cf6;
+      --font: 'Outfit', system-ui, sans-serif;
+      --font-mono: 'JetBrainsMono', monospace;
+      --max: 1200px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body { font-family: var(--font); color: var(--ink); background: var(--bg); line-height: 1.6; }
+    .container { max-width: var(--max); margin: 0 auto; padding: 0 1.5rem; }
+
+    header {
+      text-align: center; padding: 3rem 1rem 2rem;
+      background: linear-gradient(180deg, rgba(16,185,129,0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--rule);
+    }
+    header h1 {
+      font-size: 2.5rem; font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    header p { color: var(--muted); font-size: 1.1rem; }
+
+    .back-link {
+      display: inline-block; margin-bottom: 2rem; color: var(--muted);
+      text-decoration: none; font-size: 0.9rem; transition: color 0.2s;
+      border: 1px solid var(--rule); padding: 0.4rem 1rem; border-radius: 8px;
+    }
+    .back-link:hover { color: var(--accent); border-color: var(--accent); }
+
+    section { margin: 2.5rem 0; }
+    section h2 {
+      font-size: 1.5rem; font-weight: 700; color: var(--ink);
+      margin-bottom: 1.25rem; padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--accent); display: inline-block;
+    }
+
+    .card {
+      background: var(--bg2); border: 1px solid var(--rule);
+      border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .card-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .case-title {
+      font-size: 1.1rem; font-weight: 700; color: var(--accent2);
+      margin-bottom: 0.75rem;
+    }
+    .case-text {
+      color: var(--muted); font-size: 0.95rem; line-height: 1.8; margin-bottom: 1rem;
+    }
+    .case-text p { margin-bottom: 0.5rem; }
+    .case-text p:last-child { margin-bottom: 0; }
+
+    .concept-card {
+      background: var(--bg3); border: 1px solid var(--rule);
+      border-radius: 10px; padding: 1.25rem;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .concept-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+    .concept-card .ctitle {
+      font-size: 1rem; font-weight: 700; color: var(--accent); margin-bottom: 0.5rem;
+    }
+    .concept-card .cdesc {
+      font-size: 0.9rem; color: var(--muted); line-height: 1.6;
+    }
+
+    .stat-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .stat-box {
+      background: var(--bg3); border: 1px solid var(--rule);
+      border-radius: 10px; padding: 1.25rem; text-align: center;
+    }
+    .stat-box .slabel {
+      font-size: 0.75rem; color: var(--muted); margin-bottom: 0.3rem;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .stat-box .svalue {
+      font-family: var(--font-mono); font-size: 1.5rem; color: var(--accent); font-weight: 700;
+    }
+    .stat-box .ssub { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; }
+
+    .core-idea {
+      background: var(--bg3); border-left: 4px solid var(--accent);
+      border-radius: 0 10px 10px 0; padding: 1rem 1.25rem;
+      margin: 1.5rem 0; color: var(--muted); font-size: 0.95rem;
+      line-height: 1.7;
+    }
+    .core-idea strong { color: var(--accent); }
+
+    .chart-container {
+      width: 100%; height: 380px; background: var(--bg3);
+      border-radius: 12px; border: 1px solid var(--rule); overflow: hidden;
+    }
+    .chart-container.large { height: 420px; }
+
+    /* Controls */
+    .controls { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+    .control-group {
+      display: flex; flex-direction: column; gap: 0.35rem;
+      min-width: 200px; flex: 1;
+    }
+    .control-group label {
+      font-size: 0.85rem; color: var(--muted); font-weight: 600;
+      display: flex; justify-content: space-between;
+    }
+    .control-group label span.value { color: var(--accent); font-family: var(--font-mono); }
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 6px; background: var(--bg3);
+      border-radius: 3px; outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 18px; height: 18px; background: var(--accent); border-radius: 50%;
+      cursor: pointer; border: 2px solid var(--bg);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px; height: 18px; background: var(--accent); border-radius: 50%;
+      cursor: pointer; border: 2px solid var(--bg);
+    }
+
+    /* Result panel */
+    .result-panel {
+      background: var(--bg3); border: 1px solid var(--rule);
+      border-radius: 8px; padding: 1rem; margin-top: 1rem;
+      font-family: var(--font-mono); font-size: 0.9rem; color: var(--ink);
+      line-height: 1.7;
+    }
+    .result-panel .res-label { color: var(--muted); font-size: 0.8rem; font-family: var(--font); }
+    .result-panel .res-value { color: var(--accent2); font-weight: 700; }
+
+    /* Contingency table */
+    .contingency-table {
+      width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 1rem 0;
+    }
+    .contingency-table th, .contingency-table td {
+      padding: 0.75rem 1rem; text-align: center; border: 1px solid var(--rule);
+    }
+    .contingency-table th {
+      background: var(--bg3); color: var(--accent); font-weight: 700; font-size: 0.85rem;
+    }
+    .contingency-table td { color: var(--ink); font-family: var(--font-mono); }
+    .contingency-table tr:hover td { background: rgba(16,185,129,0.05); }
+    .contingency-table .row-header { font-weight: 700; color: var(--accent2); font-family: var(--font); }
+    .contingency-table .total-row td { font-weight: 700; color: var(--accent3); background: rgba(6,182,212,0.08); }
+    .contingency-table .total-col { font-weight: 700; color: var(--accent4); background: rgba(236,72,153,0.08); }
+
+    /* Chi-square calc */
+    .chi-calc {
+      background: var(--bg3); border: 1px solid var(--rule);
+      border-radius: 10px; padding: 1.25rem; margin: 1rem 0;
+      font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.8;
+    }
+    .chi-calc .step { color: var(--muted); margin-bottom: 0.3rem; }
+    .chi-calc .formula { color: var(--accent2); font-size: 0.95rem; }
+    .chi-calc .result { color: var(--accent); font-weight: 700; font-size: 1.1rem; margin-top: 0.5rem; }
+
+    .conclusion-box {
+      background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3);
+      border-radius: 10px; padding: 1.25rem; margin: 1rem 0;
+    }
+    .conclusion-box strong { color: var(--accent); }
+    .conclusion-box p { color: var(--muted); font-size: 0.95rem; margin-bottom: 0.5rem; }
+    .conclusion-box p:last-child { margin-bottom: 0; }
+
+    .warning-box {
+      background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3);
+      border-radius: 10px; padding: 1rem 1.25rem; margin: 1rem 0;
+      color: var(--accent2); font-size: 0.9rem;
+    }
+
+    /* Sigma rule */
+    .sigma-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1rem 0;
+    }
+    .sigma-card {
+      background: var(--bg3); border: 1px solid var(--rule);
+      border-radius: 10px; padding: 1rem; text-align: center;
+    }
+    .sigma-card .sigma-label { font-size: 1.2rem; font-weight: 700; font-family: var(--font-mono); margin-bottom: 0.3rem; }
+    .sigma-card .sigma-value { font-size: 0.85rem; color: var(--muted); }
+    .sigma-card:nth-child(1) { border-color: var(--accent); }
+    .sigma-card:nth-child(1) .sigma-label { color: var(--accent); }
+    .sigma-card:nth-child(2) { border-color: var(--accent2); }
+    .sigma-card:nth-child(2) .sigma-label { color: var(--accent2); }
+    .sigma-card:nth-child(3) { border-color: var(--accent4); }
+    .sigma-card:nth-child(3) .sigma-label { color: var(--accent4); }
+
+    /* Quote */
+    .quote-block {
+      background: var(--bg2); border-left: 4px solid var(--accent2);
+      border-radius: 0 12px 12px 0; padding: 1.5rem 2rem;
+      margin: 2rem 0; font-size: 1.15rem; color: var(--ink);
+      line-height: 1.8; font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+      header h1 { font-size: 1.8rem; }
+      .chart-container, .chart-container.large { height: 300px; }
+      .sigma-grid { grid-template-columns: 1fr; }
+      .card-grid { grid-template-columns: 1fr; }
+      .contingency-table { font-size: 0.8rem; }
+      .contingency-table th, .contingency-table td { padding: 0.5rem 0.6rem; }
+    }
+
+    footer {
+      text-align: center; padding: 2rem 1rem; color: var(--muted);
+      font-size: 0.85rem; border-top: 1px solid var(--rule); margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>高中统计的实际案例演示</h1>
+    <p>用数据描述世界、用样本推断整体、用规律预测未来</p>
+  </div>
+</header>
+
+<main class="container">
+
+  <a class="back-link" href="./index.html">&larr; 返回主页</a>
+
+  <!-- Section 1: 抽样方法 -->
+  <section>
+    <h2>一、抽样方法：用"部分"推断"整体"</h2>
+    <div class="card">
+      <div class="case-title">超市质检员抽查商品</div>
+      <div class="case-text">
+        <p>仓库里有 5000 箱牛奶，不可能每箱都打开检查。质检员需要从中抽取一部分来推断整体质量。</p>
+      </div>
+      <div class="card-grid">
+        <div class="concept-card">
+          <div class="ctitle">简单随机抽样</div>
+          <div class="cdesc">给每箱牛奶编号 1~5000，用随机数表或计算机随机抽取 50 箱。每箱被抽中的概率相等，公平无偏。</div>
+        </div>
+        <div class="concept-card">
+          <div class="ctitle">分层抽样</div>
+          <div class="cdesc">按品牌分层：A 品牌 3000 箱、B 品牌 2000 箱。按 3:2 的比例从各层分别抽取，共抽 50 箱（A 品牌抽 30 箱、B 品牌抽 20 箱）。</div>
+        </div>
+        <div class="concept-card">
+          <div class="ctitle">系统抽样</div>
+          <div class="cdesc">按入库顺序编号 1~5000，先随机确定一个起始编号（如第 7 号），然后每隔 100 箱抽 1 箱，共抽 50 箱。</div>
+        </div>
+      </div>
+      <div class="core-idea">
+        <strong>核心思想：</strong>科学的抽样，能让"小部分"的数据可靠地反映"整体"情况。关键在于：随机性（避免人为偏差）和代表性（样本结构尽量与总体一致）。
+      </div>
+      <div class="chart-container" id="chartSampling"></div>
+    </div>
+  </section>
+
+  <!-- Section 2: 用样本估计总体 -->
+  <section>
+    <h2>二、用样本估计总体：数字特征</h2>
+    <div class="card">
+      <div class="case-title">奶茶店分析顾客满意度</div>
+      <div class="case-text">
+        <p>一家奶茶店收集了 200 位顾客的评分（1~5 分），想要了解顾客整体满意度。以下是四个关键数字特征：</p>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="slabel">平均数</div>
+          <div class="svalue">4.2 分</div>
+          <div class="ssub">整体口碑不错</div>
+        </div>
+        <div class="stat-box">
+          <div class="slabel">中位数</div>
+          <div class="svalue">4 分</div>
+          <div class="ssub">至少一半人给了 4 分或以上</div>
+        </div>
+        <div class="stat-box">
+          <div class="slabel">方差 / 标准差</div>
+          <div class="svalue">s&sup2; &asymp; 0.89</div>
+          <div class="ssub">方差大说明评价两极分化</div>
+        </div>
+        <div class="stat-box">
+          <div class="slabel">频率分布直方图</div>
+          <div class="svalue">右图</div>
+          <div class="ssub">看出哪个分数段人最多</div>
+        </div>
+      </div>
+      <div class="core-idea">
+        <strong>核心思想：</strong>平均数反映"中心位置"，方差反映"离散程度"，中位数不受极端值影响。三者结合，才能全面描述一组数据的特征。频率分布直方图则能直观展示数据的分布形态。
+      </div>
+      <div class="chart-container" id="chartDistribution"></div>
+    </div>
+  </section>
+
+  <!-- Section 3: 回归分析 -->
+  <section>
+    <h2>三、回归分析：找规律、做预测</h2>
+    <div class="card">
+      <div class="case-title">房价预测</div>
+      <div class="case-text">
+        <p>收集了 100 套二手房的数据：面积 x（平方米）和售价 y（万元）。用散点图观察趋势，拟合回归直线来预测房价。</p>
+      </div>
+      <div class="controls" style="margin-bottom: 1rem;">
+        <div class="control-group">
+          <label>房屋面积 (m&sup2;) <span class="value" id="valArea">100</span></label>
+          <input type="range" id="rangeArea" min="50" max="150" step="1" value="100">
+        </div>
+      </div>
+      <div class="result-panel" id="regressionResult">
+        <div class="res-label">回归方程</div>
+        <div>&#375; = 1.5x + 30</div>
+        <div style="margin-top: 0.5rem;">
+          预测价格 = <span class="res-value" id="predictPrice">180.0</span> 万元
+        </div>
+      </div>
+      <div class="core-idea">
+        <strong>核心思想：</strong>回归分析用一条直线（或曲线）拟合数据点的趋势，从而对未知数据做出预测。最小二乘法让预测值与实际值的误差平方和最小。回归直线 &#375; = 1.5x + 30 意味着：面积每增加 1 m&sup2;，价格平均上涨 1.5 万元。
+      </div>
+      <div class="chart-container large" id="chartRegression"></div>
+    </div>
+  </section>
+
+  <!-- Section 4: 独立性检验 -->
+  <section>
+    <h2>四、独立性检验（2&times;2 列联表）</h2>
+    <div class="card">
+      <div class="case-title">调查"玩手机"和"近视"是否有关</div>
+      <div class="case-text">
+        <p>随机调查了 200 名高中生，记录他们的手机使用时长和视力状况，整理成 2&times;2 列联表：</p>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="contingency-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>近视</th>
+              <th>不近视</th>
+              <th>合计</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="row-header">每天玩手机 &gt;2h</td>
+              <td>70</td>
+              <td>30</td>
+              <td class="total-col">100</td>
+            </tr>
+            <tr>
+              <td class="row-header">每天玩手机 &le;2h</td>
+              <td>40</td>
+              <td>60</td>
+              <td class="total-col">100</td>
+            </tr>
+            <tr class="total-row">
+              <td class="row-header">合计</td>
+              <td>110</td>
+              <td>90</td>
+              <td>200</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="chi-calc">
+        <div class="step">计算卡方值 K&sup2;：</div>
+        <div class="formula">K&sup2; = n(ad - bc)&sup2; / [(a+b)(c+d)(a+c)(b+d)]</div>
+        <div class="step" style="margin-top: 0.5rem;">
+          = 200 &times; (70&times;60 - 30&times;40)&sup2; / (100&times;100&times;110&times;90)
+        </div>
+        <div class="step">
+          = 200 &times; (4200 - 1200)&sup2; / 99,000,000
+        </div>
+        <div class="step">
+          = 200 &times; 9,000,000 / 99,000,000
+        </div>
+        <div class="result">K&sup2; &asymp; 18.18</div>
+      </div>
+      <div class="conclusion-box">
+        <p><strong>结论：</strong>K&sup2; = 18.18 &gt; 3.841（临界值），在 95% 的置信水平下拒绝"玩手机时长与近视无关"的假设。</p>
+        <p><strong>有 95% 的把握认为：玩手机时长与近视之间存在关联。</strong></p>
+      </div>
+      <div class="warning-box">
+        注意：有关联 &ne; 因果关系。"有关联"只说明两者之间存在统计上的联系，不能直接得出"玩手机导致近视"的结论。可能存在其他混杂因素（如户外活动时间、用眼习惯等）。
+      </div>
+      <div class="core-idea">
+        <strong>核心思想：</strong>独立性检验通过计算卡方值，判断两个分类变量之间是否存在显著关联。如果 K&sup2; 大于临界值 3.841（对应 95% 置信水平），就认为两个变量有关联。但统计关联不等于因果关系。
+      </div>
+      <div class="chart-container" id="chartContingency"></div>
+    </div>
+  </section>
+
+  <!-- Section 5: 正态分布 -->
+  <section>
+    <h2>五、正态分布：自然界最常见的分布</h2>
+    <div class="card">
+      <div class="case-text">
+        <p>高考分数、身高、体重、测量误差……大量自然和社会现象都近似服从正态分布。正态分布的图像是一条"钟形曲线"，由均值 &mu; 和标准差 &sigma; 完全确定。</p>
+      </div>
+      <div class="sigma-grid">
+        <div class="sigma-card">
+          <div class="sigma-label">&mu; &plusmn; 1&sigma;</div>
+          <div class="sigma-value">68.27% 的数据</div>
+        </div>
+        <div class="sigma-card">
+          <div class="sigma-label">&mu; &plusmn; 2&sigma;</div>
+          <div class="sigma-value">95.45% 的数据</div>
+        </div>
+        <div class="sigma-card">
+          <div class="sigma-label">&mu; &plusmn; 3&sigma;</div>
+          <div class="sigma-value">99.73% 的数据</div>
+        </div>
+      </div>
+      <div class="case-text">
+        <p><strong>3&sigma; 原则：</strong>在正态分布中，约有 68.27% 的数据落在均值附近 1 个标准差内，95.45% 落在 2 个标准差内，99.73% 落在 3 个标准差内。超出 3&sigma; 范围的数据极为罕见（不到 0.3%）。</p>
+      </div>
+      <div class="controls" style="margin-bottom: 1rem;">
+        <div class="control-group">
+          <label>均值 &mu; <span class="value" id="valMu">500</span></label>
+          <input type="range" id="rangeMu" min="400" max="700" step="10" value="500">
+        </div>
+        <div class="control-group">
+          <label>标准差 &sigma; <span class="value" id="valSigma">50</span></label>
+          <input type="range" id="rangeSigma" min="20" max="100" step="5" value="50">
+        </div>
+      </div>
+      <div class="core-idea">
+        <strong>核心思想：</strong>正态分布是统计推断的基石。中心极限定理告诉我们，大量独立随机变量的平均数近似服从正态分布。正态分布让我们能用概率来量化"正常"和"异常"——偏离均值越远，发生的概率越低。
+      </div>
+      <div class="chart-container large" id="chartNormal"></div>
+    </div>
+  </section>
+
+  <!-- Section 6: 推荐算法中的统计应用 -->
+  <section>
+    <h2>六、推荐算法：互联网公司的统计实战</h2>
+    <h3 class="case-title">抖音、淘宝、B站如何"猜你喜欢"</h3>
+    <p>你在抖音刷了3条猫咪视频，第4条就全是猫——这不是魔法，而是统计学。推荐算法的核心就是<strong>用数据预测你的行为</strong>，其中用到了大量高中统计知识。</p>
+
+    <div class="method-grid cols-2">
+      <div class="method-card">
+        <h4>第一步：收集数据（抽样与记录）</h4>
+        <p>每次你刷视频、点商品、停留时长、是否点赞——这些都是"样本数据"。平台从数亿用户中抽取行为日志，构建用户-物品交互矩阵。</p>
+      </div>
+      <div class="method-card">
+        <h4>第二步：计算相似度（回归与相关）</h4>
+        <p>用<strong>相关系数</strong>衡量用户之间的相似性。如果你和小B都看了A、B、C三部电影，系统就认为你们"相关度高"，小B看过的D电影也会推荐给你。本质上是在做<strong>多元回归</strong>的预测。</p>
+      </div>
+      <div class="method-card">
+        <h4>第三步：排序与推荐（概率与估计）</h4>
+        <p>算法为每个候选内容计算一个"你可能会喜欢的概率" P(喜欢|历史行为)。这就是<strong>条件概率</strong>和<strong>贝叶斯估计</strong>的直接应用。概率最高的排在前面。</p>
+      </div>
+      <div class="method-card">
+        <h4>第四步：评估效果（假设检验）</h4>
+        <p>上线新算法后，A/B测试对比旧算法：点击率是否显著提升？用的就是<strong>独立性检验</strong>——判断"算法版本"和"点击行为"是否有关联。</p>
+      </div>
+    </div>
+
+    <div class="think-box">
+      <strong>核心思想：</strong>
+      推荐算法 = 相关分析 + 概率估计 + 假设检验 + 回归预测。你学的高中统计知识，正是抖音、淘宝、B站、网易云音乐等产品的底层逻辑。从"你可能喜欢"到"猜你想买"，每一次推荐背后都是一次统计推断。
+    </div>
+
+    <div class="chart-container" id="chartRecommend" style="height:360px;"></div>
+  </section>
+
+  <!-- Section 7: 总结 -->
+  <section>
+    <div class="quote-block">
+      统计学的本质，就是用数据描述世界、用样本推断整体、用规律预测未来。
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">高中统计的实际案例演示 · 抽样方法、数字特征、回归分析、独立性检验、正态分布、推荐算法</div>
+</footer>
+
+<script src="./_shared/js/echarts.min.js"></script>
+<script src="./assets/stats-cases-charts.js"></script>
+
+</body>
+</html>
