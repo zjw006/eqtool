@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>一元二次函数、方程和不等式的应用案例</title>
+  <style>
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./_shared/fonts/Outfit-Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./_shared/fonts/Outfit-Bold.ttf') format('truetype');
+      font-weight: 700;
+    }
+    @font-face {
+      font-family: 'JetBrainsMono';
+      src: url('./_shared/fonts/JetBrainsMono-Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+  </style>
+  <style>
+    :root {
+      --bg: #0b1120; --bg2: #151e32; --bg3: #1e293b;
+      --ink: #f1f5f9; --muted: #94a3b8; --rule: #334155;
+      --accent: #f59e0b;
+      --font: 'Outfit', system-ui, sans-serif;
+      --font-mono: 'JetBrainsMono', monospace;
+      --max: 1200px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body { font-family: var(--font); color: var(--ink); background: var(--bg); line-height: 1.6; }
+    .container { max-width: var(--max); margin: 0 auto; padding: 0 1.5rem; }
+
+    header {
+      text-align: center; padding: 3rem 1rem 2rem;
+      background: linear-gradient(180deg, rgba(245,158,11,0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--rule);
+    }
+    header h1 {
+      font-size: 2.5rem; font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), #fbbf24);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    header p { color: var(--muted); font-size: 1.1rem; }
+
+    section { margin: 2.5rem 0; }
+    section h2 {
+      font-size: 1.5rem; font-weight: 700; color: var(--ink);
+      margin-bottom: 1.25rem; padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--accent); display: inline-block;
+    }
+
+    .card {
+      background: var(--bg2); border: 1px solid var(--rule);
+      border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
+    }
+
+    .case-desc {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      margin-bottom: 1rem;
+    }
+
+    .formula-display {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      color: var(--accent);
+      background: var(--bg3);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 0.75rem 1.25rem;
+      margin-bottom: 1.25rem;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+
+    /* Controls */
+    .controls { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; }
+    .control-group {
+      display: flex; flex-direction: column; gap: 0.35rem;
+      min-width: 200px; flex: 1;
+    }
+    .control-group label {
+      font-size: 0.85rem; color: var(--muted); font-weight: 600;
+      display: flex; justify-content: space-between;
+    }
+    .control-group label span.value { color: var(--accent); font-family: var(--font-mono); }
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 6px; background: var(--bg3);
+      border-radius: 3px; outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 18px; height: 18px; background: var(--accent); border-radius: 50%;
+      cursor: pointer; border: 2px solid var(--bg);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px; height: 18px; background: var(--accent); border-radius: 50%;
+      cursor: pointer; border: 2px solid var(--bg);
+    }
+
+    /* Property panel */
+    .prop-panel {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0.75rem; margin: 1.25rem 0;
+    }
+    .prop-item {
+      background: var(--bg3); border: 1px solid var(--rule);
+      border-radius: 8px; padding: 0.75rem 1rem; text-align: center;
+    }
+    .prop-item .pname {
+      font-size: 0.75rem; color: var(--muted); margin-bottom: 0.25rem;
+    }
+    .prop-item .pvalue {
+      font-family: var(--font-mono); font-size: 1rem; color: var(--accent); font-weight: 700;
+    }
+
+    /* Chart containers */
+    .chart-container {
+      width: 100%; height: 380px; background: var(--bg3);
+      border-radius: 12px; border: 1px solid var(--rule); overflow: hidden;
+    }
+
+    @media (max-width: 768px) {
+      header h1 { font-size: 1.8rem; }
+      .chart-container { height: 300px; }
+      .controls { flex-direction: column; align-items: stretch; }
+      .control-group { min-width: unset; }
+      .prop-panel { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    footer {
+      text-align: center; padding: 2rem 1rem; color: var(--muted);
+      font-size: 0.85rem; border-top: 1px solid var(--rule); margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+
+<a href="./index.html" style="position:fixed;top:1rem;left:1rem;z-index:100;background:var(--bg2);border:1px solid var(--rule);color:var(--ink);padding:0.5rem 1rem;border-radius:8px;text-decoration:none;font-size:0.9rem;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--rule)'">&larr; 返回首页</a>
+
+<header>
+  <div class="container">
+    <h1>一元二次函数、方程和不等式的应用案例</h1>
+    <p>从商品定价到药物浓度，探索二次函数、分式不等式与高次不等式在真实世界中的应用</p>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- Section 1: 商品定价与利润最大化 -->
+  <section id="section1">
+    <h2>商品定价与利润最大化</h2>
+    <div class="card">
+      <p class="case-desc">某产品单位成本30元。当售价50元时，日销量100件。每涨价1元，日销量减少5件。利润函数 P(p) = -5p&sup2; + 500p - 10500，其图像为开口向下的抛物线，顶点即为最大利润点。</p>
+      <div class="formula-display" id="formulaProfit">P(p) = -5p&sup2; + 500p - 10500</div>
+      <div class="controls">
+        <div class="control-group">
+          <label>售价 p (元) <span class="value" id="valPrice">50</span></label>
+          <input type="range" id="sliderPrice" min="30" max="70" step="1" value="50">
+        </div>
+      </div>
+      <div class="prop-panel" id="infoProfitPanel">
+        <div class="prop-item"><div class="pname">日销量 q</div><div class="pvalue" id="infoDemand">100件</div></div>
+        <div class="prop-item"><div class="pname">收入 R</div><div class="pvalue" id="infoRevenue">5000元</div></div>
+        <div class="prop-item"><div class="pname">成本 C</div><div class="pvalue" id="infoCost">3000元</div></div>
+        <div class="prop-item"><div class="pname">利润 P</div><div class="pvalue" id="infoProfitVal">2000元</div></div>
+      </div>
+      <div class="chart-container" id="chartProfit"></div>
+    </div>
+  </section>
+
+  <!-- Section 2: 抛体运动轨迹 -->
+  <section id="section2">
+    <h2>抛体运动轨迹</h2>
+    <div class="card">
+      <p class="case-desc">炮弹/火箭以初速度 v₀ 和仰角 &theta; 发射，忽略空气阻力。运动方程：水平 x(t) = v₀cos&theta;&middot;t，竖直 h(t) = -&frac12;gt&sup2; + v₀sin&theta;&middot;t。轨迹为抛物线，顶点对应最大高度，与x轴交点对应射程。</p>
+      <div class="formula-display" id="formulaProjectile">h(t) = -4.9t&sup2; + v₀sin&theta; &middot; t</div>
+      <div class="controls">
+        <div class="control-group">
+          <label>初速度 v₀ (m/s) <span class="value" id="valVelocity">50</span></label>
+          <input type="range" id="sliderVelocity" min="10" max="100" step="1" value="50">
+        </div>
+        <div class="control-group">
+          <label>发射角 &theta; (&deg;) <span class="value" id="valAngle">45</span></label>
+          <input type="range" id="sliderAngle" min="5" max="85" step="1" value="45">
+        </div>
+      </div>
+      <div class="prop-panel" id="infoProjectilePanel">
+        <div class="prop-item"><div class="pname">最大高度</div><div class="pvalue" id="infoMaxH">63.8m</div></div>
+        <div class="prop-item"><div class="pname">射程</div><div class="pvalue" id="infoRange">255.1m</div></div>
+        <div class="prop-item"><div class="pname">飞行时间</div><div class="pvalue" id="infoFlightT">7.21s</div></div>
+      </div>
+      <canvas id="chartProjectile" class="chart-container" style="width:100%;height:380px;"></canvas>
+    </div>
+  </section>
+
+  <!-- Section 3: 拱桥抛物线设计 -->
+  <section id="section3">
+    <h2>拱桥抛物线设计</h2>
+    <div class="card">
+      <p class="case-desc">桥梁拱形常采用抛物线造型，既美观又能有效分散荷载。给定跨度 W 和拱高 H，抛物线方程为 y = -4H/W&sup2; &middot; x&sup2; + H（坐标原点在拱顶正下方中心）。工程师需要计算不同位置的拱高、缆索长度等参数。</p>
+      <div class="formula-display" id="formulaBridge">y = -4H/W&sup2; &middot; x&sup2; + H</div>
+      <div class="controls">
+        <div class="control-group">
+          <label>跨度 W (m) <span class="value" id="valSpan">100</span></label>
+          <input type="range" id="sliderSpan" min="20" max="200" step="5" value="100">
+        </div>
+        <div class="control-group">
+          <label>拱高 H (m) <span class="value" id="valHeight">20</span></label>
+          <input type="range" id="sliderHeight" min="5" max="50" step="1" value="20">
+        </div>
+      </div>
+      <div class="prop-panel" id="infoBridgePanel">
+        <div class="prop-item"><div class="pname">1/4处拱高</div><div class="pvalue" id="infoBridgeQ1">15.0m</div></div>
+        <div class="prop-item"><div class="pname">1/2处拱高</div><div class="pvalue" id="infoBridgeQ2">20.0m</div></div>
+        <div class="prop-item"><div class="pname">抛物线系数 a</div><div class="pvalue" id="infoCoefA">-0.0080</div></div>
+      </div>
+      <div class="chart-container" id="chartBridge"></div>
+    </div>
+  </section>
+
+  <!-- Section 4: 盈亏平衡分析 -->
+  <section id="section4">
+    <h2>盈亏平衡分析</h2>
+    <div class="card">
+      <p class="case-desc">某工厂每件产品售价200元，生产成本随产量增加而上升（加班费、原材料涨价等）。成本函数 C(x) = 2x&sup2; + 20x + 5000，收入 R(x) = 200x。利润 P(x) = R(x) - C(x) = -2x&sup2; + 180x - 5000。令P(x)=0得一元二次方程，解即为盈亏平衡点。</p>
+      <div class="formula-display" id="formulaBreakEven">P(x) = -2x&sup2; + 180x - 5000</div>
+      <div class="controls">
+        <div class="control-group">
+          <label>产量 x (件) <span class="value" id="valQuantity">45</span></label>
+          <input type="range" id="sliderQuantity" min="0" max="100" step="1" value="45">
+        </div>
+      </div>
+      <div class="prop-panel" id="infoBreakEvenPanel">
+        <div class="prop-item"><div class="pname">收入 R(x)</div><div class="pvalue" id="infoBERevenue">9000元</div></div>
+        <div class="prop-item"><div class="pname">成本 C(x)</div><div class="pvalue" id="infoBECost">9050元</div></div>
+        <div class="prop-item"><div class="pname">利润 P(x)</div><div class="pvalue" id="infoBEProfit">-50元</div></div>
+        <div class="prop-item"><div class="pname">盈亏状态</div><div class="pvalue" id="infoBEStatus">亏损</div></div>
+      </div>
+      <div class="chart-container" id="chartBreakEven"></div>
+    </div>
+  </section>
+
+  <!-- Section 5: 生产成本不等式约束 -->
+  <section id="section5">
+    <h2>生产成本不等式约束</h2>
+    <div class="card">
+      <p class="case-desc">企业年度预算有限，生产总成本 C(x) = 0.5x&sup2; + 10x + 200 必须不超过预算 B。即 0.5x&sup2; + 10x + 200 &le; B，整理为标准形式后求不等式解集。解集表示在预算约束下允许的最大产量范围。</p>
+      <div class="formula-display" id="formulaInequality">0.5x&sup2; + 10x + 200 &le; B</div>
+      <div class="controls">
+        <div class="control-group">
+          <label>预算 B (万元) <span class="value" id="valBudget">1000</span></label>
+          <input type="range" id="sliderBudget" min="200" max="3000" step="50" value="1000">
+        </div>
+      </div>
+      <div class="prop-panel" id="infoInequalityPanel">
+        <div class="prop-item"><div class="pname">不等式解集</div><div class="pvalue" id="infoIneqSolution">0 &le; x &le; 31.2</div></div>
+        <div class="prop-item"><div class="pname">最大产量</div><div class="pvalue" id="infoMaxProd">31.2件</div></div>
+        <div class="prop-item"><div class="pname">判别式 &Delta;</div><div class="pvalue" id="infoDelta">6800</div></div>
+      </div>
+      <div class="chart-container" id="chartInequality"></div>
+    </div>
+  </section>
+
+  <!-- Section 6: 平均成本控制（分式不等式） -->
+  <section id="section6">
+    <h2>平均成本控制（分式不等式）</h2>
+    <div class="card">
+      <p class="case-desc">工厂生产产品，固定成本 F = 5000 元（厂房租金、设备折旧等），每件可变成本 v = 20 元。产量为 x 件时，平均成本 AC(x) = (5000 + 20x) / x。管理层要求平均成本不超过目标值 C₀。求 (5000+20x)/x ≤ C₀ 的解集，即为满足成本要求的产量范围。这正是<b style="color:var(--ink);">分式不等式</b>的典型应用。</p>
+      <div class="formula-display" id="formulaAvgCost">AC(x) = (5000 + 20x) / x ≤ 60</div>
+      <div class="controls">
+        <div class="control-group">
+          <label>目标平均成本 C₀ (元/件) <span class="value" id="valTargetCost">60</span></label>
+          <input type="range" id="sliderTargetCost" min="22" max="200" step="1" value="60">
+        </div>
+      </div>
+      <div class="prop-panel" id="infoAvgCostPanel">
+        <div class="prop-item"><div class="pname">不等式</div><div class="pvalue" id="infoACIneq" style="font-size:0.8rem;">x ≥ 125</div></div>
+        <div class="prop-item"><div class="pname">最低产量</div><div class="pvalue" id="infoMinProd">125件</div></div>
+        <div class="prop-item"><div class="pname">固定成本</div><div class="pvalue" id="infoFixedCost">5000元</div></div>
+        <div class="prop-item"><div class="pname">当前平均成本</div><div class="pvalue" id="infoCurAC">60.0元</div></div>
+      </div>
+      <div class="chart-container" id="chartAvgCost"></div>
+    </div>
+  </section>
+
+  <!-- Section 7: 药物浓度有效时间窗口（分式不等式） -->
+  <section id="section7">
+    <h2>药物浓度有效时间窗口</h2>
+    <div class="card">
+      <p class="case-desc">某种药物注射后，血药浓度 C(t) = 10t / (t² + 4)（mg/L），其中 t 为注射后的时间（小时）。药物有效浓度为 C ≥ 1.5 mg/L。需要求出 10t/(t²+4) ≥ 1.5 的解集，确定<b style="color:var(--ink);">有效治疗时间窗口</b>。这是一个分式不等式，化简后得 1.5t² - 10t + 6 ≤ 0。</p>
+      <div class="formula-display" id="formulaDrug">C(t) = 10t / (t²+4) ≥ 1.5 mg/L</div>
+      <div class="controls">
+        <div class="control-group">
+          <label>有效浓度阈值 C₀ (mg/L) <span class="value" id="valDrugThresh">1.5</span></label>
+          <input type="range" id="sliderDrugThresh" min="0.5" max="3.0" step="0.1" value="1.5">
+        </div>
+      </div>
+      <div class="prop-panel" id="infoDrugPanel">
+        <div class="prop-item"><div class="pname">有效时间窗口</div><div class="pvalue" id="infoDrugWindow" style="font-size:0.78rem;">[0.7h, 5.9h]</div></div>
+        <div class="prop-item"><div class="pname">窗口长度</div><div class="pvalue" id="infoDrugDuration">5.2h</div></div>
+        <div class="prop-item"><div class="pname">峰值浓度</div><div class="pvalue" id="infoDrugPeak">2.5 mg/L</div></div>
+      </div>
+      <div class="chart-container" id="chartDrug"></div>
+    </div>
+  </section>
+
+  <!-- Section 8: 污染物安全距离（分式不等式） -->
+  <section id="section8">
+    <h2>污染物安全距离</h2>
+    <div class="card">
+      <p class="case-desc">某工厂烟囱排放污染物，在距离 d 米处的大气污染物浓度为 C(d) = 8000 / (d² + 100)（μg/m³），国家规定安全浓度限值为 C₀ μg/m³。需要求 8000/(d²+100) ≤ C₀ 的解集，确定<b style="color:var(--ink);">安全防护距离</b>。</p>
+      <div class="formula-display" id="formulaPollution">C(d) = 8000 / (d²+100) ≤ 40 μg/m³</div>
+      <div class="controls">
+        <div class="control-group">
+          <label>浓度限值 C₀ (μg/m³) <span class="value" id="valPollThresh">40</span></label>
+          <input type="range" id="sliderPollThresh" min="5" max="80" step="1" value="40">
+        </div>
+      </div>
+      <div class="prop-panel" id="infoPollPanel">
+        <div class="prop-item"><div class="pname">安全距离</div><div class="pvalue" id="infoPollSafe" style="font-size:0.78rem;">d ≥ 13.9m</div></div>
+        <div class="prop-item"><div class="pname">污染源处浓度</div><div class="pvalue" id="infoPollSrc">80.0 μg/m³</div></div>
+        <div class="prop-item"><div class="pname">超标倍数(源处)</div><div class="pvalue" id="infoPollRatio">2.0x</div></div>
+      </div>
+      <div class="chart-container" id="chartPollution"></div>
+    </div>
+  </section>
+
+  <!-- Section 9: 材料强度与温度区间（高次不等式） -->
+  <section id="section9">
+    <h2>材料强度与温度区间</h2>
+    <div class="card">
+      <p class="case-desc">某种合金材料的强度系数 S(T) 与温度 T（℃）的关系近似为 S(T) = (T+20)(T-100)(T-300)/100000。当 S(T) > 0 时材料安全，S(T) ≤ 0 时存在断裂风险。这是一个<b style="color:var(--ink);">三次不等式</b>，用穿根法可快速确定安全的温度区间。</p>
+      <div class="formula-display" id="formulaMaterial">S(T) = (T+20)(T-100)(T-300)/100000 > 0</div>
+      <div class="controls">
+        <div class="control-group">
+          <label>当前温度 T (℃) <span class="value" id="valTemp">50</span></label>
+          <input type="range" id="sliderTemp" min="-50" max="400" step="1" value="50">
+        </div>
+      </div>
+      <div class="prop-panel" id="infoMaterialPanel">
+        <div class="prop-item"><div class="pname">安全温度区间</div><div class="pvalue" id="infoMatSafe" style="font-size:0.78rem;">[-20, 100] ∪ [300, +∞)</div></div>
+        <div class="prop-item"><div class="pname">当前强度系数</div><div class="pvalue" id="infoMatS">0.072</div></div>
+        <div class="prop-item"><div class="pname">当前状态</div><div class="pvalue" id="infoMatStatus">安全</div></div>
+      </div>
+      <div class="chart-container" id="chartMaterial"></div>
+    </div>
+  </section>
+
+  <!-- Section 10: 多产品利润约束（高次不等式） -->
+  <section id="section10">
+    <h2>多产品定价利润约束</h2>
+    <div class="card">
+      <p class="case-desc">某平台同时销售三款产品，综合利润函数为 P(p) = -(p-30)(p-60)(p-120)/100（万元），p 为平均定价。需要求 P(p) ≥ 0 的定价范围。这是一个<b style="color:var(--ink);">三次不等式</b>，三个根 30、60、120 将数轴分为四个区间，利用穿根法判断每个区间利润正负。</p>
+      <div class="formula-display" id="formulaMultiProd">P(p) = -(p-30)(p-60)(p-120)/100 ≥ 0</div>
+      <div class="controls">
+        <div class="control-group">
+          <label>定价 p (元) <span class="value" id="valMultiPrice">50</span></label>
+          <input type="range" id="sliderMultiPrice" min="10" max="150" step="1" value="50">
+        </div>
+      </div>
+      <div class="prop-panel" id="infoMultiProdPanel">
+        <div class="prop-item"><div class="pname">盈利定价区间</div><div class="pvalue" id="infoMultiRange" style="font-size:0.78rem;">[30, 60] ∪ [120, +∞)</div></div>
+        <div class="prop-item"><div class="pname">当前利润</div><div class="pvalue" id="infoMultiProfit">17.5万元</div></div>
+        <div class="prop-item"><div class="pname">盈亏状态</div><div class="pvalue" id="infoMultiStatus">盈利</div></div>
+      </div>
+      <div class="chart-container" id="chartMultiProd"></div>
+    </div>
+  </section>
+
+  <!-- Section 11: 简化种群模型（高次不等式） -->
+  <section id="section11">
+    <h2>简化种群增长模型</h2>
+    <div class="card">
+      <p class="case-desc">某物种的净增长率 g(N) = r(N-K₁)(K₂-N)(N-K₃) / 10000，其中 N 为种群数量，K₁=200 为最小存活阈值，K₂=500 为环境承载力上限，K₃=800 为过度拥挤阈值。g(N) > 0 时种群增长，g(N) < 0 时种群缩减。求种群<b style="color:var(--ink);">自然增长区间</b>。</p>
+      <div class="formula-display" id="formulaPop">g(N) = 0.01(N-200)(500-N)(N-800) > 0</div>
+      <div class="controls">
+        <div class="control-group">
+          <label>当前种群 N (只) <span class="value" id="valPop">350</span></label>
+          <input type="range" id="sliderPop" min="0" max="1000" step="5" value="350">
+        </div>
+        <div class="control-group">
+          <label>增长率系数 r <span class="value" id="valPopR">1.0</span></label>
+          <input type="range" id="sliderPopR" min="0.1" max="3.0" step="0.1" value="1.0">
+        </div>
+      </div>
+      <div class="prop-panel" id="infoPopPanel">
+        <div class="prop-item"><div class="pname">增长区间</div><div class="pvalue" id="infoPopGrow" style="font-size:0.78rem;">(200, 500) ∪ (800, +∞)</div></div>
+        <div class="prop-item"><div class="pname">当前增长率</div><div class="pvalue" id="infoPopG">正值</div></div>
+        <div class="prop-item"><div class="pname">种群趋势</div><div class="pvalue" id="infoPopTrend">增长</div></div>
+      </div>
+      <div class="chart-container" id="chartPop"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">一元二次函数及不等式应用案例 · 数学可视化系列</div>
+</footer>
+
+<script src="./_shared/js/echarts.min.js"></script>
+<script src="./assets/quadratic-cases-charts.js"></script>
+
+</body>
+</html>

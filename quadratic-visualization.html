@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>一元二次函数、方程与不等式</title>
+
+  <style>
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./_shared/fonts/Outfit-Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./_shared/fonts/Outfit-Bold.ttf') format('truetype');
+      font-weight: 700;
+    }
+    @font-face {
+      font-family: 'JetBrainsMono';
+      src: url('./_shared/fonts/JetBrainsMono-Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+  </style>
+
+  <style>
+    :root {
+      --bg: #0b1120;
+      --bg2: #151e32;
+      --bg3: #1e293b;
+      --ink: #f1f5f9;
+      --muted: #94a3b8;
+      --rule: #334155;
+      --accent: #f59e0b;
+      --accent2: #06b6d4;
+      --accent3: #ec4899;
+      --accent4: #10b981;
+      --accent5: #8b5cf6;
+      --font: 'Outfit', system-ui, sans-serif;
+      --font-mono: 'JetBrainsMono', monospace;
+      --max: 1200px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 3rem 1rem 2rem;
+      background: linear-gradient(180deg, rgba(245,158,11,0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--rule);
+    }
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    header p {
+      color: var(--muted);
+      font-size: 1.1rem;
+    }
+    header .back-link {
+      display: inline-block;
+      margin-top: 0.8rem;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    header .back-link:hover {
+      color: var(--accent);
+    }
+
+    /* Section */
+    section {
+      margin: 2.5rem 0;
+    }
+    section h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--accent);
+      display: inline-block;
+    }
+    section h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 1rem;
+      padding-left: 0.75rem;
+      border-left: 3px solid var(--accent2);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--rule);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .card-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .card-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+
+    /* Property cards */
+    .prop-card {
+      background: var(--bg3);
+      border: 1px solid var(--rule);
+      border-radius: 10px;
+      padding: 1.25rem;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .prop-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
+    }
+    .prop-card .prop-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent2);
+      margin-bottom: 0.5rem;
+    }
+    .prop-card .prop-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .prop-card .prop-formula {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--accent);
+      background: rgba(245,158,11,0.08);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      align-items: center;
+    }
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      min-width: 200px;
+      flex: 1;
+    }
+    .control-group label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+    }
+    .control-group label span.value {
+      color: var(--accent);
+      font-family: var(--font-mono);
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      background: var(--bg3);
+      border-radius: 3px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid var(--bg);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid var(--bg);
+    }
+
+    /* Formula display */
+    .formula-display {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      color: var(--accent);
+      background: var(--bg3);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 1rem;
+      letter-spacing: 0.5px;
+    }
+
+    /* Animation controls */
+    .anim-controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .anim-controls button {
+      flex: 1;
+      background: var(--bg3);
+      border: 1px solid var(--rule);
+      color: var(--ink);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      min-width: 100px;
+    }
+    .anim-controls button:hover {
+      border-color: var(--accent2);
+      color: var(--accent2);
+    }
+    .anim-controls button.playing {
+      border-color: var(--accent2);
+      color: var(--accent2);
+    }
+
+    /* Inequality type buttons */
+    .ineq-type-group {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .ineq-type-group button {
+      background: var(--bg3);
+      border: 1px solid var(--rule);
+      color: var(--ink);
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .ineq-type-group button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .ineq-type-group button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
+    }
+
+    /* Charts */
+    .chart-container {
+      width: 100%;
+      height: 380px;
+      background: var(--bg3);
+      border-radius: 12px;
+      border: 1px solid var(--rule);
+      overflow: hidden;
+    }
+    .chart-container.large {
+      height: 420px;
+    }
+    .chart-container.small {
+      height: 280px;
+    }
+
+    /* Canvas wrapper */
+    .canvas-wrapper {
+      display: flex;
+      justify-content: center;
+      margin: 1rem 0;
+    }
+    .canvas-wrapper canvas {
+      background: var(--bg3);
+      border-radius: 12px;
+      border: 1px solid var(--rule);
+      max-width: 100%;
+    }
+
+    /* Info panel */
+    .info-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .info-item {
+      background: var(--bg3);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      text-align: center;
+    }
+    .info-item .iname {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+    }
+    .info-item .ival {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      color: var(--accent2);
+      font-weight: 700;
+    }
+    .info-item .ival.red {
+      color: #ef4444;
+    }
+    .info-item .ival.green {
+      color: var(--accent4);
+    }
+
+    /* Equation status */
+    .eq-status {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      text-align: center;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+      border-radius: 6px;
+      transition: all 0.3s;
+    }
+    .eq-status.balanced {
+      color: var(--accent4);
+      background: rgba(16,185,129,0.1);
+    }
+    .eq-status.unbalanced {
+      color: #ef4444;
+      background: rgba(239,68,68,0.1);
+    }
+
+    /* Ineq status */
+    .ineq-status {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      text-align: center;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+      border-radius: 6px;
+      color: var(--accent2);
+      background: rgba(6,182,212,0.1);
+    }
+    .ineq-status .flip-warning {
+      color: #ef4444;
+      font-weight: 700;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      header h1 { font-size: 1.8rem; }
+      .chart-container, .chart-container.large { height: 300px; }
+      .chart-container.small { height: 220px; }
+      .controls { flex-direction: column; align-items: stretch; }
+      .control-group { min-width: unset; }
+      .anim-controls { flex-direction: column; }
+      .anim-controls button { min-width: unset; }
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--rule);
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>一元二次函数、方程与不等式</h1>
+    <p>从等式性质到二次函数图像，用交互动画理解二次世界的核心逻辑</p>
+    <a href="./index.html" class="back-link">&larr; 返回主页</a>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- ==================== Section 1: 等式性质与不等式性质 ==================== -->
+  <section>
+    <h2>等式性质与不等式性质</h2>
+
+    <!-- 1a: 等式的基本性质 -->
+    <h3>等式的基本性质</h3>
+    <div class="card-grid-3">
+      <div class="prop-card">
+        <div class="prop-title">性质 1</div>
+        <div class="prop-desc">等式两边同时加/减同一个数或式子，等式仍成立。</div>
+        <div class="prop-formula">若 a = b，则 a + c = b + c</div>
+      </div>
+      <div class="prop-card">
+        <div class="prop-title">性质 2</div>
+        <div class="prop-desc">等式两边同时乘/除同一个非零数，等式仍成立。</div>
+        <div class="prop-formula">若 a = b 且 c &ne; 0，则 ac = bc</div>
+      </div>
+      <div class="prop-card">
+        <div class="prop-title">性质 3</div>
+        <div class="prop-desc">等式具有对称性和传递性。</div>
+        <div class="prop-formula">a = b &harr; b = a；a = b 且 b = c &rArr; a = c</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="formula-display" id="balanceFormula">3 = 3</div>
+      <div class="eq-status balanced" id="balanceStatus">&check; 等式成立</div>
+      <div class="canvas-wrapper">
+        <canvas id="balanceCanvas" width="600" height="250"></canvas>
+      </div>
+      <div class="controls" style="margin-top:1rem;">
+        <div class="control-group">
+          <label>N 的值 <span class="value" id="balanceN">1.0</span></label>
+          <input type="range" id="balanceSliderN" min="-5" max="5" step="0.5" value="1">
+        </div>
+      </div>
+      <div class="anim-controls">
+        <button id="balLeftAdd">&larr; 左边 +N</button>
+        <button id="balLeftSub">&larr; 左边 -N</button>
+        <button id="balRightAdd">右边 +N &rarr;</button>
+        <button id="balRightSub">右边 -N &rarr;</button>
+        <button id="balBothAdd">两边同时 +N</button>
+        <button id="balReset">&harr; 复位</button>
+      </div>
+    </div>
+
+    <!-- 1b: 不等式的基本性质 -->
+    <h3 style="margin-top:2rem;">不等式的基本性质</h3>
+    <div class="card-grid-2">
+      <div class="prop-card">
+        <div class="prop-title">性质 1</div>
+        <div class="prop-desc">两边同加/减同一个数，不等号方向不变。</div>
+        <div class="prop-formula">a &gt; b &rArr; a + c &gt; b + c</div>
+      </div>
+      <div class="prop-card">
+        <div class="prop-title">性质 2</div>
+        <div class="prop-desc">两边同乘正数方向不变；同乘负数方向反转。</div>
+        <div class="prop-formula">c &gt; 0: ac &gt; bc；c &lt; 0: ac &lt; bc</div>
+      </div>
+      <div class="prop-card">
+        <div class="prop-title">性质 3</div>
+        <div class="prop-desc">同向不等式可加。</div>
+        <div class="prop-formula">a &gt; b, c &gt; d &rArr; a + c &gt; b + d</div>
+      </div>
+      <div class="prop-card">
+        <div class="prop-title">性质 4</div>
+        <div class="prop-desc">传递性。</div>
+        <div class="prop-formula">a &gt; b, b &gt; c &rArr; a &gt; c</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <div class="formula-display" id="ineqFormula">x &gt; 3</div>
+      <div class="ineq-status" id="ineqStatus">当前不等式：x &gt; 3</div>
+      <div class="canvas-wrapper">
+        <canvas id="ineqCanvas" width="600" height="300"></canvas>
+      </div>
+      <div class="controls" style="margin-top:1rem;">
+        <div class="control-group">
+          <label>操作数值 <span class="value" id="ineqN">2.0</span></label>
+          <input type="range" id="ineqSliderN" min="-5" max="5" step="0.5" value="2">
+        </div>
+      </div>
+      <div class="anim-controls">
+        <button id="ineqAddPos">两边 + 正数</button>
+        <button id="ineqAddNeg">两边 + 负数</button>
+        <button id="ineqMulPos">两边 &times; 正数</button>
+        <button id="ineqMulNeg">两边 &times; 负数</button>
+        <button id="ineqReset">&harr; 复位</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Section 2: 基本不等式 ==================== -->
+  <section>
+    <h2>基本不等式</h2>
+
+    <!-- 2a: 均值不等式 -->
+    <h3>基本不等式（均值不等式）</h3>
+    <div class="card">
+      <div class="formula-display">a&sup2; + b&sup2; &ge; 2ab（当且仅当 a = b 时取等号）</div>
+      <div class="formula-display" style="font-size:0.95rem; color:var(--accent2);">变式：a + b &ge; 2&radic;ab（a, b &gt; 0）</div>
+      <div class="controls" style="margin-bottom:1rem;">
+        <div class="control-group">
+          <label>c 的值 <span class="value" id="meanC">1.0</span></label>
+          <input type="range" id="meanSliderC" min="0.5" max="3" step="0.1" value="1">
+        </div>
+      </div>
+      <div class="chart-container large" id="chartMeanIneq"></div>
+    </div>
+
+    <!-- 2b: 几何解释 -->
+    <h3 style="margin-top:2rem;">基本不等式的几何意义</h3>
+    <div class="card">
+      <div class="formula-display">a&sup2; + b&sup2; &ge; 2ab &mdash; 面积对比</div>
+      <div class="controls" style="margin-bottom:1rem;">
+        <div class="control-group">
+          <label>a 的值 <span class="value" id="geoA">2.0</span></label>
+          <input type="range" id="geoSliderA" min="0.5" max="3" step="0.1" value="2">
+        </div>
+        <div class="control-group">
+          <label>b 的值 <span class="value" id="geoB">1.0</span></label>
+          <input type="range" id="geoSliderB" min="0.5" max="3" step="0.1" value="1">
+        </div>
+      </div>
+      <div class="canvas-wrapper">
+        <canvas id="geoCanvas" width="500" height="400"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== Section 3: 二次函数 ==================== -->
+  <section>
+    <h2>二次函数 y = ax&sup2; + bx + c</h2>
+
+    <!-- 3a: 图像与参数 -->
+    <h3>二次函数的图像探索</h3>
+    <div class="card">
+      <div class="formula-display" id="quadFormula">y = 1.0x&sup2; + 0.0x + 0.0</div>
+      <div class="controls">
+        <div class="control-group">
+          <label>a（开口方向与大小） <span class="value" id="quadValA">1.0</span></label>
+          <input type="range" id="quadSliderA" min="-3" max="3" step="0.1" value="1">
+        </div>
+        <div class="control-group">
+          <label>b（对称轴位置） <span class="value" id="quadValB">0.0</span></label>
+          <input type="range" id="quadSliderB" min="-5" max="5" step="0.1" value="0">
+        </div>
+        <div class="control-group">
+          <label>c（y轴截距） <span class="value" id="quadValC">0.0</span></label>
+          <input type="range" id="quadSliderC" min="-5" max="5" step="0.1" value="0">
+        </div>
+      </div>
+      <div class="info-panel" id="quadInfoPanel">
+        <div class="info-item"><div class="iname">开口方向</div><div class="ival" id="qiDir">向上</div></div>
+        <div class="info-item"><div class="iname">对称轴</div><div class="ival" id="qiAxis">x = 0.00</div></div>
+        <div class="info-item"><div class="iname">顶点坐标</div><div class="ival" id="qiVertex">(0.00, 0.00)</div></div>
+        <div class="info-item"><div class="iname">&Delta; = b&sup2;-4ac</div><div class="ival" id="qiDelta">0.00</div></div>
+        <div class="info-item"><div class="iname">x轴交点</div><div class="ival" id="qiRoots">1 个</div></div>
+      </div>
+      <div class="chart-container large" id="chartQuadratic" style="margin-top:1rem;"></div>
+    </div>
+
+    <!-- 3b: a、b、c 对图像的影响 -->
+    <h3 style="margin-top:2rem;">参数对图像的影响</h3>
+    <div class="card">
+      <div class="chart-container large" id="chartParamEffect"></div>
+      <div class="controls" style="margin-top:1rem;">
+        <div class="control-group">
+          <label>a（b=0, c=0） <span class="value" id="peValA">1.0</span></label>
+          <input type="range" id="peSliderA" min="-3" max="3" step="0.1" value="1">
+        </div>
+        <div class="control-group">
+          <label>b（a=1, c=0） <span class="value" id="peValB">0.0</span></label>
+          <input type="range" id="peSliderB" min="-5" max="5" step="0.1" value="0">
+        </div>
+        <div class="control-group">
+          <label>c（a=1, b=0） <span class="value" id="peValC">0.0</span></label>
+          <input type="range" id="peSliderC" min="-5" max="5" step="0.1" value="0">
+        </div>
+      </div>
+    </div>
+
+    <!-- 3c: 平移与对称 -->
+    <h3 style="margin-top:2rem;">平移与对称</h3>
+    <div class="card">
+      <div class="formula-display" id="transFormula">y = (x - 0.0)&sup2; + 0.0</div>
+      <div class="controls">
+        <div class="control-group">
+          <label>h（水平平移） <span class="value" id="transValH">0.0</span></label>
+          <input type="range" id="transSliderH" min="-5" max="5" step="0.1" value="0">
+        </div>
+        <div class="control-group">
+          <label>k（垂直平移） <span class="value" id="transValK">0.0</span></label>
+          <input type="range" id="transSliderK" min="-5" max="5" step="0.1" value="0">
+        </div>
+      </div>
+      <div class="chart-container large" id="chartTranslation"></div>
+    </div>
+  </section>
+
+  <!-- ==================== Section 4: 一元二次方程 ==================== -->
+  <section>
+    <h2>一元二次方程的求解</h2>
+    <div class="card">
+      <div class="formula-display" id="eqFormula">x = (-b &plusmn; &radic;(b&sup2;-4ac)) / 2a</div>
+      <div class="controls">
+        <div class="control-group">
+          <label>a <span class="value" id="eqValA">1.0</span></label>
+          <input type="range" id="eqSliderA" min="-3" max="3" step="0.1" value="1">
+        </div>
+        <div class="control-group">
+          <label>b <span class="value" id="eqValB">0.0</span></label>
+          <input type="range" id="eqSliderB" min="-5" max="5" step="0.1" value="0">
+        </div>
+        <div class="control-group">
+          <label>c <span class="value" id="eqValC">-1.0</span></label>
+          <input type="range" id="eqSliderC" min="-5" max="5" step="0.1" value="-1">
+        </div>
+      </div>
+      <div class="info-panel" id="eqInfoPanel">
+        <div class="info-item"><div class="iname">&Delta;</div><div class="ival" id="eqiDelta">4.00</div></div>
+        <div class="info-item"><div class="iname">x&#8321;</div><div class="ival green" id="eqiX1">1.00</div></div>
+        <div class="info-item"><div class="iname">x&#8322;</div><div class="ival green" id="eqiX2">-1.00</div></div>
+        <div class="info-item"><div class="iname">x&#8321;+x&#8322;=-b/a</div><div class="ival" id="eqiSum">0.00 = 0.00</div></div>
+        <div class="info-item"><div class="iname">x&#8321;&middot;x&#8322;=c/a</div><div class="ival" id="eqiProd">-1.00 = -1.00</div></div>
+      </div>
+      <div class="chart-container large" id="chartEquation" style="margin-top:1rem;"></div>
+    </div>
+  </section>
+
+  <!-- ==================== Section 5: 一元二次不等式 ==================== -->
+  <section>
+    <h2>一元二次不等式</h2>
+    <div class="card">
+      <div class="ineq-type-group" id="ineqTypeGroup">
+        <button class="active" data-type="gt">ax&sup2;+bx+c &gt; 0</button>
+        <button data-type="lt">ax&sup2;+bx+c &lt; 0</button>
+        <button data-type="gte">ax&sup2;+bx+c &ge; 0</button>
+        <button data-type="lte">ax&sup2;+bx+c &le; 0</button>
+      </div>
+      <div class="formula-display" id="ineqRegionFormula">x&sup2; - 1 &gt; 0</div>
+      <div class="controls">
+        <div class="control-group">
+          <label>a <span class="value" id="irValA">1.0</span></label>
+          <input type="range" id="irSliderA" min="-3" max="3" step="0.1" value="1">
+        </div>
+        <div class="control-group">
+          <label>b <span class="value" id="irValB">0.0</span></label>
+          <input type="range" id="irSliderB" min="-5" max="5" step="0.1" value="0">
+        </div>
+        <div class="control-group">
+          <label>c <span class="value" id="irValC">-1.0</span></label>
+          <input type="range" id="irSliderC" min="-5" max="5" step="0.1" value="-1">
+        </div>
+      </div>
+      <div class="info-panel" id="irInfoPanel">
+        <div class="info-item"><div class="iname">&Delta;</div><div class="ival" id="iriDelta">4.00</div></div>
+        <div class="info-item"><div class="iname">不等号</div><div class="ival" id="iriType">&gt;</div></div>
+        <div class="info-item"><div class="iname">解集</div><div class="ival green" id="iriSolution" style="font-size:0.8rem;">x &lt; -1 &cup; x &gt; 1</div></div>
+      </div>
+      <div class="chart-container large" id="chartInequalityRegion" style="margin-top:1rem;"></div>
+    </div>
+  </section>
+
+  <!-- ==================== Section 6: 高次不等式与穿根法 ==================== -->
+  <section>
+    <h2>高次不等式与穿根法</h2>
+
+    <div class="card">
+      <h3>穿根法（数轴标根法）</h3>
+      <p class="case-desc" style="color:var(--muted);font-size:0.92rem;line-height:1.7;margin-bottom:1rem;">
+        对于可分解为一次因式乘积的高次不等式 <b style="color:var(--ink);">f(x) = (x−x₁)(x−x₂)…(x−xₙ) > 0</b>，将各根标在数轴上，从右上角开始"穿线"：遇到奇数重根穿过去，偶数重根弹回来。曲线在数轴上方则为正（>0），下方则为负（<0）。
+      </p>
+
+      <!-- 预设不等式 -->
+      <div class="ineq-type-group" id="presetIneqGroup">
+        <button class="active" data-preset="0">(x−1)(x−2)(x+1) > 0</button>
+        <button data-preset="1">(x+2)x(x−3) < 0</button>
+        <button data-preset="2">(x+1)²(x−2) > 0</button>
+        <button data-preset="3">(x+2)(x−1)(x−3)(x−4) ≤ 0</button>
+        <button data-preset="4">自定义</button>
+      </div>
+
+      <!-- 自定义根输入 -->
+      <div id="customRootsPanel" style="display:none;margin-bottom:1rem;">
+        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:0.5rem;">
+          输入各根的值（从小到大，用逗号分隔），每个根可加 ^2 表示二重根，如: <code style="color:var(--accent);font-family:var(--font-mono);">-1, 0, 2^2, 3</code>
+        </p>
+        <div style="display:flex;gap:0.5rem;align-items:center;">
+          <input type="text" id="customRootsInput" value="-1, 0, 2^2, 3"
+            style="flex:1;background:var(--bg3);border:1px solid var(--rule);color:var(--ink);padding:0.5rem 0.75rem;border-radius:8px;font-family:var(--font-mono);font-size:0.9rem;outline:none;"
+            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--rule)'">
+          <button id="btnApplyCustom" style="background:var(--accent);color:var(--bg);border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.9rem;white-space:nowrap;">
+            应用
+          </button>
+        </div>
+      </div>
+
+      <!-- 不等号选择 -->
+      <div style="display:flex;gap:1rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap;">
+        <span style="color:var(--muted);font-size:0.85rem;">不等号：</span>
+        <div class="ineq-type-group" id="higherIneqTypeGroup">
+          <button class="active" data-type="gt">&gt; 0</button>
+          <button data-type="lt">&lt; 0</button>
+          <button data-type="gte">&ge; 0</button>
+          <button data-type="lte">&le; 0</button>
+        </div>
+      </div>
+
+      <div class="formula-display" id="higherIneqFormula">(x+1)(x−1)(x−2) &gt; 0</div>
+
+      <!-- 穿根法步骤说明 -->
+      <div class="info-panel" id="higherIneqInfo">
+        <div class="info-item"><div class="iname">根</div><div class="ival" id="hiRoots" style="font-size:0.78rem;">x = -1, 1, 2</div></div>
+        <div class="info-item"><div class="iname">重数</div><div class="ival" id="hiMultiplicities">1, 1, 1</div></div>
+        <div class="info-item"><div class="iname">解集</div><div class="ival green" id="hiSolution" style="font-size:0.78rem;">x &lt; -1 ∪ 1 &lt; x &lt; 2</div></div>
+      </div>
+
+      <div class="chart-container large" id="chartHigherIneq" style="margin-top:1rem;"></div>
+    </div>
+  </section>
+
+  <!-- ==================== Section 7: 分式不等式 ==================== -->
+  <section>
+    <h2>分式不等式</h2>
+
+    <div class="card">
+      <h3>分式不等式的解法</h3>
+      <p class="case-desc" style="color:var(--muted);font-size:0.92rem;line-height:1.7;margin-bottom:1rem;">
+        分式不等式 <b style="color:var(--ink);">f(x)/g(x) > 0</b> 的核心思路：分子分母同号时为正，异号时为负。等价于转化为 <b style="color:var(--accent);">f(x)·g(x) > 0 且 g(x) ≠ 0</b>。因此分母的零点始终<b style="color:#ef4444;">不在定义域内</b>（用空心圆表示）。
+      </p>
+
+      <!-- 预设不等式 -->
+      <div class="ineq-type-group" id="fracPresetGroup">
+        <button class="active" data-frac="0">(x−1)/(x+2) > 0</button>
+        <button data-frac="1">(x+1)/(x−3) < 0</button>
+        <button data-frac="2">x/(x²−1) ≥ 0</button>
+        <button data-frac="3">(x−1)(x+2)/(x−3) ≤ 0</button>
+        <button data-frac="4">自定义</button>
+      </div>
+
+      <!-- 自定义输入 -->
+      <div id="customFracPanel" style="display:none;margin-bottom:1rem;">
+        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:0.5rem;">
+          输入分子和分母的根（用逗号分隔），每个根可加 ^2 表示二重根。如: <code style="color:var(--accent);font-family:var(--font-mono);">分子: 1, -2 &nbsp; 分母: 3</code>
+        </p>
+        <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:0.3rem;">
+            <span style="color:var(--muted);font-size:0.85rem;white-space:nowrap;">分子根:</span>
+            <input type="text" id="fracNumInput" value="1, -2"
+              style="width:140px;background:var(--bg3);border:1px solid var(--rule);color:var(--ink);padding:0.4rem 0.6rem;border-radius:6px;font-family:var(--font-mono);font-size:0.85rem;outline:none;"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--rule)'">
+          </div>
+          <div style="display:flex;align-items:center;gap:0.3rem;">
+            <span style="color:var(--muted);font-size:0.85rem;white-space:nowrap;">分母根:</span>
+            <input type="text" id="fracDenInput" value="3"
+              style="width:100px;background:var(--bg3);border:1px solid var(--rule);color:var(--ink);padding:0.4rem 0.6rem;border-radius:6px;font-family:var(--font-mono);font-size:0.85rem;outline:none;"
+              onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--rule)'">
+          </div>
+          <button id="btnApplyFrac" style="background:var(--accent);color:var(--bg);border:none;padding:0.4rem 0.8rem;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85rem;white-space:nowrap;">
+            应用
+          </button>
+        </div>
+      </div>
+
+      <!-- 不等号选择 -->
+      <div style="display:flex;gap:1rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap;">
+        <span style="color:var(--muted);font-size:0.85rem;">不等号：</span>
+        <div class="ineq-type-group" id="fracTypeGroup">
+          <button class="active" data-type="gt">&gt; 0</button>
+          <button data-type="lt">&lt; 0</button>
+          <button data-type="gte">&ge; 0</button>
+          <button data-type="lte">&le; 0</button>
+        </div>
+      </div>
+
+      <div class="formula-display" id="fracFormula">(x−1)/(x+2) &gt; 0</div>
+
+      <div class="info-panel" id="fracInfoPanel">
+        <div class="info-item"><div class="iname">分子零点</div><div class="ival" id="fiNumRoots" style="font-size:0.78rem;">x = 1.0</div></div>
+        <div class="info-item"><div class="iname">分母零点(排除)</div><div class="ival red" id="fiDenRoots" style="font-size:0.78rem;">x = -2.0</div></div>
+        <div class="info-item"><div class="iname">定义域</div><div class="ival" id="fiDomain" style="font-size:0.78rem;">x &ne; -2</div></div>
+        <div class="info-item"><div class="iname">解集</div><div class="ival green" id="fiSolution" style="font-size:0.78rem;">x &lt; -2 &cup; x &gt; 1</div></div>
+      </div>
+
+      <div class="chart-container large" id="chartFracIneq" style="margin-top:1rem;"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    一元二次函数、方程与不等式 &middot; 交互式学习工具
+  </div>
+</footer>
+
+<script src="./_shared/js/echarts.min.js"></script>
+<script src="./assets/quadratic-charts.js"></script>
+
+</body>
+</html>
