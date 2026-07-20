@@ -74,7 +74,7 @@ footer { text-align:center; padding:2rem 1rem; color:var(--muted); font-size:0.8
 </head>
 <body>
 
-<a href="./index.html" style="position:fixed;top:1rem;left:1rem;z-index:100;background:var(--bg2);border:1px solid var(--rule);color:var(--ink);padding:0.5rem 1rem;border-radius:8px;text-decoration:none;font-size:0.9rem;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--rule)'">&larr; 返回首页</a>
+<a href="./index.html" onclick="history.back();return false;" style="position:fixed;top:1rem;left:1rem;z-index:100;background:var(--bg2);border:1px solid var(--rule);color:var(--ink);padding:0.5rem 1rem;border-radius:8px;text-decoration:none;font-size:0.9rem;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--rule)'">&larr; 返回首页</a>
 
 <header>
   <div class="container">
@@ -1098,9 +1098,12 @@ footer { text-align:center; padding:2rem 1rem; color:var(--muted); font-size:0.8
       drawPlane3D(ctx, proj, [0, 0, 0], [Math.cos(PI/4), 0, Math.sin(PI/4)], [0, 1, 0], 1.5, 'rgb(245,158,11)', 0.06);
       drawLabel3D(ctx, proj, [1.6, 0, 0], '\u03b1', ACCENT, [5, -15]);
       drawLabel3D(ctx, proj, [1.0, 1.0, 1.0], '\u03b2', ACCENT2, [5, -15]);
-      // Intersection line
-      drawLine3D(ctx, proj, [0, -1.5, 0], [0, 1.5, 0], ACCENT3, 2);
-      drawLabel3D(ctx, proj, [0, 1.6, 0], '\u4ea4\u7ebf l', ACCENT3, [5, -5]);
+      // Intersection line: direction = cross(normal_α, normal_β) or simply the shared direction
+      // α is XZ plane (y=0), β has u=[cos45,0,sin45] v=[0,1,0]
+      // Intersection: y=0 ∧ in β → direction [cos45, 0, sin45]
+      var il = 1.5;
+      drawLine3D(ctx, proj, [-il*Math.cos(PI/4), 0, -il*Math.sin(PI/4)], [il*Math.cos(PI/4), 0, il*Math.sin(PI/4)], ACCENT3, 2);
+      drawLabel3D(ctx, proj, [il*Math.cos(PI/4)+0.1, 0, il*Math.sin(PI/4)], '\u4ea4\u7ebf l', ACCENT3, [5, -5]);
       document.getElementById('planePlaneDesc').textContent = '\u4e24\u5e73\u9762\u76f8\u4ea4\uff1a\u6709\u4e00\u6761\u516c\u5171\u76f4\u7ebf\uff08\u4ea4\u7ebf\uff09\u3002';
     }
   });
