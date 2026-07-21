@@ -4,326 +4,765 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>我的网页小游戏</title>
+  <title data-i18n="title">MATH.OS // 数学可视化核心系统</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&display=swap');
     :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --ink: #f1f5f9;
-      --muted: #94a3b8;
-      --accent: #06b6d4;
-      --accent2: #f59e0b;
-      --border: #334155;
+      --bg: #07070d;
+      --bg-card: #0d0d18;
+      --bg-panel: #12121f;
+      --cyan: #00f0ff;
+      --cyan-dim: rgba(0,240,255,0.1);
+      --magenta: #ff2d95;
+      --magenta-dim: rgba(255,45,149,0.1);
+      --lime: #39ff14;
+      --lime-dim: rgba(57,255,20,0.1);
+      --violet: #bd00ff;
+      --violet-dim: rgba(189,0,255,0.1);
+      --amber: #ffb800;
+      --amber-dim: rgba(255,184,0,0.1);
+      --text: #e0e0f0;
+      --text-dim: #8890a8;
+      --grid: rgba(0,240,255,0.04);
+      --border: rgba(0,240,255,0.15);
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
       font-family: 'Noto Sans SC', system-ui, sans-serif;
       background: var(--bg);
-      color: var(--ink);
+      color: var(--text);
       min-height: 100vh;
+      position: relative;
     }
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem;
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: -2;
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 50px 50px;
     }
+    body::after {
+      content: ''; position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+      background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 6px);
+      opacity: 0.2;
+    }
+
+    /* ===== LANG SWITCH ===== */
+    .lang-switch {
+      position: fixed; top: 16px; right: 20px; z-index: 200;
+      display: flex; background: rgba(0,0,0,0.5);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 3px; backdrop-filter: blur(8px);
+    }
+    .lang-btn {
+      font-family: 'Orbitron', monospace; font-size: 0.7rem;
+      padding: 6px 12px; border: none; background: transparent;
+      color: var(--text-dim); cursor: pointer; border-radius: 6px;
+      letter-spacing: 1px; transition: all 0.2s;
+    }
+    .lang-btn:hover { color: var(--cyan); background: rgba(0,240,255,0.08); }
+    .lang-btn.active { background: var(--cyan); color: #000; font-weight: 700; }
+
+    /* ===== HEADER ===== */
     header {
       text-align: center;
-      margin-bottom: 3rem;
+      padding: 3rem 1.5rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-glow {
+      position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; opacity: 0.12;
+    }
+    .hero-glow:nth-child(1) { width: 350px; height: 350px; background: var(--cyan); top: -80px; left: 10%; }
+    .hero-glow:nth-child(2) { width: 280px; height: 280px; background: var(--magenta); top: -40px; right: 10%; }
+    .hero-glow:nth-child(3) { width: 200px; height: 200px; background: var(--violet); bottom: 0; left: 50%; transform: translateX(-50%); }
+
+    .sys-tag {
+      font-family: 'Orbitron', monospace; font-size: 0.7rem; letter-spacing: 4px;
+      color: var(--text-dim); border: 1px solid var(--border);
+      padding: 5px 18px; border-radius: 4px; display: inline-block; margin-bottom: 16px;
     }
     header h1 {
-      font-size: 2.5rem;
-      font-weight: 900;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 0.5rem;
+      font-family: 'Orbitron', monospace; font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 900; letter-spacing: 6px; margin-bottom: 8px;
     }
+    .neon-cyan { color: var(--cyan); text-shadow: 0 0 12px rgba(0,240,255,0.4); }
+    .neon-magenta { color: var(--magenta); text-shadow: 0 0 12px rgba(255,45,149,0.4); }
     header p {
-      color: var(--muted);
-      font-size: 1.1rem;
+      color: var(--text-dim); font-size: 1rem; max-width: 480px; margin: 0 auto;
+      line-height: 1.7;
     }
+    .stats-bar {
+      display: flex; justify-content: center; gap: 32px; flex-wrap: wrap;
+      margin-top: 24px;
+    }
+    .stat-item { text-align: center; }
+    .stat-item .num {
+      font-family: 'Orbitron', monospace; font-size: 1.6rem; font-weight: 700;
+      color: var(--cyan); text-shadow: 0 0 10px rgba(0,240,255,0.3);
+    }
+    .stat-item .lbl { font-size: 0.7rem; color: var(--text-dim); letter-spacing: 2px; margin-top: 4px; font-family: 'Orbitron', monospace; }
+
+    /* ===== CONTAINER ===== */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* ===== SEARCH ===== */
+    .search-wrap {
+      display: flex; justify-content: center; margin-bottom: 20px;
+    }
+    .search-box {
+      background: rgba(0,0,0,0.4); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 18px; color: var(--cyan);
+      font-family: 'Orbitron', 'Noto Sans SC', sans-serif; font-size: 0.85rem;
+      outline: none; width: 100%; max-width: 400px; letter-spacing: 1px;
+      transition: all 0.25s;
+    }
+    .search-box:focus { border-color: var(--cyan); box-shadow: 0 0 16px rgba(0,240,255,0.15); }
+    .search-box::placeholder { color: var(--text-dim); }
+
+    /* ===== TABS ===== */
+    .tab-bar {
+      display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+      margin-bottom: 28px; padding: 4px;
+      background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+      border-radius: 12px; max-width: 900px; margin-left: auto; margin-right: auto;
+    }
+    .tab {
+      font-family: 'Orbitron', monospace; font-size: 0.72rem; letter-spacing: 1px;
+      padding: 8px 14px; border-radius: 8px; cursor: pointer;
+      color: var(--text-dim); background: transparent; border: none;
+      transition: all 0.2s; position: relative; white-space: nowrap;
+    }
+    .tab:hover { color: var(--cyan); background: rgba(0,240,255,0.06); }
+    .tab.active {
+      background: var(--cyan); color: #000; font-weight: 700;
+      box-shadow: 0 0 12px rgba(0,240,255,0.3);
+    }
+    .tab .count {
+      font-size: 0.6rem; margin-left: 4px; opacity: 0.7;
+    }
+
+    /* ===== GRID ===== */
     .game-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 1.25rem;
+      min-height: 200px;
     }
     .game-card {
-      background: var(--card);
+      background: linear-gradient(135deg, rgba(13,13,24,0.9), rgba(18,18,31,0.95));
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.5rem;
+      border-radius: 14px;
+      padding: 1.4rem;
       text-decoration: none;
-      color: var(--ink);
-      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
-      display: flex;
-      flex-direction: column;
+      color: var(--text);
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+      display: flex; flex-direction: column;
+      position: relative; overflow: hidden;
+      animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .game-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      opacity: 0.4;
     }
     .game-card:hover {
-      transform: translateY(-6px);
-      border-color: var(--accent);
-      box-shadow: 0 12px 40px rgba(6, 182, 212, 0.15);
+      transform: translateY(-5px);
+      border-color: rgba(0,240,255,0.4);
+      box-shadow: 0 10px 32px rgba(0,240,255,0.08);
     }
     .game-card.disabled {
-      opacity: 0.45;
-      pointer-events: none;
-      cursor: not-allowed;
-      filter: grayscale(0.5);
+      opacity: 0.4; pointer-events: none; cursor: not-allowed; filter: grayscale(0.6);
     }
-    .game-card.disabled:hover {
-      transform: none;
-      border-color: var(--border);
-      box-shadow: none;
-    }
+    .game-card.disabled:hover { transform: none; border-color: var(--border); box-shadow: none; }
     .game-icon {
-      width: 60px;
-      height: 60px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.8rem;
-      margin-bottom: 1rem;
-      flex-shrink: 0;
+      width: 52px; height: 52px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 0.8rem; flex-shrink: 0;
+      border: 1px solid rgba(0,240,255,0.15); background: rgba(0,240,255,0.05);
     }
     .game-card h3 {
-      font-size: 1.2rem;
-      font-weight: 700;
-      margin-bottom: 0.4rem;
+      font-size: 1.05rem; font-weight: 700; margin-bottom: 0.35rem;
+      letter-spacing: 0.5px;
     }
     .game-card p {
-      color: var(--muted);
-      font-size: 0.9rem;
-      line-height: 1.5;
+      color: var(--text-dim); font-size: 0.82rem; line-height: 1.55;
       flex: 1;
     }
     .game-tag {
-      display: inline-block;
-      margin-top: 0.8rem;
-      font-size: 0.75rem;
-      padding: 0.25rem 0.6rem;
-      border-radius: 6px;
-      font-weight: 700;
+      display: inline-block; margin-top: 0.7rem;
+      font-size: 0.68rem; padding: 3px 10px; border-radius: 5px;
+      font-weight: 700; font-family: 'Orbitron', monospace; letter-spacing: 1px;
     }
+
+    /* ===== CATEGORY COLORS ===== */
+    .cat-algebra .game-icon { border-color: rgba(57,255,20,0.2); background: rgba(57,255,20,0.06); }
+    .cat-function .game-icon { border-color: rgba(0,240,255,0.2); background: rgba(0,240,255,0.06); }
+    .cat-geometry .game-icon { border-color: rgba(189,0,255,0.2); background: rgba(189,0,255,0.06); }
+    .cat-sequence .game-icon { border-color: rgba(255,184,0,0.2); background: rgba(255,184,0,0.06); }
+.cat-probability .game-icon { border-color: rgba(255,45,149,0.2); background: rgba(255,45,149,0.06); }
+.cat-app .game-icon { border-color: rgba(255,107,107,0.2); background: rgba(255,107,107,0.06); }
+
+/* ===== GAME TAG (custom per-card override) ===== */
+.game-tag.is-game { background: rgba(0,255,136,0.1) !important; color: #00ff88 !important; }
+
+    /* ===== FOOTER ===== */
     footer {
-      text-align: center;
-      padding: 3rem 1rem;
-      color: var(--muted);
-      font-size: 0.85rem;
-      border-top: 1px solid var(--border);
-      margin-top: 4rem;
+      text-align: center; padding: 3rem 1rem 2rem;
+      color: var(--text-dim); font-size: 0.8rem;
+      border-top: 1px solid rgba(0,240,255,0.08); margin-top: 3rem;
+      font-family: 'Orbitron', monospace; letter-spacing: 2px;
     }
-    @media (max-width: 600px) {
-      header h1 { font-size: 1.8rem; }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: var(--text-dim);
+      grid-column: 1 / -1;
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.5; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 640px) {
+      header h1 { font-size: 1.5rem; letter-spacing: 3px; }
+      .stats-bar { gap: 20px; }
+      .tab { padding: 7px 10px; font-size: 0.65rem; }
       .game-grid { grid-template-columns: 1fr; }
+      .search-box { max-width: 100%; }
+      .lang-switch { top: 10px; right: 10px; }
     }
   </style>
 </head>
 <body>
 
+<!-- Language Switcher -->
+<div class="lang-switch">
+  <button class="lang-btn active" data-lang="zh">中文</button>
+  <button class="lang-btn" data-lang="en">EN</button>
+</div>
+
 <header>
-  <div class="container">
-    <h1>我的网页小游戏</h1>
-    <p>所有项目汇总在这里，点击卡片即可开始</p>
+  <div class="hero-glow"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow"></div>
+  <div class="sys-tag" data-i18n="sysTag">MATH.VISUALIZATION.OS v1.3.0</div>
+  <h1><span class="neon-cyan">MATH</span>.<span class="neon-magenta">OS</span></h1>
+  <p data-i18n="subtitle">数学可视化核心系统 — 用交互与动画让抽象的数学概念变得可触可感</p>
+  <div class="stats-bar">
+    <div class="stat-item"><div class="num" id="statTotal">22</div><div class="lbl" data-i18n="statModules">MODULES</div></div>
+    <div class="stat-item"><div class="num">7</div><div class="lbl" data-i18n="statCats">CATEGORIES</div></div>
+    <div class="stat-item"><div class="num">3</div><div class="lbl" data-i18n="statSpa">REACT SPA</div></div>
   </div>
 </header>
 
 <main class="container">
-  <div class="game-grid">
 
-    <!-- 三角函数可视化 -->
-    <a class="game-card" href="./trigonometry-visualization.html">
-      <div class="game-icon" style="background: rgba(6,182,212,0.15);">📐</div>
-      <h3>三角函数可视化</h3>
-      <p>交互式探索正弦、余弦、正切函数的性质与关系，支持参数调节、单位圆演示和常见角度预设。</p>
-      <span class="game-tag" style="background: rgba(6,182,212,0.15); color: #06b6d4;">学习工具</span>
+  <!-- Search -->
+  <div class="search-wrap">
+    <input type="text" class="search-box" id="searchBox" data-i18n-placeholder="searchPh" placeholder=">> 搜索模块...">
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar" id="tabBar">
+    <button class="tab active" data-cat="all" data-i18n="tabAll">ALL<span class="count" id="cntAll">(22)</span></button>
+    <button class="tab" data-cat="algebra" data-i18n="tabAlgebra">ALGEBRA<span class="count" id="cntAlgebra">(3)</span></button>
+    <button class="tab" data-cat="function" data-i18n="tabFunction">FUNCTION<span class="count" id="cntFunction">(7)</span></button>
+    <button class="tab" data-cat="geometry" data-i18n="tabGeometry">GEOMETRY<span class="count" id="cntGeometry">(4)</span></button>
+    <button class="tab" data-cat="sequence" data-i18n="tabSequence">SEQUENCE<span class="count" id="cntSequence">(1)</span></button>
+    <button class="tab" data-cat="probability" data-i18n="tabProbability">PROBABILITY<span class="count" id="cntProbability">(4)</span></button>
+    <button class="tab" data-cat="app" data-i18n="tabApp">APP<span class="count" id="cntApp">(3)</span></button>
+  </div>
+
+  <!-- Cards Grid -->
+  <div class="game-grid" id="gameGrid">
+
+    <!-- ========== ALGEBRA ========== -->
+    <a class="game-card cat-algebra" href="./sets-logic.html" data-cat="algebra"
+       data-title-zh="集合与常用逻辑用语" data-title-en="Sets & Logic"
+       data-desc-zh="集合的含义与表示、子集关系、Venn图交并补运算、充分必要条件判断、全称量词与存在量词——集合与逻辑的核心知识交互演示。"
+       data-desc-en="Set theory, subset relations, Venn diagrams, necessary and sufficient conditions, quantifiers — interactive demonstration of core logic concepts.">
+      <div class="game-icon">⊆</div>
+      <h3 data-i18n-card="title">集合与常用逻辑用语</h3>
+      <p data-i18n-card="desc">集合的含义与表示、子集关系、Venn图交并补运算、充分必要条件判断、全称量词与存在量词——集合与逻辑的核心知识交互演示。</p>
+      <span class="game-tag" style="background: rgba(57,255,20,0.1); color: var(--lime);">ALGEBRA</span>
     </a>
 
-    <!-- 指数函数可视化 -->
-    <a class="game-card" href="./exponential-visualization.html">
-      <div class="game-icon" style="background: rgba(16,185,129,0.15);">📈</div>
-      <h3>指数函数可视化</h3>
-      <p>动画演示指数增长与衰减，直观理解底数对函数图像的影响，支持多种演示场景。</p>
-      <span class="game-tag" style="background: rgba(16,185,129,0.15); color: #10b981;">学习工具</span>
+    <a class="game-card cat-algebra" href="./quadratic-visualization.html" data-cat="algebra"
+       data-title-zh="一元二次函数、方程与不等式" data-title-en="Quadratic Functions & Inequalities"
+       data-desc-zh="等式与不等式性质、基本不等式、二次函数图像探索、方程求解与韦达定理、不等式解集可视化——动画演示二次世界的核心逻辑。"
+       data-desc-en="Equation and inequality properties, quadratic function exploration, Vieta's formulas, inequality solution set visualization — animated demonstration of quadratic logic.">
+      <div class="game-icon">📐</div>
+      <h3 data-i18n-card="title">一元二次函数、方程与不等式</h3>
+      <p data-i18n-card="desc">等式与不等式性质、基本不等式、二次函数图像探索、方程求解与韦达定理、不等式解集可视化——动画演示二次世界的核心逻辑。</p>
+      <span class="game-tag" style="background: rgba(57,255,20,0.1); color: var(--lime);">ALGEBRA</span>
     </a>
 
-    <!-- 对数函数可视化 -->
-    <a class="game-card" href="./logarithm-visualization.html">
-      <div class="game-icon" style="background: rgba(99,102,241,0.15);">📊</div>
-      <h3>对数函数可视化</h3>
-      <p>动画演示对数函数与对数运算法则，直观理解 log 的本质及与指数函数的对称关系。</p>
-      <span class="game-tag" style="background: rgba(99,102,241,0.15); color: #6366f1;">学习工具</span>
+    <a class="game-card cat-algebra" href="./quadratic-cases.html" data-cat="algebra"
+       data-title-zh="一元二次函数应用案例" data-title-en="Quadratic Applications"
+       data-desc-zh="商品定价利润最大化、抛体运动轨迹、拱桥抛物线设计、盈亏平衡分析、生产成本不等式约束——二次函数在真实世界的五大典型应用。"
+       data-desc-en="Profit maximization, projectile motion, arch bridge design, break-even analysis, cost constraints — five real-world applications of quadratic functions.">
+      <div class="game-icon">💼</div>
+      <h3 data-i18n-card="title">一元二次函数应用案例</h3>
+      <p data-i18n-card="desc">商品定价利润最大化、抛体运动轨迹、拱桥抛物线设计、盈亏平衡分析、生产成本不等式约束——二次函数在真实世界的五大典型应用。</p>
+      <span class="game-tag" style="background: rgba(57,255,20,0.1); color: var(--lime);">ALGEBRA</span>
     </a>
 
-    <!-- 零点存在定理 -->
-    <a class="game-card" href="./zero-point-theorem.html">
-      <div class="game-icon" style="background: rgba(244,63,94,0.15);">🎯</div>
-      <h3>零点存在定理</h3>
-      <p>交互式理解零点定理的条件与结论，支持二分法求近似解和多零点函数示例。</p>
-      <span class="game-tag" style="background: rgba(244,63,94,0.15); color: #f43f5e;">学习工具</span>
+    <!-- ========== FUNCTION ========== -->
+    <a class="game-card cat-function" href="./trigonometry-visualization.html" data-cat="function"
+       data-title-zh="三角函数可视化" data-title-en="Trigonometry Visualization"
+       data-desc-zh="交互式探索正弦、余弦、正切函数的性质与关系，支持参数调节、单位圆演示和常见角度预设。"
+       data-desc-en="Interactive exploration of sine, cosine, and tangent function properties with parameter controls, unit circle demos, and angle presets.">
+      <div class="game-icon">📐</div>
+      <h3 data-i18n-card="title">三角函数可视化</h3>
+      <p data-i18n-card="desc">交互式探索正弦、余弦、正切函数的性质与关系，支持参数调节、单位圆演示和常见角度预设。</p>
+      <span class="game-tag" style="background: rgba(0,240,255,0.1); color: var(--cyan);">FUNCTION</span>
     </a>
 
-    <!-- 函数的基本性质 -->
-    <a class="game-card" href="./function-properties.html">
-      <div class="game-icon" style="background: rgba(20,184,166,0.15);">⚖️</div>
-      <h3>函数的基本性质</h3>
-      <p>交互式探索函数的定义域、值域、单调性与奇偶性，支持 10 种常见函数的对比学习。</p>
-      <span class="game-tag" style="background: rgba(20,184,166,0.15); color: #14b8a6;">学习工具</span>
+    <a class="game-card cat-function" href="./exponential-visualization.html" data-cat="function"
+       data-title-zh="指数函数可视化" data-title-en="Exponential Functions"
+       data-desc-zh="动画演示指数增长与衰减，直观理解底数对函数图像的影响，支持多种演示场景。"
+       data-desc-en="Animated exponential growth and decay, visualizing how the base affects the graph, with multiple demo scenarios.">
+      <div class="game-icon">📈</div>
+      <h3 data-i18n-card="title">指数函数可视化</h3>
+      <p data-i18n-card="desc">动画演示指数增长与衰减，直观理解底数对函数图像的影响，支持多种演示场景。</p>
+      <span class="game-tag" style="background: rgba(0,240,255,0.1); color: var(--cyan);">FUNCTION</span>
     </a>
 
-    <!-- 计算原理与概率统计 -->
-    <a class="game-card" href="./stats-visualization.html">
-      <div class="game-icon" style="background: rgba(236,72,153,0.15);">🎲</div>
-      <h3>计算原理与概率统计</h3>
-      <p>蒙特卡洛模拟、概率分布可视化、大数定律与中心极限定理演示，排列组合计算器。</p>
-      <span class="game-tag" style="background: rgba(236,72,153,0.15); color: #ec4899;">学习工具</span>
+    <a class="game-card cat-function" href="./logarithm-visualization.html" data-cat="function"
+       data-title-zh="对数函数可视化" data-title-en="Logarithm Functions"
+       data-desc-zh="动画演示对数函数与对数运算法则，直观理解 log 的本质及与指数函数的对称关系。"
+       data-desc-en="Animated logarithm functions and rules, visualizing the essence of log and its symmetry with exponential functions.">
+      <div class="game-icon">📊</div>
+      <h3 data-i18n-card="title">对数函数可视化</h3>
+      <p data-i18n-card="desc">动画演示对数函数与对数运算法则，直观理解 log 的本质及与指数函数的对称关系。</p>
+      <span class="game-tag" style="background: rgba(0,240,255,0.1); color: var(--cyan);">FUNCTION</span>
     </a>
 
-    <!-- 概率冒险记 -->
-    <a class="game-card" href="./probability-adventure.html">
-      <div class="game-icon" style="background: rgba(255,107,107,0.15);">🎲</div>
-      <h3>概率冒险记</h3>
-      <p>绘本风格互动游戏，掷骰子、投硬币、独立性实验——在故事中理解随机事件、独立性和大数定律，9 个真实应用案例。</p>
-      <span class="game-tag" style="background: rgba(255,107,107,0.15); color: #ff6b6b;">互动绘本</span>
+    <a class="game-card cat-function" href="./function-properties.html" data-cat="function"
+       data-title-zh="函数的基本性质" data-title-en="Function Properties"
+       data-desc-zh="交互式探索函数的定义域、值域、单调性与奇偶性，支持 10 种常见函数的对比学习。"
+       data-desc-en="Interactive exploration of domain, range, monotonicity, and parity — compare 10 common functions side by side.">
+      <div class="game-icon">⚖️</div>
+      <h3 data-i18n-card="title">函数的基本性质</h3>
+      <p data-i18n-card="desc">交互式探索函数的定义域、值域、单调性与奇偶性，支持 10 种常见函数的对比学习。</p>
+      <span class="game-tag" style="background: rgba(0,240,255,0.1); color: var(--cyan);">FUNCTION</span>
     </a>
 
-    <!-- 高中统计的实际案例演示 -->
-    <a class="game-card" href="./stats-cases.html">
-      <div class="game-icon" style="background: rgba(16,185,129,0.15);">📊</div>
-      <h3>高中统计的实际案例演示</h3>
-      <p>抽样方法、数字特征、回归分析、独立性检验、正态分布——用奶茶店评分、房价预测、近视调查等真实案例理解高中统计。</p>
-      <span class="game-tag" style="background: rgba(16,185,129,0.15); color: #10b981;">实际案例</span>
+    <a class="game-card cat-function" href="./zero-point-theorem.html" data-cat="function"
+       data-title-zh="零点存在定理" data-title-en="Zero Point Theorem"
+       data-desc-zh="交互式理解零点定理的条件与结论，支持二分法求近似解和多零点函数示例。"
+       data-desc-en="Interactive understanding of the zero point theorem with bisection method approximation and multi-zero examples.">
+      <div class="game-icon">🎯</div>
+      <h3 data-i18n-card="title">零点存在定理</h3>
+      <p data-i18n-card="desc">交互式理解零点定理的条件与结论，支持二分法求近似解和多零点函数示例。</p>
+      <span class="game-tag" style="background: rgba(0,240,255,0.1); color: var(--cyan);">FUNCTION</span>
     </a>
 
-    <!-- 一本院校理科专业就业分析 -->
-    <a class="game-card" href="./university-science.html">
-      <div class="game-icon" style="background: rgba(59,130,246,0.15);">🎓</div>
-      <h3>一本院校理科专业就业分析</h3>
-      <p>985/211高校六大理科专业（数学、物理、化学、生物、地理、统计学）本科与硕士就业率、升学率及毕业去向可视化对比。</p>
-      <span class="game-tag" style="background: rgba(59,130,246,0.15); color: #3b82f6;">数据分析</span>
+    <a class="game-card cat-function" href="./complex-exponential.html" data-cat="function"
+       data-title-zh="复指数函数可视化" data-title-en="Complex Exponential"
+       data-desc-zh="探索欧拉公式 e^(iθ) = cosθ + i·sinθ，通过可调参数动画理解复指数在旋转、振荡和信号处理中的核心作用。"
+       data-desc-en="Explore Euler's formula e^(iθ) = cosθ + i·sinθ with adjustable parameters — understand rotation, oscillation, and signal processing.">
+      <div class="game-icon">🌀</div>
+      <h3 data-i18n-card="title">复指数函数可视化</h3>
+      <p data-i18n-card="desc">探索欧拉公式 e^(iθ) = cosθ + i·sinθ，通过可调参数动画理解复指数在旋转、振荡和信号处理中的核心作用。</p>
+      <span class="game-tag" style="background: rgba(0,240,255,0.1); color: var(--cyan);">FUNCTION</span>
     </a>
 
-    <!-- 三角函数实际案例 -->
-    <a class="game-card" href="./trig-cases.html">
-      <div class="game-icon" style="background: rgba(6,182,212,0.15);">📏</div>
-      <h3>三角函数实际案例</h3>
-      <p>建筑物高度测量、潮汐预测、简谐运动、卫星轨道、音频波形叠加——三角函数在现实中的五大典型应用。</p>
-      <span class="game-tag" style="background: rgba(6,182,212,0.15); color: #06b6d4;">学习工具</span>
+    <a class="game-card cat-function" href="./trig-cases.html" data-cat="function"
+       data-title-zh="三角函数实际案例" data-title-en="Trigonometry Applications"
+       data-desc-zh="建筑物高度测量、潮汐预测、简谐运动、卫星轨道、音频波形叠加——三角函数在现实中的五大典型应用。"
+       data-desc-en="Building height measurement, tide prediction, simple harmonic motion, satellite orbits, audio waveform superposition — five trigonometry applications.">
+      <div class="game-icon">📏</div>
+      <h3 data-i18n-card="title">三角函数实际案例</h3>
+      <p data-i18n-card="desc">建筑物高度测量、潮汐预测、简谐运动、卫星轨道、音频波形叠加——三角函数在现实中的五大典型应用。</p>
+      <span class="game-tag" style="background: rgba(0,240,255,0.1); color: var(--cyan);">FUNCTION</span>
     </a>
 
-    <!-- 一元二次函数、方程与不等式 -->
-    <a class="game-card" href="./quadratic-visualization.html">
-      <div class="game-icon" style="background: rgba(245,158,11,0.15);">📐</div>
-      <h3>一元二次函数、方程与不等式</h3>
-      <p>等式与不等式性质、基本不等式、二次函数图像探索、方程求解与韦达定理、不等式解集可视化——动画演示二次世界的核心逻辑。</p>
-      <span class="game-tag" style="background: rgba(245,158,11,0.15); color: #f59e0b;">学习工具</span>
+    <a class="game-card cat-function" href="./derivative-comic.html" data-cat="function"
+       data-title-zh="一元函数的导数及其应用" data-title-en="Derivatives & Applications"
+       data-desc-zh="美式漫画风格互动游戏：速度猎人切线动画、求导英雄训练场、函数侦探社、成本终结者优化战、黎曼和面积征服——在游戏故事中彻底搞懂导数和定积分。"
+       data-desc-en="American comic-style interactive games: tangent line animation, derivative hero training, function detective, cost optimizer, Riemann sum conqueror — master derivatives and integrals through gameplay."
+       data-tag-zh="游戏" data-tag-en="GAME">
+      <div class="game-icon">📈</div>
+      <h3 data-i18n-card="title">一元函数的导数及其应用</h3>
+      <p data-i18n-card="desc">美式漫画风格互动游戏：速度猎人切线动画、求导英雄训练场、函数侦探社、成本终结者优化战、黎曼和面积征服——在游戏故事中彻底搞懂导数和定积分。</p>
+      <span class="game-tag is-game">游戏</span>
     </a>
 
-    <!-- 一元二次函数应用案例 -->
-    <a class="game-card" href="./quadratic-cases.html">
-      <div class="game-icon" style="background: rgba(245,158,11,0.15);">💼</div>
-      <h3>一元二次函数应用案例</h3>
-      <p>商品定价利润最大化、抛体运动轨迹、拱桥抛物线设计、盈亏平衡分析、生产成本不等式约束——二次函数在真实世界的五大典型应用。</p>
-      <span class="game-tag" style="background: rgba(245,158,11,0.15); color: #f59e0b;">实际案例</span>
+    <!-- ========== GEOMETRY ========== -->
+    <a class="game-card cat-geometry" href="./solid-geometry-intro.html" data-cat="geometry"
+       data-title-zh="立体几何初步" data-title-en="Solid Geometry Intro"
+       data-desc-zh="基本立体图形分类与结构特征、斜二测画法交互演示、表面积体积公式计算器、空间点线面位置关系、平行与垂直判定定理。"
+       data-desc-en="Solid shape classification, cavalieri projection, surface area & volume calculator, spatial point-line-plane relations, parallel & perpendicular theorems.">
+      <div class="game-icon">📦</div>
+      <h3 data-i18n-card="title">立体几何初步</h3>
+      <p data-i18n-card="desc">基本立体图形分类与结构特征、斜二测画法交互演示、表面积体积公式计算器、空间点线面位置关系、平行与垂直判定定理。</p>
+      <span class="game-tag" style="background: rgba(189,0,255,0.1); color: var(--violet);">GEOMETRY</span>
     </a>
 
-    <!-- 复指数函数可视化 -->
-    <a class="game-card" href="./complex-exponential.html">
-      <div class="game-icon" style="background: rgba(245,158,11,0.15);">🌀</div>
-      <h3>复指数函数可视化</h3>
-      <p>探索欧拉公式 e^(iθ) = cosθ + i·sinθ，通过可调参数动画理解复指数在旋转、振荡和信号处理中的核心作用。</p>
-      <span class="game-tag" style="background: rgba(245,158,11,0.15); color: #f59e0b;">学习工具</span>
+    <a class="game-card cat-geometry" href="./solid-geometry.html" data-cat="geometry"
+       data-title-zh="空间对象与立体几何" data-title-en="Spatial Geometry"
+       data-desc-zh="旋转体生成动画、多面体交互探索、体积表面积公式速查，鼠标拖拽旋转 3D 视角。"
+       data-desc-en="Solids of revolution animation, polyhedron exploration, volume & surface area reference, mouse-drag 3D rotation.">
+      <div class="game-icon">📐</div>
+      <h3 data-i18n-card="title">空间对象与立体几何</h3>
+      <p data-i18n-card="desc">旋转体生成动画、多面体交互探索、体积表面积公式速查，鼠标拖拽旋转 3D 视角。</p>
+      <span class="game-tag" style="background: rgba(189,0,255,0.1); color: var(--violet);">GEOMETRY</span>
     </a>
 
-    <!-- 立体几何初步 -->
-    <a class="game-card" href="./solid-geometry-intro.html">
-      <div class="game-icon" style="background: rgba(34,211,238,0.15);">📦</div>
-      <h3>立体几何初步</h3>
-      <p>基本立体图形分类与结构特征、斜二测画法交互演示、表面积体积公式计算器、空间点线面位置关系、平行与垂直判定定理——高中立体几何核心知识交互演示。</p>
-      <span class="game-tag" style="background: rgba(34,211,238,0.15); color: #22d3ee;">学习工具</span>
+    <a class="game-card cat-geometry" href="./line-circle.html" data-cat="geometry"
+       data-title-zh="直线与圆的方程" data-title-en="Lines & Circles"
+       data-desc-zh="五种直线方程形式、两直线位置关系、点到直线距离、圆的方程、直线与圆的位置关系——解析几何核心知识交互演示。"
+       data-desc-en="Five forms of line equations, line relationships, point-to-line distance, circle equations, line-circle positions — interactive analytic geometry.">
+      <div class="game-icon">⭕</div>
+      <h3 data-i18n-card="title">直线与圆的方程</h3>
+      <p data-i18n-card="desc">五种直线方程形式、两直线位置关系、点到直线距离、圆的方程、直线与圆的位置关系——解析几何核心知识交互演示。</p>
+      <span class="game-tag" style="background: rgba(189,0,255,0.1); color: var(--violet);">GEOMETRY</span>
     </a>
 
-    <!-- 空间对象与立体几何 -->
-    <a class="game-card" href="./solid-geometry.html">
-      <div class="game-icon" style="background: rgba(34,211,238,0.15);">📐</div>
-      <h3>空间对象与立体几何</h3>
-      <p>旋转体生成动画、多面体交互探索、体积表面积公式速查，鼠标拖拽旋转 3D 视角。</p>
-      <span class="game-tag" style="background: rgba(34,211,238,0.15); color: #22d3ee;">学习工具</span>
+    <a class="game-card cat-geometry" href="./conic-sections.html" data-cat="geometry"
+       data-title-zh="圆锥曲线的方程" data-title-en="Conic Sections"
+       data-desc-zh="椭圆、双曲线、抛物线的标准方程与几何性质，直线与圆锥曲线的位置关系，以及行星轨道、抛体运动、探照灯聚焦、冷却塔等 6 个实际应用案例的交互式动画演示。"
+       data-desc-en="Ellipse, hyperbola, parabola equations and properties, line-conic relationships, plus 6 interactive application demos: planetary orbits, projectile motion, searchlights, cooling towers, and more.">
+      <div class="game-icon">🌀</div>
+      <h3 data-i18n-card="title">圆锥曲线的方程</h3>
+      <p data-i18n-card="desc">椭圆、双曲线、抛物线的标准方程与几何性质，直线与圆锥曲线的位置关系，以及行星轨道、抛体运动、探照灯聚焦、冷却塔等 6 个实际应用案例的交互式动画演示。</p>
+      <span class="game-tag" style="background: rgba(189,0,255,0.1); color: var(--violet);">GEOMETRY</span>
     </a>
 
-    <!-- 集合与常用逻辑用语 -->
-    <a class="game-card" href="./sets-logic.html">
-      <div class="game-icon" style="background: rgba(52,211,153,0.15);">⊆</div>
-      <h3>集合与常用逻辑用语</h3>
-      <p>集合的含义与表示、子集关系、Venn图交并补运算、充分必要条件判断、全称量词与存在量词——集合与逻辑的核心知识交互演示与高考真题。</p>
-      <span class="game-tag" style="background: rgba(52,211,153,0.15); color: #34d399;">学习工具</span>
+    <!-- ========== SEQUENCE ========== -->
+    <a class="game-card cat-sequence" href="./sequence-cyber.html" data-cat="sequence"
+       data-title-zh="数列核心协议" data-title-en="Sequence Protocol"
+       data-desc-zh="赛博科技风格互动页面：序列探测游戏、阶梯计费模拟器、增长模拟器（复利/病毒传播）、多米诺证明协议、求和方法选择器；9 个真实应用案例。"
+       data-desc-en="Cyberpunk-style interactive page: sequence detection game, tiered pricing simulator, growth simulator (compound interest / viral spread), domino induction protocol, summation method selector; 9 real-world applications."
+       data-tag-zh="游戏" data-tag-en="GAME">
+      <div class="game-icon">∑</div>
+      <h3 data-i18n-card="title">数列核心协议</h3>
+      <p data-i18n-card="desc">赛博科技风格互动页面：序列探测游戏、阶梯计费模拟器、增长模拟器（复利/病毒传播）、多米诺证明协议、求和方法选择器；9 个真实应用案例。</p>
+      <span class="game-tag is-game">游戏</span>
     </a>
 
-    <!-- 直线与圆的方程 -->
-    <a class="game-card" href="./line-circle.html">
-      <div class="game-icon" style="background: rgba(167,139,250,0.15);">⭕</div>
-      <h3>直线与圆的方程</h3>
-      <p>五种直线方程形式、两直线位置关系、点到直线距离、圆的方程、直线与圆的位置关系——解析几何核心知识交互演示。</p>
-      <span class="game-tag" style="background: rgba(167,139,250,0.15); color: #a78bfa;">学习工具</span>
+    <!-- ========== PROBABILITY ========== -->
+    <a class="game-card cat-probability" href="./stats-visualization.html" data-cat="probability"
+       data-title-zh="计算原理与概率统计" data-title-en="Probability & Statistics"
+       data-desc-zh="蒙特卡洛模拟、概率分布可视化、大数定律与中心极限定理演示，排列组合计算器。"
+       data-desc-en="Monte Carlo simulation, probability distribution visualization, law of large numbers & central limit theorem demos, permutation & combination calculator.">
+      <div class="game-icon">🎲</div>
+      <h3 data-i18n-card="title">计算原理与概率统计</h3>
+      <p data-i18n-card="desc">蒙特卡洛模拟、概率分布可视化、大数定律与中心极限定理演示，排列组合计算器。</p>
+      <span class="game-tag" style="background: rgba(255,45,149,0.1); color: var(--magenta);">概率</span>
     </a>
 
-    <!-- 圆锥曲线的方程 -->
-    <a class="game-card" href="./conic-sections.html">
-      <div class="game-icon" style="background: rgba(34,211,238,0.15);">🌀</div>
-      <h3>圆锥曲线的方程</h3>
-      <p>椭圆、双曲线、抛物线的标准方程与几何性质，直线与圆锥曲线的位置关系，以及行星轨道、抛体运动、探照灯聚焦、冷却塔等实际应用案例的交互式动画演示。</p>
-      <span class="game-tag" style="background: rgba(34,211,238,0.15); color: #22d3ee;">学习工具</span>
+    <a class="game-card cat-probability" href="./probability-adventure.html" data-cat="probability"
+       data-title-zh="概率冒险记" data-title-en="Probability Adventure"
+       data-desc-zh="绘本风格互动游戏，掷骰子、投硬币、独立性实验——在故事中理解随机事件、独立性和大数定律，9 个真实应用案例。"
+       data-desc-en="Storybook-style interactive games: dice rolling, coin toss, independence experiments — understand random events, independence, and the law of large numbers through stories; 9 real applications."
+       data-tag-zh="游戏" data-tag-en="GAME">
+      <div class="game-icon">🎲</div>
+      <h3 data-i18n-card="title">概率冒险记</h3>
+      <p data-i18n-card="desc">绘本风格互动游戏，掷骰子、投硬币、独立性实验——在故事中理解随机事件、独立性和大数定律，9 个真实应用案例。</p>
+      <span class="game-tag is-game">游戏</span>
     </a>
 
-    <!-- 文言文装叉指南 -->
-    <a class="game-card" href="./classical-chinese/">
-      <div class="game-icon" style="background: rgba(210,54,76,0.15);">📜</div>
-      <h3>文言文装叉指南</h3>
-      <p>输入你想表达的意思，一键生成高逼格文言文金句。内置179+语料库 + AI智能翻译，让你秒变古文高手。</p>
-      <span class="game-tag" style="background: rgba(210,54,76,0.15); color: #D2364C;">趣玩工具</span>
+    <a class="game-card cat-probability" href="./stats-cases.html" data-cat="probability"
+       data-title-zh="高中统计的实际案例演示" data-title-en="Statistics Applications"
+       data-desc-zh="抽样方法、数字特征、回归分析、独立性检验、正态分布——用奶茶店评分、房价预测、近视调查等真实案例理解高中统计。"
+       data-desc-en="Sampling methods, numerical characteristics, regression analysis, chi-squared tests, normal distribution — learn high school statistics with real cases: tea shop ratings, housing prices, myopia surveys.">
+      <div class="game-icon">📊</div>
+      <h3 data-i18n-card="title">高中统计的实际案例演示</h3>
+      <p data-i18n-card="desc">抽样方法、数字特征、回归分析、独立性检验、正态分布——用奶茶店评分、房价预测、近视调查等真实案例理解高中统计。</p>
+      <span class="game-tag" style="background: rgba(255,45,149,0.1); color: var(--magenta);">概率</span>
     </a>
 
-    <!-- 古代状元如何看待AI -->
-    <a class="game-card" href="./ancient-scholar-ai.html">
-      <div class="game-icon" style="background: rgba(212,165,116,0.15);">🏛</div>
-      <h3>古代状元如何看待AI</h3>
-      <p>王安石、文天祥、苏轼、范仲淹——如果2026年的AI替代潮摆在古代状元面前，他们会怎么写策论？四篇文言文，两种思维。</p>
-      <span class="game-tag" style="background: rgba(212,165,116,0.15); color: #d4a574;">思想实验</span>
+    <a class="game-card cat-probability" href="./university-science.html" data-cat="probability"
+       data-title-zh="一本院校理科专业就业分析" data-title-en="University STEM Employment"
+       data-desc-zh="985/211高校六大理科专业本科与硕士就业率、升学率及毕业去向可视化对比。"
+       data-desc-en="Visual comparison of employment rates, graduate school rates, and career outcomes for six STEM majors at 985/211 universities (bachelor's vs master's).">
+      <div class="game-icon">🎓</div>
+      <h3 data-i18n-card="title">一本院校理科专业就业分析</h3>
+      <p data-i18n-card="desc">985/211高校六大理科专业本科与硕士就业率、升学率及毕业去向可视化对比。</p>
+      <span class="game-tag" style="background: rgba(255,45,149,0.1); color: var(--magenta);">概率</span>
     </a>
 
-    <!-- 三大变换的通信工程应用 -->
-    <a class="game-card" href="./transforms-app/">
-      <div class="game-icon" style="background: rgba(139,92,246,0.15);">📡</div>
-      <h3>三大变换的通信工程应用</h3>
-      <p>傅里叶变换、拉普拉斯变换、Z变换——从信号分解到5G OFDM，从滤波器设计到数字语音处理，动画演示三大变换的真实应用。</p>
-      <span class="game-tag" style="background: rgba(139,92,246,0.15); color: #8b5cf6;">学习工具</span>
+    <!-- ========== APP ========== -->
+    <a class="game-card cat-app" href="./transforms-app/" data-cat="app"
+       data-title-zh="三大变换的通信工程应用" data-title-en="Signal Transforms"
+       data-desc-zh="傅里叶变换、拉普拉斯变换、Z变换——从信号分解到5G OFDM，从滤波器设计到数字语音处理，动画演示三大变换的真实应用。"
+       data-desc-en="Fourier, Laplace, and Z transforms — from signal decomposition to 5G OFDM, from filter design to digital speech processing, animated real-world applications.">
+      <div class="game-icon">📡</div>
+      <h3 data-i18n-card="title">三大变换的通信工程应用</h3>
+      <p data-i18n-card="desc">傅里叶变换、拉普拉斯变换、Z变换——从信号分解到5G OFDM，从滤波器设计到数字语音处理，动画演示三大变换的真实应用。</p>
+      <span class="game-tag" style="background: rgba(255,107,107,0.1); color: #ff6b6b;">APP</span>
     </a>
 
-    <!-- 从量子纠缠看教育者的角色 -->
-    <a class="game-card" href="./quantum-educator/">
-      <div class="game-icon" style="background: rgba(34,197,94,0.15);">⚛</div>
-      <h3>从量子纠缠看教育者的角色</h3>
-      <p>用量子物理的视角重新理解教育：纠缠、叠加、退相干……教育者如何像量子系统一样影响学生的一生。</p>
-      <span class="game-tag" style="background: rgba(34,197,94,0.15); color: #16a34a;">思想实验</span>
+    <a class="game-card cat-app" href="./classical-chinese/" data-cat="app"
+       data-title-zh="文言文装叉指南" data-title-en="Classical Chinese Generator"
+       data-desc-zh="输入你想表达的意思，一键生成高逼格文言文金句。内置179+语料库 + AI智能翻译，让你秒变古文高手。"
+       data-desc-en="Type what you want to say, generate classy classical Chinese phrases instantly. 179+ phrase corpus + AI translation — become a classical Chinese master in seconds.">
+      <div class="game-icon">📜</div>
+      <h3 data-i18n-card="title">文言文装叉指南</h3>
+      <p data-i18n-card="desc">输入你想表达的意思，一键生成高逼格文言文金句。内置179+语料库 + AI智能翻译，让你秒变古文高手。</p>
+      <span class="game-tag" style="background: rgba(255,107,107,0.1); color: #ff6b6b;">APP</span>
     </a>
 
-    <!-- 数学卷积 — 人生卷积计算器（开发中） -->
-    <a class="game-card disabled" href="javascript:void(0)" onclick="return false;">
-      <div class="game-icon" style="background: rgba(244,63,94,0.15);">🧬</div>
-      <h3>数学卷积 — 人生卷积计算器</h3>
-      <p>输入你的人生事件（时间、强度、衰减类型），用离散卷积画出"性格形成曲线"，直观看到每件事如何叠加成"现在的你"。</p>
-      <span class="game-tag" style="background: rgba(244,63,94,0.15); color: #f43f5e;">开发中</span>
+    <a class="game-card cat-app" href="./ancient-scholar-ai.html" data-cat="app"
+       data-title-zh="古代状元如何看待AI" data-title-en="Ancient Scholars on AI"
+       data-desc-zh="王安石、文天祥、苏轼、范仲淹——如果2026年的AI替代潮摆在古代状元面前，他们会怎么写策论？四篇文言文，两种思维。"
+       data-desc-en="Wang Anshi, Wen Tianxiang, Su Shi, Fan Zhongyan — what if ancient top scholars faced the 2026 AI disruption? Four classical Chinese essays, two ways of thinking.">
+      <div class="game-icon">🏛</div>
+      <h3 data-i18n-card="title">古代状元如何看待AI</h3>
+      <p data-i18n-card="desc">王安石、文天祥、苏轼、范仲淹——如果2026年的AI替代潮摆在古代状元面前，他们会怎么写策论？四篇文言文，两种思维。</p>
+      <span class="game-tag" style="background: rgba(255,107,107,0.1); color: #ff6b6b;">APP</span>
+    </a>
+
+    <a class="game-card cat-app" href="./quantum-educator/" data-cat="app"
+       data-title-zh="从量子纠缠看教育者的角色" data-title-en="Quantum Education"
+       data-desc-zh="用量子物理的视角重新理解教育：纠缠、叠加、退相干……教育者如何像量子系统一样影响学生的一生。"
+       data-desc-en="Reunderstanding education through quantum physics: entanglement, superposition, decoherence — how educators shape students' lives like quantum systems.">
+      <div class="game-icon">⚛</div>
+      <h3 data-i18n-card="title">从量子纠缠看教育者的角色</h3>
+      <p data-i18n-card="desc">用量子物理的视角重新理解教育：纠缠、叠加、退相干……教育者如何像量子系统一样影响学生的一生。</p>
+      <span class="game-tag" style="background: rgba(255,107,107,0.1); color: #ff6b6b;">APP</span>
+    </a>
+
+    <!-- ========== DISABLED ========== -->
+    <a class="game-card disabled" href="javascript:void(0)" onclick="return false;" data-cat="app"
+       data-title-zh="数学卷积 — 人生卷积计算器" data-title-en="Life Convolution Calculator"
+       data-desc-zh="输入你的人生事件（时间、强度、衰减类型），用离散卷积画出\"性格形成曲线\"，直观看到每件事如何叠加成\"现在的你\"。"
+       data-desc-en="Input your life events (time, intensity, decay type) and use discrete convolution to draw a 'personality formation curve' — see how everything stacks up to make 'you'.">
+      <div class="game-icon">🧬</div>
+      <h3 data-i18n-card="title">数学卷积 — 人生卷积计算器</h3>
+      <p data-i18n-card="desc">输入你的人生事件（时间、强度、衰减类型），用离散卷积画出"性格形成曲线"，直观看到每件事如何叠加成"现在的你"。</p>
+      <span class="game-tag" style="background: rgba(255,45,149,0.1); color: var(--magenta);">DEV</span>
     </a>
 
   </div>
 </main>
 
 <footer>
-  <div class="container">
-    我的网页小游戏 · 所有项目均托管在对象存储上
-  </div>
+  <span data-i18n="footer">MATH.VISUALIZATION.OS // ALL SYSTEMS OPERATIONAL</span>
 </footer>
+
+<script>
+// ===== I18N DATA =====
+var i18n = {
+  zh: {
+    title: 'MATH.OS // 数学可视化核心系统',
+    sysTag: 'MATH.VISUALIZATION.OS v1.3.0',
+    subtitle: '数学可视化核心系统 — 用交互与动画让抽象的数学概念变得可触可感',
+    statModules: '模块',
+    statCats: '分类',
+    statSpa: 'React 单页',
+    searchPh: '>> 搜索模块...',
+    tabAll: '全部',
+    tabAlgebra: '代数',
+    tabFunction: '函数',
+    tabGeometry: '几何',
+    tabSequence: '数列',
+    tabProbability: '概率',
+    tabApp: '应用',
+    tagAlgebra: '代数',
+    tagFunction: '函数',
+    tagGeometry: '几何',
+    tagSequence: '游戏',
+    tagProbability: '概率',
+    tagApp: '应用',
+    footer: 'MATH.VISUALIZATION.OS // ALL SYSTEMS OPERATIONAL',
+    emptyState: '未找到匹配模块',
+    emptyStateEn: 'NO MODULES FOUND'
+  },
+  en: {
+    title: 'MATH.OS // Math Visualization System',
+    sysTag: 'MATH.VISUALIZATION.OS v1.3.0',
+    subtitle: 'Interactive math visualization system — make abstract concepts tangible through animation and interaction',
+    statModules: 'MODULES',
+    statCats: 'CATEGORIES',
+    statSpa: 'REACT SPA',
+    searchPh: '>> Search modules...',
+    tabAll: 'ALL',
+    tabAlgebra: 'ALGEBRA',
+    tabFunction: 'FUNCTION',
+    tabGeometry: 'GEOMETRY',
+    tabSequence: 'SEQUENCE',
+    tabProbability: 'PROBABILITY',
+    tabApp: 'APP',
+    tagAlgebra: 'ALGEBRA',
+    tagFunction: 'FUNCTION',
+    tagGeometry: 'GEOMETRY',
+    tagSequence: 'GAME',
+    tagProbability: 'PROBABILITY',
+    tagApp: 'APP',
+    footer: 'MATH.VISUALIZATION.OS // ALL SYSTEMS OPERATIONAL',
+    emptyState: 'NO MODULES FOUND',
+    emptyStateEn: 'NO MODULES FOUND'
+  }
+};
+
+// ===== I18N FUNCTION =====
+function setLang(lang) {
+  var dict = i18n[lang] || i18n.zh;
+
+  // update elements with data-i18n (skip tabs - handle separately)
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    if(el.classList.contains('tab')) return; // skip tabs, handle below
+    var key = el.getAttribute('data-i18n');
+    if(dict[key]) el.textContent = dict[key];
+  });
+
+  // update tab labels separately (preserve count span)
+  document.querySelectorAll('.tab[data-i18n]').forEach(function(tab){
+    var key = tab.getAttribute('data-i18n');
+    if(dict[key]) {
+      var countSpan = tab.querySelector('.count');
+      var countText = countSpan ? countSpan.textContent : '';
+      tab.firstChild.textContent = dict[key];
+      if(countSpan) tab.appendChild(countSpan);
+    }
+  });
+
+  // update title
+  document.title = dict.title;
+
+  // update placeholder
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el){
+    var key = el.getAttribute('data-i18n-placeholder');
+    if(dict[key]) el.placeholder = dict[key];
+  });
+
+  // update card titles and descriptions
+  document.querySelectorAll('.game-card').forEach(function(card){
+    var title = card.querySelector('h3');
+    var desc = card.querySelector('p');
+    if(card.dataset['title' + (lang === 'en' ? 'En' : 'Zh')]){
+      title.textContent = card.dataset['title' + (lang === 'en' ? 'En' : 'Zh')];
+    }
+    if(card.dataset['desc' + (lang === 'en' ? 'En' : 'Zh')]){
+      desc.textContent = card.dataset['desc' + (lang === 'en' ? 'En' : 'Zh')];
+    }
+    // update game tag
+    var tag = card.querySelector('.game-tag');
+    if(tag){
+      // check for per-card custom tag first
+      var customTag = card.dataset['tag' + (lang === 'en' ? 'En' : 'Zh')];
+      if(customTag){
+        tag.textContent = customTag;
+        tag.classList.add('is-game');
+      } else {
+        tag.classList.remove('is-game');
+        var cat = card.dataset.cat;
+        var key = 'tag' + (cat.charAt(0).toUpperCase() + cat.slice(1));
+        if(dict[key]) tag.textContent = dict[key];
+      }
+    }
+  });
+
+  // update lang buttons
+  document.querySelectorAll('.lang-btn').forEach(function(btn){
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+
+  // save to localStorage
+  try { localStorage.setItem('mathos_lang', lang); } catch(e){}
+
+  // trigger search re-filter
+  var evt = new Event('input');
+  document.getElementById('searchBox').dispatchEvent(evt);
+}
+
+// ===== LANG SWITCH EVENTS =====
+document.querySelectorAll('.lang-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    setLang(btn.dataset.lang);
+  });
+});
+
+// ===== INIT LANG =====
+(function(){
+  var saved = 'zh';
+  try { saved = localStorage.getItem('mathos_lang') || 'zh'; } catch(e){}
+  setLang(saved);
+})();
+
+// ===== TABS & SEARCH =====
+(function(){
+  var tabs = document.querySelectorAll('.tab');
+  var cards = document.querySelectorAll('.game-card');
+  var grid = document.getElementById('gameGrid');
+  var searchBox = document.getElementById('searchBox');
+
+  function getLang(){
+    try { return localStorage.getItem('mathos_lang') || 'zh'; } catch(e){ return 'zh'; }
+  }
+
+  function filterCards(cat, query){
+    query = (query || '').toLowerCase().trim();
+    var visible = 0;
+    cards.forEach(function(card){
+      var cardCat = card.dataset.cat;
+      var titleZh = (card.dataset.titleZh || '').toLowerCase();
+      var titleEn = (card.dataset.titleEn || '').toLowerCase();
+      var descZh = (card.dataset.descZh || '').toLowerCase();
+      var descEn = (card.dataset.descEn || '').toLowerCase();
+
+      var matchCat = cat === 'all' || cardCat === cat;
+      var matchQuery = !query ||
+        titleZh.includes(query) || titleEn.includes(query) ||
+        descZh.includes(query) || descEn.includes(query);
+
+      if(matchCat && matchQuery){
+        card.style.display = '';
+        visible++;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    var existingEmpty = grid.querySelector('.empty-state');
+    if(existingEmpty) existingEmpty.remove();
+    if(visible === 0){
+      var empty = document.createElement('div');
+      empty.className = 'empty-state';
+      var lang = getLang();
+      empty.innerHTML = '<div class="icon">⚠</div><div>' +
+        (lang === 'en' ? 'NO MODULES FOUND' : '未找到匹配模块') + '</div>';
+      grid.appendChild(empty);
+    }
+  }
+
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(t){ t.classList.remove('active'); });
+      tab.classList.add('active');
+      filterCards(tab.dataset.cat, searchBox.value);
+    });
+  });
+
+  searchBox.addEventListener('input', function(){
+    var activeTab = document.querySelector('.tab.active');
+    filterCards(activeTab.dataset.cat, searchBox.value);
+  });
+
+  // count update
+  var counts = {all:0, algebra:0, function:0, geometry:0, sequence:0, probability:0, app:0};
+  cards.forEach(function(c){
+    if(!c.classList.contains('disabled')) counts.all++;
+    var cat = c.dataset.cat;
+    if(cat && counts.hasOwnProperty(cat)) counts[cat]++;
+  });
+  document.getElementById('statTotal').textContent = counts.all;
+  document.getElementById('cntAll').textContent = '(' + counts.all + ')';
+  document.getElementById('cntAlgebra').textContent = '(' + counts.algebra + ')';
+  document.getElementById('cntFunction').textContent = '(' + counts.function + ')';
+  document.getElementById('cntGeometry').textContent = '(' + counts.geometry + ')';
+  document.getElementById('cntSequence').textContent = '(' + counts.sequence + ')';
+  document.getElementById('cntProbability').textContent = '(' + counts.probability + ')';
+  document.getElementById('cntApp').textContent = '(' + counts.app + ')';
+})();
+</script>
 
 </body>
 </html>

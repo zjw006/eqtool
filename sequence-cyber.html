@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEQUENCE :: 数列核心协议</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07070d;
+  --bg-card: #0d0d18;
+  --bg-panel: #12121f;
+  --cyan: #00f0ff;
+  --cyan-dim: rgba(0,240,255,0.12);
+  --magenta: #ff2d95;
+  --magenta-dim: rgba(255,45,149,0.12);
+  --lime: #39ff14;
+  --lime-dim: rgba(57,255,20,0.12);
+  --violet: #bd00ff;
+  --violet-dim: rgba(189,0,255,0.12);
+  --amber: #ffb800;
+  --amber-dim: rgba(255,184,0,0.12);
+  --text: #e0e0f0;
+  --text-dim: #8890a8;
+  --grid: rgba(0,240,255,0.06);
+  --border: rgba(0,240,255,0.2);
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0 }
+html { scroll-behavior:smooth }
+body {
+  font-family:'Noto Sans SC','PingFang SC',sans-serif;
+  background:var(--bg); color:var(--text);
+  line-height:1.7; overflow-x:hidden;
+}
+
+/* ===== GRID BG ===== */
+body::before {
+  content:''; position:fixed; inset:0; z-index:-2;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:40px 40px;
+}
+
+/* ===== SCANLINES ===== */
+body::after {
+  content:''; position:fixed; inset:0; z-index:9999; pointer-events:none;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px
+  );
+  opacity:0.3;
+}
+
+/* ===== NEON GLOW TEXT ===== */
+.neon-cyan { color:var(--cyan); text-shadow:0 0 10px rgba(0,240,255,0.5),0 0 30px rgba(0,240,255,0.2) }
+.neon-magenta { color:var(--magenta); text-shadow:0 0 10px rgba(255,45,149,0.5),0 0 30px rgba(255,45,149,0.2) }
+.neon-lime { color:var(--lime); text-shadow:0 0 10px rgba(57,255,20,0.5),0 0 30px rgba(57,255,20,0.2) }
+.neon-violet { color:var(--violet); text-shadow:0 0 10px rgba(189,0,255,0.5),0 0 30px rgba(189,0,255,0.2) }
+.neon-amber { color:var(--amber); text-shadow:0 0 10px rgba(255,184,0,0.5),0 0 30px rgba(255,184,0,0.2) }
+
+/* ===== GLASS CARD ===== */
+.glass {
+  background:linear-gradient(135deg, rgba(13,13,24,0.85), rgba(18,18,31,0.9));
+  border:1px solid var(--border);
+  border-radius:12px;
+  backdrop-filter:blur(8px);
+  position:relative; overflow:hidden;
+}
+.glass::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity:0.6;
+}
+
+/* ===== TOP NAV ===== */
+.top-nav {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  background:rgba(7,7,13,0.9); backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(0,240,255,0.15);
+  padding:10px 20px; display:flex; align-items:center; justify-content:space-between;
+  transform:translateY(-100%); transition:transform 0.3s;
+}
+.top-nav.show { transform:translateY(0) }
+.nav-brand { font-family:'Orbitron',monospace; font-size:0.9rem; color:var(--cyan); letter-spacing:2px }
+.nav-links { display:flex; gap:4px; flex-wrap:wrap }
+.nav-links a {
+  padding:5px 12px; border-radius:6px; font-size:0.75rem;
+  color:var(--text-dim); text-decoration:none; transition:all 0.2s;
+  font-family:'Orbitron',monospace; letter-spacing:1px;
+}
+.nav-links a:hover { color:var(--cyan); background:rgba(0,240,255,0.08) }
+.nav-links a.active { color:var(--bg); background:var(--cyan); font-weight:700 }
+.nav-links a.nav-home { color:var(--amber); border:1px solid rgba(255,184,0,0.3); padding:4px 10px; font-size:0.7rem }
+.nav-links a.nav-home:hover { background:rgba(255,184,0,0.12); border-color:var(--amber) }
+
+/* ===== HERO ===== */
+.hero {
+  min-height:100vh; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; text-align:center;
+  padding:40px 20px; position:relative; overflow:hidden;
+}
+.hero-deco {
+  position:absolute; border-radius:50%; pointer-events:none;
+  filter:blur(60px); opacity:0.15;
+}
+.hero-deco:nth-child(1) { width:400px; height:400px; background:var(--cyan); top:-100px; left:-100px }
+.hero-deco:nth-child(2) { width:300px; height:300px; background:var(--magenta); bottom:-50px; right:-50px }
+.hero-deco:nth-child(3) { width:200px; height:200px; background:var(--violet); top:30%; right:20% }
+.hero-tag {
+  font-family:'Orbitron',monospace; font-size:0.75rem; letter-spacing:4px;
+  color:var(--text-dim); border:1px solid rgba(0,240,255,0.3);
+  padding:6px 20px; border-radius:4px; margin-bottom:24px;
+}
+.hero h1 {
+  font-family:'Orbitron',monospace; font-size:clamp(2rem,6vw,4rem);
+  font-weight:900; letter-spacing:6px; margin-bottom:12px;
+}
+.hero-sub {
+  font-size:clamp(0.9rem,2vw,1.15rem); color:var(--text-dim);
+  max-width:540px; margin-bottom:36px; line-height:1.8;
+}
+.hero-terminal {
+  font-family:'Orbitron','JetBrains Mono',monospace; font-size:0.8rem;
+  background:rgba(0,0,0,0.5); border:1px solid rgba(0,240,255,0.2);
+  border-radius:8px; padding:16px 24px; color:var(--cyan);
+  max-width:480px; text-align:left; line-height:1.8;
+}
+.hero-terminal .cursor { display:inline-block; width:8px; height:1em; background:var(--cyan); animation:blink 1s step-end infinite }
+@keyframes blink { 50% { opacity:0 } }
+.scroll-down {
+  position:absolute; bottom:40px; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  color:var(--text-dim); font-size:0.7rem; font-family:'Orbitron',monospace;
+  animation:float 2s ease-in-out infinite;
+}
+@keyframes float { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-8px)} }
+
+/* ===== SECTIONS ===== */
+.section { max-width:1000px; margin:0 auto; padding:60px 20px; opacity:0; transform:translateY(30px); transition:all 0.6s ease }
+.section.visible { opacity:1; transform:translateY(0) }
+
+.sec-header { text-align:center; margin-bottom:36px }
+.sec-tag {
+  font-family:'Orbitron',monospace; font-size:0.7rem; letter-spacing:3px;
+  padding:4px 14px; border-radius:4px; display:inline-block; margin-bottom:12px;
+}
+.sec-title {
+  font-family:'Orbitron',monospace; font-size:clamp(1.4rem,4vw,1.8rem);
+  letter-spacing:3px; margin-bottom:8px;
+}
+.sec-desc { color:var(--text-dim); font-size:0.92rem; max-width:600px; margin:0 auto }
+
+/* ===== TERMINAL BUBBLE ===== */
+.term-bubble {
+  display:flex; gap:14px; margin:20px 0;
+}
+.term-avatar {
+  flex-shrink:0; width:48px; height:48px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center; font-size:22px;
+  border:1px solid var(--border); background:rgba(0,240,255,0.06);
+}
+.term-msg {
+  flex:1; background:rgba(0,0,0,0.3); border:1px solid rgba(0,240,255,0.15);
+  border-radius:10px; padding:16px 20px; font-size:0.9rem; line-height:1.8;
+  position:relative;
+}
+.term-msg::before {
+  content:'>'; position:absolute; left:-20px; top:16px;
+  color:var(--cyan); font-family:'Orbitron',monospace;
+}
+
+/* ===== GAME AREA ===== */
+.game-zone {
+  padding:28px; margin:24px 0;
+}
+.game-title {
+  font-family:'Orbitron',monospace; font-size:1.1rem; letter-spacing:2px;
+  margin-bottom:16px; display:flex; align-items:center; gap:10px;
+}
+.game-canvas-wrap {
+  display:flex; justify-content:center; margin:16px 0;
+}
+.game-canvas-wrap canvas {
+  border-radius:10px; border:1px solid var(--border); max-width:100%;
+}
+.controls {
+  display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:16px 0;
+}
+.btn {
+  font-family:'Orbitron','Noto Sans SC',sans-serif; font-size:0.78rem; font-weight:700;
+  padding:10px 22px; border:none; border-radius:6px; cursor:pointer;
+  letter-spacing:1px; transition:all 0.25s; position:relative; overflow:hidden;
+}
+.btn::before {
+  content:''; position:absolute; top:0; left:-100%; width:100%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);
+  transition:left 0.4s;
+}
+.btn:hover::before { left:100% }
+.btn:hover { transform:translateY(-2px); box-shadow:0 4px 16px rgba(0,0,0,0.3) }
+.btn:active { transform:translateY(0) }
+.btn-cyan { background:var(--cyan); color:#000 }
+.btn-magenta { background:var(--magenta); color:#fff }
+.btn-lime { background:var(--lime); color:#000 }
+.btn-violet { background:var(--violet); color:#fff }
+.btn-amber { background:var(--amber); color:#000 }
+.btn-sm { padding:7px 14px; font-size:0.7rem }
+
+.stats-row {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr));
+  gap:12px; margin:16px 0;
+}
+.stat-cell {
+  background:rgba(0,0,0,0.3); border:1px solid rgba(0,240,255,0.1);
+  border-radius:10px; padding:14px; text-align:center;
+}
+.stat-cell .lbl { font-size:0.7rem; color:var(--text-dim); font-family:'Orbitron',monospace; letter-spacing:1px; margin-bottom:4px }
+.stat-cell .val { font-size:1.2rem; font-weight:700; font-family:'Orbitron',monospace }
+
+.log-box {
+  background:rgba(0,0,0,0.4); border:1px solid rgba(0,240,255,0.1);
+  border-radius:10px; padding:14px 18px; font-size:0.82rem; color:var(--text-dim);
+  max-height:140px; overflow-y:auto; font-family:'Orbitron','JetBrains Mono',monospace;
+  margin-top:12px; line-height:1.9;
+}
+.log-box .ok { color:var(--lime) }
+.log-box .warn { color:var(--amber) }
+.log-box .err { color:var(--magenta) }
+.log-box .info { color:var(--cyan) }
+
+/* ===== KNOWLEDGE ===== */
+.data-block {
+  background:linear-gradient(135deg, rgba(0,240,255,0.06), rgba(189,0,255,0.04));
+  border-left:3px solid var(--cyan); border-radius:0 12px 12px 0;
+  padding:20px 24px; margin:20px 0;
+}
+.data-block h4 {
+  font-family:'Orbitron',monospace; color:var(--cyan); font-size:0.95rem;
+  letter-spacing:2px; margin-bottom:10px;
+}
+.data-block p { font-size:0.88rem; color:var(--text-dim); line-height:1.9 }
+.formula {
+  display:inline-block; background:rgba(0,0,0,0.4);
+  padding:3px 10px; border-radius:6px; font-family:'Orbitron',monospace;
+  color:var(--lime); font-size:0.82rem; border:1px solid rgba(57,255,20,0.2);
+  margin:2px;
+}
+
+/* ===== PURPOSE GRID ===== */
+.purpose-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:16px; margin:24px 0;
+}
+.purpose-cell {
+  background:var(--bg-card); border:1px solid rgba(0,240,255,0.1);
+  border-radius:12px; padding:22px 18px; text-align:center;
+  transition:all 0.3s; position:relative; overflow:hidden;
+}
+.purpose-cell:hover { border-color:var(--cyan); transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,240,255,0.08) }
+.purpose-cell .ico { font-size:32px; margin-bottom:10px }
+.purpose-cell h5 { font-size:0.88rem; margin-bottom:6px; color:var(--text) }
+.purpose-cell p { font-size:0.78rem; color:var(--text-dim); line-height:1.6 }
+
+/* ===== APP CARDS ===== */
+.app-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr));
+  gap:18px; margin:24px 0;
+}
+.app-card {
+  background:var(--bg-card); border:1px solid rgba(0,240,255,0.1);
+  border-radius:14px; overflow:hidden; transition:all 0.3s;
+}
+.app-card:hover { border-color:rgba(0,240,255,0.3); box-shadow:0 8px 24px rgba(0,240,255,0.06); transform:translateY(-3px) }
+.app-card-head {
+  padding:22px 18px 14px; text-align:center;
+  border-bottom:1px solid rgba(0,240,255,0.08);
+}
+.app-card-head .ico { font-size:36px; margin-bottom:8px }
+.app-card-head h4 { font-size:0.92rem }
+.app-card-body { padding:16px 18px; font-size:0.82rem; color:var(--text-dim); line-height:1.8 }
+.app-card-foot {
+  padding:10px 18px; font-size:0.7rem; color:var(--text-dim);
+  border-top:1px solid rgba(0,240,255,0.06); font-family:'Orbitron',monospace;
+  letter-spacing:1px;
+}
+
+/* ===== INPUT ===== */
+.cyber-input {
+  background:rgba(0,0,0,0.4); border:1px solid rgba(0,240,255,0.25);
+  border-radius:8px; padding:8px 14px; color:var(--cyan);
+  font-family:'Orbitron',monospace; font-size:0.82rem;
+  outline:none; transition:all 0.2s; width:80px; text-align:center;
+}
+.cyber-input:focus { border-color:var(--cyan); box-shadow:0 0 12px rgba(0,240,255,0.2) }
+.cyber-label { font-size:0.75rem; color:var(--text-dim); margin-right:8px; font-family:'Orbitron',monospace }
+
+/* ===== INDUCTION VISUAL ===== */
+.induction-chain {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  flex-wrap:wrap; margin:16px 0; padding:20px;
+}
+.domino {
+  width:40px; height:64px; border-radius:4px;
+  border:1px solid var(--border); display:flex;
+  align-items:center; justify-content:center;
+  font-family:'Orbitron',monospace; font-size:0.75rem;
+  font-weight:700; transition:all 0.3s; position:relative;
+}
+.domino.stand { background:var(--bg-panel); color:var(--cyan) }
+.domino.fall { background:var(--lime-dim); border-color:var(--lime); color:var(--lime); transform:rotate(15deg) translateY(4px) }
+.domino-arrow { color:var(--text-dim); font-size:1rem }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width:6px }
+::-webkit-scrollbar-track { background:transparent }
+::-webkit-scrollbar-thumb { background:rgba(0,240,255,0.25); border-radius:3px }
+
+/* ===== BACK HOME ===== */
+.back-home {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:12px 28px; background:transparent;
+  color:var(--cyan); border:1px solid var(--cyan);
+  border-radius:8px; text-decoration:none; font-weight:700;
+  font-family:'Orbitron',monospace; font-size:0.8rem;
+  letter-spacing:2px; transition:all 0.25s; margin:20px 0;
+}
+.back-home:hover { background:var(--cyan); color:#000; box-shadow:0 0 20px rgba(0,240,255,0.3) }
+
+/* ===== DIVIDER ===== */
+.divider {
+  display:flex; align-items:center; justify-content:center;
+  gap:16px; margin:20px 0; color:var(--text-dim);
+  font-family:'Orbitron',monospace; font-size:0.7rem; letter-spacing:4px;
+}
+.divider::before,.divider::after {
+  content:''; flex:1; height:1px;
+  background:linear-gradient(to right,transparent,var(--cyan),transparent);
+}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:640px){
+  .section { padding:40px 16px }
+  .game-zone { padding:20px 16px }
+  .term-bubble { flex-direction:column; align-items:center; text-align:center }
+  .term-msg::before { display:none }
+  .purpose-grid,.app-grid { grid-template-columns:1fr }
+}
+</style>
+</head>
+<body>
+
+<nav class="top-nav" id="topNav">
+  <span class="nav-brand">SEQUENCE // 数列协议</span>
+  <div class="nav-links">
+    <a href="./index.html" class="nav-home">⌂ HOME</a>
+    <a href="#ch0">INTRO</a>
+    <a href="#ch1">CONCEPT</a>
+    <a href="#ch2">ARITHMETIC</a>
+    <a href="#ch3">GEOMETRIC</a>
+    <a href="#ch4">INDUCTION</a>
+    <a href="#ch5">SUMMATION</a>
+    <a href="#ch6">APPLY</a>
+  </div>
+</nav>
+
+<!-- ==================== HERO ==================== -->
+<section class="hero" id="hero">
+  <div class="hero-deco"></div>
+  <div class="hero-deco"></div>
+  <div class="hero-deco"></div>
+  <div class="hero-tag">SYSTEM.SEQUENCE.CORE v2.0</div>
+  <h1><span class="neon-cyan">SEQUENCE</span> <span class="neon-magenta">PROTOCOL</span></h1>
+  <p class="hero-sub">
+    数列不是枯燥的数字排列——它是描述<strong class="neon-cyan">增长、衰减、规律、预测</strong>的核心工具。<br>
+    从复利计算到算法优化，从人口模型到信号处理，数列是数学与现实的连接协议。
+  </p>
+  <div class="hero-terminal">
+    <div>> init sequence_protocol...</div>
+    <div>> loading modules: concept, arithmetic, geometric, induction, summation</div>
+    <div>> status: <span class="neon-lime">READY</span> <span class="cursor"></span></div>
+  </div>
+  <div class="scroll-down">
+    <span>SCROLL TO INITIALIZE</span>
+    <span style="font-size:1.2rem">▼</span>
+  </div>
+</section>
+
+<!-- ==================== CH0: INTRO ==================== -->
+<section class="section" id="ch0">
+  <div class="sec-header">
+    <span class="sec-tag" style="border:1px solid var(--cyan); color:var(--cyan)">MODULE 00 // INTRO</span>
+    <h2 class="sec-title neon-cyan">数列是什么？为什么重要？</h2>
+    <p class="sec-desc">数列是<strong>按一定顺序排列的一组数</strong>。它不只是一个数学概念——它是理解世界增长规律的底层协议。</p>
+  </div>
+
+  <div class="term-bubble">
+    <div class="term-avatar">🤖</div>
+    <div class="term-msg">
+      <strong>数列协议 v2.0</strong> 启动报告：<br>
+      数列的核心价值在于<strong>"预测"</strong>和<strong>"求和"</strong>。<br>
+      知道今天的值和规律，就能知道明天的值；知道每一项的值，就能算出总共是多少。<br>
+      这在金融、计算机、物理、生物等几乎所有领域都有应用。
+    </div>
+  </div>
+
+  <div class="purpose-grid">
+    <div class="purpose-cell">
+      <div class="ico">💰</div>
+      <h5>金融复利</h5>
+      <p>每月定投 1000 元，年化 7%，30 年后约 120 万——这就是等比数列求和</p>
+    </div>
+    <div class="purpose-cell">
+      <div class="ico">📈</div>
+      <h5>用户增长</h5>
+      <p>每个老用户带来 0.8 个新用户，总用户数收敛于有限值——等比级数收敛</p>
+    </div>
+    <div class="purpose-cell">
+      <div class="ico">🏠</div>
+      <h5>房贷计算</h5>
+      <p>等额本息/等额本金的月供公式，本质就是等差/等比数列的应用</p>
+    </div>
+    <div class="purpose-cell">
+      <div class="ico">🎵</div>
+      <h5>音乐频率</h5>
+      <p>十二平均律中每个半音频率乘以 2^(1/12)——等比数列</p>
+    </div>
+  </div>
+
+  <div class="data-block">
+    <h4>> CORE DEFINITION</h4>
+    <p>
+      <span class="formula">a_1, a_2, a_3, ..., a_n, ...</span><br>
+      数列是按一定次序排列的一列数。数列中的每一个数叫做这个数列的<strong>项</strong>。<br>
+      数列可以看作定义域为正整数集（或其有限子集）的函数，即 <span class="formula">a_n = f(n)</span>。
+    </p>
+  </div>
+
+  <div class="divider">---</div>
+</section>
+
+<!-- ==================== CH1: CONCEPT ==================== -->
+<section class="section" id="ch1">
+  <div class="sec-header">
+    <span class="sec-tag" style="border:1px solid var(--violet); color:var(--violet)">MODULE 01 // CONCEPT</span>
+    <h2 class="sec-title neon-violet">数列的概念：序列探测</h2>
+    <p class="sec-desc">通过规律推断下一项——这是数列最基础也最重要的能力</p>
+  </div>
+
+  <div class="game-zone glass">
+    <div class="game-title"><span class="neon-violet">◆</span> 序列探测器</div>
+    <p style="font-size:0.85rem;color:var(--text-dim);text-align:center;margin-bottom:16px">
+      观察给出的数列片段，选择正确的规律类型和下一项
+    </p>
+    <div id="conceptGame" style="text-align:center;padding:20px">
+      <div style="font-family:'Orbitron',monospace;font-size:1.4rem;color:var(--cyan);margin-bottom:16px;letter-spacing:2px" id="seqDisplay">2, 4, 6, 8, __</div>
+      <div style="font-size:0.85rem;color:var(--text-dim);margin-bottom:20px" id="seqHint">找出规律并选择下一项</div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap" id="seqOptions">
+        <button class="btn btn-cyan" onclick="checkSeq(0)">10</button>
+        <button class="btn btn-cyan" onclick="checkSeq(1)">12</button>
+        <button class="btn btn-cyan" onclick="checkSeq(2)">9</button>
+      </div>
+      <div id="seqResult" style="margin-top:16px;font-size:0.9rem;min-height:24px"></div>
+      <div style="margin-top:16px">
+        <span class="cyber-label">SCORE:</span>
+        <span id="seqScore" class="neon-lime" style="font-family:'Orbitron',monospace;font-size:1.2rem">0</span>
+        <span class="cyber-label" style="margin-left:16px">LEVEL:</span>
+        <span id="seqLevel" class="neon-amber" style="font-family:'Orbitron',monospace;font-size:1.2rem">1</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="data-block" style="border-left-color:var(--violet);background:linear-gradient(135deg,rgba(189,0,255,0.06),rgba(0,240,255,0.03))">
+    <h4 style="color:var(--violet)">> 常见数列类型</h4>
+    <p>
+      <strong>等差数列</strong>：相邻两项的差相等，<span class="formula">a_n = a_1 + (n-1)d</span><br>
+      <strong>等比数列</strong>：相邻两项的比相等，<span class="formula">a_n = a_1 · q^(n-1)</span><br>
+      <strong>斐波那契数列</strong>：<span class="formula">F_n = F_{n-1} + F_{n-2}</span>，1, 1, 2, 3, 5, 8, 13...<br>
+      <strong>调和数列</strong>：倒数成等差，<span class="formula">1, 1/2, 1/3, 1/4...</span><br>
+      <strong>摆动数列</strong>：正负交替，如 <span class="formula">(-1)^n</span>
+    </p>
+  </div>
+
+  <div class="divider">---</div>
+</section>
+
+<!-- ==================== CH2: ARITHMETIC ==================== -->
+<section class="section" id="ch2">
+  <div class="sec-header">
+    <span class="sec-tag" style="border:1px solid var(--lime); color:var(--lime)">MODULE 02 // ARITHMETIC</span>
+    <h2 class="sec-title neon-lime">等差数列：匀速增长协议</h2>
+    <p class="sec-desc">每一项比前一项增加相同的量——最直观的增长模式</p>
+  </div>
+
+  <div class="term-bubble">
+    <div class="term-avatar" style="border-color:rgba(57,255,20,0.3)">📊</div>
+    <div class="term-msg">
+      <strong>等差数列</strong>：相邻两项之差为常数 d。<br>
+      通项公式：<span class="formula">a_n = a_1 + (n-1)d</span><br>
+      求和公式：<span class="formula">S_n = n(a_1 + a_n)/2 = n·a_1 + n(n-1)d/2</span><br>
+      应用场景：阶梯定价、等额本金还款、等距采样...
+    </div>
+  </div>
+
+  <div class="game-zone glass">
+    <div class="game-title"><span class="neon-lime">◆</span> 阶梯计费模拟器</div>
+    <p style="font-size:0.85rem;color:var(--text-dim);text-align:center;margin-bottom:16px">
+      某数据中心按流量阶梯计费：基础 100 元/GB，每增加 1GB 费用减少 5 元。输入流量，计算总费用。
+    </p>
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+      <span class="cyber-label">流量 (GB):</span>
+      <input type="number" class="cyber-input" id="arithN" value="10" min="1" max="20">
+      <button class="btn btn-lime" onclick="calcArithmetic()">CALCULATE</button>
+    </div>
+    <div class="game-canvas-wrap">
+      <canvas id="arithCanvas" width="500" height="220"></canvas>
+    </div>
+    <div class="stats-row">
+      <div class="stat-cell"><div class="lbl">首项 a₁</div><div class="val neon-cyan">100</div></div>
+      <div class="stat-cell"><div class="lbl">公差 d</div><div class="val neon-magenta">-5</div></div>
+      <div class="stat-cell"><div class="lbl">总费用 S_n</div><div class="val neon-lime" id="arithSn">-</div></div>
+      <div class="stat-cell"><div class="lbl">平均单价</div><div class="val neon-amber" id="arithAvg">-</div></div>
+    </div>
+    <div class="log-box" id="arithLog">输入流量并点击 CALCULATE...</div>
+  </div>
+
+  <div class="divider">---</div>
+</section>
+
+<!-- ==================== CH3: GEOMETRIC ==================== -->
+<section class="section" id="ch3">
+  <div class="sec-header">
+    <span class="sec-tag" style="border:1px solid var(--magenta); color:var(--magenta)">MODULE 03 // GEOMETRIC</span>
+    <h2 class="sec-title neon-magenta">等比数列：指数增长/衰减引擎</h2>
+    <p class="sec-desc">每一项是前一项的 q 倍——金融复利、病毒传播、放射性衰变的数学模型</p>
+  </div>
+
+  <div class="term-bubble">
+    <div class="term-avatar" style="border-color:rgba(255,45,149,0.3)">🧬</div>
+    <div class="term-msg">
+      <strong>等比数列</strong>：相邻两项之比为常数 q。<br>
+      通项公式：<span class="formula">a_n = a_1 · q^(n-1)</span><br>
+      求和公式（q≠1）：<span class="formula">S_n = a_1(1-q^n)/(1-q)</span><br>
+      无穷级数（|q|<1）：<span class="formula">S_∞ = a_1/(1-q)</span><br>
+      当 |q|>1 时发散，|q|<1 时收敛——这是判断增长模型是否"爆炸"的关键。
+    </div>
+  </div>
+
+  <!-- Game: 复利/病毒传播 -->
+  <div class="game-zone glass">
+    <div class="game-title"><span class="neon-magenta">◆</span> 增长模拟器：复利 vs 病毒传播</div>
+    <p style="font-size:0.85rem;color:var(--text-dim);text-align:center;margin-bottom:16px">
+      调整参数，观察等比数列的指数增长威力
+    </p>
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+      <span class="cyber-label">初始值 a₁:</span>
+      <input type="number" class="cyber-input" id="geoA1" value="1000" style="width:90px">
+      <span class="cyber-label">公比 q:</span>
+      <input type="number" class="cyber-input" id="geoQ" value="1.07" step="0.01" style="width:70px">
+      <span class="cyber-label">期数 n:</span>
+      <input type="number" class="cyber-input" id="geoN" value="30" style="width:60px">
+      <button class="btn btn-magenta" onclick="calcGeometric()">SIMULATE</button>
+    </div>
+    <div class="game-canvas-wrap">
+      <canvas id="geoCanvas" width="560" height="260"></canvas>
+    </div>
+    <div class="stats-row">
+      <div class="stat-cell"><div class="lbl">第 n 项</div><div class="val neon-cyan" id="geoAn">-</div></div>
+      <div class="stat-cell"><div class="lbl">前 n 项和</div><div class="val neon-lime" id="geoSn">-</div></div>
+      <div class="stat-cell"><div class="lbl">增长倍数</div><div class="val neon-magenta" id="geoMulti">-</div></div>
+      <div class="stat-cell"><div class="lbl">状态</div><div class="val neon-amber" id="geoStatus">-</div></div>
+    </div>
+    <div class="log-box" id="geoLog">调整参数并点击 SIMULATE...</div>
+  </div>
+
+  <div class="data-block" style="border-left-color:var(--magenta);background:linear-gradient(135deg,rgba(255,45,149,0.06),rgba(189,0,255,0.03))">
+    <h4 style="color:var(--magenta)">> 发散 vs 收敛</h4>
+    <p>
+      <strong>|q| > 1</strong>：数列发散，值趋向无穷。例：年化 7% 的复利投资，30 年后 1000 元变 <span class="formula">1000×1.07^30 ≈ 7612</span> 元。<br>
+      <strong>|q| < 1</strong>：数列收敛，值趋向 0。无穷级数有有限和。例：每个老用户带来 0.8 个新用户，最终总用户数 = <span class="formula">a_1/(1-0.8) = 5a_1</span>。<br>
+      <strong>|q| = 1</strong>：数列为常数列。求和 = <span class="formula">n·a_1</span>。
+    </p>
+  </div>
+
+  <div class="divider">---</div>
+</section>
+
+<!-- ==================== CH4: INDUCTION ==================== -->
+<section class="section" id="ch4">
+  <div class="sec-header">
+    <span class="sec-tag" style="border:1px solid var(--amber); color:var(--amber)">MODULE 04 // INDUCTION</span>
+    <h2 class="sec-title neon-amber">数学归纳法：多米诺证明协议</h2>
+    <p class="sec-desc">证明"所有情况都成立"的最强武器——推倒第一块，并证明每一块都能推倒下一块</p>
+  </div>
+
+  <div class="term-bubble">
+    <div class="term-avatar" style="border-color:rgba(255,184,0,0.3)">🎴</div>
+    <div class="term-msg">
+      <strong>数学归纳法</strong>三步走：<br>
+      ① <strong class="neon-amber">基础步</strong>：证明 n=1 时命题成立（推倒第一块骨牌）<br>
+      ② <strong class="neon-amber">归纳假设</strong>：假设 n=k 时命题成立<br>
+      ③ <strong class="neon-amber">归纳递推</strong>：证明 n=k+1 时命题也成立（每一块都能推倒下一块）<br><br>
+      如果三步都成立，那么命题对所有正整数 n 都成立。
+    </div>
+  </div>
+
+  <div class="game-zone glass">
+    <div class="game-title"><span class="neon-amber">◆</span> 多米诺证明协议</div>
+    <p style="font-size:0.85rem;color:var(--text-dim);text-align:center;margin-bottom:16px">
+      验证命题：<span class="formula">1 + 2 + 3 + ... + n = n(n+1)/2</span> —— 用数学归纳法证明
+    </p>
+
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:0.8rem;color:var(--text-dim);margin-bottom:12px;font-family:'Orbitron',monospace">
+        STEP 1: BASE CASE &nbsp;|&nbsp; STEP 2: INDUCTIVE STEP &nbsp;|&nbsp; STEP 3: VERIFY
+      </div>
+      <div class="induction-chain" id="dominoChain"></div>
+    </div>
+
+    <div style="display:flex;justify-content:center;gap:10px;margin-bottom:16px">
+      <button class="btn btn-amber" onclick="inductionStep(1)">① 验证 n=1</button>
+      <button class="btn btn-amber" onclick="inductionStep(2)">② 假设 n=k 成立</button>
+      <button class="btn btn-amber" onclick="inductionStep(3)">③ 证明 n=k+1</button>
+      <button class="btn btn-sm" style="background:rgba(255,255,255,0.1);color:var(--text-dim);border:1px solid rgba(255,255,255,0.1)" onclick="resetInduction()">RESET</button>
+    </div>
+
+    <div id="inductionDisplay" style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,184,0,0.2);border-radius:10px;padding:20px;font-size:0.88rem;line-height:2;min-height:120px">
+      <div style="color:var(--text-dim)">点击按钮，一步步体验数学归纳法的证明过程...</div>
+    </div>
+  </div>
+
+  <div class="divider">---</div>
+</section>
+
+<!-- ==================== CH5: SUMMATION ==================== -->
+<section class="section" id="ch5">
+  <div class="sec-header">
+    <span class="sec-tag" style="border:1px solid var(--cyan); color:var(--cyan)">MODULE 05 // SUMMATION</span>
+    <h2 class="sec-title neon-cyan">数列求和：累加协议</h2>
+    <p class="sec-desc">求和是数列最重要的操作之一——它告诉你"总共是多少"</p>
+  </div>
+
+  <div class="term-bubble">
+    <div class="term-avatar">∑</div>
+    <div class="term-msg">
+      <strong>数列求和</strong>就是把数列的项加起来。<br>
+      等差数列求和：<span class="formula">S_n = n(a_1+a_n)/2</span>（高斯算法：首尾配对）<br>
+      等比数列求和：<span class="formula">S_n = a_1(1-q^n)/(1-q)</span><br>
+      裂项相消、错位相减、分组求和... 不同数列用不同方法。
+    </div>
+  </div>
+
+  <div class="game-zone glass">
+    <div class="game-title"><span class="neon-cyan">◆</span> 求和方法选择器</div>
+    <p style="font-size:0.85rem;color:var(--text-dim);text-align:center;margin-bottom:16px">
+      给定数列，选择正确的求和方法并计算结果
+    </p>
+    <div id="sumGame" style="text-align:center;padding:20px">
+      <div style="font-family:'Orbitron',monospace;font-size:1.3rem;color:var(--cyan);margin-bottom:12px" id="sumQuestion">
+        求：1 + 2 + 3 + ... + 100 = ?
+      </div>
+      <div style="font-size:0.82rem;color:var(--text-dim);margin-bottom:16px" id="sumTypeHint">这是什么类型的数列？</div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">
+        <button class="btn btn-cyan btn-sm" onclick="chooseMethod('arithmetic')">等差求和</button>
+        <button class="btn btn-magenta btn-sm" onclick="chooseMethod('geometric')">等比求和</button>
+        <button class="btn btn-lime btn-sm" onclick="chooseMethod('telescoping')">裂项相消</button>
+      </div>
+      <div id="sumMethodResult" style="margin-bottom:16px;min-height:30px"></div>
+      <div id="sumInputArea" style="display:none">
+        <span class="cyber-label">你的答案:</span>
+        <input type="number" class="cyber-input" id="sumAnswer" style="width:120px">
+        <button class="btn btn-cyan btn-sm" onclick="checkSum()">SUBMIT</button>
+      </div>
+      <div id="sumResult" style="margin-top:12px;font-size:0.9rem;min-height:24px"></div>
+      <div style="margin-top:16px">
+        <span class="cyber-label">SCORE:</span>
+        <span id="sumScore" class="neon-lime" style="font-family:'Orbitron',monospace;font-size:1.2rem">0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="data-block">
+    <h4>> 经典求和公式速查</h4>
+    <p>
+      自然数和：<span class="formula">1+2+...+n = n(n+1)/2</span><br>
+      平方和：<span class="formula">1²+2²+...+n² = n(n+1)(2n+1)/6</span><br>
+      立方和：<span class="formula">1³+2³+...+n³ = [n(n+1)/2]²</span><br>
+      等比级数（|q|<1）：<span class="formula">1+q+q²+... = 1/(1-q)</span><br>
+      调和级数：<span class="formula">1+1/2+1/3+... 发散</span>（虽然趋向无穷，但极其缓慢）
+    </p>
+  </div>
+
+  <div class="divider">---</div>
+</section>
+
+<!-- ==================== CH6: APPLICATIONS ==================== -->
+<section class="section" id="ch6">
+  <div class="sec-header">
+    <span class="sec-tag" style="border:1px solid var(--lime); color:var(--lime)">MODULE 06 // REAL WORLD</span>
+    <h2 class="sec-title neon-lime">数列在真实世界的应用</h2>
+    <p class="sec-desc">从课本到世界——数列是连接数学与现实的桥梁</p>
+  </div>
+
+  <div class="term-bubble">
+    <div class="term-avatar" style="border-color:rgba(57,255,20,0.3)">🌐</div>
+    <div class="term-msg">
+      数列的应用远比你想象的广泛。从银行利息到算法优化，从音乐频率到人口预测，数列的"增长规律"和"累加求和"是理解这些系统的核心数学工具。
+    </div>
+  </div>
+
+  <div class="app-grid">
+    <div class="app-card">
+      <div class="app-card-head">
+        <div class="ico">💰</div>
+        <h4 class="neon-magenta">金融复利与定投</h4>
+      </div>
+      <div class="app-card-body">
+        每月定投 1000 元，年化 7%，30 年后资产 ≈ 120 万。这就是等比数列求和：<span class="formula">S = 1000×[(1+0.07/12)^360 - 1]/(0.07/12)</span>。复利被称为"世界第八大奇迹"，其本质就是等比数列的指数增长。 [$TRAE_REF](https://cj.sina.cn/articles/view/7879922977/1d5ae152101901efw8)
+      </div>
+      <div class="app-card-foot">KEY: 等比数列 · 复利公式 · 年金计算</div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-head">
+        <div class="ico">🏠</div>
+        <h4 class="neon-cyan">房贷分期付款</h4>
+      </div>
+      <div class="app-card-body">
+        <strong>等额本息</strong>：每月还款额相同，本质是用等比数列求和公式反解月供。<span class="formula">月供 = P×r×(1+r)^n/[(1+r)^n-1]</span>。<br><strong>等额本金</strong>：每月还相同本金+递减利息，月供构成等差数列。理解这些公式，才能算清贷款的真实成本。 [$TRAE_REF](https://m.book118.com/html/2026/0226/5043200220013124.shtm)
+      </div>
+      <div class="app-card-foot">KEY: 等比数列 · 等差数列 · 贷款公式</div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-head">
+        <div class="ico">📈</div>
+        <h4 class="neon-lime">用户增长模型</h4>
+      </div>
+      <div class="app-card-body">
+        假设每个老用户平均带来 1.2 个新用户（q=1.2），用户总数将<strong>指数爆炸</strong>，模型失效；如果 q=0.8，总用户数收敛于 <span class="formula">S_∞ = a_1/(1-0.8) = 5a_1</span>。这是产品经理判断"增长是否可持续"的数学依据。 [$TRAE_REF](https://bbs.csdn.net/weixin_29041195/article/details/100174886)
+      </div>
+      <div class="app-card-foot">KEY: 等比级数 · 收敛/发散 · 增长模型</div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-head">
+        <div class="ico">🌀</div>
+        <h4 class="neon-violet">斐波那契与黄金分割</h4>
+      </div>
+      <div class="app-card-body">
+        斐波那契数列相邻两项之比趋向 <span class="formula">φ ≈ 1.618</span>（黄金分割）。自然界中鹦鹉螺的螺旋、向日葵的种子排列、蜂巢结构都遵循此规律。在金融技术分析中，斐波那契回撤位被广泛用于预测股价支撑/阻力位。 [$TRAE_REF](https://blog.csdn.net/blog_programb/article/details/148154598)
+      </div>
+      <div class="app-card-foot">KEY: 斐波那契 · 黄金分割 · 自然界规律</div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-head">
+        <div class="ico">🔐</div>
+        <h4 class="neon-magenta">图像加密与信息安全</h4>
+      </div>
+      <div class="app-card-body">
+        斐波那契交织扩散算法利用斐波那契数列的伪随机特性对图像像素进行加密。其"可预测但复杂"的性质使其适合生成安全密钥流。某些椭圆曲线加密实现也采用斐波那契类序列进行密钥生成。 [$TRAE_REF](https://pmc.ncbi.nlm.nih.gov/articles/PMC12385540/)
+      </div>
+      <div class="app-card-foot">KEY: 斐波那契 · 伪随机 · 图像加密</div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-head">
+        <div class="ico">⚛️</div>
+        <h4 class="neon-amber">放射性衰变与半衰期</h4>
+      </div>
+      <div class="app-card-body">
+        放射性物质的剩余量按等比数列衰减：<span class="formula">N(t) = N_0 × (1/2)^(t/T)</span>，T 为半衰期。碳-14 测年法就是利用这一原理——通过测量古生物遗骸中碳-14 的剩余量，推算其年代。这是等比数列在物理学中最经典的应用之一。
+      </div>
+      <div class="app-card-foot">KEY: 等比数列 · 指数衰减 · 半衰期</div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-head">
+        <div class="ico">🎵</div>
+        <h4 class="neon-cyan">音乐：十二平均律</h4>
+      </div>
+      <div class="app-card-body">
+        钢琴上每升高一个半音，频率乘以 <span class="formula">2^(1/12) ≈ 1.0595</span>。12 个半音后频率翻倍（八度）。这是一个完美的等比数列！从 A4(440Hz) 到 A5(880Hz)，中间 12 个音的频率构成公比为 2^(1/12) 的等比数列。
+      </div>
+      <div class="app-card-foot">KEY: 等比数列 · 频率 · 音乐理论</div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-head">
+        <div class="ico">👥</div>
+        <h4 class="neon-lime">人口增长模型</h4>
+      </div>
+      <div class="app-card-body">
+        马尔萨斯人口模型假设人口按等比数列增长：<span class="formula">P_n = P_0 × (1+r)^n</span>。虽然现实中受资源限制会偏离，但在短时期内（几十年），这个模型对人口预测仍然有效。联合国人口预测也基于类似的指数增长修正模型。
+      </div>
+      <div class="app-card-foot">KEY: 等比数列 · 指数增长 · 人口预测</div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-head">
+        <div class="ico">📡</div>
+        <h4 class="neon-violet">信号处理：离散傅里叶变换</h4>
+      </div>
+      <div class="app-card-body">
+        DFT 的核心是计算 <span class="formula">X_k = Σ_{n=0}^{N-1} x_n · e^(-2πink/N)</span>——本质上就是数列求和！MP3 压缩、JPEG 图像处理、5G 通信的 OFDM 调制，底层都依赖这种"将信号分解为频率数列之和"的数学工具。
+      </div>
+      <div class="app-card-foot">KEY: 数列求和 · 频域分析 · 信号处理</div>
+    </div>
+  </div>
+
+  <div class="data-block" style="border-left-color:var(--lime);background:linear-gradient(135deg,rgba(57,255,20,0.06),rgba(0,240,255,0.03))">
+    <h4 style="color:var(--lime)">> SYSTEM SUMMARY</h4>
+    <p>
+      数列是数学中最"接地气"的概念之一。它不抽象——<strong>你的房贷、你的投资、你听到的音乐、你手机里的照片压缩</strong>，背后都有数列的身影。<br><br>
+      学好数列，就是掌握了描述<strong>增长、衰减、累加、规律</strong>的数学语言。这四种模式，几乎涵盖了现实世界中所有动态系统的核心特征。
+    </p>
+  </div>
+
+  <div class="divider">---</div>
+
+  <div style="text-align:center">
+    <a class="back-home" href="index.html" onclick="history.back();return false;">← RETURN TO INDEX</a>
+  </div>
+  <br><br>
+</section>
+
+<script>
+/* ===== SCROLL OBSERVER ===== */
+(function(){
+  var sections = document.querySelectorAll('.section');
+  var nav = document.getElementById('topNav');
+  var links = nav.querySelectorAll('.nav-links a');
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        e.target.classList.add('visible');
+        var id = e.target.id;
+        links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href')==='#'+id); });
+      }
+    });
+  },{threshold:0.12});
+  sections.forEach(function(s){ obs.observe(s); });
+
+  var heroObs = new IntersectionObserver(function(entries){
+    nav.classList.toggle('show', !entries[0].isIntersecting);
+  },{threshold:0.3});
+  heroObs.observe(document.getElementById('hero'));
+})();
+
+/* ===== CH1: SEQUENCE GAME ===== */
+var seqLevels = [
+  {q:'2, 4, 6, 8, __', ans:0, opts:['10','12','9'], type:'等差数列 (d=2)', hint:'相邻两项差相同'},
+  {q:'3, 6, 12, 24, __', ans:0, opts:['48','36','30'], type:'等比数列 (q=2)', hint:'相邻两项比相同'},
+  {q:'1, 1, 2, 3, 5, __', ans:1, opts:['6','8','7'], type:'斐波那契数列', hint:'每项是前两项之和'},
+  {q:'1, 4, 9, 16, __', ans:0, opts:['25','36','20'], type:'平方数列', hint:'每项是项数的平方'},
+  {q:'1, -1, 1, -1, __', ans:0, opts:['1','-1','0'], type:'摆动数列', hint:'(-1)^(n+1)'},
+  {q:'2, 5, 10, 17, __', ans:1, opts:['24','26','28'], type:'n²+1 数列', hint:'a_n = n² + 1'},
+  {q:'1, 1/2, 1/3, 1/4, __', ans:0, opts:['1/5','1/6','2/5'], type:'调和数列', hint:'a_n = 1/n'},
+  {q:'0, 1, 3, 7, 15, __', ans:1, opts:['30','31','32'], type:'2^n - 1', hint:'a_n = 2^n - 1'}
+];
+var seqIdx = 0, seqScore = 0, seqLevel = 1;
+
+function renderSeq(){
+  var lv = seqLevels[seqIdx % seqLevels.length];
+  document.getElementById('seqDisplay').textContent = lv.q;
+  document.getElementById('seqHint').textContent = lv.hint;
+  var btns = lv.opts.map(function(o,i){
+    return '<button class="btn btn-cyan" onclick="checkSeq('+i+')">'+o+'</button>';
+  }).join('');
+  document.getElementById('seqOptions').innerHTML = btns;
+  document.getElementById('seqResult').innerHTML = '';
+}
+function checkSeq(i){
+  var lv = seqLevels[seqIdx % seqLevels.length];
+  var res = document.getElementById('seqResult');
+  if(i === lv.ans){
+    seqScore += 10; seqLevel++;
+    res.innerHTML = '<span class="neon-lime">✓ CORRECT — ' + lv.type + '</span>';
+  } else {
+    res.innerHTML = '<span class="neon-magenta">✗ WRONG — 提示: ' + lv.hint + '</span>';
+  }
+  document.getElementById('seqScore').textContent = seqScore;
+  document.getElementById('seqLevel').textContent = seqLevel;
+  seqIdx++;
+  setTimeout(renderSeq, 1200);
+}
+renderSeq();
+
+/* ===== CH2: ARITHMETIC CANVAS ===== */
+function drawArith(a1, d, n){
+  var c = document.getElementById('arithCanvas');
+  var ctx = c.getContext('2d');
+  var W = c.width, H = c.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#0a0a0f'; ctx.fillRect(0,0,W,H);
+
+  var maxV = a1 + (n-1)*d;
+  var minV = Math.min(a1, maxV);
+  var range = Math.abs(maxV - minV) || 1;
+  var pad = 30;
+
+  // grid
+  ctx.strokeStyle = 'rgba(0,240,255,0.06)';
+  ctx.lineWidth = 1;
+  for(var i=0;i<=5;i++){
+    var y = pad + (H-2*pad)*i/5;
+    ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(W-pad,y); ctx.stroke();
+  }
+
+  // bars
+  var barW = (W - 2*pad) / n * 0.6;
+  var gap = (W - 2*pad) / n;
+  for(var i=0;i<n;i++){
+    var val = a1 + i*d;
+    var h = ((val - minV) / range) * (H - 2*pad) * 0.8 + 10;
+    var x = pad + i*gap + gap*0.2;
+    var y = H - pad - h;
+    var hue = 180 + i*8;
+    ctx.fillStyle = 'hsla('+hue+',80%,50%,0.7)';
+    ctx.fillRect(x, y, barW, h);
+    ctx.strokeStyle = 'hsla('+hue+',80%,60%,0.9)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x, y, barW, h);
+    // value
+    ctx.fillStyle = '#e0e0f0';
+    ctx.font = '10px Orbitron,monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(val, x + barW/2, y - 4);
+    // n label
+    ctx.fillStyle = '#8890a8';
+    ctx.fillText('n='+(i+1), x + barW/2, H - pad + 14);
+  }
+
+  // line overlay
+  ctx.strokeStyle = 'rgba(57,255,20,0.6)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for(var i=0;i<n;i++){
+    var val = a1 + i*d;
+    var h = ((val - minV) / range) * (H - 2*pad) * 0.8 + 10;
+    var x = pad + i*gap + gap*0.2 + barW/2;
+    var y = H - pad - h;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+}
+
+function calcArithmetic(){
+  var a1 = 100, d = -5;
+  var n = parseInt(document.getElementById('arithN').value) || 10;
+  n = Math.max(1, Math.min(20, n));
+  var an = a1 + (n-1)*d;
+  var Sn = n*(a1+an)/2;
+  document.getElementById('arithSn').textContent = Sn;
+  document.getElementById('arithAvg').textContent = (Sn/n).toFixed(1);
+  document.getElementById('arithLog').innerHTML =
+    '<span class="info">[INFO]</span> 第 '+n+' GB 单价: '+an+' 元 | 总费用 = '+n+'×('+a1+'+'+an+')/2 = <span class="ok">'+Sn+'</span> 元';
+  drawArith(a1, d, n);
+}
+calcArithmetic();
+
+/* ===== CH3: GEOMETRIC CANVAS ===== */
+function drawGeo(a1, q, n){
+  var c = document.getElementById('geoCanvas');
+  var ctx = c.getContext('2d');
+  var W = c.width, H = c.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#0a0a0f'; ctx.fillRect(0,0,W,H);
+
+  var vals = [];
+  for(var i=0;i<n;i++) vals.push(a1 * Math.pow(q,i));
+  var maxV = Math.max.apply(null, vals);
+  var pad = {t:30,r:30,b:40,l:55};
+  var gW = W - pad.l - pad.r, gH = H - pad.t - pad.b;
+
+  // grid
+  ctx.strokeStyle = 'rgba(0,240,255,0.06)';
+  for(var i=0;i<=4;i++){
+    var y = pad.t + gH*i/4;
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+gW,y); ctx.stroke();
+  }
+
+  // line
+  ctx.strokeStyle = q>1 ? 'rgba(255,45,149,0.8)' : 'rgba(0,240,255,0.8)';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  for(var i=0;i<n;i++){
+    var x = pad.l + (i/(n-1||1))*gW;
+    var y = pad.t + gH*(1 - vals[i]/maxV);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // fill
+  ctx.lineTo(pad.l+gW, pad.t+gH);
+  ctx.lineTo(pad.l, pad.t+gH);
+  ctx.closePath();
+  var grad = ctx.createLinearGradient(0,pad.t,0,pad.t+gH);
+  grad.addColorStop(0, q>1 ? 'rgba(255,45,149,0.15)' : 'rgba(0,240,255,0.15)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad; ctx.fill();
+
+  // points
+  for(var i=0;i<n;i+=Math.ceil(n/15)){
+    var x = pad.l + (i/(n-1||1))*gW;
+    var y = pad.t + gH*(1 - vals[i]/maxV);
+    ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2);
+    ctx.fillStyle = q>1 ? '#ff2d95' : '#00f0ff';
+    ctx.fill();
+  }
+
+  // labels
+  ctx.fillStyle = '#8890a8'; ctx.font = '10px Orbitron,monospace';
+  ctx.textAlign = 'center';
+  for(var i=0;i<=4;i++){
+    var y = pad.t + gH*i/4;
+    var v = maxV*(1-i/4);
+    ctx.fillText(v>=1000 ? (v/1000).toFixed(1)+'k' : Math.round(v), pad.l-10, y+4);
+  }
+  ctx.fillText('PERIOD', W/2, H-8);
+}
+
+function calcGeometric(){
+  var a1 = parseFloat(document.getElementById('geoA1').value) || 1000;
+  var q = parseFloat(document.getElementById('geoQ').value) || 1.07;
+  var n = parseInt(document.getElementById('geoN').value) || 30;
+  n = Math.max(1, Math.min(100, n));
+  var an = a1 * Math.pow(q, n-1);
+  var Sn = q===1 ? a1*n : a1*(1-Math.pow(q,n))/(1-q);
+  document.getElementById('geoAn').textContent = an >= 1000000 ? (an/1000000).toFixed(2)+'M' : an >= 1000 ? (an/1000).toFixed(1)+'k' : Math.round(an);
+  document.getElementById('geoSn').textContent = Sn >= 1000000 ? (Sn/1000000).toFixed(2)+'M' : Sn >= 1000 ? (Sn/1000).toFixed(1)+'k' : Math.round(Sn);
+  document.getElementById('geoMulti').textContent = (an/a1).toFixed(1)+'x';
+
+  var status = document.getElementById('geoStatus');
+  if(q > 1) { status.textContent = 'EXPLOSION'; status.className = 'val neon-magenta'; }
+  else if(q === 1) { status.textContent = 'LINEAR'; status.className = 'val neon-cyan'; }
+  else { status.textContent = 'CONVERGE'; status.className = 'val neon-lime'; }
+
+  var log = document.getElementById('geoLog');
+  if(q > 1){
+    log.innerHTML = '<span class="err">[ALERT]</span> q='+q+' > 1: 指数爆炸！30期后增长 '+ (Math.pow(q,30)).toFixed(0) +' 倍';
+  } else if(Math.abs(q)<1){
+    var inf = a1/(1-q);
+    log.innerHTML = '<span class="ok">[OK]</span> |q|='+Math.abs(q).toFixed(2)+' < 1: 收敛于 <span class="ok">'+inf.toFixed(1)+'</span> (S_∞ = a₁/(1-q))';
+  } else {
+    log.innerHTML = '<span class="info">[INFO]</span> q=1: 线性增长，总和 = '+Math.round(Sn);
+  }
+  drawGeo(a1, q, n);
+}
+calcGeometric();
+
+/* ===== CH4: INDUCTION ===== */
+var indStep = 0;
+function inductionStep(s){
+  var d = document.getElementById('inductionDisplay');
+  var chain = document.getElementById('dominoChain');
+  if(s === 1 && indStep < 1){
+    indStep = 1;
+    d.innerHTML = '<span class="neon-amber">[STEP 1] 基础步 (n=1)</span><br>' +
+      '左边: 1 = 1<br>' +
+      '右边: 1×(1+1)/2 = 1<br>' +
+      '<span class="neon-lime">✓ n=1 时命题成立！第一块骨牌已推倒。</span>';
+    renderDomino(1);
+  } else if(s === 2 && indStep < 2){
+    indStep = 2;
+    d.innerHTML = '<span class="neon-amber">[STEP 2] 归纳假设 (n=k)</span><br>' +
+      '假设当 n=k 时命题成立：<br>' +
+      '<span class="formula">1+2+...+k = k(k+1)/2</span><br>' +
+      '<span class="neon-lime">✓ 假设成立。现在需要证明 n=k+1 时也成立。</span>';
+    renderDomino(2);
+  } else if(s === 3 && indStep < 3){
+    indStep = 3;
+    d.innerHTML = '<span class="neon-amber">[STEP 3] 归纳递推 (n=k+1)</span><br>' +
+      '左边 = (1+2+...+k) + (k+1) = k(k+1)/2 + (k+1)<br>' +
+      '= (k+1)(k/2 + 1) = (k+1)(k+2)/2<br>' +
+      '右边 = (k+1)((k+1)+1)/2 = (k+1)(k+2)/2<br>' +
+      '<span class="neon-lime">✓ 左边 = 右边！命题对 n=k+1 也成立。</span><br><br>' +
+      '<strong class="neon-lime">结论：由数学归纳法，命题对所有正整数 n 成立。</strong>';
+    renderDomino(3);
+  }
+}
+function renderDomino(stage){
+  var html = '';
+  for(var i=1;i<=6;i++){
+    var cls = 'domino stand';
+    if(stage===1 && i===1) cls = 'domino fall';
+    if(stage===2 && i<=2) cls = 'domino fall';
+    if(stage===3) cls = 'domino fall';
+    html += '<div class="'+cls+'">'+i+'</div>';
+    if(i<6) html += '<span class="domino-arrow">→</span>';
+  }
+  document.getElementById('dominoChain').innerHTML = html;
+}
+function resetInduction(){
+  indStep = 0;
+  document.getElementById('inductionDisplay').innerHTML = '<div style="color:var(--text-dim)">点击按钮，一步步体验数学归纳法的证明过程...</div>';
+  renderDomino(0);
+}
+renderDomino(0);
+
+/* ===== CH5: SUMMATION GAME ===== */
+var sumProblems = [
+  {q:'1 + 2 + 3 + ... + 100 = ?', ans:5050, type:'arithmetic', method:'等差求和', formula:'100×101/2 = 5050'},
+  {q:'1 + 3 + 5 + ... + (2n-1), n=50 = ?', ans:2500, type:'arithmetic', method:'等差求和', formula:'50×(1+99)/2 = 2500'},
+  {q:'1 + 2 + 4 + 8 + ... + 2^9 = ?', ans:1023, type:'geometric', method:'等比求和', formula:'(2^10 - 1)/(2-1) = 1023'},
+  {q:'1/(1×2) + 1/(2×3) + 1/(3×4) + 1/(4×5) = ?', ans:0.8, type:'telescoping', method:'裂项相消', formula:'1 - 1/5 = 4/5 = 0.8'},
+  {q:'2 + 5 + 8 + ... + 29 = ?', ans:155, type:'arithmetic', method:'等差求和', formula:'10×(2+29)/2 = 155'}
+];
+var sumIdx = 0, sumScore = 0, sumSelectedMethod = '';
+
+function renderSum(){
+  var p = sumProblems[sumIdx % sumProblems.length];
+  document.getElementById('sumQuestion').textContent = '求：' + p.q;
+  document.getElementById('sumTypeHint').textContent = '这是什么类型的数列？';
+  document.getElementById('sumMethodResult').innerHTML = '';
+  document.getElementById('sumInputArea').style.display = 'none';
+  document.getElementById('sumResult').innerHTML = '';
+  document.getElementById('sumAnswer').value = '';
+  sumSelectedMethod = '';
+}
+function chooseMethod(m){
+  var p = sumProblems[sumIdx % sumProblems.length];
+  sumSelectedMethod = m;
+  var res = document.getElementById('sumMethodResult');
+  if(m === p.type){
+    res.innerHTML = '<span class="neon-lime">✓ 正确！使用 '+p.method+'</span>';
+    document.getElementById('sumInputArea').style.display = 'inline-block';
+  } else {
+    res.innerHTML = '<span class="neon-magenta">✗ 不太对，再想想这个数列的特征...</span>';
+  }
+}
+function checkSum(){
+  var p = sumProblems[sumIdx % sumProblems.length];
+  var ans = parseFloat(document.getElementById('sumAnswer').value);
+  var res = document.getElementById('sumResult');
+  if(Math.abs(ans - p.ans) < 0.01){
+    sumScore += 15;
+    res.innerHTML = '<span class="neon-lime">✓ CORRECT!</span><br>' + p.formula;
+  } else {
+    res.innerHTML = '<span class="neon-magenta">✗ 答案应为 ' + p.ans + '</span><br>' + p.formula;
+  }
+  document.getElementById('sumScore').textContent = sumScore;
+  sumIdx++;
+  setTimeout(renderSum, 2000);
+}
+renderSum();
+</script>
+</body>
+</html>

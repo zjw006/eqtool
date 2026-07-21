@@ -1,0 +1,2804 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>导数英雄传 — 漫画互动学习</title>
+<meta name="description" content="一元函数导数及其应用的互动漫画学习游戏">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Noto+Sans+SC:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+/* === CSS Variables === */
+:root{
+  --paper:#FFF8E7;
+  --ink:#1a1a1a;
+  --red:#E63946;
+  --blue:#457B9D;
+  --yellow:#F4D35E;
+  --green:#2D6A4F;
+  --orange:#F77F00;
+  --purple:#7B2D8E;
+  --border-w:3px;
+  --halftone:rgba(0,0,0,0.06);
+  --card-shadow:4px 4px 0 #1a1a1a;
+  --radius:4px;
+}
+
+/* === Reset & Base === */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+  background:var(--paper);color:var(--ink);line-height:1.7;overflow-x:hidden;
+  /* Halftone dot background */
+  background-image:
+    radial-gradient(circle,var(--halftone) 1px,transparent 1px),
+    radial-gradient(circle,var(--halftone) 1px,transparent 1px);
+  background-size:12px 12px,6px 6px;
+  background-position:0 0,3px 3px;
+}
+
+/* === Comic Fonts === */
+.comic-font{font-family:'Bangers',cursive;letter-spacing:2px;text-transform:uppercase}
+h1,h2,h3,.nav-link,.btn-comic,.speech-bubble,.explosion,.card-title{
+  font-family:'Bangers','Noto Sans SC',cursive;
+}
+
+/* === Navigation Bar === */
+.comic-nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  background:var(--yellow);
+  border-bottom:4px solid var(--ink);
+  padding:0 16px;height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 4px 0 rgba(0,0,0,0.2);
+  overflow-x:auto;white-space:nowrap;
+}
+.nav-home{
+  font-family:'Bangers',cursive;font-size:18px;
+  color:var(--ink);text-decoration:none;
+  background:var(--red);color:#fff;
+  padding:6px 14px;border:3px solid var(--ink);
+  border-radius:var(--radius);cursor:pointer;
+  text-transform:uppercase;letter-spacing:1px;
+  text-decoration:none;display:inline-block;
+  box-shadow:var(--card-shadow);flex-shrink:0;
+  transition:transform 0.15s;
+}
+.nav-home:hover{transform:translateY(-2px)}
+.nav-links{display:flex;gap:6px;flex-shrink:0}
+.nav-link{
+  font-size:13px;color:var(--ink);text-decoration:none;
+  padding:6px 12px;border:3px solid var(--ink);border-radius:var(--radius);
+  background:var(--paper);letter-spacing:1px;text-transform:uppercase;
+  transition:all 0.15s;cursor:pointer;
+  box-shadow:2px 2px 0 rgba(0,0,0,0.15);
+}
+.nav-link:hover,.nav-link.active{background:var(--red);color:#fff;transform:translateY(-2px)}
+
+/* === Main Content === */
+main{padding-top:56px}
+.chapter{
+  max-width:1000px;margin:0 auto;padding:60px 20px 40px;
+  border-bottom:4px solid var(--ink);
+}
+.chapter:last-child{border-bottom:none}
+
+/* === Chapter Headers === */
+.chapter-header{text-align:center;margin-bottom:40px;position:relative}
+.chapter-number{
+  display:inline-block;background:var(--red);color:#fff;
+  font-size:16px;padding:4px 16px;border:3px solid var(--ink);
+  border-radius:var(--radius);margin-bottom:12px;
+  letter-spacing:3px;
+  box-shadow:var(--card-shadow);
+}
+.chapter-title{
+  font-size:clamp(28px,6vw,52px);color:var(--ink);
+  text-shadow:3px 3px 0 var(--yellow),-2px -2px 0 var(--red);
+  line-height:1.2;margin-bottom:8px;letter-spacing:3px;
+}
+.chapter-subtitle{
+  font-size:clamp(16px,3vw,22px);color:var(--blue);
+  font-family:'Bangers',cursive;letter-spacing:2px;
+}
+
+/* === Comic Card === */
+.comic-card{
+  background:var(--paper);border:var(--border-w) solid var(--ink);
+  border-radius:var(--radius);padding:28px 24px;margin-bottom:24px;
+  box-shadow:var(--card-shadow);position:relative;
+  transition:transform 0.2s;
+}
+.comic-card:hover{transform:translateY(-3px) rotate(-0.5deg)}
+.comic-card h3{font-size:22px;margin-bottom:12px;color:var(--ink)}
+
+/* === Speech Bubble === */
+.speech-bubble{
+  background:#fff;border:var(--border-w) solid var(--ink);
+  border-radius:20px;padding:18px 22px;margin:20px 0;
+  position:relative;font-size:15px;font-weight:700;
+  font-family:'Noto Sans SC',sans-serif;
+  box-shadow:var(--card-shadow);
+}
+.speech-bubble::after{
+  content:'';position:absolute;bottom:-16px;left:40px;
+  width:0;height:0;
+  border-left:12px solid transparent;
+  border-right:12px solid transparent;
+  border-top:14px solid var(--ink);
+}
+.speech-bubble::before{
+  content:'';position:absolute;bottom:-12px;left:42px;
+  width:0;height:0;z-index:1;
+  border-left:10px solid transparent;
+  border-right:10px solid transparent;
+  border-top:12px solid #fff;
+}
+.speech-bubble.red{background:var(--red);color:#fff}
+.speech-bubble.red::before{border-top-color:var(--red)}
+.speech-bubble.blue{background:var(--blue);color:#fff}
+.speech-bubble.blue::before{border-top-color:var(--blue)}
+.speech-bubble.yellow{background:var(--yellow);border-color:var(--ink)}
+.speech-bubble.yellow::before{border-top-color:var(--yellow)}
+.speech-bubble.green{background:var(--green);color:#fff}
+.speech-bubble.green::before{border-top-color:var(--green)}
+
+/* === Explosion / Action Box === */
+.explosion{
+  display:inline-block;background:var(--yellow);color:var(--red);
+  font-size:clamp(20px,4vw,32px);padding:10px 24px;
+  border:4px solid var(--ink);letter-spacing:4px;
+  position:relative;transform:rotate(-3deg);
+  box-shadow:var(--card-shadow);
+  clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px));
+  margin:16px 0;
+}
+
+/* === Canvas Container === */
+.canvas-wrap{
+  background:#fff;border:var(--border-w) solid var(--ink);
+  border-radius:var(--radius);padding:12px;margin:16px 0;
+  box-shadow:var(--card-shadow);overflow:visible;
+}
+.canvas-wrap canvas{display:block;width:100%;height:auto;aspect-ratio:2/1;cursor:crosshair}
+#canvas1b{aspect-ratio:8/1}
+#canvas4c{aspect-ratio:9/5}
+#canvas6a{aspect-ratio:9/4}
+#canvas6b{aspect-ratio:2/1}
+#canvas6c{aspect-ratio:2/1}
+
+/* === Slider === */
+.slider-row{
+  display:flex;align-items:center;gap:12px;margin:16px 0;
+  flex-wrap:wrap;
+}
+.slider-row label{font-weight:700;font-size:15px;white-space:nowrap}
+.slider-row input[type=range]{
+  flex:1;min-width:120px;height:8px;accent-color:var(--red);
+  cursor:pointer;
+}
+.slider-row .val{
+  display:inline-block;background:var(--yellow);
+  border:2px solid var(--ink);padding:2px 10px;border-radius:var(--radius);
+  font-weight:900;min-width:50px;text-align:center;font-size:15px;
+}
+
+/* === Buttons === */
+.btn-comic{
+  display:inline-block;padding:10px 22px;
+  background:var(--red);color:#fff;border:3px solid var(--ink);
+  border-radius:var(--radius);font-size:16px;cursor:pointer;
+  letter-spacing:2px;text-transform:uppercase;
+  box-shadow:var(--card-shadow);
+  transition:all 0.15s;font-family:'Bangers',cursive;
+}
+.btn-comic:hover{transform:translateY(-2px);box-shadow:6px 6px 0 var(--ink)}
+.btn-comic.blue{background:var(--blue)}
+.btn-comic.green{background:var(--green)}
+.btn-comic.yellow{background:var(--yellow);color:var(--ink)}
+
+/* === Quiz === */
+.quiz-area{
+  background:#fff;border:var(--border-w) solid var(--ink);
+  border-radius:var(--radius);padding:24px;margin:20px 0;
+  box-shadow:var(--card-shadow);
+}
+.quiz-question{font-size:18px;font-weight:700;margin-bottom:16px}
+.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.quiz-opt{
+  padding:12px 16px;border:3px solid var(--ink);border-radius:var(--radius);
+  background:var(--paper);cursor:pointer;font-size:15px;font-weight:700;
+  transition:all 0.15s;text-align:center;
+}
+.quiz-opt:hover{background:var(--yellow);transform:scale(1.03)}
+.quiz-opt.correct{background:var(--green);color:#fff;animation:pulse 0.4s}
+.quiz-opt.wrong{background:var(--red);color:#fff;animation:shake 0.4s}
+.quiz-opt.disabled{pointer-events:none;opacity:0.6}
+.xp-bar{
+  margin-top:16px;display:flex;align-items:center;gap:10px;
+}
+.xp-bar-label{font-weight:700;font-family:'Bangers',cursive;font-size:16px;letter-spacing:1px}
+.xp-bar-track{
+  flex:1;height:20px;background:#ddd;border:2px solid var(--ink);
+  border-radius:var(--radius);overflow:hidden;
+}
+.xp-bar-fill{
+  height:100%;background:linear-gradient(90deg,var(--green),var(--yellow));
+  transition:width 0.5s;border-radius:var(--radius);
+}
+
+/* === Formula Cards Grid === */
+.formula-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:16px;margin:20px 0;
+}
+.formula-card{
+  background:#fff;border:var(--border-w) solid var(--ink);
+  border-radius:var(--radius);padding:16px;text-align:center;
+  box-shadow:var(--card-shadow);transition:all 0.2s;cursor:default;
+}
+.formula-card:hover{
+  transform:translateY(-6px) rotate(1deg);
+  box-shadow:6px 6px 0 var(--ink);
+}
+.formula-card .formula-name{font-weight:900;font-size:14px;color:var(--blue);margin-bottom:8px}
+.formula-card .formula-expr{font-size:18px;font-weight:700;margin-bottom:6px}
+.formula-card .formula-power{
+  display:none;background:var(--yellow);border:2px solid var(--ink);
+  padding:4px 10px;border-radius:var(--radius);font-size:13px;font-weight:900;
+  font-family:'Bangers',cursive;letter-spacing:1px;
+}
+.formula-card:hover .formula-power{display:block}
+
+/* === Info Cards Grid for Ch6 === */
+.cards-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:18px;margin:20px 0;
+}
+.info-card{
+  background:#fff;border:var(--border-w) solid var(--ink);
+  border-radius:var(--radius);padding:18px;
+  box-shadow:var(--card-shadow);transition:all 0.2s;
+}
+.info-card:hover{transform:translateY(-4px);box-shadow:6px 6px 0 var(--ink)}
+.info-card .card-icon{font-size:28px;margin-bottom:8px}
+.info-card .card-title{font-size:17px;margin-bottom:6px;color:var(--ink)}
+.info-card .card-desc{font-size:13px;color:#444;line-height:1.6}
+.info-card .card-tag{
+  display:inline-block;font-size:11px;padding:2px 8px;
+  background:var(--blue);color:#fff;border-radius:var(--radius);
+  margin-bottom:6px;font-weight:700;letter-spacing:1px;
+}
+.info-card[data-category="physics"] .card-tag{background:var(--blue)}
+.info-card[data-category="economy"] .card-tag{background:var(--orange);color:#fff}
+.info-card[data-category="medical"] .card-tag{background:var(--green)}
+.info-card[data-category="cs"] .card-tag{background:var(--purple)}
+.info-card[data-category="engineering"] .card-tag{background:var(--red);color:#fff}
+.info-card[data-category="optimization"] .card-tag{background:var(--yellow);color:var(--ink)}
+
+/* === Optimisation Steps === */
+.opt-step{
+  display:flex;gap:16px;align-items:flex-start;margin:16px 0;
+  padding:16px;background:#fff;border:var(--border-w) solid var(--ink);
+  border-radius:var(--radius);box-shadow:2px 2px 0 rgba(0,0,0,0.1);
+}
+.opt-step-num{
+  flex-shrink:0;width:40px;height:40px;
+  background:var(--red);color:#fff;border:2px solid var(--ink);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:'Bangers',cursive;font-size:18px;letter-spacing:1px;
+}
+.opt-step-content{flex:1}
+.opt-step-content h4{margin-bottom:6px;font-size:16px}
+.opt-step-content p{font-size:14px;color:#444}
+
+/* === Section title inline === */
+.section-title{
+  font-family:'Bangers',cursive;font-size:clamp(20px,4vw,28px);
+  color:var(--ink);letter-spacing:2px;margin:24px 0 16px;
+  display:flex;align-items:center;gap:10px;
+}
+.section-title::before{
+  content:'';display:inline-block;width:8px;height:28px;
+  background:var(--red);border:2px solid var(--ink);border-radius:2px;
+}
+
+/* === Responsive === */
+@media(max-width:640px){
+  .comic-nav{height:auto;padding:8px 12px;flex-direction:column;gap:6px}
+  .nav-links{flex-wrap:wrap;justify-content:center}
+  .nav-link{font-size:11px;padding:4px 8px}
+  .chapter{padding:40px 12px 24px}
+  .comic-card{padding:18px 14px}
+  .quiz-options{grid-template-columns:1fr}
+  .formula-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+  .cards-grid{grid-template-columns:1fr}
+  .opt-step{flex-direction:column;gap:10px}
+}
+
+/* === Animations === */
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes speedLines{from{opacity:1;transform:translateX(-100%)}to{opacity:0;transform:translateX(100%)}}
+
+/* speed lines decoration */
+.speed-lines{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  overflow:hidden;pointer-events:none;z-index:0;
+}
+.speed-lines::before{
+  content:'';position:absolute;top:0;left:-100%;width:200%;height:100%;
+  background:repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 18px,
+    rgba(0,0,0,0.04) 18px,
+    rgba(0,0,0,0.04) 20px
+  );
+  animation:speedLines 3s linear infinite;
+}
+
+/* === Hero Banner === */
+.hero-banner{
+  min-height:auto;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+  padding:30px 20px 20px;position:relative;
+  background:
+    radial-gradient(circle at 20% 30%,rgba(230,57,70,0.12) 0%,transparent 40%),
+    radial-gradient(circle at 80% 70%,rgba(69,123,157,0.10) 0%,transparent 40%),
+    radial-gradient(circle at 50% 50%,rgba(244,211,94,0.15) 0%,transparent 50%),
+    var(--paper);
+}
+.hero-title{
+  font-size:clamp(32px,7vw,64px);color:var(--ink);
+  text-shadow:4px 4px 0 var(--yellow),-3px -3px 0 var(--red),2px -2px 0 var(--blue);
+  line-height:1.1;margin-bottom:6px;letter-spacing:4px;
+  padding:8px 16px;
+}
+.hero-sub{
+  font-size:clamp(14px,2.5vw,20px);color:var(--blue);
+  font-family:'Bangers',cursive;letter-spacing:3px;margin-bottom:0;
+}
+
+/* Riemann sum controls */
+.riemann-controls{
+  display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0;
+}
+.riemann-controls label{font-weight:700;font-size:14px}
+.riemann-controls input[type=range]{flex:1;min-width:100px;accent-color:var(--red)}
+.riemann-controls .val{
+  background:var(--yellow);border:2px solid var(--ink);
+  padding:2px 8px;border-radius:var(--radius);font-weight:900;
+  min-width:40px;text-align:center;
+}
+
+/* Result display */
+.result-box{
+  background:var(--yellow);border:3px solid var(--ink);
+  border-radius:var(--radius);padding:16px 20px;margin:16px 0;
+  font-weight:900;font-size:18px;text-align:center;
+  box-shadow:var(--card-shadow);
+}
+
+/* Tab nav for optimization */
+.tab-nav{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.tab-btn{
+  padding:8px 16px;border:3px solid var(--ink);border-radius:var(--radius);
+  background:var(--paper);cursor:pointer;font-family:'Bangers',cursive;
+  font-size:14px;letter-spacing:1px;transition:all 0.15s;
+}
+.tab-btn.active{background:var(--red);color:#fff}
+.tab-btn:hover{background:var(--yellow)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* Footer */
+.comic-footer{
+  text-align:center;padding:40px 20px;
+  border-top:4px solid var(--ink);
+  font-family:'Bangers',cursive;letter-spacing:2px;
+  font-size:14px;color:#666;
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== NAVIGATION ===================== -->
+<nav class="comic-nav">
+  <a class="nav-home" href="./index.html">⌂ HOME</a>
+  <div class="nav-links">
+    <a class="nav-link" href="#ch1">CONCEPT</a>
+    <a class="nav-link" href="#ch2">RULES</a>
+    <a class="nav-link" href="#ch3">DETECTIVE</a>
+    <a class="nav-link" href="#ch4">OPTIMIZE</a>
+    <a class="nav-link" href="#ch5">INTEGRAL</a>
+    <a class="nav-link" href="#ch6">REAL WORLD</a>
+  </div>
+</nav>
+
+<!-- ===================== HERO BANNER ===================== -->
+<header class="hero-banner">
+  <div class="speed-lines"></div>
+  <div class="hero-title comic-font">导数英雄传</div>
+  <div class="hero-sub comic-font">Derivative Heroes — Learn Through Comics</div>
+</header>
+
+<main>
+
+<!-- ===================== CHAPTER 1: 速度猎人 ===================== -->
+<section class="chapter" id="ch1">
+  <div class="chapter-header">
+    <div class="chapter-number">CHAPTER 1</div>
+    <div class="chapter-title comic-font">速度猎人</div>
+    <div class="chapter-subtitle comic-font">The Velocity Hunter — Derivative as Speed</div>
+  </div>
+
+  <div class="speech-bubble blue">
+    一辆赛车的位置函数 <b>s(t) = t&sup3; - 6t&sup2; + 9t + 1</b><br>
+    拖动时间轴滑块，观察车的位置、切线和瞬时速度！
+  </div>
+
+  <div class="comic-card">
+    <h3 class="comic-font">位置曲线 &amp; 切线</h3>
+    <div class="canvas-wrap">
+      <canvas id="canvas1" width="800" height="400"></canvas>
+    </div>
+    <div class="slider-row">
+      <label>时间 t :</label>
+      <input type="range" id="slider1" min="0" max="5" step="0.01" value="0.5">
+      <span class="val" id="val1">0.50</span>
+    </div>
+    <div class="slider-row">
+      <label>位置 s(t) :</label>
+      <span class="val" id="pos1" style="flex:1;text-align:left">—</span>
+    </div>
+    <div class="slider-row">
+      <label>瞬时速度 s'(t) :</label>
+      <span class="val" id="vel1" style="flex:1;text-align:left;background:var(--red);color:#fff">—</span>
+    </div>
+  </div>
+
+  <div class="comic-card">
+    <h3 class="comic-font">赛车动画</h3>
+    <div class="canvas-wrap">
+      <canvas id="canvas1b" width="800" height="100"></canvas>
+    </div>
+    <div class="speech-bubble red">
+      切线的斜率就是这一刻的速度！这就是导数的物理意义！
+    </div>
+  </div>
+
+  <div class="speech-bubble yellow">
+    <b>核心概念：</b>导数 f'(x) = 函数在某一点的瞬时变化率。几何上 = 切线斜率；物理上 = 瞬时速度。
+  </div>
+</section>
+
+<!-- ===================== CHAPTER 2: 超级英雄训练场 ===================== -->
+<section class="chapter" id="ch2">
+  <div class="chapter-header">
+    <div class="chapter-number">CHAPTER 2</div>
+    <div class="chapter-title comic-font">超级英雄训练场</div>
+    <div class="chapter-subtitle comic-font">Super Hero Training Ground — Derivative Rules</div>
+  </div>
+
+  <div class="section-title">基本求导公式</div>
+  <div class="formula-grid">
+    <div class="formula-card">
+      <div class="formula-name">常数</div>
+      <div class="formula-expr">(C)' = 0</div>
+      <div class="formula-power">威力：★☆☆☆☆</div>
+    </div>
+    <div class="formula-card">
+      <div class="formula-name">幂函数</div>
+      <div class="formula-expr">(x&supn;)' = nx&supn⁻&sup1;</div>
+      <div class="formula-power">威力：★★★☆☆</div>
+    </div>
+    <div class="formula-card">
+      <div class="formula-name">正弦</div>
+      <div class="formula-expr">(sin x)' = cos x</div>
+      <div class="formula-power">威力：★★★☆☆</div>
+    </div>
+    <div class="formula-card">
+      <div class="formula-name">余弦</div>
+      <div class="formula-expr">(cos x)' = -sin x</div>
+      <div class="formula-power">威力：★★★☆☆</div>
+    </div>
+    <div class="formula-card">
+      <div class="formula-name">指数</div>
+      <div class="formula-expr">(e&supx;)' = e&supx;</div>
+      <div class="formula-power">威力：★★★★☆</div>
+    </div>
+    <div class="formula-card">
+      <div class="formula-name">自然对数</div>
+      <div class="formula-expr">(ln x)' = 1/x</div>
+      <div class="formula-power">威力：★★★★☆</div>
+    </div>
+    <div class="formula-card">
+      <div class="formula-name">乘法法则</div>
+      <div class="formula-expr">(uv)' = u'v + uv'</div>
+      <div class="formula-power">威力：★★★★★</div>
+    </div>
+    <div class="formula-card">
+      <div class="formula-name">除法法则</div>
+      <div class="formula-expr">(u/v)'=(u'v-uv')/v&sup2;</div>
+      <div class="formula-power">威力：★★★★★</div>
+    </div>
+    <div class="formula-card">
+      <div class="formula-name">链式法则</div>
+      <div class="formula-expr">[f(g(x))]'=f'(g)·g'</div>
+      <div class="formula-power">威力：★★★★★</div>
+    </div>
+  </div>
+
+  <div class="section-title">求导英雄挑战</div>
+  <div class="quiz-area" id="quizArea">
+    <div class="quiz-question" id="quizQ">点击下方按钮开始挑战！</div>
+    <div class="quiz-options" id="quizOpts"></div>
+    <div class="xp-bar">
+      <span class="xp-bar-label">英雄经验值：</span>
+      <div class="xp-bar-track"><div class="xp-bar-fill" id="xpFill" style="width:0%"></div></div>
+      <span class="xp-bar-label" id="xpText">0 / 10</span>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:16px">
+    <button class="btn-comic yellow" onclick="startQuiz()">开始挑战！</button>
+  </div>
+</section>
+
+<!-- ===================== CHAPTER 3: 函数侦探社 ===================== -->
+<section class="chapter" id="ch3">
+  <div class="chapter-header">
+    <div class="chapter-number">CHAPTER 3</div>
+    <div class="chapter-title comic-font">函数侦探社</div>
+    <div class="chapter-subtitle comic-font">Function Detective Agency — Monotonicity &amp; Extrema</div>
+  </div>
+
+  <div class="speech-bubble green">
+    用导数分析函数 <b>f(x) = x&sup3; - 3x + 2</b> 的增减性和极值！
+  </div>
+
+  <div class="comic-card">
+    <h3 class="comic-font">函数图像分析</h3>
+    <div class="canvas-wrap">
+      <canvas id="canvas3" width="800" height="500"></canvas>
+    </div>
+    <div class="slider-row">
+      <label>平移参数 a :</label>
+      <input type="range" id="slider3a" min="-3" max="3" step="0.1" value="0">
+      <span class="val" id="val3a">0.0</span>
+    </div>
+    <div class="slider-row">
+      <label>缩放参数 b :</label>
+      <input type="range" id="slider3b" min="0.2" max="3" step="0.1" value="1">
+      <span class="val" id="val3b">1.0</span>
+    </div>
+  </div>
+
+  <div class="speech-bubble red">
+    导数 = 0 的点就是嫌疑犯！它可能是极大值，也可能是极小值！
+  </div>
+
+  <div class="comic-card">
+    <h3 class="comic-font">侦探报告</h3>
+    <div id="detectiveReport"></div>
+  </div>
+</section>
+
+<!-- ===================== CHAPTER 4: 成本终结者 ===================== -->
+<section class="chapter" id="ch4">
+  <div class="chapter-header">
+    <div class="chapter-number">CHAPTER 4</div>
+    <div class="chapter-title comic-font">成本终结者</div>
+    <div class="chapter-subtitle comic-font">The Cost Terminator — Optimization</div>
+  </div>
+
+  <div class="speech-bubble blue">
+    导数最强大的应用：找到"最优解"！让我们解决三个真实问题。
+  </div>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab(0)">利润最大化</button>
+    <button class="tab-btn" onclick="switchTab(1)">费马点问题</button>
+    <button class="tab-btn" onclick="switchTab(2)">容器设计</button>
+  </div>
+
+  <!-- Problem 1: Profit (Interactive) -->
+  <div class="tab-content active" id="tab0">
+    <div class="comic-card">
+      <h3 class="comic-font" style="color:var(--orange)">问题1：降价促销利润最大化</h3>
+      <p>原价 P₀ 元/件，原销量 Q₀ 件/月。每降价 x 元，销量增加 kx 件。成本价 C 元/件。拖动滑块调整参数，观察利润曲线变化！</p>
+    </div>
+    <div class="slider-row">
+      <label>原价 P₀：</label>
+      <input type="range" id="slider4a_P0" min="40" max="200" step="1" value="80">
+      <span class="val" id="val4a_P0">80</span>
+      <label style="margin-left:16px">原销量 Q₀：</label>
+      <input type="range" id="slider4a_Q0" min="100" max="2000" step="10" value="500">
+      <span class="val" id="val4a_Q0">500</span>
+    </div>
+    <div class="slider-row">
+      <label>需求弹性 k：</label>
+      <input type="range" id="slider4a_k" min="5" max="80" step="1" value="25">
+      <span class="val" id="val4a_k">25</span>
+      <label style="margin-left:16px">成本价 C：</label>
+      <input type="range" id="slider4a_C" min="5" max="150" step="1" value="30">
+      <span class="val" id="val4a_C">30</span>
+    </div>
+    <div class="slider-row" style="border-top:2px dashed var(--orange);padding-top:12px">
+      <label style="color:var(--orange)">降价幅度 x：</label>
+      <input type="range" id="slider4a_x" min="0" max="60" step="0.5" value="0">
+      <span class="val" id="val4a_x">0.0</span>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="canvas4a" width="900" height="480"></canvas>
+    </div>
+    <div class="speech-bubble yellow">拖动「降价幅度 x」观察利润变化！当 L'(x)=0 时利润最大 — BOOM!</div>
+  </div>
+
+  <!-- Problem 2: Fermat (Interactive) -->
+  <div class="tab-content" id="tab1">
+    <div class="comic-card">
+      <h3 class="comic-font" style="color:var(--blue)">问题2：费马点 — 最短路径</h3>
+      <p>拖动三角形的三个顶点 A、B、C，观察费马点位置和总距离的变化。当最大角 &lt; 120° 时费马点在三角形内部（三线夹角各 120°），否则退化到钝角顶点。</p>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="canvas4b" width="800" height="520"></canvas>
+    </div>
+    <div class="speech-bubble blue">直接拖拽 A、B、C 顶点！观察等角线如何随三角形形状变化。</div>
+  </div>
+
+  <!-- Problem 3: Container -->
+  <div class="tab-content" id="tab2">
+    <div class="comic-card">
+      <h3 class="comic-font" style="color:var(--green)">问题3：无盖圆柱容器最大容积</h3>
+      <p>用面积为 S 的铁皮制作一个无盖圆柱形容器，求最大容积。</p>
+
+      <div class="opt-step"><div class="opt-step-num">1</div><div class="opt-step-content"><h4>建立函数</h4><p>S = &pi;r&sup2; + 2&pi;rh &rarr; h = (S - &pi;r&sup2;) / (2&pi;r)<br>V = &pi;r&sup2;h = r(S - &pi;r&sup2;) / 2 = (Sr - &pi;r&sup3;) / 2</p></div></div>
+      <div class="opt-step"><div class="opt-step-num">2</div><div class="opt-step-content"><h4>求导</h4><p>V'(r) = (S - 3&pi;r&sup2;) / 2</p></div></div>
+      <div class="opt-step"><div class="opt-step-num">3</div><div class="opt-step-content"><h4>令 V'(r) = 0</h4><p>S - 3&pi;r&sup2; = 0 &rarr; r = &radic;(S / 3&pi;)，此时 h = 2r/&radic;3</p></div></div>
+      <div class="opt-step"><div class="opt-step-num">4</div><div class="opt-step-content"><h4>结论</h4><p>当 r = &radic;(S/3&pi;) 时，V<sub>max</sub> = S&middot;&radic;(S/3&pi;) / 3，此时 h : r = 2 : &radic;3</p></div></div>
+    </div>
+    <div class="speech-bubble green" style="font-family:'Noto Sans SC',sans-serif;font-size:14px;font-weight:400">
+      拖动滑块改变底面半径 r，观察铁皮面积如何分配给「底面」和「侧面」，以及容器容积 V 的变化！
+    </div>
+    <div class="slider-row">
+      <label>底面半径 r：</label>
+      <input type="range" id="slider4c" min="0.5" max="5" step="0.01" value="2">
+      <span class="val" id="val4c">2.00</span>
+    </div>
+    <div class="canvas-wrap" style="overflow:visible">
+      <canvas id="canvas4c" width="900" height="500"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CHAPTER 5: 面积征服者 ===================== -->
+<section class="chapter" id="ch5">
+  <div class="chapter-header">
+    <div class="chapter-number">CHAPTER 5</div>
+    <div class="chapter-title comic-font">面积征服者</div>
+    <div class="chapter-subtitle comic-font">Area Conqueror — Definite Integrals</div>
+  </div>
+
+  <div class="speech-bubble blue">
+    定积分的几何意义：把曲线下的面积切成无数小矩形，然后求和！
+  </div>
+
+  <div class="comic-card">
+    <h3 class="comic-font">黎曼和可视化</h3>
+    <p>函数 f(x) = 0.5x&sup2; + 1，区间 [0, 4]，调整分割数 n 观察逼近过程：</p>
+    <div class="canvas-wrap">
+      <canvas id="canvas5" width="800" height="450"></canvas>
+    </div>
+    <div class="riemann-controls">
+      <label>分割数 n :</label>
+      <input type="range" id="slider5" min="2" max="200" step="1" value="10">
+      <span class="val" id="val5">10</span>
+    </div>
+    <div class="result-box">
+      黎曼和 ≈ <span id="riemannVal">—</span> &nbsp;|&nbsp; 精确积分 = <span id="exactVal">—</span>
+    </div>
+  </div>
+
+  <div class="section-title">定积分真实应用</div>
+  <div class="formula-grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))">
+    <div class="formula-card" style="border-color:var(--blue)">
+      <div class="formula-name" style="color:var(--blue)">航天：变力做功</div>
+      <div class="formula-expr">W = &int; GMm/r&sup2; dr</div>
+      <div class="formula-power">克服引力做功</div>
+    </div>
+    <div class="formula-card" style="border-color:var(--green)">
+      <div class="formula-name" style="color:var(--green)">水利：水坝压力</div>
+      <div class="formula-expr">P = &int; &rho;gx dA</div>
+      <div class="formula-power">深度越大压力越大</div>
+    </div>
+    <div class="formula-card" style="border-color:var(--purple)">
+      <div class="formula-name" style="color:var(--purple)">医学：药物吸收</div>
+      <div class="formula-expr">AUC = &int; C(t) dt</div>
+      <div class="formula-power">药物总吸收量</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CHAPTER 6: 导数英雄榜 ===================== -->
+<section class="chapter" id="ch6">
+  <div class="chapter-header">
+    <div class="chapter-number">CHAPTER 6</div>
+    <div class="chapter-title comic-font">导数英雄榜</div>
+    <div class="chapter-subtitle comic-font">Derivative Hall of Fame — Real World Cases</div>
+  </div>
+
+  <div class="speech-bubble yellow">
+    导数和积分无处不在！这里是 18 个真实应用案例，展示微积分的终极威力！
+  </div>
+
+  <div class="explosion" style="transform:rotate(1deg);margin:32px auto;display:block;text-align:center">INTERACTIVE DEMOS</div>
+
+  <!-- ===== 案例1: 变力做功 — 弹簧 ===== -->
+  <div class="comic-card" style="margin-top:20px">
+    <h3 class="comic-font" style="color:var(--orange)">案例1：弹簧变力做功 W = ∫₀ˣ F(s)ds</h3>
+    <p>胡克定律 F(x) = kx，弹簧从自然长度被拉长到 x 时，外力做功 W = ∫₀ˣ ks ds = ½kx²。拖动滑块看弹簧拉伸和功的累积！</p>
+    <div class="slider-row">
+      <label>拉伸量 x：</label>
+      <input type="range" id="slider6a" min="0" max="10" step="0.1" value="0">
+      <span class="val" id="val6a">0.0</span>
+      <label style="margin-left:20px">劲度系数 k：</label>
+      <input type="range" id="slider6a_k" min="1" max="20" step="1" value="5">
+      <span class="val" id="val6a_k">5</span>
+      <button class="btn-comic" id="btnRelease" style="margin-left:20px">释放弹簧</button>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="canvas6a" width="900" height="400"></canvas>
+    </div>
+  </div>
+
+  <!-- ===== 案例2: 水压力与水坝 ===== -->
+  <div class="comic-card">
+    <h3 class="comic-font" style="color:var(--blue)">案例2：水坝总压力 F = ∫₀ᴴ ρgh·L(h)dh</h3>
+    <p>水的压强随深度线性增大 P = ρgh。大坝不同深度处压力不同，需要用定积分累加。拖动滑块调整水深和坝宽！</p>
+    <div class="slider-row">
+      <label>水深 H (m)：</label>
+      <input type="range" id="slider6b" min="1" max="20" step="0.5" value="10">
+      <span class="val" id="val6b">10.0</span>
+      <label style="margin-left:20px">坝顶宽/底宽比：</label>
+      <input type="range" id="slider6b_r" min="0.1" max="1" step="0.05" value="0.5">
+      <span class="val" id="val6b_r">0.50</span>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="canvas6b" width="900" height="450"></canvas>
+    </div>
+  </div>
+
+  <!-- ===== 案例3: 药物吸收 AUC ===== -->
+  <div class="comic-card">
+    <h3 class="comic-font" style="color:var(--purple)">案例3：药物吸收量 AUC = ∫₀ᵀ C(t)dt</h3>
+    <p>口服药物后，血药浓度 C(t) 先升后降。AUC（曲线下面积）代表药物总暴露量，是药代动力学的核心指标。拖动滑块观察浓度变化和累积药量！</p>
+    <div class="slider-row">
+      <label>观察时间 T (h)：</label>
+      <input type="range" id="slider6c_t" min="1" max="24" step="0.5" value="12">
+      <span class="val" id="val6c_t">12.0</span>
+      <label style="margin-left:20px">吸收速率 ka：</label>
+      <input type="range" id="slider6c_ka" min="0.2" max="2" step="0.1" value="0.8">
+      <span class="val" id="val6c_ka">0.8</span>
+      <label style="margin-left:20px">消除速率 kel：</label>
+      <input type="range" id="slider6c_kel" min="0.05" max="0.5" step="0.05" value="0.15">
+      <span class="val" id="val6c_kel">0.15</span>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="canvas6c" width="900" height="450"></canvas>
+    </div>
+  </div>
+
+  <div class="section-title">物理 / 工程</div>
+  <div class="cards-grid" id="grid-physics">
+    <div class="info-card" data-category="physics">
+      <span class="card-tag">物理</span>
+      <div class="card-icon">🏎️</div>
+      <div class="card-title comic-font">运动学速度与加速度</div>
+      <div class="card-desc">位置函数 s(t) 的一阶导数为速度 v(t)=s'(t)，二阶导数为加速度 a(t)=v'(t)。GPS导航、自动驾驶都依赖它。</div>
+    </div>
+    <div class="info-card" data-category="physics">
+      <span class="card-tag">工程</span>
+      <div class="card-icon">⚡</div>
+      <div class="card-title comic-font">RLC电路瞬态分析</div>
+      <div class="card-desc">电路中电流 i(t) 和电压 v(t) 由微分方程 L·di/dt + Ri + q/C = E(t) 描述，导数决定电路的振荡与衰减。</div>
+    </div>
+    <div class="info-card" data-category="physics">
+      <span class="card-tag">物理</span>
+      <div class="card-icon">🌡️</div>
+      <div class="card-title comic-font">热传导与温度梯度</div>
+      <div class="card-desc">傅里叶热传导定律：热流密度 q = -k·dT/dx，温度的导数（梯度）决定了热量流动的方向和速率。</div>
+    </div>
+  </div>
+
+  <div class="section-title">经济 / 金融</div>
+  <div class="cards-grid" id="grid-economy">
+    <div class="info-card" data-category="economy">
+      <span class="card-tag">经济</span>
+      <div class="card-icon">📊</div>
+      <div class="card-title comic-font">边际成本与边际收益</div>
+      <div class="card-desc">边际成本 MC = C'(q) 表示多生产一单位产品的成本增量。当 MR = MC 时利润最大化，这是微观经济学的核心。</div>
+    </div>
+    <div class="info-card" data-category="economy">
+      <span class="card-tag">金融</span>
+      <div class="card-icon">💹</div>
+      <div class="card-title comic-font">需求价格弹性</div>
+      <div class="card-desc">弹性系数 E = (dQ/dP)·(P/Q)，用导数衡量价格变动对需求量的影响程度，指导定价策略。</div>
+    </div>
+    <div class="info-card" data-category="economy">
+      <span class="card-tag">金融</span>
+      <div class="card-icon">📈</div>
+      <div class="card-title comic-font">期权定价与希腊值</div>
+      <div class="card-desc">Black-Scholes模型中，Delta = dV/dS（标的价格敏感度）、Gamma = d&sup2;V/dS&sup2;，都是导数的应用。</div>
+    </div>
+  </div>
+
+  <div class="section-title">医学 / 生物</div>
+  <div class="cards-grid" id="grid-medical">
+    <div class="info-card" data-category="medical">
+      <span class="card-tag">医学</span>
+      <div class="card-icon">💉</div>
+      <div class="card-title comic-font">药物浓度变化率</div>
+      <div class="card-desc">血药浓度 C(t) 的导数 dC/dt 描述药物在体内的吸收/消除速率，药代动力学建模的核心。</div>
+    </div>
+    <div class="info-card" data-category="medical">
+      <span class="card-tag">生物</span>
+      <div class="card-icon">🧬</div>
+      <div class="card-title comic-font">种群增长 Logistic 模型</div>
+      <div class="card-desc">dP/dt = rP(1 - P/K)，导数描述种群增长率随密度的变化，预测生态系统的承载极限。</div>
+    </div>
+    <div class="info-card" data-category="medical">
+      <span class="card-tag">医学</span>
+      <div class="card-icon">🦠</div>
+      <div class="card-title comic-font">SIR 传染病模型</div>
+      <div class="card-desc">dS/dt、dI/dt、dR/dt 三个微分方程描述易感、感染、康复人群的动态变化，指导防疫政策。</div>
+    </div>
+  </div>
+
+  <div class="section-title">计算机 / AI</div>
+  <div class="cards-grid" id="grid-cs">
+    <div class="info-card" data-category="cs">
+      <span class="card-tag">AI</span>
+      <div class="card-icon">🤖</div>
+      <div class="card-title comic-font">梯度下降训练</div>
+      <div class="card-desc">损失函数 L(&theta;) 的梯度 &nabla;L 是各参数偏导数的向量，沿梯度反方向更新参数，使损失最小化。</div>
+    </div>
+    <div class="info-card" data-category="cs">
+      <span class="card-tag">AI</span>
+      <div class="card-icon">🔗</div>
+      <div class="card-title comic-font">神经网络反向传播</div>
+      <div class="card-desc">利用链式法则逐层计算损失函数对每层权重的偏导数，从输出层向输入层反向传播误差信号。</div>
+    </div>
+    <div class="info-card" data-category="cs">
+      <span class="card-tag">CS</span>
+      <div class="card-icon">⚙️</div>
+      <div class="card-title comic-font">自动微分系统</div>
+      <div class="card-desc">PyTorch、TensorFlow 等框架的核心：自动计算任意复杂函数的梯度，链式法则的程序化实现。</div>
+    </div>
+  </div>
+
+  <div class="section-title">工程应用</div>
+  <div class="cards-grid" id="grid-engineering">
+    <div class="info-card" data-category="engineering">
+      <span class="card-tag">工程</span>
+      <div class="card-icon">🚀</div>
+      <div class="card-title comic-font">变力做功计算</div>
+      <div class="card-desc">W = &int; F(x)dx，当力随位置变化时（如弹簧弹力 F=kx、引力 F=GMm/r&sup2;），需要积分求总功。</div>
+    </div>
+    <div class="info-card" data-category="engineering">
+      <span class="card-tag">水利</span>
+      <div class="card-icon">🌊</div>
+      <div class="card-title comic-font">水压力与水坝设计</div>
+      <div class="card-desc">压强随深度线性增长 P=&rho;gh，总压力需积分 F=&int;&rho;gh&middot;L dh，工程师据此设计大坝结构。</div>
+    </div>
+    <div class="info-card" data-category="engineering">
+      <span class="card-tag">工程</span>
+      <div class="card-icon">🔃</div>
+      <div class="card-title comic-font">旋转体体积计算</div>
+      <div class="card-desc">V = &pi;&int;[f(x)]&sup2; dx（圆盘法），或 V = 2&pi;&int;x&middot;f(x)dx（壳法），用于制造零件、容器设计。</div>
+    </div>
+  </div>
+  <div class="section-title">优化问题</div>
+  <div class="cards-grid" id="grid-optimization">
+    <div class="info-card" data-category="optimization">
+      <span class="card-tag">优化</span>
+      <div class="card-icon">💰</div>
+      <div class="card-title comic-font">利润最大化</div>
+      <div class="card-desc">建立利润函数 &pi;(x)，令 &pi;'(x)=0 求驻点，判断极值类型，找到使利润最大的最优产量或定价。</div>
+    </div>
+    <div class="info-card" data-category="optimization">
+      <span class="card-tag">优化</span>
+      <div class="card-icon">📉</div>
+      <div class="card-title comic-font">成本最小化</div>
+      <div class="card-desc">建立成本函数 C(x)，求 C'(x)=0 找最小成本点。如：用料最少、能耗最低、运输费用最省。</div>
+    </div>
+    <div class="info-card" data-category="optimization">
+      <span class="card-tag">优化</span>
+      <div class="card-icon">🗺️</div>
+      <div class="card-title comic-font">最短路径与费马点</div>
+      <div class="card-desc">在三角形内找一点使到三顶点距离之和最小（费马点），或光沿最短时间路径传播（折射定律）。</div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="comic-footer">
+  <div class="explosion" style="transform:rotate(-2deg)">THE END</div>
+  <p style="margin-top:12px;color:#999;font-size:12px;font-family:'Noto Sans SC',sans-serif;letter-spacing:0">
+    导数英雄传 — Derivative Heroes &copy; 2026 | 数学可视化系列
+  </p>
+</footer>
+
+<!-- ===================== JAVASCRIPT ===================== -->
+<script>
+/* ============================================================
+   Chapter 1: 速度猎人 — Canvas 绘制位置曲线 + 切线
+   ============================================================ */
+(function(){
+  const canvas = document.getElementById('canvas1');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const slider = document.getElementById('slider1');
+  const valEl = document.getElementById('val1');
+  const posEl = document.getElementById('pos1');
+  const velEl = document.getElementById('vel1');
+  const canvas2 = document.getElementById('canvas1b');
+  const ctx2 = canvas2.getContext('2d');
+
+  // Function s(t) = t^3 - 6t^2 + 9t + 1
+  function s(t){ return t*t*t - 6*t*t + 9*t + 1; }
+  // Derivative s'(t) = 3t^2 - 12t + 9
+  function ds(t){ return 3*t*t - 12*t + 9; }
+
+  // Coordinate system
+  const tMin = -0.5, tMax = 5.5;
+  const sMin = -8, sMax = 18;
+  function toX(t){ return 60 + (t - tMin)/(tMax - tMin) * (W - 120); }
+  function toY(s){ return H - 40 - (s - sMin)/(sMax - sMin) * (H - 80); }
+
+  function draw(){
+    ctx.clearRect(0, 0, W, H);
+    // Background
+    ctx.fillStyle = '#FFFEF5';
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+    ctx.lineWidth = 1;
+    for(let t = Math.ceil(tMin); t <= tMax; t++){
+      ctx.beginPath(); ctx.moveTo(toX(t), 30); ctx.lineTo(toX(t), H-10); ctx.stroke();
+    }
+    for(let sv = Math.ceil(sMin/2)*2; sv <= sMax; sv+=2){
+      ctx.beginPath(); ctx.moveTo(50, toY(sv)); ctx.lineTo(W-10, toY(sv)); ctx.stroke();
+    }
+
+    // Axes
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(50, H-40); ctx.lineTo(W-10, H-40); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(toX(0), 30); ctx.lineTo(toX(0), H-10); ctx.stroke();
+
+    // Labels
+    ctx.fillStyle = '#1a1a1a';
+    ctx.font = '12px "Noto Sans SC"';
+    ctx.textAlign = 'center';
+    for(let t = 0; t <= 5; t++){
+      ctx.fillText(t, toX(t), H-22);
+    }
+    ctx.textAlign = 'right';
+    for(let sv = -6; sv <= 16; sv+=4){
+      ctx.fillText(sv, 44, toY(sv)+4);
+    }
+
+    // Draw curve
+    ctx.strokeStyle = '#457B9D';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    for(let t = tMin; t <= tMax; t += 0.02){
+      const x = toX(t), y = toY(s(t));
+      t === tMin ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Current point
+    const t0 = parseFloat(slider.value);
+    const s0 = s(t0);
+    const ds0 = ds(t0);
+    const px = toX(t0), py = toY(s0);
+
+    // Tangent line (extends 2 units in t)
+    const dt = 1.5;
+    const tL = t0 - dt, tR = t0 + dt;
+    ctx.strokeStyle = '#E63946';
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(toX(tL), toY(s0 + ds0*(tL - t0)));
+    ctx.lineTo(toX(tR), toY(s0 + ds0*(tR - t0)));
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Point
+    ctx.fillStyle = '#E63946';
+    ctx.beginPath();
+    ctx.arc(px, py, 7, 0, Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Info box
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.lineWidth = 2;
+    const bx = px + 15, by = py - 50, bw = 180, bh = 56;
+    ctx.fillRect(bx, by, bw, bh);
+    ctx.strokeRect(bx, by, bw, bh);
+    ctx.fillStyle = '#1a1a1a';
+    ctx.font = 'bold 13px "Noto Sans SC"';
+    ctx.textAlign = 'left';
+    ctx.fillText(`t = ${t0.toFixed(2)}`, bx+8, by+18);
+    ctx.fillText(`s(t) = ${s0.toFixed(2)}`, bx+8, by+34);
+    ctx.fillStyle = '#E63946';
+    ctx.fillText(`s'(t) = ${ds0.toFixed(2)}`, bx+8, by+50);
+
+    // Update UI
+    valEl.textContent = t0.toFixed(2);
+    posEl.textContent = s0.toFixed(3);
+    velEl.textContent = ds0.toFixed(3);
+
+    // Draw car animation
+    drawCar(t0, s0);
+  }
+
+  function drawCar(t, sVal){
+    const cW = canvas2.width, cH = canvas2.height;
+    ctx2.clearRect(0, 0, cW, cH);
+    ctx2.fillStyle = '#FFFEF5';
+    ctx2.fillRect(0, 0, cW, cH);
+
+    // Road
+    ctx2.fillStyle = '#ddd';
+    ctx2.fillRect(40, 30, cW - 80, 40);
+    ctx2.strokeStyle = '#1a1a1a';
+    ctx2.lineWidth = 2;
+    ctx2.strokeRect(40, 30, cW - 80, 40);
+
+    // Dashes
+    ctx2.setLineDash([12, 8]);
+    ctx2.strokeStyle = '#FFD700';
+    ctx2.lineWidth = 2;
+    ctx2.beginPath();
+    ctx2.moveTo(40, 50);
+    ctx2.lineTo(cW - 40, 50);
+    ctx2.stroke();
+    ctx2.setLineDash([]);
+
+    // Car position
+    const carX = 60 + (sVal - sMin) / (sMax - sMin) * (cW - 120);
+    const clamped = Math.max(50, Math.min(cW - 50, carX));
+
+    // Car body
+    ctx2.fillStyle = '#E63946';
+    ctx2.fillRect(clamped - 18, 34, 36, 20);
+    ctx2.strokeStyle = '#1a1a1a';
+    ctx2.lineWidth = 2;
+    ctx2.strokeRect(clamped - 18, 34, 36, 20);
+
+    // Wheels
+    ctx2.fillStyle = '#333';
+    ctx2.beginPath(); ctx2.arc(clamped - 10, 56, 5, 0, Math.PI*2); ctx2.fill();
+    ctx2.beginPath(); ctx2.arc(clamped + 10, 56, 5, 0, Math.PI*2); ctx2.fill();
+
+    // Speed arrow
+    const vel = ds(t);
+    ctx2.fillStyle = '#457B9D';
+    ctx2.font = 'bold 14px "Bangers"';
+    ctx2.textAlign = 'center';
+    ctx2.fillText(`v = ${vel.toFixed(1)}`, clamped, 26);
+  }
+
+  slider.addEventListener('input', draw);
+  draw();
+})();
+
+/* ============================================================
+   Chapter 2: 求导英雄挑战 Quiz
+   ============================================================ */
+let quizScore = 0;
+let quizCurrent = 0;
+let quizAnswered = false;
+const quizData = [
+  { q: 'f(x) = 5，则 f\'(x) = ?', opts: ['0', '5', '5x', '1'], ans: 0 },
+  { q: 'f(x) = x&sup4;，则 f\'(x) = ?', opts: ['x&sup3;', '4x&sup3;', '4x&sup4;', 'x&sup4;/4'], ans: 1 },
+  { q: 'f(x) = sin x，则 f\'(x) = ?', opts: ['-sin x', 'cos x', '-cos x', 'tan x'], ans: 1 },
+  { q: 'f(x) = e&supx;，则 f\'(x) = ?', opts: ['xe<sup>x-1</sup>', 'e<sup>x</sup>', 'e<sup>x</sup>/x', 'ln x'], ans: 1 },
+  { q: 'f(x) = ln x，则 f\'(x) = ?', opts: ['x', '1/x', 'ln x', 'e<sup>x</sup>'], ans: 1 },
+  { q: 'f(x) = cos x，则 f\'(x) = ?', opts: ['sin x', '-cos x', '-sin x', 'tan x'], ans: 2 },
+  { q: 'f(x) = 3x&sup2; + 2x - 1，则 f\'(x) = ?', opts: ['6x + 2', '3x + 2', '6x&sup2; + 2', '6x - 1'], ans: 0 },
+  { q: 'f(x) = x &middot; e<sup>x</sup>，则 f\'(x) = ?', opts: ['e<sup>x</sup>', 'xe<sup>x</sup>', '(1+x)e<sup>x</sup>', '(x-1)e<sup>x</sup>'], ans: 2 },
+  { q: 'f(x) = sin(2x)，则 f\'(x) = ?', opts: ['cos(2x)', '2cos(2x)', '-2cos(2x)', '2sin(2x)'], ans: 1 },
+  { q: 'f(x) = 1/x，则 f\'(x) = ?', opts: ['1/x&sup2;', '-1/x&sup2;', 'ln x', 'x'], ans: 1 }
+];
+
+function startQuiz(){
+  quizScore = 0;
+  quizCurrent = 0;
+  quizAnswered = false;
+  updateXP();
+  loadQuestion();
+}
+
+function loadQuestion(){
+  if(quizCurrent >= quizData.length){
+    document.getElementById('quizQ').innerHTML = `<span class="explosion">恭喜通关！得分 ${quizScore}/10</span>`;
+    document.getElementById('quizOpts').innerHTML = '<p style="text-align:center;font-weight:700">你是真正的导数英雄！</p>';
+    return;
+  }
+  quizAnswered = false;
+  const d = quizData[quizCurrent];
+  document.getElementById('quizQ').innerHTML = `Q${quizCurrent+1}/10：${d.q}`;
+  const optsEl = document.getElementById('quizOpts');
+  optsEl.innerHTML = '';
+  d.opts.forEach((opt, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'quiz-opt';
+    btn.innerHTML = opt;
+    btn.onclick = () => answerQuiz(i);
+    optsEl.appendChild(btn);
+  });
+}
+
+function answerQuiz(idx){
+  if(quizAnswered) return;
+  quizAnswered = true;
+  const d = quizData[quizCurrent];
+  const opts = document.querySelectorAll('#quizOpts .quiz-opt');
+  opts.forEach(o => o.classList.add('disabled'));
+  if(idx === d.ans){
+    opts[idx].classList.add('correct');
+    quizScore++;
+  } else {
+    opts[idx].classList.add('wrong');
+    opts[d.ans].classList.add('correct');
+  }
+  updateXP();
+  setTimeout(() => { quizCurrent++; loadQuestion(); }, 1000);
+}
+
+function updateXP(){
+  const pct = (quizScore / quizData.length * 100);
+  document.getElementById('xpFill').style.width = pct + '%';
+  document.getElementById('xpText').textContent = `${quizScore} / ${quizData.length}`;
+}
+
+/* ============================================================
+   Chapter 3: 函数侦探社 — Canvas
+   ============================================================ */
+(function(){
+  const canvas = document.getElementById('canvas3');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const slA = document.getElementById('slider3a');
+  const slB = document.getElementById('slider3b');
+  const vA = document.getElementById('val3a');
+  const vB = document.getElementById('val3b');
+  const reportEl = document.getElementById('detectiveReport');
+
+  function f(x, a, b){ return b*Math.pow(x, 3) - 3*b*x + a + 2; }
+  function df(x, a, b){ return 3*b*x*x - 3*b; }
+
+  function draw(){
+    const a = parseFloat(slA.value);
+    const b = parseFloat(slB.value);
+    vA.textContent = a.toFixed(1);
+    vB.textContent = b.toFixed(1);
+
+    const xMin = -4, xMax = 4;
+    const yMin = -10, yMax = 10;
+    function toX(x){ return 60 + (x - xMin)/(xMax - xMin)*(W-120); }
+    function toY(y){ return H - 50 - (y - yMin)/(yMax - yMin)*(H-100); }
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#FFFEF5';
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+    ctx.lineWidth = 1;
+    for(let x = Math.ceil(xMin); x <= xMax; x++){
+      ctx.beginPath(); ctx.moveTo(toX(x), 30); ctx.lineTo(toX(x), H-20); ctx.stroke();
+    }
+    for(let y = Math.ceil(yMin); y <= yMax; y++){
+      ctx.beginPath(); ctx.moveTo(40, toY(y)); ctx.lineTo(W-20, toY(y)); ctx.stroke();
+    }
+
+    // Axes
+    ctx.strokeStyle = '#1a1a1a';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(40, toY(0)); ctx.lineTo(W-20, toY(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(toX(0), 30); ctx.lineTo(toX(0), H-20); ctx.stroke();
+
+    // Color intervals
+    // Find critical points
+    const crits = [];
+    if(b !== 0){
+      const d = df(0, a, b);
+      // f'(x) = 3b(x^2-1) = 0 => x = ±1
+      crits.push(-1, 1);
+    }
+
+    // Monotonic intervals
+    const intervals = [];
+    const xs = [-4, ...crits, 4];
+    for(let i = 0; i < xs.length - 1; i++){
+      const mid = (xs[i] + xs[i+1])/2;
+      const slope = df(mid, a, b);
+      const color = slope > 0 ? 'rgba(45,106,79,0.12)' : slope < 0 ? 'rgba(230,57,70,0.12)' : 'rgba(0,0,0,0.05)';
+      ctx.fillStyle = color;
+      ctx.fillRect(toX(xs[i]), 30, toX(xs[i+1]) - toX(xs[i]), H-50);
+      intervals.push({from: xs[i], to: xs[i+1], slope});
+    }
+
+    // Curve
+    ctx.strokeStyle = '#457B9D';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    for(let x = xMin; x <= xMax; x += 0.02){
+      const y = f(x, a, b);
+      const px = toX(x), py = toY(y);
+      x === xMin ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // Derivative curve (dashed)
+    ctx.strokeStyle = '#E63946';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 3]);
+    ctx.beginPath();
+    for(let x = xMin; x <= xMax; x += 0.02){
+      const y = df(x, a, b);
+      const px = toX(x), py = toY(y);
+      x === xMin ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Legend
+    ctx.font = 'bold 12px "Noto Sans SC"';
+    ctx.fillStyle = '#457B9D'; ctx.fillText('— f(x)', W-120, 50);
+    ctx.fillStyle = '#E63946'; ctx.fillText('-- f\'(x)', W-120, 68);
+
+    // Critical points with explosion markers
+    crits.forEach(cx => {
+      const cy = f(cx, a, b);
+      const px = toX(cx), py = toY(cy);
+      // Explosion star
+      ctx.fillStyle = '#F4D35E';
+      ctx.strokeStyle = '#1a1a1a';
+      ctx.lineWidth = 2;
+      drawStar(ctx, px, py - 28, 16, 8, 5);
+      // Label
+      const label = cx < 0 ? '极大值' : '极小值';
+      ctx.fillStyle = '#E63946';
+      ctx.font = 'bold 11px "Bangers"';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, px, py - 36);
+      // Point
+      ctx.fillStyle = '#E63946';
+      ctx.beginPath();
+      ctx.arc(px, py, 5, 0, Math.PI*2);
+      ctx.fill();
+    });
+
+    // Update report
+    let reportHTML = '<div style="display:flex;flex-wrap:wrap;gap:12px">';
+    intervals.forEach(iv => {
+      const cls = iv.slope > 0 ? 'green' : iv.slope < 0 ? 'red' : 'blue';
+      const label = iv.slope > 0 ? '增函数 ↑' : iv.slope < 0 ? '减函数 ↓' : '水平';
+      reportHTML += `<div style="flex:1;min-width:200px;padding:12px;border:3px solid var(--ink);border-radius:var(--radius);background:${cls==='green'?'var(--green)':cls==='red'?'var(--red)':'var(--blue)'};color:#fff;font-weight:700;font-size:14px">
+        [${iv.from.toFixed(1)}, ${iv.to.toFixed(1)}] — ${label}
+      </div>`;
+    });
+    if(crits.length > 0){
+      reportHTML += `<div style="flex:1;min-width:200px;padding:12px;border:3px solid var(--ink);border-radius:var(--radius);background:var(--yellow);color:var(--ink);font-weight:700;font-size:14px">
+        极值点：x = ${crits.map(c => c.toFixed(1)).join(', ')}
+      </div>`;
+    }
+    reportHTML += '</div>';
+    reportEl.innerHTML = reportHTML;
+  }
+
+  function drawStar(ctx, cx, cy, outerR, innerR, points){
+    ctx.beginPath();
+    for(let i = 0; i < points * 2; i++){
+      const r = i % 2 === 0 ? outerR : innerR;
+      const angle = (i * Math.PI / points) - Math.PI/2;
+      const x = cx + r * Math.cos(angle);
+      const y = cy + r * Math.sin(angle);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+
+  slA.addEventListener('input', draw);
+  slB.addEventListener('input', draw);
+  draw();
+})();
+
+/* ============================================================
+   Chapter 4: 优化问题 — Canvas
+   ============================================================ */
+(function(){
+  // Problem 1: Profit curve — Interactive
+  (function(){
+    const c = document.getElementById('canvas4a');
+    const ctx = c.getContext('2d');
+    const W = c.width, H = c.height;
+    const slP0 = document.getElementById('slider4a_P0');
+    const slQ0 = document.getElementById('slider4a_Q0');
+    const slK  = document.getElementById('slider4a_k');
+    const slC  = document.getElementById('slider4a_C');
+    const slX  = document.getElementById('slider4a_x');
+    const vP0  = document.getElementById('val4a_P0');
+    const vQ0  = document.getElementById('val4a_Q0');
+    const vK   = document.getElementById('val4a_k');
+    const vC   = document.getElementById('val4a_C');
+    const vX   = document.getElementById('val4a_x');
+
+    function draw(){
+      const P0 = parseFloat(slP0.value);
+      const Q0 = parseFloat(slQ0.value);
+      const kk = parseFloat(slK.value);
+      const CC = parseFloat(slC.value);
+      const curX = parseFloat(slX.value);
+      vP0.textContent = P0; vQ0.textContent = Q0;
+      vK.textContent = kk; vC.textContent = CC;
+      vX.textContent = curX.toFixed(1);
+
+      // L(x) = (p - CC) * q = (P0 - x - CC)(Q0 + kk*x)
+      // Expand: -kk*x^2 + (kk*(P0-CC) - Q0)*x + (P0-CC)*Q0
+      const margin = P0 - CC;
+      const a = -kk;                       // coefficient of x^2
+      const b = kk * margin - Q0;          // coefficient of x
+      const cc = margin * Q0;              // constant term
+
+      function L(x){ return a*x*x + b*x + cc; }
+      function Ld(x){ return 2*a*x + b; }
+
+      // Optimal x* = -b/(2a), only valid if a<0 and x*>0
+      const xStar = (a < 0) ? -b / (2*a) : -1;
+      const validStar = xStar > 0 && curX >= 0;
+      const Lmax = validStar ? L(xStar) : Math.max(L(0), L(Math.min(curX, 60)));
+
+      // Axis range
+      const xMaxRange = Math.max(30, Math.min(60, (P0 - CC) * 1.5));
+      const xMinR = -2, xMaxR = xMaxRange + 5;
+      const yVals = [];
+      for(let xx = 0; xx <= xMaxRange; xx += 1) yVals.push(L(xx));
+      const yMinR = Math.min(0, Math.min(...yVals)) - 2000;
+      const yMaxR = Math.max(...yVals) * 1.15 + 1000;
+      const chL = 75, chR = W - 30, chT = 45, chB = H - 75;
+      function toX(x){ return chL + (x - xMinR)/(xMaxR - xMinR)*(chR - chL); }
+      function toY(y){ return chB - (y - yMinR)/(yMaxR - yMinR)*(chB - chT); }
+
+      ctx.clearRect(0,0,W,H);
+      ctx.fillStyle = '#FFFEF5'; ctx.fillRect(0,0,W,H);
+
+      // Grid
+      ctx.strokeStyle = 'rgba(0,0,0,0.06)'; ctx.lineWidth = 1;
+      const xStep = xMaxRange > 40 ? 10 : 5;
+      for(let xx = 0; xx <= xMaxRange; xx += xStep){
+        ctx.beginPath(); ctx.moveTo(toX(xx), chT); ctx.lineTo(toX(xx), chB); ctx.stroke();
+        ctx.fillStyle = '#999'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(xx+'', toX(xx), chB + 18);
+      }
+      const yStep = Math.ceil((yMaxR - yMinR) / 6 / 1000) * 1000;
+      for(let yy = Math.ceil(yMinR/yStep)*yStep; yy <= yMaxR; yy += yStep){
+        if(yy < 0) continue;
+        ctx.beginPath(); ctx.moveTo(chL, toY(yy)); ctx.lineTo(chR, toY(yy)); ctx.stroke();
+        ctx.fillStyle = '#999'; ctx.font = '11px sans-serif'; ctx.textAlign = 'right';
+        ctx.fillText((yy/1000).toFixed(1)+'k', chL - 6, toY(yy) + 4);
+      }
+      // Axes
+      ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(chL, chT); ctx.lineTo(chL, chB); ctx.lineTo(chR, chB); ctx.stroke();
+      ctx.fillStyle = '#333'; ctx.font = '12px "Noto Sans SC"'; ctx.textAlign = 'center';
+      ctx.fillText('降价幅度 x (元)', (chL+chR)/2, chB + 40);
+      ctx.save(); ctx.translate(18, (chT+chB)/2); ctx.rotate(-Math.PI/2);
+      ctx.fillText('利润 L(x) (元)', 0, 0); ctx.restore();
+
+      // Shaded area: profit region (where L>0)
+      ctx.fillStyle = 'rgba(244,211,94,0.12)';
+      ctx.beginPath();
+      let started = false;
+      for(let xx = 0; xx <= xMaxRange; xx += 0.5){
+        const ly = L(xx);
+        if(ly > 0){
+          const py = toY(ly);
+          if(!started){ ctx.moveTo(toX(xx), toY(0)); ctx.lineTo(toX(xx), py); started = true; }
+          else ctx.lineTo(toX(xx), py);
+        } else if(started){
+          ctx.lineTo(toX(xx), toY(0)); ctx.closePath(); ctx.fill();
+          started = false;
+        }
+      }
+      if(started){ ctx.lineTo(toX(xMaxRange), toY(0)); ctx.closePath(); ctx.fill(); }
+
+      // L(x) curve
+      ctx.strokeStyle = '#F77F00'; ctx.lineWidth = 3;
+      ctx.beginPath();
+      for(let xx = xMinR; xx <= xMaxR; xx += 0.2){
+        const px = toX(xx), py = toY(L(xx));
+        xx <= xMinR + 0.3 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+
+      // Formula label
+      ctx.fillStyle = '#F77F00'; ctx.font = 'bold 13px "Noto Sans SC"'; ctx.textAlign = 'left';
+      const formulaY = chT + 8;
+      ctx.fillText(`L(x) = ${a}x\u00B2 + (${b.toFixed(0)})x + ${cc.toFixed(0)}`, chL + 10, formulaY);
+      ctx.font = '12px "Noto Sans SC"'; ctx.fillStyle = '#666';
+      ctx.fillText(`L'(x) = ${(2*a)}x + ${b.toFixed(0)}`, chL + 10, formulaY + 18);
+
+      // Optimal point star
+      if(validStar && xStar <= xMaxRange){
+        const sx = toX(xStar), sy = toY(L(xStar));
+        ctx.fillStyle = '#F4D35E'; ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 2;
+        drawStar4(ctx, sx, sy, 18, 9, 5);
+        ctx.fillStyle = '#E63946'; ctx.font = 'bold 14px "Bangers"'; ctx.textAlign = 'center';
+        ctx.fillText('MAX!', sx, sy - 24);
+        ctx.fillStyle = '#1a1a1a'; ctx.font = '12px "Noto Sans SC"';
+        ctx.fillText(`x*=${xStar.toFixed(1)}, L=${L(xStar).toFixed(0)}`, sx, sy + 28);
+        // Vertical dashed line at x*
+        ctx.setLineDash([4,3]); ctx.strokeStyle = 'rgba(230,57,70,0.3)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx, chB); ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Current point marker (slider position)
+      if(curX >= 0 && curX <= xMaxRange){
+        const cx = toX(curX), cy = toY(L(curX));
+        // Tangent line
+        const slope = Ld(curX);
+        const tLen = 60;
+        const dx = tLen / Math.sqrt(1 + slope*slope * ((chB-chT)/(chR-chL))**2);
+        ctx.strokeStyle = '#457B9D'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx - dx, cy + slope * dx * (chB-chT)/(chR-chL));
+        ctx.lineTo(cx + dx, cy - slope * dx * (chB-chT)/(chR-chL));
+        ctx.stroke();
+        // Point
+        ctx.fillStyle = '#457B9D'; ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 2; ctx.stroke();
+        // Label
+        ctx.fillStyle = '#457B9D'; ctx.font = 'bold 12px "Noto Sans SC"'; ctx.textAlign = 'left';
+        const labelOff = (slope > 0) ? -30 : 12;
+        ctx.fillText(`L'=${slope.toFixed(0)} ${slope > 0 ? '(\u2191增)' : slope < 0 ? '(\u2193减)' : '(=0)'}`, cx + 10, cy + labelOff);
+        // Vertical dashed line
+        ctx.setLineDash([4,3]); ctx.strokeStyle = 'rgba(69,123,157,0.4)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, chB); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(chL, cy); ctx.lineTo(cx, cy); ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Right info panel
+      const px = P0 - curX, qx = Q0 + kk * curX;
+      const revenue = px * qx, cost = CC * qx, profit = L(curX);
+      const panelX = W - 240, panelY = chT + 45;
+      ctx.fillStyle = 'rgba(255,255,255,0.9)'; 
+      ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(panelX, panelY, 220, 140, 8); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#333'; ctx.font = 'bold 13px "Noto Sans SC"'; ctx.textAlign = 'left';
+      ctx.fillText(`\u25B6 当前 x = ${curX.toFixed(1)}`, panelX + 10, panelY + 22);
+      ctx.font = '12px "Noto Sans SC"';
+      ctx.fillStyle = '#457B9D'; ctx.fillText(`定价: ${px.toFixed(1)} 元`, panelX + 10, panelY + 44);
+      ctx.fillStyle = '#2D6A4F'; ctx.fillText(`销量: ${qx.toFixed(0)} 件`, panelX + 10, panelY + 64);
+      ctx.fillStyle = '#E63946'; ctx.fillText(`收入: ${revenue.toFixed(0)} 元`, panelX + 10, panelY + 84);
+      ctx.fillStyle = '#999'; ctx.fillText(`成本: ${cost.toFixed(0)} 元`, panelX + 10, panelY + 104);
+      ctx.fillStyle = '#F77F00'; ctx.font = 'bold 13px "Noto Sans SC"';
+      ctx.fillText(`利润: ${profit.toFixed(0)} 元`, panelX + 10, panelY + 128);
+
+      // Profit bar chart (bottom-right mini)
+      if(validStar && xStar <= xMaxRange){
+        const barBaseX = panelX + 10, barBaseY = panelY + 150;
+        const barW = 190, barH = 30;
+        const ratio = Math.max(0, profit / L(xStar));
+        ctx.fillStyle = '#eee'; ctx.fillRect(barBaseX, barBaseY, barW, barH);
+        ctx.fillStyle = ratio > 0.95 ? '#2D6A4F' : ratio > 0.7 ? '#F4D35E' : '#E63946';
+        ctx.fillRect(barBaseX, barBaseY, barW * ratio, barH);
+        ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 1; ctx.strokeRect(barBaseX, barBaseY, barW, barH);
+        ctx.fillStyle = '#333'; ctx.font = '11px "Noto Sans SC"'; ctx.textAlign = 'center';
+        ctx.fillText(`已达最大利润的 ${(ratio*100).toFixed(1)}%`, barBaseX + barW/2, barBaseY + 20);
+      }
+    }
+
+    [slP0, slQ0, slK, slC, slX].forEach(s => s.addEventListener('input', draw));
+    draw();
+  })();
+
+  // Problem 2: Fermat point — Interactive (drag vertices)
+  (function(){
+    const c = document.getElementById('canvas4b');
+    const ctx = c.getContext('2d');
+    const W = c.width, H = c.height;
+
+    // Triangle vertices (canvas coords)
+    let pts = [
+      {x: 150, y: 420, label: 'A'},
+      {x: 620, y: 420, label: 'B'},
+      {x: 260, y: 80,  label: 'C'}
+    ];
+    let dragging = -1;
+    let hoverPt = -1;
+
+    function dist(a, b){ return Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2); }
+
+    function findFermat(A, B, C){
+      // Check if any angle >= 120 deg
+      function angle(a, b, c){
+        const ab = {x: a.x-b.x, y: a.y-b.y};
+        const cb = {x: c.x-b.x, y: c.y-b.y};
+        const dot = ab.x*cb.x + ab.y*cb.y;
+        const mag2 = Math.sqrt(ab.x**2+ab.y**2) * Math.sqrt(cb.x**2+cb.y**2);
+        return Math.acos(Math.max(-1, Math.min(1, dot / Math.max(mag2, 0.001))));
+      }
+      const angA = angle(B, A, C);
+      const angB = angle(A, B, C);
+      const angC = angle(A, C, B);
+      const maxAng = Math.max(angA, angB, angC);
+      // If max angle >= 120 deg, Fermat = that vertex
+      const deg120 = 2 * Math.PI / 3;
+      if(maxAng >= deg120){
+        if(angA >= deg120) return {x: A.x, y: A.y, degenerate: true, vertex: 'A', angle: maxAng*180/Math.PI};
+        if(angB >= deg120) return {x: B.x, y: B.y, degenerate: true, vertex: 'B', angle: maxAng*180/Math.PI};
+        return {x: C.x, y: C.y, degenerate: true, vertex: 'C', angle: maxAng*180/Math.PI};
+      }
+      // Numerical search for Fermat point
+      let bestP = {x: (A.x+B.x+C.x)/3, y: (A.y+B.y+C.y)/3};
+      let bestD = Infinity;
+      // Coarse search
+      const minX = Math.min(A.x, B.x, C.x) - 50;
+      const maxX = Math.max(A.x, B.x, C.x) + 50;
+      const minY = Math.min(A.y, B.y, C.y) - 50;
+      const maxY = Math.max(A.y, B.y, C.y) + 50;
+      for(let px = minX; px <= maxX; px += 3){
+        for(let py = minY; py <= maxY; py += 3){
+          const d = dist({x:px,y:py}, A) + dist({x:px,y:py}, B) + dist({x:px,y:py}, C);
+          if(d < bestD){ bestD = d; bestP = {x: px, y: py}; }
+        }
+      }
+      // Fine search
+      for(let px = bestP.x - 5; px <= bestP.x + 5; px += 0.5){
+        for(let py = bestP.y - 5; py <= bestP.y + 5; py += 0.5){
+          const d = dist({x:px,y:py}, A) + dist({x:px,y:py}, B) + dist({x:px,y:py}, C);
+          if(d < bestD){ bestD = d; bestP = {x: px, y: py}; }
+        }
+      }
+      return {x: bestP.x, y: bestP.y, degenerate: false, angle: maxAng*180/Math.PI};
+    }
+
+    function draw(){
+      const [A, B, C] = pts;
+      const fermat = findFermat(A, B, C);
+      const F = {x: fermat.x, y: fermat.y};
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#FFFEF5'; ctx.fillRect(0, 0, W, H);
+
+      // Heatmap
+      const minX = Math.min(A.x, B.x, C.x) - 30;
+      const maxX = Math.max(A.x, B.x, C.x) + 30;
+      const minY = Math.min(A.y, B.y, C.y) - 30;
+      const maxY = Math.max(A.y, B.y, C.y) + 30;
+      let dMin = Infinity, dMax = 0;
+      for(let px = minX; px <= maxX; px += 6){
+        for(let py = minY; py <= maxY; py += 6){
+          const d = dist({x:px,y:py}, A) + dist({x:px,y:py}, B) + dist({x:px,y:py}, C);
+          if(d < dMin) dMin = d;
+          if(d > dMax) dMax = d;
+        }
+      }
+      for(let px = minX; px <= maxX; px += 6){
+        for(let py = minY; py <= maxY; py += 6){
+          const d = dist({x:px,y:py}, A) + dist({x:px,y:py}, B) + dist({x:px,y:py}, C);
+          const norm = Math.max(0, Math.min(1, (d - dMin) / (dMax - dMin)));
+          const rr = Math.floor(230*(1-norm) + 69*norm);
+          const gg = Math.floor(211*(1-norm) + 123*norm);
+          const bb = Math.floor(94*(1-norm) + 157*norm);
+          ctx.fillStyle = `rgba(${rr},${gg},${bb},0.18)`;
+          ctx.fillRect(px, py, 6, 6);
+        }
+      }
+
+      // Triangle edges
+      ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.lineTo(C.x, C.y); ctx.closePath(); ctx.stroke();
+
+      // Lines from Fermat point to vertices
+      const dA = dist(F, A), dB = dist(F, B), dC = dist(F, C);
+      const totalD = dA + dB + dC;
+      const lines = [{p:A, d:dA, c:'#E63946'}, {p:B, d:dB, c:'#457B9D'}, {p:C, d:dC, c:'#2D6A4F'}];
+      lines.forEach(l => {
+        ctx.strokeStyle = l.c; ctx.lineWidth = 2.5; ctx.setLineDash([6, 4]);
+        ctx.beginPath(); ctx.moveTo(F.x, F.y); ctx.lineTo(l.p.x, l.p.y); ctx.stroke();
+        ctx.setLineDash([]);
+        // Distance label at midpoint
+        const mx = (F.x + l.p.x) / 2, my = (F.y + l.p.y) / 2;
+        ctx.fillStyle = l.c; ctx.font = 'bold 12px "Noto Sans SC"'; ctx.textAlign = 'center';
+        ctx.fillText(l.d.toFixed(1), mx + 10, my - 8);
+      });
+
+      // 120° angle arcs at Fermat point (only if non-degenerate)
+      if(!fermat.degenerate){
+        const arcR = 30;
+        lines.forEach((l, i) => {
+          const ang = Math.atan2(l.p.y - F.y, l.p.x - F.x);
+          // Draw arc from ang - 60° to ang + 60°
+          ctx.strokeStyle = 'rgba(244,211,94,0.8)'; ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(F.x, F.y, arcR, ang - Math.PI/3, ang + Math.PI/3);
+          ctx.stroke();
+        });
+        // "120°" label
+        ctx.fillStyle = '#F77F00'; ctx.font = 'bold 11px "Noto Sans SC"'; ctx.textAlign = 'center';
+        const ang0 = Math.atan2(lines[0].p.y - F.y, lines[0].p.x - F.x);
+        ctx.fillText('120\u00B0', F.x + Math.cos(ang0)*(arcR+14), F.y + Math.sin(ang0)*(arcR+14));
+      }
+
+      // Vertices (draggable)
+      pts.forEach((p, i) => {
+        const isHover = (hoverPt === i);
+        const isDrag = (dragging === i);
+        ctx.fillStyle = isDrag ? '#F4D35E' : (isHover ? '#87CEEB' : '#457B9D');
+        ctx.beginPath(); ctx.arc(p.x, p.y, isDrag ? 14 : isHover ? 12 : 10, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = '#1a1a1a'; ctx.font = 'bold 18px "Bangers"'; ctx.textAlign = 'center';
+        ctx.fillText(p.label, p.x, p.y - 18);
+        if(isHover || isDrag){
+          ctx.fillStyle = '#666'; ctx.font = '11px "Noto Sans SC"';
+          ctx.fillText(`(${p.x.toFixed(0)}, ${p.y.toFixed(0)})`, p.x, p.y + 26);
+        }
+      });
+
+      // Fermat point marker
+      ctx.fillStyle = '#F4D35E'; ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 2;
+      drawStar4(ctx, F.x, F.y, 16, 8, 5);
+      ctx.fillStyle = '#E63946'; ctx.font = 'bold 14px "Bangers"'; ctx.textAlign = 'center';
+      ctx.fillText(fermat.degenerate ? `Fermat = ${fermat.vertex}` : 'Fermat P', F.x, F.y - 22);
+
+      // Info panel (top-right)
+      const panX = W - 220, panY = 15;
+      ctx.fillStyle = 'rgba(255,255,255,0.92)'; ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(panX, panY, 205, 155, 8); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#333'; ctx.font = 'bold 13px "Noto Sans SC"'; ctx.textAlign = 'left';
+      ctx.fillText('\u2502 总距离信息', panX + 10, panY + 20);
+      ctx.font = '12px "Noto Sans SC"';
+      ctx.fillStyle = '#E63946'; ctx.fillText(`PA = ${dA.toFixed(1)}`, panX + 10, panY + 42);
+      ctx.fillStyle = '#457B9D'; ctx.fillText(`PB = ${dB.toFixed(1)}`, panX + 10, panY + 62);
+      ctx.fillStyle = '#2D6A4F'; ctx.fillText(`PC = ${dC.toFixed(1)}`, panX + 10, panY + 82);
+      ctx.fillStyle = '#F77F00'; ctx.font = 'bold 13px "Noto Sans SC"';
+      ctx.fillText(`\u03A3 = ${totalD.toFixed(1)} px`, panX + 10, panY + 106);
+      ctx.font = '11px "Noto Sans SC"'; ctx.fillStyle = '#666';
+      ctx.fillText(`最大角: ${fermat.angle.toFixed(1)}\u00B0`, panX + 10, panY + 128);
+      if(fermat.degenerate){
+        ctx.fillStyle = '#E63946';
+        ctx.fillText(`\u26A0 \u89D2\u5EA6\u2265120\u00B0\uFF0C\u9000\u5316\u5230${fermat.vertex}`, panX + 10, panY + 146);
+      } else {
+        ctx.fillStyle = '#2D6A4F';
+        ctx.fillText('\u2714 \u4E09\u7EBF\u5939\u89D2\u5404 120\u00B0', panX + 10, panY + 146);
+      }
+
+      // Legend
+      ctx.fillStyle = 'rgba(45,106,79,0.3)'; ctx.fillRect(W-220, panY + 165, 80, 14);
+      ctx.fillStyle = 'rgba(230,57,70,0.3)'; ctx.fillRect(W-130, panY + 165, 80, 14);
+      ctx.fillStyle = '#333'; ctx.font = '11px "Noto Sans SC"'; ctx.textAlign = 'left';
+      ctx.fillText('\u77ED (\u4F18)', W-215, panY + 177);
+      ctx.fillText('\u957F (\u5DEE)', W-125, panY + 177);
+    }
+
+    // Mouse interaction
+    function getCanvasPos(e){
+      const rect = c.getBoundingClientRect();
+      return {
+        x: (e.clientX - rect.left) * (W / rect.width),
+        y: (e.clientY - rect.top) * (H / rect.height)
+      };
+    }
+    function nearest(pos, threshold){
+      let best = -1, bestD = threshold;
+      pts.forEach((p, i) => {
+        const d = dist(pos, p);
+        if(d < bestD){ bestD = d; best = i; }
+      });
+      return best;
+    }
+    c.addEventListener('mousedown', e => {
+      const pos = getCanvasPos(e);
+      dragging = nearest(pos, 30);
+      if(dragging >= 0) c.style.cursor = 'grabbing';
+    });
+    c.addEventListener('mousemove', e => {
+      const pos = getCanvasPos(e);
+      if(dragging >= 0){
+        pts[dragging].x = Math.max(20, Math.min(W-20, pos.x));
+        pts[dragging].y = Math.max(20, Math.min(H-20, pos.y));
+        draw();
+      } else {
+        hoverPt = nearest(pos, 25);
+        c.style.cursor = hoverPt >= 0 ? 'grab' : 'default';
+      }
+    });
+    c.addEventListener('mouseup', () => { dragging = -1; c.style.cursor = hoverPt >= 0 ? 'grab' : 'default'; });
+    c.addEventListener('mouseleave', () => { dragging = -1; hoverPt = -1; c.style.cursor = 'default'; });
+    // Touch support
+    c.addEventListener('touchstart', e => {
+      e.preventDefault();
+      const t = e.touches[0];
+      const pos = getCanvasPos(t);
+      dragging = nearest(pos, 40);
+    }, {passive: false});
+    c.addEventListener('touchmove', e => {
+      e.preventDefault();
+      if(dragging >= 0){
+        const t = e.touches[0];
+        const pos = getCanvasPos(t);
+        pts[dragging].x = Math.max(20, Math.min(W-20, pos.x));
+        pts[dragging].y = Math.max(20, Math.min(H-20, pos.y));
+        draw();
+      }
+    }, {passive: false});
+    c.addEventListener('touchend', () => { dragging = -1; });
+
+    draw();
+  })();
+
+  // Problem 3: Container volume — Interactive
+  (function(){
+    const c = document.getElementById('canvas4c');
+    const ctx = c.getContext('2d');
+    const W = c.width, H = c.height;
+    const slider = document.getElementById('slider4c');
+    const valEl = document.getElementById('val4c');
+
+    const S = 100;
+    function hOf(r){ return (S - Math.PI*r*r) / (2*Math.PI*r); }
+    function Vof(r){ return (S*r - Math.PI*r*r*r)/2; }
+    function baseArea(r){ return Math.PI*r*r; }
+    function sideArea(r){ return S - Math.PI*r*r; }
+    const rOpt = Math.sqrt(S/(3*Math.PI));
+    const vOpt = Vof(rOpt);
+
+    // Small V(r) curve chart area: right side
+    const chartL = 540, chartR = W - 30, chartT = 30, chartB = H - 60;
+    const rMin = 0, rMax = 5.5, vMin = 0, vMax = 120;
+    function toX(r){ return chartL + (r-rMin)/(rMax-rMin)*(chartR-chartL); }
+    function toY(v){ return chartB - (v-vMin)/(vMax-vMin)*(chartB-chartT); }
+
+    function drawCylinder3D(cx, cy, radius, height, color, label){
+      const rx = Math.max(10, radius * 3.5);
+      const ry = rx * 0.3;
+      const hh = Math.max(5, height * 4);
+      // Bottom ellipse (full, dashed to show back)
+      ctx.save();
+      ctx.strokeStyle = color; ctx.lineWidth = 2;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.ellipse(cx, cy + hh, rx, ry, 0, 0, Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]);
+      // Side fill
+      ctx.fillStyle = color.replace(')', ',0.08)').replace('rgb', 'rgba');
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, rx, ry, 0, Math.PI, 0, true); // top arc
+      ctx.lineTo(cx + rx, cy + hh);
+      ctx.ellipse(cx, cy + hh, rx, ry, 0, 0, Math.PI, false); // bottom front arc
+      ctx.lineTo(cx - rx, cy);
+      ctx.closePath();
+      ctx.fill();
+      // Side edges
+      ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(cx - rx, cy); ctx.lineTo(cx - rx, cy + hh); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx + rx, cy); ctx.lineTo(cx + rx, cy + hh); ctx.stroke();
+      // Bottom ellipse front
+      ctx.beginPath(); ctx.ellipse(cx, cy + hh, rx, ry, 0, 0, Math.PI); ctx.stroke();
+      // Top ellipse (open = no lid)
+      ctx.strokeStyle = color; ctx.lineWidth = 3;
+      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI*2); ctx.stroke();
+      // Dashed cross inside top to show "open"
+      ctx.setLineDash([3, 3]);
+      ctx.strokeStyle = color.replace(')', ',0.3)').replace('rgb', 'rgba');
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(cx - rx*0.6, cy); ctx.lineTo(cx + rx*0.6, cy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx, cy - ry*0.6); ctx.lineTo(cx, cy + ry*0.6); ctx.stroke();
+      ctx.setLineDash([]);
+      // Label
+      ctx.fillStyle = color; ctx.font = 'bold 14px "Noto Sans SC"'; ctx.textAlign = 'center';
+      ctx.fillText(label, cx, cy + hh + 22);
+    }
+
+    function draw(){
+      const r = parseFloat(slider.value);
+      valEl.textContent = r.toFixed(2);
+      const h = hOf(r);
+      const v = Vof(r);
+      const ba = baseArea(r);
+      const sa = sideArea(r);
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = '#FFFEF5'; ctx.fillRect(0, 0, W, H);
+
+      // ===== LEFT SIDE: Cylinder illustration =====
+      const cylCx = 180, cylCy = 120;
+      if(h > 0){
+        drawCylinder3D(cylCx, cylCy, r, h, 'rgb(45,106,79)', '无盖圆柱容器');
+      } else {
+        ctx.fillStyle = '#E63946'; ctx.font = 'bold 16px "Noto Sans SC"'; ctx.textAlign = 'center';
+        ctx.fillText('r 太大，铁皮不够做底面！', cylCx, cylCy + 40);
+      }
+
+      // Dimension annotations
+      if(h > 0){
+        const rx = Math.max(10, r * 3.5);
+        const ry = rx * 0.3;
+        const hh = Math.max(5, h * 4);
+        // r arrow
+        ctx.strokeStyle = '#E63946'; ctx.lineWidth = 2;
+        const arrowY = cylCy + hh + 6;
+        ctx.beginPath(); ctx.moveTo(cylCx, arrowY); ctx.lineTo(cylCx + rx, arrowY); ctx.stroke();
+        // arrow heads
+        ctx.beginPath(); ctx.moveTo(cylCx+4, arrowY-3); ctx.lineTo(cylCx, arrowY); ctx.lineTo(cylCx+4, arrowY+3); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cylCx+rx-4, arrowY-3); ctx.lineTo(cylCx+rx, arrowY); ctx.lineTo(cylCx+rx-4, arrowY+3); ctx.stroke();
+        ctx.fillStyle = '#E63946'; ctx.font = 'bold 13px "Noto Sans SC"'; ctx.textAlign = 'center';
+        ctx.fillText('r = ' + r.toFixed(2), cylCx + rx/2, arrowY + 16);
+
+        // h arrow (left side)
+        const arrowX = cylCx - rx - 20;
+        ctx.strokeStyle = '#457B9D'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(arrowX, cylCy); ctx.lineTo(arrowX, cylCy + hh); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(arrowX-3, cylCy+4); ctx.lineTo(arrowX, cylCy); ctx.lineTo(arrowX+3, cylCy+4); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(arrowX-3, cylCy+hh-4); ctx.lineTo(arrowX, cylCy+hh); ctx.lineTo(arrowX+3, cylCy+hh-4); ctx.stroke();
+        ctx.save(); ctx.translate(arrowX - 12, cylCy + hh/2); ctx.rotate(-Math.PI/2);
+        ctx.fillStyle = '#457B9D'; ctx.font = 'bold 13px "Noto Sans SC"'; ctx.textAlign = 'center';
+        ctx.fillText('h = ' + h.toFixed(2), 0, 0); ctx.restore();
+      }
+
+      // ===== BOTTOM LEFT: Iron sheet area breakdown =====
+      const barY = 310, barH = 28, barW = 320, barL = 20;
+      ctx.fillStyle = '#1a1a1a'; ctx.font = 'bold 13px "Noto Sans SC"'; ctx.textAlign = 'left';
+      ctx.fillText('铁皮面积 S = 100 的分配：', barL, barY - 10);
+
+      // Background bar (total S)
+      ctx.fillStyle = '#e0e0e0';
+      ctx.fillRect(barL, barY, barW, barH);
+      ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 2;
+      ctx.strokeRect(barL, barY, barW, barH);
+
+      // Base area (orange)
+      const baW = Math.max(0, (ba / S) * barW);
+      ctx.fillStyle = 'rgba(247,127,0,0.7)';
+      ctx.fillRect(barL, barY, baW, barH);
+      // Side area (green)
+      const saW = Math.max(0, (sa / S) * barW);
+      ctx.fillStyle = 'rgba(45,106,79,0.6)';
+      ctx.fillRect(barL + baW, barY, saW, barH);
+
+      // Labels inside bar
+      ctx.font = 'bold 11px "Noto Sans SC"'; ctx.textAlign = 'center';
+      if(baW > 50){
+        ctx.fillStyle = '#fff'; ctx.fillText('底面 ' + ba.toFixed(1), barL + baW/2, barY + 18);
+      }
+      if(saW > 50){
+        ctx.fillStyle = '#fff'; ctx.fillText('侧面 ' + sa.toFixed(1), barL + baW + saW/2, barY + 18);
+      }
+
+      // Legend
+      ctx.textAlign = 'left'; ctx.font = '12px "Noto Sans SC"';
+      ctx.fillStyle = 'rgba(247,127,0,0.9)'; ctx.fillRect(barL, barY + barH + 8, 14, 14);
+      ctx.fillStyle = '#1a1a1a'; ctx.fillText('底面积 πr² = ' + ba.toFixed(1), barL + 20, barY + barH + 20);
+      ctx.fillStyle = 'rgba(45,106,79,0.8)'; ctx.fillRect(barL + 170, barY + barH + 8, 14, 14);
+      ctx.fillStyle = '#1a1a1a'; ctx.fillText('侧面积 2πrh = ' + sa.toFixed(1), barL + 190, barY + barH + 20);
+
+      // V and status display
+      ctx.font = 'bold 15px "Noto Sans SC"'; ctx.textAlign = 'center';
+      if(h > 0){
+        ctx.fillStyle = '#2D6A4F';
+        ctx.fillText('V = πr²h = ' + v.toFixed(1), 200, barY + barH + 55);
+        // Show comparison to optimal
+        const pct = (v / vOpt * 100).toFixed(1);
+        ctx.fillStyle = pct >= 99 ? '#E63946' : '#666';
+        ctx.font = '13px "Noto Sans SC"';
+        ctx.fillText('已达最优的 ' + pct + '%', 200, barY + barH + 75);
+      } else {
+        ctx.fillStyle = '#E63946'; ctx.fillText('V = 0（无法制作容器）', 200, barY + barH + 55);
+      }
+
+      // Physical meaning text
+      ctx.fillStyle = '#555'; ctx.font = '12px "Noto Sans SC"'; ctx.textAlign = 'left';
+      ctx.fillText('物理意义：固定铁皮面积 → r 越大底面占越多 → 侧面越矮 → 容积先增后减', barL, H - 12);
+
+      // ===== RIGHT SIDE: V(r) curve =====
+      // Separator line
+      ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(520, 20); ctx.lineTo(520, H - 20); ctx.stroke();
+
+      // Chart title
+      ctx.fillStyle = '#2D6A4F'; ctx.font = 'bold 14px "Noto Sans SC"'; ctx.textAlign = 'center';
+      ctx.fillText('V(r) = (Sr - πr³) / 2  曲线', (chartL + chartR)/2, 22);
+
+      // Grid
+      ctx.strokeStyle = 'rgba(0,0,0,0.06)'; ctx.lineWidth = 1;
+      for(let rv = 0; rv <= 5; rv++){
+        ctx.beginPath(); ctx.moveTo(toX(rv), chartT + 10); ctx.lineTo(toX(rv), chartB); ctx.stroke();
+        ctx.fillStyle = '#666'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(rv, toX(rv), chartB + 16);
+      }
+      for(let vv = 0; vv <= 120; vv += 20){
+        ctx.beginPath(); ctx.moveTo(chartL, toY(vv)); ctx.lineTo(chartR, toY(vv)); ctx.stroke();
+        ctx.fillStyle = '#666'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
+        ctx.fillText(vv, chartL - 6, toY(vv) + 4);
+      }
+      // Axis label
+      ctx.fillStyle = '#333'; ctx.font = '11px "Noto Sans SC"'; ctx.textAlign = 'center';
+      ctx.fillText('r', (chartL+chartR)/2, chartB + 32);
+
+      // Curve
+      ctx.strokeStyle = '#2D6A4F'; ctx.lineWidth = 3;
+      ctx.beginPath();
+      let started = false;
+      for(let rv = 0.1; rv <= rMax; rv += 0.02){
+        const vv = Vof(rv);
+        if(vv < 0) continue;
+        const px = toX(rv), py = toY(vv);
+        if(!started){ ctx.moveTo(px, py); started = true; } else { ctx.lineTo(px, py); }
+      }
+      ctx.stroke();
+
+      // Optimal point
+      const mx = toX(rOpt), my = toY(vOpt);
+      ctx.fillStyle = '#F4D35E'; ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 2;
+      drawStar4(ctx, mx, my, 14, 7, 5);
+      ctx.fillStyle = '#E63946'; ctx.font = 'bold 12px "Bangers"'; ctx.textAlign = 'center';
+      ctx.fillText('MAX!', mx, my - 18);
+      ctx.fillStyle = '#1a1a1a'; ctx.font = '11px "Noto Sans SC"';
+      ctx.fillText('r=' + rOpt.toFixed(2) + ', V=' + vOpt.toFixed(1), mx, my + 20);
+
+      // Current point indicator
+      if(h > 0){
+        const cpx = toX(r), cpy = toY(v);
+        // Vertical dashed line
+        ctx.strokeStyle = 'rgba(230,57,70,0.4)'; ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(cpx, chartB); ctx.lineTo(cpx, cpy); ctx.stroke();
+        // Horizontal dashed line
+        ctx.beginPath(); ctx.moveTo(chartL, cpy); ctx.lineTo(cpx, cpy); ctx.stroke();
+        ctx.setLineDash([]);
+        // Point
+        ctx.fillStyle = '#E63946';
+        ctx.beginPath(); ctx.arc(cpx, cpy, 6, 0, Math.PI*2); ctx.fill();
+        ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 2; ctx.stroke();
+        // Label
+        ctx.fillStyle = '#E63946'; ctx.font = 'bold 11px "Noto Sans SC"'; ctx.textAlign = 'left';
+        ctx.fillText('当前 r=' + r.toFixed(2), cpx + 10, cpy - 6);
+        ctx.fillText('V=' + v.toFixed(1), cpx + 10, cpy + 10);
+      }
+    }
+
+    slider.addEventListener('input', draw);
+    draw();
+  })();
+
+  function drawStar4(ctx, cx, cy, outerR, innerR, points){
+    ctx.beginPath();
+    for(let i = 0; i < points * 2; i++){
+      const r = i % 2 === 0 ? outerR : innerR;
+      const angle = (i * Math.PI / points) - Math.PI/2;
+      const x = cx + r * Math.cos(angle);
+      const y = cy + r * Math.sin(angle);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+})();
+
+/* ============================================================
+   Chapter 5: 黎曼和可视化
+   ============================================================ */
+(function(){
+  const canvas = document.getElementById('canvas5');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const slider = document.getElementById('slider5');
+  const valEl = document.getElementById('val5');
+  const riemannEl = document.getElementById('riemannVal');
+  const exactEl = document.getElementById('exactVal');
+
+  // f(x) = 0.5x^2 + 1 on [0, 4]
+  function f(x){ return 0.5 * x * x + 1; }
+  const a = 0, b = 4;
+  // Exact integral: (0.5/3)x^3 + x | 0 to 4 = (64/6) + 4 = 10.6667 + 4 = 14.6667
+  // Actually: ∫(0.5x^2 + 1)dx = x^3/6 + x from 0 to 4 = 64/6 + 4 = 32/3 + 4 = 44/3
+  const exact = 44/3;
+
+  const xMin = -0.5, xMax = 5;
+  const yMin = 0, yMax = 12;
+  function toX(x){ return 60 + (x - xMin)/(xMax - xMin)*(W - 120); }
+  function toY(y){ return H - 50 - (y - yMin)/(yMax - yMin)*(H - 100); }
+
+  exactEl.textContent = exact.toFixed(4);
+
+  function draw(){
+    const n = parseInt(slider.value);
+    valEl.textContent = n;
+    const dx = (b - a) / n;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#FFFEF5'; ctx.fillRect(0, 0, W, H);
+
+    // Riemann rectangles
+    let riemannSum = 0;
+    for(let i = 0; i < n; i++){
+      const xi = a + i * dx;
+      const fi = f(xi);
+      riemannSum += fi * dx;
+      const x1 = toX(xi), x2 = toX(xi + dx);
+      const y0 = toY(0), y1 = toY(fi);
+      ctx.fillStyle = 'rgba(69,123,157,0.25)';
+      ctx.fillRect(x1, y1, x2 - x1, y0 - y1);
+      ctx.strokeStyle = '#457B9D';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x1, y1, x2 - x1, y0 - y1);
+    }
+
+    riemannEl.textContent = riemannSum.toFixed(4);
+
+    // Grid
+    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+    ctx.lineWidth = 1;
+    for(let x = 0; x <= 4; x++){
+      ctx.beginPath(); ctx.moveTo(toX(x), 30); ctx.lineTo(toX(x), H-30); ctx.stroke();
+    }
+    for(let y = 0; y <= 10; y+=2){
+      ctx.beginPath(); ctx.moveTo(50, toY(y)); ctx.lineTo(W-30, toY(y)); ctx.stroke();
+    }
+
+    // Axes
+    ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(50, toY(0)); ctx.lineTo(W-30, toY(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(toX(0), 30); ctx.lineTo(toX(0), H-30); ctx.stroke();
+
+    // Labels
+    ctx.fillStyle = '#666'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+    for(let x = 0; x <= 4; x++) ctx.fillText(x, toX(x), H-35);
+    ctx.textAlign = 'right';
+    for(let y = 0; y <= 10; y+=2) ctx.fillText(y, 44, toY(y)+4);
+
+    // Curve
+    ctx.strokeStyle = '#E63946'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    for(let x = xMin; x <= xMax; x += 0.02){
+      const px = toX(x), py = toY(f(x));
+      x === xMin ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // Label
+    ctx.fillStyle = '#E63946'; ctx.font = 'bold 14px "Noto Sans SC"'; ctx.textAlign = 'left';
+    ctx.fillText('f(x) = 0.5x\u00B2 + 1', 70, 40);
+
+    // n label
+    ctx.fillStyle = '#457B9D'; ctx.font = 'bold 14px "Bangers"';
+    ctx.fillText(`n = ${n}`, W - 100, 40);
+  }
+
+  slider.addEventListener('input', draw);
+  draw();
+})();
+
+/* ============================================================
+   Chapter 6 Demo 1: 弹簧变力做功
+   ============================================================ */
+(function(){
+  const c = document.getElementById('canvas6a');
+  const ctx = c.getContext('2d');
+  const W = c.width, H = c.height;
+  const slX = document.getElementById('slider6a');
+  const slK = document.getElementById('slider6a_k');
+  const vX = document.getElementById('val6a');
+  const vK = document.getElementById('val6a_k');
+  const btn = document.getElementById('btnRelease');
+
+  const xMax = 10, fMax = 200, wMax = 1000;
+  const chL = 480, chR = W - 20, chT = 30, chB = H - 50;
+  function toChartX(x){ return chL + (x/xMax)*(chR-chL); }
+  function toChartY(f){ return chB - (f/fMax)*(chB-chT); }
+
+  let isReleasing = false, releaseStart = 0, releaseX0 = 0, releaseK = 5, animId = null;
+
+  function drawSpring(cx, y, x0, x1, coils, amp){
+    const len = x1 - x0;
+    const segLen = len / (coils * 2);
+    ctx.strokeStyle = '#F77F00'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(x0, y);
+    for(let i = 0; i < coils * 2; i++){
+      const sx = x0 + (i + 1) * segLen;
+      const sy = y + (i % 2 === 0 ? -amp : amp);
+      ctx.lineTo(sx, sy);
+    }
+    ctx.lineTo(x1, y); ctx.stroke();
+  }
+
+  function drawSpeedLines(xPos, intensity){
+    ctx.strokeStyle = 'rgba(244,211,94,' + (intensity * 0.5) + ')';
+    ctx.lineWidth = 2;
+    for(let i = 0; i < 5; i++){
+      const y = 180 + Math.random() * 40;
+      const len = 10 + Math.random() * 30 * intensity;
+      ctx.beginPath(); ctx.moveTo(xPos + Math.random()*20, y);
+      ctx.lineTo(xPos + len, y); ctx.stroke();
+    }
+  }
+
+  function drawFrame(x, k, releasing){
+    vX.textContent = x.toFixed(2);
+    vK.textContent = k;
+    const F = k * x;
+    const W_work = 0.5 * k * x * x;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#FFFEF5'; ctx.fillRect(0, 0, W, H);
+
+    const wallX = 40;
+    ctx.fillStyle = '#888'; ctx.fillRect(wallX - 10, 150, 12, 80);
+    for(let i = 0; i < 5; i++){
+      ctx.strokeStyle = '#666'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(wallX - 10, 155 + i*16); ctx.lineTo(wallX - 20, 163 + i*16); ctx.stroke();
+    }
+
+    const springEnd = 80 + x * 30;
+    drawSpring(wallX + 2, 190, wallX + 2, springEnd, 12, 12);
+
+    let bx = springEnd, by = 170;
+    if(releasing && x > 0.1){
+      bx += (Math.random() - 0.5) * 3 * x;
+      by += (Math.random() - 0.5) * 2;
+    }
+    ctx.fillStyle = '#E63946'; ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 2;
+    ctx.fillRect(bx, by, 30, 40); ctx.strokeRect(bx, by, 30, 40);
+
+    if(releasing && x > 0.5){
+      drawSpeedLines(springEnd + 30, x / 10);
+    }
+
+    if(x > 0.2){
+      const arrowLen = Math.min(x * 8, 100);
+      ctx.strokeStyle = '#F77F00'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(springEnd + 30, 190); ctx.lineTo(springEnd + 30 + arrowLen, 190); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(springEnd + 24 + arrowLen, 184); ctx.lineTo(springEnd + 30 + arrowLen, 190); ctx.lineTo(springEnd + 24 + arrowLen, 196); ctx.stroke();
+      ctx.fillStyle = '#F77F00'; ctx.font = 'bold 14px "Bangers"'; ctx.textAlign = 'center';
+      ctx.fillText('F = ' + F.toFixed(0) + 'N', springEnd + 30 + arrowLen/2, 178);
+    }
+
+    ctx.fillStyle = '#1a1a1a'; ctx.font = '13px "Noto Sans SC"'; ctx.textAlign = 'center';
+    ctx.fillText('x = ' + x.toFixed(2) + ' m', (wallX + springEnd)/2 + 15, 235);
+
+    if(releasing && x > 0.1){
+      ctx.fillStyle = '#E63946'; ctx.font = 'bold 20px "Bangers"';
+      ctx.fillText('释放中！E = ' + W_work.toFixed(1) + ' J', 220, 280);
+      let feedback = '';
+      if(x >= 8 && k >= 15) feedback = '超强弹力！弹簧像火箭一样飞回！';
+      else if(x >= 6) feedback = '好强的弹性势能！';
+      else if(x >= 3) feedback = '弹回去了！';
+      else if(k >= 15) feedback = '弹簧很硬，振动频率超高！';
+      else feedback = '轻轻弹回~';
+      ctx.fillStyle = '#E63946'; ctx.font = 'bold 14px "Noto Sans SC"';
+      ctx.fillText(feedback, 220, 305);
+    } else {
+      ctx.fillStyle = '#2D6A4F'; ctx.font = 'bold 18px "Bangers"';
+      ctx.fillText('W = ' + W_work.toFixed(1) + ' J', 220, 290);
+      ctx.fillStyle = '#666'; ctx.font = '12px "Noto Sans SC"';
+      ctx.fillText('W = \u00BDkx\u00B2 = \u00BD\u00D7' + k + '\u00D7' + x.toFixed(2) + '\u00B2', 220, 315);
+    }
+
+    const barW = 350, barH = 18, barL = 50, barY = 340;
+    ctx.fillStyle = '#e0e0e0'; ctx.fillRect(barL, barY, barW, barH);
+    const fillW = Math.min((W_work / wMax) * barW, barW);
+    const grad = ctx.createLinearGradient(barL, 0, barL + fillW, 0);
+    grad.addColorStop(0, releasing ? '#E63946' : '#F4D35E');
+    grad.addColorStop(1, releasing ? '#F4D35E' : '#F77F00');
+    ctx.fillStyle = grad; ctx.fillRect(barL, barY, fillW, barH);
+    ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 1.5; ctx.strokeRect(barL, barY, barW, barH);
+
+    ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(460, 20); ctx.lineTo(460, H - 20); ctx.stroke();
+    ctx.fillStyle = '#F77F00'; ctx.font = 'bold 13px "Noto Sans SC"'; ctx.textAlign = 'center';
+    ctx.fillText('F(x) = kx  \u4e0e  W = \u222B F(x)dx', (chL+chR)/2, 20);
+
+    ctx.strokeStyle = 'rgba(0,0,0,0.06)'; ctx.lineWidth = 1;
+    for(let xi = 0; xi <= xMax; xi += 2){
+      ctx.beginPath(); ctx.moveTo(toChartX(xi), chT); ctx.lineTo(toChartX(xi), chB); ctx.stroke();
+      ctx.fillStyle = '#666'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(xi, toChartX(xi), chB + 14);
+    }
+    for(let fi = 0; fi <= fMax; fi += 40){
+      ctx.beginPath(); ctx.moveTo(chL, toChartY(fi)); ctx.lineTo(chR, toChartY(fi)); ctx.stroke();
+      ctx.fillStyle = '#666'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
+      ctx.fillText(fi, chL - 4, toChartY(fi) + 4);
+    }
+    ctx.fillStyle = '#333'; ctx.font = '11px "Noto Sans SC"'; ctx.textAlign = 'center';
+    ctx.fillText('x (m)', (chL+chR)/2, chB + 30);
+    ctx.save(); ctx.translate(chL - 42, (chT+chB)/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText('F (N)', 0, 0); ctx.restore();
+
+    if(x > 0.05){
+      ctx.fillStyle = releasing ? 'rgba(230,57,70,0.15)' : 'rgba(247,127,0,0.2)';
+      ctx.beginPath(); ctx.moveTo(toChartX(0), toChartY(0));
+      for(let xi = 0; xi <= x; xi += 0.05){
+        ctx.lineTo(toChartX(xi), toChartY(k * xi));
+      }
+      ctx.lineTo(toChartX(x), toChartY(0)); ctx.closePath(); ctx.fill();
+    }
+
+    ctx.strokeStyle = '#F77F00'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    for(let xi = 0; xi <= xMax; xi += 0.1){
+      const px = toChartX(xi), py = toChartY(k * xi);
+      xi < 0.1 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    if(x > 0.05){
+      const cpx = toChartX(x), cpy = toChartY(F);
+      ctx.fillStyle = '#E63946'; ctx.beginPath(); ctx.arc(cpx, cpy, 5, 0, Math.PI*2); ctx.fill();
+      ctx.setLineDash([4,3]); ctx.strokeStyle = 'rgba(230,57,70,0.4)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(cpx, chB); ctx.lineTo(cpx, cpy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(chL, cpy); ctx.lineTo(cpx, cpy); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    if(x > 1){
+      ctx.fillStyle = '#E63946'; ctx.font = 'bold 14px "Bangers"'; ctx.textAlign = 'center';
+      ctx.fillText('W = ' + W_work.toFixed(1) + ' J', toChartX(x/2), toChartY(k*x/2) + 5);
+    }
+  }
+
+  function animateRelease(){
+    const t = (Date.now() - releaseStart) / 1000;
+    const omega = Math.sqrt(releaseK / 2);
+    const damping = 0.5 + releaseK * 0.02;
+    const newX = Math.max(0, releaseX0 * Math.exp(-damping * t) * Math.abs(Math.cos(omega * t)));
+    slX.value = newX;
+    if(newX > 0.05){
+      animId = requestAnimationFrame(animateRelease);
+    } else {
+      slX.value = 0;
+      isReleasing = false;
+      slX.disabled = false; slK.disabled = false;
+      btn.textContent = '释放弹簧';
+    }
+    drawFrame(newX, releaseK, true);
+  }
+
+  btn.addEventListener('click', function(){
+    if(isReleasing) return;
+    const x = parseFloat(slX.value);
+    const k = parseInt(slK.value);
+    if(x < 0.3){
+      btn.textContent = '拉伸量太小，无法释放';
+      setTimeout(() => btn.textContent = '释放弹簧', 1500);
+      return;
+    }
+    isReleasing = true;
+    releaseX0 = x; releaseK = k; releaseStart = Date.now();
+    slX.disabled = true; slK.disabled = true;
+    btn.textContent = '释放中...';
+    animId = requestAnimationFrame(animateRelease);
+  });
+
+  function draw(){ drawFrame(parseFloat(slX.value), parseInt(slK.value), false); }
+  slX.addEventListener('input', draw);
+  slK.addEventListener('input', draw);
+  draw();
+})();
+
+/* ============================================================
+   Chapter 6 Demo 2: 水坝水压力
+   ============================================================ */
+(function(){
+  const c = document.getElementById('canvas6b');
+  const ctx = c.getContext('2d');
+  const W = c.width, H = c.height;
+  const slH = document.getElementById('slider6b');
+  const slR = document.getElementById('slider6b_r');
+  const vH = document.getElementById('val6b');
+  const vR = document.getElementById('val6b_r');
+
+  // Left: dam cross-section 0~430
+  // Right: pressure distribution chart 470~W-20
+
+  function draw(){
+    const depth = parseFloat(slH.value);
+    const ratio = parseFloat(slR.value);
+    vH.textContent = depth.toFixed(1);
+    vR.textContent = ratio.toFixed(2);
+
+    const rho = 1000; // kg/m³ water density
+    const g = 9.8;
+    const bottomW = 80; // pixels for bottom width
+    const topW = bottomW * ratio;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#FFFEF5'; ctx.fillRect(0, 0, W, H);
+
+    // === LEFT: Dam cross section ===
+    const damCx = 220, damBottom = 380;
+    const damH = depth * 14; // scale depth to pixels
+    const damTop = damBottom - damH;
+    const bw = bottomW, tw = topW;
+
+    // Water behind dam
+    const waterRight = damCx - bw/2;
+    const waterGrad = ctx.createLinearGradient(waterRight - 120, damTop, waterRight, damBottom);
+    waterGrad.addColorStop(0, 'rgba(69,123,157,0.1)');
+    waterGrad.addColorStop(1, 'rgba(69,123,157,0.5)');
+    ctx.fillStyle = waterGrad;
+    ctx.fillRect(waterRight - 120, damTop, 120, damH);
+    // Water surface wave
+    ctx.strokeStyle = 'rgba(69,123,157,0.6)'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    for(let px = waterRight - 120; px <= waterRight; px += 2){
+      const wave = Math.sin(px * 0.08 + Date.now() * 0.003) * 3;
+      ctx.lineTo(px, damTop + wave);
+    }
+    ctx.stroke();
+
+    // Dam body (trapezoid) — thermal stress gradient by depth
+    // Draw horizontal strips with color mapped from blue (low stress) to red (high stress)
+    const stressStrips = 40;
+    for(let i = 0; i < stressStrips; i++){
+      const t0 = i / stressStrips, t1 = (i + 1) / stressStrips;
+      const y0 = damTop + t0 * damH, y1 = damTop + t1 * damH;
+      // Width interpolation at this depth
+      const w0 = tw + (bw - tw) * t0;
+      const w1 = tw + (bw - tw) * t1;
+      // Stress ratio: 0 at top (no water), 1 at bottom (max pressure)
+      const stress = t1;
+      // Color: blue(0,100,200) → yellow(255,200,0) → red(230,57,70)
+      let rr, gg, bb;
+      if(stress < 0.5){
+        const s = stress * 2;
+        rr = Math.round(0 + s * 255);
+        gg = Math.round(100 + s * 100);
+        bb = Math.round(200 - s * 200);
+      } else {
+        const s = (stress - 0.5) * 2;
+        rr = Math.round(255 - s * 25);
+        gg = Math.round(200 - s * 143);
+        bb = Math.round(0 + s * 70);
+      }
+      ctx.fillStyle = `rgba(${rr},${gg},${bb},0.55)`;
+      ctx.beginPath();
+      ctx.moveTo(damCx - w0/2, y0);
+      ctx.lineTo(damCx + w0/2, y0);
+      ctx.lineTo(damCx + w1/2, y1);
+      ctx.lineTo(damCx - w1/2, y1);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(damCx - tw/2, damTop);
+    ctx.lineTo(damCx + tw/2, damTop);
+    ctx.lineTo(damCx + bw/2, damBottom);
+    ctx.lineTo(damCx - bw/2, damBottom);
+    ctx.closePath();
+    ctx.stroke();
+
+    // Ground
+    ctx.fillStyle = 'rgba(139,119,101,0.3)';
+    ctx.fillRect(damCx - 100, damBottom, 200, 20);
+    ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(damCx - 100, damBottom); ctx.lineTo(damCx + 100, damBottom); ctx.stroke();
+
+    // Pressure arrows on dam face
+    const numArrows = Math.min(Math.floor(depth), 10);
+    for(let i = 1; i <= numArrows; i++){
+      const h = (i / numArrows) * depth;
+      const pressure = rho * g * h;
+      const py = damBottom - (i / numArrows) * damH;
+      const arrowLen = (pressure / (rho * g * 20)) * 60;
+      const px = damCx - tw/2 - (bw - tw)/2 * (i / numArrows) - 5;
+      const alpha = 0.3 + 0.7 * (i / numArrows);
+      ctx.strokeStyle = `rgba(230,57,70,${alpha})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px - arrowLen, py); ctx.stroke();
+      // Arrow head
+      ctx.beginPath(); ctx.moveTo(px - arrowLen + 6, py - 4); ctx.lineTo(px - arrowLen, py); ctx.lineTo(px - arrowLen + 6, py + 4); ctx.stroke();
+    }
+
+    // === Pressure × Width distribution bars (shows ratio effect) ===
+    // Each horizontal bar length = pressure × width at that depth
+    const barX = damCx + bw/2 + 50;
+    const numLayers = 20;
+    // Dynamic max: bottom layer force (t=1) sets the reference
+    const maxForceRef = (rho * g * depth) * bw * 0.01;
+    for(let i = 0; i < numLayers; i++){
+      const t = (i + 0.5) / numLayers; // depth ratio from top(0) to bottom(1)
+      const h = t * depth;
+      const pressure = rho * g * h;
+      const layerWidth = tw + (bw - tw) * t; // width at this depth (ratio effect!)
+      const force = pressure * layerWidth * 0.01; // scaled
+      const barLen = Math.min((force / Math.max(maxForceRef, 1)) * 90, 90);
+      const by = damTop + i * (damH / numLayers) + 2;
+      const bh = damH / numLayers - 2;
+      // Color by pressure only
+      let rr, gg, bb;
+      if(t < 0.5){
+        const s = t * 2;
+        rr = Math.round(0 + s * 255); gg = Math.round(100 + s * 100); bb = Math.round(200 - s * 200);
+      } else {
+        const s = (t - 0.5) * 2;
+        rr = Math.round(255 - s * 25); gg = Math.round(200 - s * 143); bb = Math.round(s * 70);
+      }
+      ctx.fillStyle = `rgba(${rr},${gg},${bb},0.7)`;
+      ctx.fillRect(barX, by, barLen, bh);
+      ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 0.5;
+      ctx.strokeRect(barX, by, barLen, bh);
+    }
+    ctx.fillStyle = '#666'; ctx.font = '9px "Noto Sans SC"'; ctx.textAlign = 'left';
+    ctx.fillText('每层受力', barX, damTop - 6);
+    ctx.fillText('P(h)\u00D7L(h)', barX, damTop + 6);
+    ctx.fillText('ratio\u2191', barX, damBottom + 10);
+    ctx.fillText('\u2192条变长', barX, damBottom + 22);
+
+    // Stress color legend
+    const legX = barX + 110, legY = damTop, legH = damH, legW = 12;
+    for(let i = 0; i < 40; i++){
+      const t = (i + 1) / 40;
+      let rr, gg, bb;
+      if(t < 0.5){
+        const s = t * 2;
+        rr = Math.round(s * 255); gg = Math.round(100 + s * 100); bb = Math.round(200 - s * 200);
+      } else {
+        const s = (t - 0.5) * 2;
+        rr = Math.round(255 - s * 25); gg = Math.round(200 - s * 143); bb = Math.round(s * 70);
+      }
+      ctx.fillStyle = `rgba(${rr},${gg},${bb},0.7)`;
+      ctx.fillRect(legX, legY + (1 - t) * legH, legW, legH / 40 + 1);
+    }
+    ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 1; ctx.strokeRect(legX, legY, legW, legH);
+    ctx.fillStyle = '#E63946'; ctx.font = '10px "Noto Sans SC"'; ctx.textAlign = 'left';
+    ctx.fillText('高压', legX + legW + 4, legY + 10);
+    ctx.fillStyle = '#457B9D';
+    ctx.fillText('低压', legX + legW + 4, legY + legH);
+    ctx.fillStyle = '#666'; ctx.font = '9px "Noto Sans SC"';
+    ctx.fillText('压强', legX + legW + 4, legY + legH/2 + 4);
+
+    // Dimension: H
+    ctx.strokeStyle = '#457B9D'; ctx.lineWidth = 2;
+    const dimX = damCx + bw/2 + 20;
+    ctx.beginPath(); ctx.moveTo(dimX, damTop); ctx.lineTo(dimX, damBottom); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(dimX-4, damTop+6); ctx.lineTo(dimX, damTop); ctx.lineTo(dimX+4, damTop+6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(dimX-4, damBottom-6); ctx.lineTo(dimX, damBottom); ctx.lineTo(dimX+4, damBottom-6); ctx.stroke();
+    ctx.fillStyle = '#457B9D'; ctx.font = 'bold 13px "Noto Sans SC"'; ctx.textAlign = 'left';
+    ctx.save(); ctx.translate(dimX + 12, (damTop+damBottom)/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText('H = ' + depth.toFixed(1) + ' m', 0, 0); ctx.restore();
+
+    // Total pressure calculation
+    const L_top = tw * (depth / 14); // approximate width in meters
+    const L_bot = bw * (depth / 14);
+    // For a trapezoidal dam: F = ∫₀ᴴ ρg·h·L(h)dh, L(h) = L_top + (L_bot-L_top)·h/H
+    const a_w = L_top, b_w = L_bot - L_top;
+    // ∫₀ᴴ ρg·h·(a + b·h/H)dh = ρg[aH²/2 + bH²/3]
+    const totalF = rho * g * (a_w * depth * depth / 2 + b_w * depth * depth / 3);
+
+    ctx.fillStyle = '#2D6A4F'; ctx.font = 'bold 16px "Bangers"'; ctx.textAlign = 'center';
+    ctx.fillText('F = ' + (totalF/1e6).toFixed(2) + ' MN', damCx, damBottom + 50);
+    ctx.fillStyle = '#666'; ctx.font = '12px "Noto Sans SC"';
+    ctx.fillText('F = \u222B\u2080\u1D3E \u03C1gh\u00B7L(h)dh', damCx, damBottom + 70);
+
+    // === RIGHT: Pressure distribution chart ===
+    const chL = 490, chR = W - 20, chT = 30, chB = H - 50;
+    ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(470, 20); ctx.lineTo(470, H - 20); ctx.stroke();
+
+    ctx.fillStyle = '#457B9D'; ctx.font = 'bold 13px "Noto Sans SC"'; ctx.textAlign = 'center';
+    ctx.fillText('P(h) = \u03C1gh  压强分布', (chL+chR)/2, 20);
+
+    const hMax = 20, pMax = rho * g * 20 / 1000; // kPa
+    function toX(h){ return chL + (h/hMax)*(chR-chL); }
+    function toY(p){ return chB - (p/pMax)*(chB-chT); }
+
+    // Grid
+    ctx.strokeStyle = 'rgba(0,0,0,0.06)'; ctx.lineWidth = 1;
+    for(let hi = 0; hi <= hMax; hi += 2){
+      ctx.beginPath(); ctx.moveTo(toX(hi), chT); ctx.lineTo(toX(hi), chB); ctx.stroke();
+      ctx.fillStyle = '#666'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(hi + 'm', toX(hi), chB + 14);
+    }
+    for(let pi = 0; pi <= pMax; pi += 50){
+      ctx.beginPath(); ctx.moveTo(chL, toY(pi)); ctx.lineTo(chR, toY(pi)); ctx.stroke();
+      ctx.fillStyle = '#666'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
+      ctx.fillText(pi + 'kPa', chL - 4, toY(pi) + 4);
+    }
+
+    // Shaded area under P(h) curve up to current depth
+    if(depth > 0.1){
+      ctx.fillStyle = 'rgba(69,123,157,0.2)';
+      ctx.beginPath();
+      ctx.moveTo(toX(0), toY(0));
+      for(let hi = 0; hi <= depth; hi += 0.1){
+        ctx.lineTo(toX(hi), toY(rho * g * hi / 1000));
+      }
+      ctx.lineTo(toX(depth), toY(0));
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // P(h) line
+    ctx.strokeStyle = '#457B9D'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    for(let hi = 0; hi <= hMax; hi += 0.2){
+      const px = toX(hi), py = toY(rho * g * hi / 1000);
+      hi < 0.2 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // Current depth marker
+    if(depth > 0.1){
+      const dpx = toX(depth), dpy = toY(rho * g * depth / 1000);
+      ctx.fillStyle = '#E63946'; ctx.beginPath(); ctx.arc(dpx, dpy, 5, 0, Math.PI*2); ctx.fill();
+      ctx.setLineDash([4,3]); ctx.strokeStyle = 'rgba(230,57,70,0.4)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(dpx, chB); ctx.lineTo(dpx, dpy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(chL, dpy); ctx.lineTo(dpx, dpy); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#E63946'; ctx.font = 'bold 11px "Noto Sans SC"'; ctx.textAlign = 'left';
+      ctx.fillText('P = ' + (rho*g*depth/1000).toFixed(0) + ' kPa', dpx + 8, dpy - 5);
+    }
+
+    ctx.fillStyle = '#333'; ctx.font = '11px "Noto Sans SC"'; ctx.textAlign = 'center';
+    ctx.fillText('深度 h', (chL+chR)/2, chB + 30);
+    ctx.save(); ctx.translate(chL - 42, (chT+chB)/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText('压强 P (kPa)', 0, 0); ctx.restore();
+  }
+
+  slH.addEventListener('input', draw);
+  slR.addEventListener('input', draw);
+  // Animate water waves
+  let animId;
+  function animate(){
+    draw();
+    animId = requestAnimationFrame(animate);
+  }
+  animate();
+})();
+
+/* ============================================================
+   Chapter 6 Demo 3: 药物吸收 AUC
+   ============================================================ */
+(function(){
+  const c = document.getElementById('canvas6c');
+  const ctx = c.getContext('2d');
+  const W = c.width, H = c.height;
+  const slT = document.getElementById('slider6c_t');
+  const slKa = document.getElementById('slider6c_ka');
+  const slKel = document.getElementById('slider6c_kel');
+  const vT = document.getElementById('val6c_t');
+  const vKa = document.getElementById('val6c_ka');
+  const vKel = document.getElementById('val6c_kel');
+
+  // One-compartment model: C(t) = D*ka/(V*(ka-kel)) * (e^(-kel*t) - e^(-ka*t))
+  // Simplified: C(t) proportional to (e^(-kel*t) - e^(-ka*t))
+  const Dose = 100; // arbitrary dose unit
+  function C(t, ka, kel){
+    if(t <= 0) return 0;
+    if(Math.abs(ka - kel) < 0.001) return 0;
+    return Dose * ka / (ka - kel) * (Math.exp(-kel * t) - Math.exp(-ka * t));
+  }
+  // Exact AUC = ∫₀^T C(t)dt = Dose * ka / (ka-kel) * [ (1-e^(-kel*T))/kel - (1-e^(-ka*T))/ka ]
+  function exactAUC(T, ka, kel){
+    if(T <= 0) return 0;
+    return Dose * ka / (ka - kel) * ((1 - Math.exp(-kel * T))/kel - (1 - Math.exp(-ka * T))/ka);
+  }
+
+  const tMax = 24, cMax = 80;
+  const chL = 460, chR = W - 20, chT = 30, chB = H - 80;
+  function toX(t){ return chL + (t / tMax) * (chR - chL); }
+  function toY(c){ return chB - (c / cMax) * (chB - chT); }
+
+  function draw(){
+    const T = parseFloat(slT.value);
+    const ka = parseFloat(slKa.value);
+    const kel = parseFloat(slKel.value);
+    vT.textContent = T.toFixed(1);
+    vKa.textContent = ka.toFixed(1);
+    vKel.textContent = kel.toFixed(2);
+
+    const auc = exactAUC(T, ka, kel);
+    const peakTime = Math.log(ka / kel) / (ka - kel);
+    const peakC = C(peakTime, ka, kel);
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#FFFEF5'; ctx.fillRect(0, 0, W, H);
+
+    // === LEFT: Drug absorption animation ===
+    const leftW = 420;
+
+    // Stomach icon (absorption source)
+    ctx.fillStyle = 'rgba(230,57,70,0.15)';
+    ctx.beginPath(); ctx.ellipse(100, 80, 45, 35, 0, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#E63946'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(100, 80, 45, 35, 0, 0, Math.PI*2); ctx.stroke();
+    ctx.fillStyle = '#E63946'; ctx.font = 'bold 13px "Noto Sans SC"'; ctx.textAlign = 'center';
+    ctx.fillText('口服药物', 100, 85);
+    // Arrow from stomach
+    ctx.strokeStyle = '#E63946'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(145, 80); ctx.lineTo(180, 80); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(174, 74); ctx.lineTo(180, 80); ctx.lineTo(174, 86); ctx.stroke();
+
+    // Body / Bloodstream icon
+    ctx.fillStyle = 'rgba(69,123,157,0.1)';
+    ctx.beginPath(); ctx.ellipse(260, 80, 55, 40, 0, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#457B9D'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(260, 80, 55, 40, 0, 0, Math.PI*2); ctx.stroke();
+    ctx.fillStyle = '#457B9D'; ctx.font = 'bold 13px "Noto Sans SC"'; ctx.textAlign = 'center';
+    ctx.fillText('血液循环', 260, 76);
+    ctx.font = '12px "Noto Sans SC"';
+    ctx.fillText('C(t) 浓度', 260, 93);
+
+    // Drug particles animation in bloodstream
+    const numParticles = Math.min(15, Math.floor(peakC / 3));
+    for(let i = 0; i < numParticles; i++){
+      const angle = (i / numParticles) * Math.PI * 2 + T * 0.1;
+      const r = 20 + Math.sin(i * 3 + T * 0.2) * 15;
+      const px = 260 + Math.cos(angle) * r;
+      const py = 80 + Math.sin(angle) * r * 0.6;
+      ctx.fillStyle = `rgba(189,0,255,${0.3 + 0.5 * Math.sin(angle)})`;
+      ctx.beginPath(); ctx.arc(px, py, 3, 0, Math.PI*2); ctx.fill();
+    }
+
+    // Kidney / elimination
+    ctx.fillStyle = 'rgba(45,106,79,0.15)';
+    ctx.beginPath(); ctx.ellipse(360, 80, 30, 22, 0, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#2D6A4F'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.ellipse(360, 80, 30, 22, 0, 0, Math.PI*2); ctx.stroke();
+    ctx.fillStyle = '#2D6A4F'; ctx.font = 'bold 11px "Noto Sans SC"'; ctx.textAlign = 'center';
+    ctx.fillText('肾脏消除', 360, 84);
+
+    // AUC display box
+    ctx.fillStyle = 'rgba(123,45,142,0.08)';
+    ctx.fillRect(40, 140, leftW - 60, 110);
+    ctx.strokeStyle = 'rgba(123,45,142,0.3)'; ctx.lineWidth = 2;
+    ctx.strokeRect(40, 140, leftW - 60, 110);
+    ctx.fillStyle = '#7B2D8E'; ctx.font = 'bold 22px "Bangers"'; ctx.textAlign = 'center';
+    ctx.fillText('AUC = ' + auc.toFixed(1), (leftW)/2 + 10, 175);
+    ctx.fillStyle = '#666'; ctx.font = '13px "Noto Sans SC"'; ctx.textAlign = 'center';
+    ctx.fillText('总药物暴露量（曲线下面积）', (leftW)/2 + 10, 198);
+    ctx.fillStyle = '#E63946'; ctx.font = 'bold 14px "Noto Sans SC"';
+    ctx.fillText('峰值 Cmax = ' + peakC.toFixed(1) + '  @ t = ' + peakTime.toFixed(1) + 'h', (leftW)/2 + 10, 225);
+
+    // Formula
+    ctx.fillStyle = '#555'; ctx.font = '12px "Noto Sans SC"'; ctx.textAlign = 'center';
+    ctx.fillText('AUC = \u222B\u2080\u1D40 C(t)dt  =  D\u00B7ka/(ka-kel)\u00B7[ (1-e\u02e3\u1da0)/kel - (1-e\u02e3\u1da0)/ka ]', (leftW)/2 + 10, 260);
+
+    // Small C(t) preview bar
+    const barW = 320, barH = 16, barL = 50, barY = 285;
+    ctx.fillStyle = '#e0e0e0'; ctx.fillRect(barL, barY, barW, barH);
+    const fillRatio = Math.min(auc / 1200, 1);
+    const grad = ctx.createLinearGradient(barL, 0, barL + barW * fillRatio, 0);
+    grad.addColorStop(0, '#F4D35E'); grad.addColorStop(1, '#7B2D8E');
+    ctx.fillStyle = grad; ctx.fillRect(barL, barY, barW * fillRatio, barH);
+    ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 1; ctx.strokeRect(barL, barY, barW, barH);
+    ctx.fillStyle = '#1a1a1a'; ctx.font = '11px "Noto Sans SC"'; ctx.textAlign = 'left';
+    ctx.fillText('AUC 累积进度', barL, barY + 30);
+
+    // === RIGHT: C(t) curve chart ===
+    ctx.strokeStyle = 'rgba(0,0,0,0.1)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(450, 20); ctx.lineTo(450, H - 20); ctx.stroke();
+    ctx.fillStyle = '#7B2D8E'; ctx.font = 'bold 13px "Noto Sans SC"'; ctx.textAlign = 'center';
+    ctx.fillText('C(t) = D\u00B7ka/(ka-kel)\u00B7(e\u02e3\u02e3\u02e3 - e\u02e3\u02e3\u02e3)', (chL+chR)/2, 20);
+
+    // Grid
+    ctx.strokeStyle = 'rgba(0,0,0,0.06)'; ctx.lineWidth = 1;
+    for(let ti = 0; ti <= tMax; ti += 4){
+      ctx.beginPath(); ctx.moveTo(toX(ti), chT); ctx.lineTo(toX(ti), chB); ctx.stroke();
+      ctx.fillStyle = '#666'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(ti + 'h', toX(ti), chB + 14);
+    }
+    for(let ci = 0; ci <= cMax; ci += 20){
+      ctx.beginPath(); ctx.moveTo(chL, toY(ci)); ctx.lineTo(chR, toY(ci)); ctx.stroke();
+      ctx.fillStyle = '#666'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
+      ctx.fillText(ci, chL - 4, toY(ci) + 4);
+    }
+    ctx.fillStyle = '#333'; ctx.font = '11px "Noto Sans SC"'; ctx.textAlign = 'center';
+    ctx.fillText('时间 t (h)', (chL+chR)/2, chB + 30);
+    ctx.save(); ctx.translate(chL - 42, (chT+chB)/2); ctx.rotate(-Math.PI/2);
+    ctx.fillText('浓度 C(t)', 0, 0); ctx.restore();
+
+    // Shaded AUC area up to T
+    ctx.fillStyle = 'rgba(123,45,142,0.15)';
+    ctx.beginPath(); ctx.moveTo(toX(0), toY(0));
+    for(let ti = 0; ti <= T; ti += 0.1){
+      ctx.lineTo(toX(ti), toY(C(ti, ka, kel)));
+    }
+    ctx.lineTo(toX(T), toY(0)); ctx.closePath(); ctx.fill();
+
+    // C(t) curve
+    ctx.strokeStyle = '#7B2D8E'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    for(let ti = 0; ti <= tMax; ti += 0.1){
+      const px = toX(ti), py = toY(C(ti, ka, kel));
+      ti < 0.1 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // Peak marker
+    const ptx = toX(peakTime), pty = toY(peakC);
+    ctx.fillStyle = '#F4D35E'; ctx.strokeStyle = '#1a1a1a'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(ptx, pty, 7, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#E63946'; ctx.font = 'bold 11px "Bangers"'; ctx.textAlign = 'center';
+    ctx.fillText('Cmax', ptx, pty - 12);
+
+    // Current T marker
+    const ctxx = toX(T), cty = toY(C(T, ka, kel));
+    ctx.fillStyle = '#E63946'; ctx.beginPath(); ctx.arc(ctxx, cty, 5, 0, Math.PI*2); ctx.fill();
+    ctx.setLineDash([4,3]); ctx.strokeStyle = 'rgba(230,57,70,0.4)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(ctxx, chB); ctx.lineTo(ctxx, cty); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(chL, cty); ctx.lineTo(ctxx, cty); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#E63946'; ctx.font = 'bold 11px "Noto Sans SC"'; ctx.textAlign = 'left';
+    ctx.fillText('t=' + T.toFixed(1) + 'h', ctxx + 8, cty - 5);
+    ctx.fillText('C=' + C(T,ka,kel).toFixed(1), ctxx + 8, cty + 12);
+
+    // AUC label on shaded area
+    if(T > 2){
+      ctx.fillStyle = '#7B2D8E'; ctx.font = 'bold 13px "Bangers"'; ctx.textAlign = 'center';
+      ctx.fillText('AUC = ' + auc.toFixed(1), toX(T/2), toY(C(T/2,ka,kel)/2) + 5);
+    }
+  }
+
+  slT.addEventListener('input', draw);
+  slKa.addEventListener('input', draw);
+  slKel.addEventListener('input', draw);
+  draw();
+})();
+
+/* ============================================================
+   Tab switching for Chapter 4
+   ============================================================ */
+function switchTab(idx){
+  document.querySelectorAll('.tab-content').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+  document.querySelectorAll('.tab-btn').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+}
+
+/* ============================================================
+   Scroll-based nav highlight
+   ============================================================ */
+(function(){
+  const sections = document.querySelectorAll('.chapter');
+  const navLinks = document.querySelectorAll('.nav-link');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        const id = entry.target.id;
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+  sections.forEach(s => observer.observe(s));
+})();
+</script>
+</body>
+</html>
