@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>概率冒险记 — 互动绘本</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #FFF8F0;
+  --paper: #FFFAF3;
+  --ink: #3D2C2E;
+  --ink-light: #6B5456;
+  --muted: #A89090;
+  --coral: #FF6B6B;
+  --teal: #4ECDC4;
+  --yellow: #FFE66D;
+  --mint: #95E1D3;
+  --pink: #F38181;
+  --purple: #AA96DA;
+  --blue: #7EC8E3;
+  --orange: #FFB347;
+  --green: #77DD77;
+  --brown: #C4A882;
+  --red: #FF6961;
+  --shadow: rgba(61,44,46,0.1);
+  --shadow-md: rgba(61,44,46,0.15);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+  line-height:1.8;
+  overflow-x:hidden;
+  position:relative;
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:-1;
+  background:var(--cream);
+  background-image:
+    radial-gradient(circle at 20% 50%,rgba(255,230,109,0.08) 0%,transparent 50%),
+    radial-gradient(circle at 80% 20%,rgba(78,205,196,0.06) 0%,transparent 50%),
+    radial-gradient(circle at 50% 80%,rgba(170,150,218,0.06) 0%,transparent 50%);
+}
+
+/* === 绘本通用样式 === */
+.story-section{
+  max-width:960px;margin:0 auto;padding:60px 24px;
+  opacity:0;transform:translateY(30px);
+  transition:opacity 0.7s ease,transform 0.7s ease;
+}
+.story-section.visible{opacity:1;transform:translateY(0)}
+.story-card{
+  background:var(--paper);border-radius:20px;
+  padding:36px 32px;margin-bottom:32px;
+  box-shadow:0 4px 20px var(--shadow),0 1px 3px var(--shadow);
+  border:2px solid rgba(196,168,130,0.3);
+  position:relative;overflow:hidden;
+}
+.story-card::before{
+  content:'';position:absolute;top:0;right:0;width:80px;height:80px;
+  background:radial-gradient(circle at 100% 0%,rgba(255,230,109,0.2) 0%,transparent 70%);
+  border-radius:0 20px 0 0;
+}
+
+/* === 封面 === */
+.book-cover{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;
+  padding:40px 24px;position:relative;overflow:hidden;
+}
+.book-cover .deco-circle{
+  position:absolute;border-radius:50%;opacity:0.12;pointer-events:none;
+}
+.book-cover .deco-circle:nth-child(1){width:300px;height:300px;background:var(--coral);top:-80px;left:-60px}
+.book-cover .deco-circle:nth-child(2){width:200px;height:200px;background:var(--teal);bottom:10%;right:-40px}
+.book-cover .deco-circle:nth-child(3){width:150px;height:150px;background:var(--yellow);top:20%;right:15%}
+.book-cover .deco-circle:nth-child(4){width:100px;height:100px;background:var(--purple);bottom:25%;left:10%}
+.cover-title{
+  font-family:'ZCOOL KuaiLe',cursive;
+  font-size:clamp(2.5rem,7vw,4.5rem);
+  color:var(--coral);
+  text-shadow:3px 3px 0 var(--yellow),6px 6px 0 rgba(255,107,107,0.15);
+  margin-bottom:16px;position:relative;z-index:1;
+}
+.cover-subtitle{
+  font-size:clamp(1rem,2.5vw,1.3rem);
+  color:var(--ink-light);max-width:500px;
+  margin-bottom:40px;position:relative;z-index:1;
+}
+.cover-icons{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;position:relative;z-index:1}
+.cover-icons span{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:64px;height:64px;font-size:32px;
+  background:white;border-radius:16px;
+  box-shadow:0 3px 12px var(--shadow);
+  animation:bounce 2s ease infinite;
+}
+.cover-icons span:nth-child(2){animation-delay:0.3s}
+.cover-icons span:nth-child(3){animation-delay:0.6s}
+.cover-icons span:nth-child(4){animation-delay:0.9s}
+.cover-icons span:nth-child(5){animation-delay:1.2s}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.scroll-hint{
+  position:absolute;bottom:40px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  color:var(--muted);font-size:0.85rem;animation:float 2s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-10px)}}
+
+/* === 章节标题 === */
+.chapter-header{text-align:center;margin-bottom:40px;position:relative}
+.chapter-num{
+  display:inline-block;
+  font-family:'ZCOOL KuaiLe',cursive;
+  font-size:0.95rem;color:white;
+  background:var(--coral);padding:4px 16px;border-radius:20px;
+  margin-bottom:12px;
+}
+.chapter-title{
+  font-family:'ZCOOL KuaiLe',cursive;
+  font-size:clamp(1.6rem,4vw,2.2rem);
+  color:var(--ink);margin-bottom:8px;
+}
+.chapter-desc{color:var(--ink-light);font-size:0.95rem;max-width:600px;margin:0 auto}
+
+/* === 角色气泡 === */
+.character-bubble{
+  display:flex;align-items:flex-start;gap:16px;
+  margin-bottom:24px;
+}
+.character-avatar{
+  flex-shrink:0;width:56px;height:56px;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:28px;
+  box-shadow:0 3px 10px var(--shadow);
+}
+.bubble{
+  background:white;border-radius:18px;border-radius:18px 18px 18px 4px;
+  padding:16px 20px;position:relative;
+  box-shadow:0 2px 10px var(--shadow);
+  font-size:0.95rem;line-height:1.7;
+  flex:1;
+}
+.bubble::before{
+  content:'';position:absolute;left:-8px;top:16px;
+  border:8px solid transparent;border-right-color:white;
+}
+
+/* === 游戏区域 === */
+.game-area{
+  background:white;border-radius:20px;
+  padding:28px;margin:24px 0;
+  box-shadow:0 4px 16px var(--shadow);
+  border:2px dashed rgba(196,168,130,0.4);
+}
+.game-title{
+  font-family:'ZCOOL KuaiLe',cursive;
+  font-size:1.3rem;color:var(--teal);
+  margin-bottom:16px;display:flex;align-items:center;gap:10px;
+}
+.game-title .icon{font-size:24px}
+.game-canvas-wrap{
+  display:flex;justify-content:center;margin:16px 0;
+}
+.game-canvas-wrap canvas{
+  border-radius:16px;
+  box-shadow:0 2px 12px var(--shadow);
+  max-width:100%;
+}
+.game-controls{
+  display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+  margin:16px 0;
+}
+.btn{
+  padding:10px 22px;border:none;border-radius:12px;
+  font-family:'Noto Sans SC',sans-serif;font-size:0.9rem;font-weight:500;
+  cursor:pointer;transition:all 0.25s;
+  box-shadow:0 3px 8px rgba(0,0,0,0.1);
+  display:inline-flex;align-items:center;gap:6px;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(0,0,0,0.15)}
+.btn:active{transform:translateY(0)}
+.btn-coral{background:var(--coral);color:white}
+.btn-teal{background:var(--teal);color:white}
+.btn-purple{background:var(--purple);color:white}
+.btn-yellow{background:var(--yellow);color:var(--ink)}
+.btn-blue{background:var(--blue);color:white}
+.btn-orange{background:var(--orange);color:var(--ink)}
+.btn-green{background:var(--green);color:var(--ink)}
+.btn-pink{background:var(--pink);color:white}
+.btn-sm{padding:7px 14px;font-size:0.82rem;border-radius:10px}
+
+.game-stats{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:12px;margin:16px 0;
+}
+.stat-box{
+  background:var(--cream);border-radius:14px;padding:14px;
+  text-align:center;border:2px solid rgba(196,168,130,0.25);
+}
+.stat-box .label{font-size:0.78rem;color:var(--muted);margin-bottom:4px}
+.stat-box .value{font-size:1.3rem;font-weight:700}
+.stat-box .value.coral{color:var(--coral)}
+.stat-box .value.teal{color:var(--teal)}
+.stat-box .value.purple{color:var(--purple)}
+.stat-box .value.orange{color:var(--orange)}
+
+.game-log{
+  background:var(--cream);border-radius:12px;padding:14px 18px;
+  font-size:0.85rem;color:var(--ink-light);
+  max-height:120px;overflow-y:auto;
+  border:1px solid rgba(196,168,130,0.2);
+  margin-top:12px;line-height:1.9;
+}
+.game-log .highlight{color:var(--coral);font-weight:600}
+
+/* === 知识卡片 === */
+.knowledge-box{
+  background:linear-gradient(135deg,rgba(78,205,196,0.08),rgba(170,150,218,0.08));
+  border-left:4px solid var(--teal);
+  border-radius:0 14px 14px 0;
+  padding:20px 24px;margin:20px 0;
+}
+.knowledge-box h4{
+  font-family:'ZCOOL KuaiLe',cursive;
+  color:var(--teal);font-size:1.05rem;margin-bottom:8px;
+}
+.knowledge-box p{font-size:0.9rem;color:var(--ink-light);line-height:1.8}
+.formula{
+  display:inline-block;background:var(--cream);
+  padding:4px 12px;border-radius:8px;font-weight:600;
+  color:var(--coral);margin:4px 2px;font-size:0.92rem;
+  border:1px solid rgba(196,168,130,0.2);
+}
+
+/* === 概率是什么 === */
+.purpose-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:16px;margin:24px 0;
+}
+.purpose-card{
+  background:white;border-radius:16px;padding:24px 20px;
+  text-align:center;box-shadow:0 3px 12px var(--shadow);
+  border:2px solid rgba(196,168,130,0.2);
+  transition:transform 0.3s;
+}
+.purpose-card:hover{transform:translateY(-4px)}
+.purpose-card .icon{font-size:36px;margin-bottom:10px}
+.purpose-card h4{font-size:0.95rem;margin-bottom:6px}
+.purpose-card p{font-size:0.82rem;color:var(--ink-light);line-height:1.6}
+
+/* === 频率图表 === */
+.freq-chart-wrap{
+  background:white;border-radius:16px;padding:20px;
+  box-shadow:0 2px 10px var(--shadow);margin:16px 0;
+}
+.freq-chart-wrap canvas{width:100%;border-radius:10px}
+
+/* === 应用案例 === */
+.app-gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin:24px 0}
+.app-card{
+  background:white;border-radius:18px;overflow:hidden;
+  box-shadow:0 4px 16px var(--shadow);
+  transition:transform 0.3s,box-shadow 0.3s;cursor:default;
+}
+.app-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px var(--shadow-md)}
+.app-card-header{
+  padding:24px 20px 16px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.app-card-header .app-icon{font-size:40px;margin-bottom:8px;position:relative;z-index:1}
+.app-card-header h4{font-size:1rem;position:relative;z-index:1}
+.app-card-body{padding:0 20px 20px}
+.app-card-body p{font-size:0.85rem;color:var(--ink-light);line-height:1.7}
+.app-card-footer{
+  padding:12px 20px;border-top:1px solid rgba(196,168,130,0.15);
+  font-size:0.78rem;color:var(--muted);font-style:italic;
+}
+
+/* === 独立性游戏 === */
+.indep-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:16px 0;
+}
+@media(max-width:640px){.indep-grid{grid-template-columns:1fr}}
+.indep-panel{
+  background:var(--cream);border-radius:14px;padding:20px;
+  border:2px solid rgba(196,168,130,0.2);
+}
+.indep-panel h5{
+  font-family:'ZCOOL KuaiLe',cursive;
+  font-size:1rem;margin-bottom:12px;text-align:center;
+}
+.indep-result{
+  text-align:center;font-size:0.9rem;margin-top:12px;
+  padding:12px;border-radius:10px;
+}
+.indep-result.yes{background:rgba(78,205,196,0.12);color:#2a9d8f}
+.indep-result.no{background:rgba(255,107,107,0.12);color:var(--coral)}
+
+/* === 导航 === */
+.top-nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(255,248,240,0.92);backdrop-filter:blur(12px);
+  border-bottom:2px solid rgba(196,168,130,0.2);
+  padding:10px 24px;display:flex;align-items:center;justify-content:space-between;
+  transform:translateY(-100%);transition:transform 0.3s;
+}
+.top-nav.show{transform:translateY(0)}
+.top-nav .nav-brand{font-family:'ZCOOL KuaiLe',cursive;font-size:1rem;color:var(--coral)}
+.nav-chapters{display:flex;gap:6px;flex-wrap:wrap}
+.nav-chapters a{
+  padding:5px 12px;border-radius:8px;font-size:0.78rem;
+  color:var(--ink-light);text-decoration:none;
+  transition:background 0.2s;
+}
+.nav-chapters a:hover{background:rgba(196,168,130,0.15)}
+.nav-chapters a.active{background:var(--coral);color:white}
+
+/* === 返回首页 === */
+.back-home{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:12px 28px;background:var(--ink);color:white;
+  border-radius:12px;text-decoration:none;font-weight:500;
+  font-size:0.9rem;transition:all 0.25s;
+  box-shadow:0 3px 10px rgba(61,44,46,0.2);
+  margin:20px 0;
+}
+.back-home:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(61,44,46,0.3)}
+
+/* === 分隔装饰 === */
+.section-divider{
+  display:flex;align-items:center;justify-content:center;
+  gap:12px;margin:20px 0;color:var(--muted);font-size:0.8rem;
+}
+.section-divider::before,.section-divider::after{
+  content:'';flex:1;height:1px;
+  background:linear-gradient(to right,transparent,rgba(196,168,130,0.4),transparent);
+}
+
+/* === 滚动条 === */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--brown);border-radius:3px}
+
+/* === 响应式 === */
+@media(max-width:640px){
+  .story-section{padding:40px 16px}
+  .story-card{padding:24px 20px}
+  .game-area{padding:20px 16px}
+  .cover-icons span{width:50px;height:50px;font-size:24px}
+  .character-bubble{flex-direction:column;align-items:center;text-align:center}
+  .bubble{border-radius:16px}
+  .bubble::before{display:none}
+}
+
+/* === 骰子动画 === */
+@keyframes diceRoll{
+  0%{transform:rotate(0deg) scale(1)}
+  25%{transform:rotate(90deg) scale(1.1)}
+  50%{transform:rotate(180deg) scale(1)}
+  75%{transform:rotate(270deg) scale(1.1)}
+  100%{transform:rotate(360deg) scale(1)}
+}
+.dice-rolling{animation:diceRoll 0.4s ease}
+
+/* === 闪烁星星 === */
+.stars{position:absolute;pointer-events:none}
+.star{
+  position:absolute;font-size:14px;opacity:0;
+  animation:twinkle 3s ease-in-out infinite;
+}
+@keyframes twinkle{0%,100%{opacity:0;transform:scale(0.5)}50%{opacity:1;transform:scale(1)}}
+</style>
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<nav class="top-nav" id="topNav">
+  <span class="nav-brand">🎲 概率冒险记</span>
+  <div class="nav-chapters">
+    <a href="#ch0">概率是什么</a>
+    <a href="#ch1">随机事件</a>
+    <a href="#ch2">独立性</a>
+    <a href="#ch3">频率与概率</a>
+    <a href="#ch4">真实世界</a>
+  </div>
+</nav>
+
+<!-- ==================== 封面 ==================== -->
+<section class="book-cover" id="cover">
+  <div class="deco-circle"></div>
+  <div class="deco-circle"></div>
+  <div class="deco-circle"></div>
+  <div class="deco-circle"></div>
+  <div class="cover-title">概率冒险记</div>
+  <p class="cover-subtitle">打开这本书，和概率小精灵一起，在游戏与故事中发现随机世界的美妙规律</p>
+  <div class="cover-icons">
+    <span>🎲</span><span>🪙</span><span>🎯</span><span>🎰</span><span>🌊</span>
+  </div>
+  <div class="scroll-hint">
+    <span>↓ 向下滚动开始冒险</span>
+  </div>
+</section>
+
+<!-- ==================== Chapter 0: 概率是什么 ==================== -->
+<section class="story-section" id="ch0">
+  <div class="chapter-header">
+    <span class="chapter-num">引言</span>
+    <h2 class="chapter-title">概率是什么？为什么要学它？</h2>
+  </div>
+
+  <div class="character-bubble">
+    <div class="character-avatar" style="background:linear-gradient(135deg,var(--yellow),var(--orange))">🧙</div>
+    <div class="bubble">
+      <strong>概率小精灵</strong>说：想象你站在一个岔路口，左边通向 sunny 海滩，右边通向雨林。天气预报说"明天降水概率 70%"——你会带伞吗？<br>
+      概率，就是<strong>用数字衡量"某件事发生的可能性"</strong>的工具。它不告诉你"一定会怎样"，而是帮你<strong>在不确定中做出更好的决定</strong>。
+    </div>
+  </div>
+
+  <div class="purpose-grid">
+    <div class="purpose-card">
+      <div class="icon">🌤️</div>
+      <h4>天气预报</h4>
+      <p>"降水概率 70%" 不是猜的——是气象模型运行千万次模拟后，70% 的场景会下雨</p>
+    </div>
+    <div class="purpose-card">
+      <div class="icon">🏥</div>
+      <h4>医疗诊断</h4>
+      <p>体检报告"阳性"不代表一定得病——贝叶斯定理帮你算出真正患病的概率</p>
+    </div>
+    <div class="purpose-card">
+      <div class="icon">💰</div>
+      <h4>金融投资</h4>
+      <p>基金经理用概率模型计算风险，决定"这笔钱值不值得投"</p>
+    </div>
+    <div class="purpose-card">
+      <div class="icon">🤖</div>
+      <h4>人工智能</h4>
+      <p>AI 推荐系统算 P(你会买 | 你看了)，自动驾驶每秒计算 3000 次碰撞概率</p>
+    </div>
+  </div>
+
+  <div class="knowledge-box">
+    <h4>📖 核心思想</h4>
+    <p>世界充满了<strong>不确定性</strong>。我们无法预知未来，但可以通过概率来<strong>量化不确定性</strong>、<strong>比较风险</strong>、<strong>做出最优决策</strong>。从买彩票到发射火箭，概率都是我们面对未知时最强大的数学武器。</p>
+  </div>
+
+  <div class="section-divider">✦ ✦ ✦</div>
+</section>
+
+<!-- ==================== Chapter 1: 随机事件与概率 ==================== -->
+<section class="story-section" id="ch1">
+  <div class="chapter-header">
+    <span class="chapter-num" style="background:var(--teal)">第一章</span>
+    <h2 class="chapter-title">随机事件与概率</h2>
+    <p class="chapter-desc">有些事情注定发生，有些全凭运气——我们来分辨它们</p>
+  </div>
+
+  <div class="character-bubble">
+    <div class="character-avatar" style="background:linear-gradient(135deg,var(--teal),var(--blue))">🎲</div>
+    <div class="bubble">
+      <strong>随机事件</strong>就是在相同条件下，可能出现也可能不出现的结果。<br>
+      比如：掷骰子得到 6、明天是否下雨、考试是否及格。<br><br>
+      <strong>概率</strong>用 0 到 1 之间的数字表示可能性大小：
+      <span class="formula">P = 0</span> 不可能发生 →
+      <span class="formula">P = 1</span> 必然发生 →
+      <span class="formula">0 &lt; P &lt; 1</span> 有可能发生
+    </div>
+  </div>
+
+  <!-- Game 1: 命运骰子 -->
+  <div class="game-area">
+    <div class="game-title"><span class="icon">🎲</span> 命运骰子</div>
+    <p style="font-size:0.88rem;color:var(--ink-light);margin-bottom:16px;text-align:center">
+      掷出骰子，观察"点数之和为 7"的概率。理论值 = <span class="formula">6/36 = 1/6 ≈ 16.7%</span>
+    </p>
+    <div class="game-canvas-wrap">
+      <canvas id="diceCanvas" width="460" height="220"></canvas>
+    </div>
+    <div class="game-controls">
+      <button class="btn btn-coral" onclick="rollDice()">🎲 掷一次</button>
+      <button class="btn btn-teal" onclick="rollDiceN(10)">⚡ 掷 10 次</button>
+      <button class="btn btn-purple" onclick="rollDiceN(100)">🔥 掷 100 次</button>
+      <button class="btn btn-orange" onclick="rollDiceN(1000)">💪 掷 1000 次</button>
+      <button class="btn btn-sm btn-yellow" onclick="resetDice()">🔄 重置</button>
+    </div>
+    <div class="game-stats">
+      <div class="stat-box"><div class="label">总投掷次数</div><div class="value coral" id="diceTotal">0</div></div>
+      <div class="stat-box"><div class="label">点数之和 = 7</div><div class="value teal" id="diceCount7">0</div></div>
+      <div class="stat-box"><div class="label">实验频率</div><div class="value purple" id="diceFreq">0%</div></div>
+      <div class="stat-box"><div class="label">理论概率</div><div class="value orange">16.7%</div></div>
+    </div>
+    <div class="game-log" id="diceLog">点击"掷一次"开始实验...</div>
+  </div>
+
+  <div class="knowledge-box">
+    <h4>📖 古典概型公式</h4>
+    <p>
+      <span class="formula">P(A) = A 包含的基本事件数 / 基本事件总数</span><br>
+      掷两颗骰子，总共有 <span class="formula">6 × 6 = 36</span> 种等可能结果。<br>
+      和为 7 的组合有 (1,6)(2,5)(3,4)(4,3)(5,2)(6,1) 共 <span class="formula">6</span> 种，所以 <span class="formula">P(和=7) = 6/36 = 1/6</span>
+    </p>
+  </div>
+
+  <div class="section-divider">✦ ✦ ✦</div>
+</section>
+
+<!-- ==================== Chapter 2: 事件的相互独立性 ==================== -->
+<section class="story-section" id="ch2">
+  <div class="chapter-header">
+    <span class="chapter-num" style="background:var(--purple)">第二章</span>
+    <h2 class="chapter-title">事件的相互独立性</h2>
+    <p class="chapter-desc">两个事件互不干扰？用实验来验证</p>
+  </div>
+
+  <div class="character-bubble">
+    <div class="character-avatar" style="background:linear-gradient(135deg,var(--purple),var(--pink))">🔬</div>
+    <div class="bubble">
+      如果事件 A 的发生<strong>不影响</strong>事件 B 发生的概率，就说 A 和 B <strong>相互独立</strong>。<br><br>
+      数学表达：<span class="formula">P(A∩B) = P(A) × P(B)</span><br>
+      但注意：<strong>看起来没关系 ≠ 真的独立</strong>！让我们用实验来分辨。
+    </div>
+  </div>
+
+  <!-- Game 2: 独立性实验室 -->
+  <div class="game-area">
+    <div class="game-title"><span class="icon">🔬</span> 独立性实验室</div>
+    <p style="font-size:0.88rem;color:var(--ink-light);margin-bottom:16px;text-align:center">
+      同时做两个实验，观察 <span class="formula">P(A∩B)</span> 是否等于 <span class="formula">P(A) × P(B)</span>
+    </p>
+
+    <div class="indep-grid">
+      <!-- 实验 A: 独立 -->
+      <div class="indep-panel">
+        <h5>🪙 实验 1：硬币 + 骰子</h5>
+        <p style="font-size:0.82rem;color:var(--ink-light);margin-bottom:12px">
+          A = 硬币正面 &nbsp; B = 骰子为偶数<br>
+          理论上它们<strong>应该独立</strong>
+        </p>
+        <div class="game-canvas-wrap">
+          <canvas id="indepCanvas1" width="200" height="120"></canvas>
+        </div>
+        <div class="game-stats" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="stat-box"><div class="label">P(A)</div><div class="value coral" id="indep1PA">-</div></div>
+          <div class="stat-box"><div class="label">P(B)</div><div class="value teal" id="indep1PB">-</div></div>
+          <div class="stat-box"><div class="label">P(A)×P(B)</div><div class="value purple" id="indep1Prod">-</div></div>
+        </div>
+        <div class="stat-box" style="margin-top:8px"><div class="label">P(A∩B) 实测</div><div class="value orange" id="indep1AB">-</div></div>
+      </div>
+
+      <!-- 实验 B: 不独立 -->
+      <div class="indep-panel">
+        <h5>🃏 实验 2：连续抽牌（不放回）</h5>
+        <p style="font-size:0.82rem;color:var(--ink-light);margin-bottom:12px">
+          A = 第一张是红桃 &nbsp; B = 第二张是红桃<br>
+          理论上它们<strong>不独立</strong>（抽走一张后概率变了）
+        </p>
+        <div class="game-canvas-wrap">
+          <canvas id="indepCanvas2" width="200" height="120"></canvas>
+        </div>
+        <div class="game-stats" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="stat-box"><div class="label">P(A)</div><div class="value coral" id="indep2PA">-</div></div>
+          <div class="stat-box"><div class="label">P(B)</div><div class="value teal" id="indep2PB">-</div></div>
+          <div class="stat-box"><div class="label">P(A)×P(B)</div><div class="value purple" id="indep2Prod">-</div></div>
+        </div>
+        <div class="stat-box" style="margin-top:8px"><div class="label">P(A∩B) 实测</div><div class="value orange" id="indep2AB">-</div></div>
+      </div>
+    </div>
+
+    <div class="game-controls">
+      <button class="btn btn-purple" onclick="runIndep(10)">🔬 实验 10 次</button>
+      <button class="btn btn-teal" onclick="runIndep(100)">⚡ 实验 100 次</button>
+      <button class="btn btn-coral" onclick="runIndep(1000)">🔥 实验 1000 次</button>
+      <button class="btn btn-sm btn-yellow" onclick="resetIndep()">🔄 重置</button>
+    </div>
+
+    <div class="indep-result" id="indepVerdict" style="display:none"></div>
+
+    <div class="game-log" id="indepLog">点击按钮开始对比实验...</div>
+  </div>
+
+  <div class="knowledge-box">
+    <h4>📖 如何判断独立性？</h4>
+    <p>
+      <strong>独立</strong>：P(A∩B) ≈ P(A) × P(B) — 一个事件的发生不影响另一个<br>
+      <strong>不独立</strong>：P(A∩B) ≠ P(A) × P(B) — 一个事件改变了另一个的概率<br><br>
+      实验中，<strong>硬币+骰子</strong>的 P(A∩B) ≈ 0.25 = 0.5 × 0.5，所以它们独立。<br>
+      <strong>连续抽牌</strong>的 P(A∩B) ≈ 0.0588 ≠ 0.25 × 0.25 = 0.0625，所以不独立。
+    </p>
+  </div>
+
+  <div class="section-divider">✦ ✦ ✦</div>
+</section>
+
+<!-- ==================== Chapter 3: 频率与概率 ==================== -->
+<section class="story-section" id="ch3">
+  <div class="chapter-header">
+    <span class="chapter-num" style="background:var(--orange)">第三章</span>
+    <h2 class="chapter-title">频率与概率</h2>
+    <p class="chapter-desc">投 10 次和投 10000 次，结果有什么不同？</p>
+  </div>
+
+  <div class="character-bubble">
+    <div class="character-avatar" style="background:linear-gradient(135deg,var(--orange),var(--yellow))">🪙</div>
+    <div class="bubble">
+      小明投了 <strong>10 次</strong>硬币，7 次正面，他说"正面概率是 70%"。<br>
+      小红投了 <strong>10000 次</strong>硬币，5012 次正面，她说"正面概率约 50%"。<br><br>
+      谁对？随着实验次数增多，<strong>频率会越来越接近理论概率</strong>——这就是<strong>大数定律</strong>。
+    </div>
+  </div>
+
+  <!-- Game 3: 大数定律 -->
+  <div class="game-area">
+    <div class="game-title"><span class="icon">🪙</span> 大数定律投币台</div>
+    <p style="font-size:0.88rem;color:var(--ink-light);margin-bottom:16px;text-align:center">
+      观察投币次数增多时，正面频率如何趋向 <span class="formula">0.5</span>
+    </p>
+    <div class="game-canvas-wrap">
+      <canvas id="freqCanvas" width="560" height="280"></canvas>
+    </div>
+    <div class="game-controls">
+      <button class="btn btn-orange" onclick="tossCoin(1)">🪙 投 1 次</button>
+      <button class="btn btn-teal" onclick="tossCoin(10)">投 10 次</button>
+      <button class="btn btn-purple" onclick="tossCoin(100)">投 100 次</button>
+      <button class="btn btn-coral" onclick="tossCoin(1000)">投 1000 次</button>
+      <button class="btn btn-blue" onclick="tossCoin(10000)">投 10000 次</button>
+      <button class="btn btn-sm btn-yellow" onclick="resetFreq()">🔄 重置</button>
+    </div>
+    <div class="game-stats">
+      <div class="stat-box"><div class="label">总投掷次数</div><div class="value coral" id="freqTotal">0</div></div>
+      <div class="stat-box"><div class="label">正面次数</div><div class="value teal" id="freqHeads">0</div></div>
+      <div class="stat-box"><div class="label">正面频率</div><div class="value purple" id="freqRate">-</div></div>
+      <div class="stat-box"><div class="label">理论概率</div><div class="value orange">0.500</div></div>
+    </div>
+    <div class="game-log" id="freqLog">点击按钮，见证频率如何收敛到概率...</div>
+  </div>
+
+  <div class="knowledge-box">
+    <h4>📖 大数定律（伯努利大数定律）</h4>
+    <p>
+      设 n 次独立重复实验中事件 A 发生了 m 次，则当 n → ∞ 时，<br>
+      <span class="formula">频率 m/n → 概率 P(A)</span><br><br>
+      这说明：<strong>概率是频率的稳定值</strong>，可以通过大量重复实验来"逼近"。
+      但请注意：大数定律不保证"次数多了就一定恰好一半"，它只保证<strong>趋势上越来越接近</strong>。
+    </p>
+  </div>
+
+  <div class="section-divider">✦ ✦ ✦</div>
+</section>
+
+<!-- ==================== Chapter 4: 真实世界应用 ==================== -->
+<section class="story-section" id="ch4">
+  <div class="chapter-header">
+    <span class="chapter-num" style="background:var(--blue)">应用篇</span>
+    <h2 class="chapter-title">概率在真实世界的应用</h2>
+    <p class="chapter-desc">从天气预报到人工智能，概率无处不在</p>
+  </div>
+
+  <div class="character-bubble">
+    <div class="character-avatar" style="background:linear-gradient(135deg,var(--blue),var(--mint))">🌍</div>
+    <div class="bubble">
+      学完了基础概念，你一定在想：<strong>"概率到底有什么用？"</strong><br>
+      答案是——<strong>几乎所有需要做决策的领域都在用概率</strong>。下面这些真实案例，有些可能会让你大吃一惊！
+    </div>
+  </div>
+
+  <div class="app-gallery">
+    <div class="app-card">
+      <div class="app-card-header" style="background:linear-gradient(135deg,rgba(126,200,227,0.2),rgba(149,225,211,0.2))">
+        <div class="app-icon">🌤️</div>
+        <h4>天气预报：概率预报模型</h4>
+      </div>
+      <div class="app-card-body">
+        <p>"明天降水概率 70%"来自<strong>集合预报系统</strong>：运行 30-50 种不同初始条件的模型，如果 70% 的场景都预测下雨，就报 70%。台风路径预测也展示为"概率云图"，而非一条确定线。</p>
+      </div>
+      <div class="app-card-footer">关键概念：蒙特卡洛模拟、条件概率</div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-header" style="background:linear-gradient(135deg,rgba(255,107,107,0.15),rgba(243,129,129,0.15))">
+        <div class="app-icon">🏥</div>
+        <h4>医疗诊断：贝叶斯定理</h4>
+      </div>
+      <div class="app-card-body">
+        <p>某种病发病率 1%，检测准确率 95%。检测阳性=患病了吗？用贝叶斯定理一算：<strong>真正患病概率只有约 16%</strong>！这是因为"健康人多 + 少量误报"拉低了实际概率。[$TRAE_REF](https://blog.csdn.net/nblway/article/details/148153538)</p>
+      </div>
+      <div class="app-card-footer">关键概念：贝叶斯定理、先验概率、后验概率</div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-header" style="background:linear-gradient(135deg,rgba(255,230,109,0.2),rgba(255,179,71,0.2))">
+        <div class="app-icon">💰</div>
+        <h4>金融风控：信用评分</h4>
+      </div>
+      <div class="app-card-body">
+        <p>银行用概率模型预测"这个申请人的违约概率有多大"。输入收入、年龄、历史记录等特征，输出一个 0-1 的违约概率值。<strong>贝叶斯模型</strong>综合历史违约率（先验）和申请人特征（新证据），动态调整风险评估。[$TRAE_REF](https://blog.csdn.net/qq_33060405/article/details/153370121)</p>
+      </div>
+      <div class="app-card-footer">关键概念：条件概率、贝叶斯分类器、逻辑回归</div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-header" style="background:linear-gradient(135deg,rgba(170,150,218,0.2),rgba(126,200,227,0.15))">
+        <div class="app-icon">🤖</div>
+        <h4>人工智能：概率是 AI 的语言</h4>
+      </div>
+      <div class="app-card-body">
+        <p>推荐系统计算 <span class="formula">P(购买 | 浏览)</span> 来决定给你推什么商品。自动驾驶用贝叶斯网络<strong>每秒 3000 次</strong>计算碰撞概率。ChatGPT 生成文字的本质也是概率——根据前文预测下一个词的概率分布。[$TRAE_REF](https://blog.csdn.net/nblway/article/details/148153538)</p>
+      </div>
+      <div class="app-card-footer">关键概念：条件概率、贝叶斯网络、马尔可夫链</div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-header" style="background:linear-gradient(135deg,rgba(149,225,211,0.2),rgba(119,221,119,0.2))">
+        <div class="app-icon">🛡️</div>
+        <h4>保险精算：用概率定价风险</h4>
+      </div>
+      <div class="app-card-body">
+        <p>精算师统计事故、疾病、死亡的发生概率，据此确定保费。没有概率模型，保险就是纯猜——不可持续也不公平。<strong>寿险定价</strong>依赖生命表中的死亡概率，<strong>车险定价</strong>依赖事故发生率的泊松分布。[$TRAE_REF](https://sciencematrix.org/how-probability-stunningly-shapes-our-world/)</p>
+      </div>
+      <div class="app-card-footer">关键概念：期望值、泊松分布、大数定律</div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-header" style="background:linear-gradient(135deg,rgba(255,105,97,0.15),rgba(255,179,71,0.15))">
+        <div class="app-icon">⚖️</div>
+        <h4>司法鉴定：DNA 证据的概率</h4>
+      </div>
+      <div class="app-card-body">
+        <p>"DNA 比对匹配"不代表 100% 确定嫌疑人。法庭上用的"随机匹配概率"（RMP）表示<strong>随机一个人碰巧匹配的概率</strong>，通常在十亿分之一级别。但需要结合<strong>先验概率</strong>（嫌疑人是否有动机、不在场证明等）用贝叶斯定理综合判断。</p>
+      </div>
+      <div class="app-card-footer">关键概念：条件概率、贝叶斯定理、假阳性率</div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-header" style="background:linear-gradient(135deg,rgba(196,168,130,0.2),rgba(255,230,109,0.15))">
+        <div class="app-icon">🏭</div>
+        <h4>质量管理：抽样检验</h4>
+      </div>
+      <div class="app-card-body">
+        <p>工厂不可能检测每一个产品，于是<strong>随机抽取一批</strong>，用二项分布计算"如果这批合格率 ≥ 95%，抽到的不合格品 ≤ 2 个的概率有多大"。这就是<strong>假设检验</strong>的雏形——用概率来决定"这批货能不能出厂"。[$TRAE_REF](https://blog.csdn.net/weixin_36149538/article/details/146490568)</p>
+      </div>
+      <div class="app-card-footer">关键概念：二项分布、假设检验、置信区间</div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-header" style="background:linear-gradient(135deg,rgba(78,205,196,0.15),rgba(170,150,218,0.15))">
+        <div class="app-icon">📦</div>
+        <h4>供应链：泊松分布管理备件</h4>
+      </div>
+      <div class="app-card-body">
+        <p>工厂设备一年平均故障 20 次，该备多少备件？<strong>不是简单备 20 个</strong>——用泊松分布可算出：准备 25 个备件，一年内够用的概率约 90%；故障超过 30 次的概率不到 5%。这帮助企业在<strong>库存成本和断供风险之间找到平衡</strong>。[$TRAE_REF](https://www.shangyexinzhi.com/article/30966705.html)</p>
+      </div>
+      <div class="app-card-footer">关键概念：泊松分布、期望值、风险管理</div>
+    </div>
+
+    <div class="app-card">
+      <div class="app-card-header" style="background:linear-gradient(135deg,rgba(255,107,107,0.12),rgba(170,150,218,0.15))">
+        <div class="app-icon">🔍</div>
+        <h4>财务审计：本福特定律</h4>
+      </div>
+      <div class="app-card-body">
+        <p>自然产生的数据中，首位数字是 1 的概率约 <strong>30%</strong>，是 9 的只有约 <strong>5%</strong>。这一反直觉的概率规律被广泛应用于<strong>财务审计</strong>，帮助发现报税数据、公司费用中的造假行为。1996 年此定律成功揭露了美国多起财务欺诈案。[$TRAE_REF](https://blog.csdn.net/weixin_36149538/article/details/146490568)</p>
+      </div>
+      <div class="app-card-footer">关键概念：概率分布、统计检验、异常检测</div>
+    </div>
+  </div>
+
+  <div class="knowledge-box" style="border-left-color:var(--blue);background:linear-gradient(135deg,rgba(126,200,227,0.08),rgba(149,225,211,0.08))">
+    <h4 style="color:var(--blue)">💡 从课本到世界</h4>
+    <p>
+      你在课堂上学到的<strong>古典概型、条件概率、独立性、大数定律</strong>，绝不是抽象的数学游戏——<br>
+      它们是天气预报的根基、AI 大脑的语言、医生诊断的武器、金融风控的屏障。<br>
+      <strong>概率，就是在不确定的世界里，让你做出更聪明选择的超能力。</strong>
+    </p>
+  </div>
+
+  <div class="section-divider">✦ ✦ ✦</div>
+
+  <div style="text-align:center">
+    <a class="back-home" href="index.html" onclick="history.back();return false;">← 返回首页</a>
+  </div>
+  <br><br>
+</section>
+
+<script>
+/* ========================================
+   滚动动画 & 导航
+   ======================================== */
+(function(){
+  var sections = document.querySelectorAll('.story-section');
+  var nav = document.getElementById('topNav');
+  var navLinks = nav.querySelectorAll('.nav-chapters a');
+  var observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        e.target.classList.add('visible');
+        var id = e.target.id;
+        navLinks.forEach(function(a){
+          a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  },{threshold:0.15});
+  sections.forEach(function(s){observer.observe(s)});
+
+  var coverObs = new IntersectionObserver(function(entries){
+    nav.classList.toggle('show', !entries[0].isIntersecting);
+  },{threshold:0.3});
+  coverObs.observe(document.getElementById('cover'));
+})();
+
+/* ========================================
+   Game 1: 命运骰子
+   ======================================== */
+var diceState = {total:0, count7:0, log:[]};
+
+function drawDiceFace(ctx, x, y, size, num, color){
+  ctx.save();
+  var r = 8;
+  ctx.fillStyle = color || '#fff';
+  ctx.strokeStyle = '#c4a882';
+  ctx.lineWidth = 2;
+  roundRect(ctx, x, y, size, size, r);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#3D2C2E';
+  var dotR = size * 0.07;
+  var cx = x + size/2, cy = y + size/2;
+  var off = size * 0.26;
+  var dots = {
+    1:[[0,0]],
+    2:[[-1,-1],[1,1]],
+    3:[[-1,-1],[0,0],[1,1]],
+    4:[[-1,-1],[1,-1],[-1,1],[1,1]],
+    5:[[-1,-1],[1,-1],[0,0],[-1,1],[1,1]],
+    6:[[-1,-1],[1,-1],[-1,0],[1,0],[-1,1],[1,1]]
+  };
+  (dots[num]||[]).forEach(function(d){
+    ctx.beginPath();
+    ctx.arc(cx + d[0]*off, cy + d[1]*off, dotR, 0, Math.PI*2);
+    ctx.fill();
+  });
+  ctx.restore();
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+function renderDice(d1, d2){
+  var c = document.getElementById('diceCanvas');
+  var ctx = c.getContext('2d');
+  var W = c.width, H = c.height;
+  ctx.clearRect(0,0,W,H);
+  // background
+  ctx.fillStyle = '#FFFAF3';
+  roundRect(ctx, 0, 0, W, H, 16);
+  ctx.fill();
+  // draw dice
+  var sz = 80, gap = 40;
+  var startX = (W - sz*2 - gap) / 2;
+  var startY = (H - sz) / 2;
+  drawDiceFace(ctx, startX, startY, sz, d1, '#fff');
+  drawDiceFace(ctx, startX + sz + gap, startY, sz, d2, '#fff');
+  // sum label
+  var sum = d1 + d2;
+  ctx.fillStyle = sum === 7 ? '#FF6B6B' : '#6B5456';
+  ctx.font = 'bold 22px "Noto Sans SC",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('和 = ' + sum, W/2, startY + sz + 30);
+  if(sum === 7){
+    ctx.fillStyle = '#4ECDC4';
+    ctx.font = '14px "Noto Sans SC",sans-serif';
+    ctx.fillText('🎉 命中目标！', W/2, startY + sz + 50);
+  }
+}
+
+function rollDice(){
+  var d1 = Math.floor(Math.random()*6)+1;
+  var d2 = Math.floor(Math.random()*6)+1;
+  diceState.total++;
+  if(d1+d2 === 7) diceState.count7++;
+  renderDice(d1, d2);
+  updateDiceStats();
+}
+
+function rollDiceN(n){
+  for(var i=0;i<n;i++){
+    var d1 = Math.floor(Math.random()*6)+1;
+    var d2 = Math.floor(Math.random()*6)+1;
+    diceState.total++;
+    if(d1+d2 === 7) diceState.count7++;
+  }
+  // show last roll
+  var ld1 = Math.floor(Math.random()*6)+1;
+  var ld2 = Math.floor(Math.random()*6)+1;
+  renderDice(ld1, ld2);
+  updateDiceStats();
+}
+
+function updateDiceStats(){
+  var s = diceState;
+  document.getElementById('diceTotal').textContent = s.total;
+  document.getElementById('diceCount7').textContent = s.count7;
+  var freq = s.total > 0 ? (s.count7 / s.total * 100).toFixed(1) + '%' : '0%';
+  document.getElementById('diceFreq').textContent = freq;
+  var log = document.getElementById('diceLog');
+  if(s.total <= 20){
+    s.log.push('第' + s.total + '次：频率 = ' + freq);
+  } else if(s.total === 21){
+    s.log.push('...（后续实验省略显示）');
+  }
+  log.innerHTML = s.log.map(function(l){
+    var is7 = l.indexOf('频率 = 16.7') > -1 || l.indexOf('频率 = 16.6') > -1;
+    return is7 ? '<span class="highlight">' + l + '</span>' : l;
+  }).join('<br>');
+  log.scrollTop = log.scrollHeight;
+}
+
+function resetDice(){
+  diceState = {total:0, count7:0, log:[]};
+  document.getElementById('diceTotal').textContent = '0';
+  document.getElementById('diceCount7').textContent = '0';
+  document.getElementById('diceFreq').textContent = '0%';
+  document.getElementById('diceLog').innerHTML = '点击"掷一次"开始实验...';
+  var c = document.getElementById('diceCanvas');
+  var ctx = c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.fillStyle = '#FFFAF3';
+  roundRect(ctx,0,0,c.width,c.height,16);ctx.fill();
+  ctx.fillStyle = '#A89090';
+  ctx.font = '16px "Noto Sans SC",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🎲 点击下方按钮掷骰子', c.width/2, c.height/2);
+}
+
+// init dice canvas
+setTimeout(resetDice, 100);
+
+/* ========================================
+   Game 2: 独立性实验室
+   ======================================== */
+var indepState = {
+  n:0,
+  // exp1: coin + die
+  a1:0, b1:0, ab1:0,
+  // exp2: draw cards no replace
+  a2:0, b2:0, ab2:0
+};
+
+function runIndep(n){
+  for(var i=0;i<n;i++){
+    // Exp1: coin + die (independent)
+    var coin = Math.random() < 0.5; // true = heads
+    var die = (Math.floor(Math.random()*6)+1) % 2 === 0; // true = even
+    if(coin) indepState.a1++;
+    if(die)  indepState.b1++;
+    if(coin && die) indepState.ab1++;
+
+    // Exp2: draw 2 cards from 52, no replacement (hearts only, 13 hearts in 52)
+    // A = first is heart, B = second is heart
+    var deck = [];
+    for(var s=0;s<4;s++) for(var v=1;v<=13;v++) deck.push(s===0);
+    // shuffle first 2
+    var i1 = Math.floor(Math.random()*52);
+    var tmp = deck[i1]; deck[i1] = deck[0]; deck[0] = tmp;
+    var i2 = 1 + Math.floor(Math.random()*51);
+    var firstHeart = deck[0];
+    var secondHeart = deck[i2];
+    if(firstHeart) indepState.a2++;
+    if(secondHeart) indepState.b2++;
+    if(firstHeart && secondHeart) indepState.ab2++;
+  }
+  indepState.n += n;
+  updateIndepStats();
+  renderIndepCanvases();
+}
+
+function updateIndepStats(){
+  var s = indepState, n = s.n;
+  if(n === 0) return;
+  var pa1 = (s.a1/n).toFixed(3);
+  var pb1 = (s.b1/n).toFixed(3);
+  var prod1 = (s.a1/n * s.b1/n).toFixed(4);
+  var ab1 = (s.ab1/n).toFixed(4);
+  document.getElementById('indep1PA').textContent = pa1;
+  document.getElementById('indep1PB').textContent = pb1;
+  document.getElementById('indep1Prod').textContent = prod1;
+  document.getElementById('indep1AB').textContent = ab1;
+
+  var pa2 = (s.a2/n).toFixed(3);
+  var pb2 = (s.b2/n).toFixed(3);
+  var prod2 = (s.a2/n * s.b2/n).toFixed(4);
+  var ab2 = (s.ab2/n).toFixed(4);
+  document.getElementById('indep2PA').textContent = pa2;
+  document.getElementById('indep2PB').textContent = pb2;
+  document.getElementById('indep2Prod').textContent = prod2;
+  document.getElementById('indep2AB').textContent = ab2;
+
+  // verdict
+  var v = document.getElementById('indepVerdict');
+  v.style.display = 'block';
+  var diff1 = Math.abs(s.ab1/n - s.a1/n * s.b1/n);
+  var diff2 = Math.abs(s.ab2/n - s.a2/n * s.b2/n);
+  if(n >= 100){
+    v.className = 'indep-result';
+    v.innerHTML = '<strong>📊 实验结论（' + n + ' 次实验）：</strong><br>' +
+      '🪙 硬币+骰子：|P(A∩B) − P(A)×P(B)| = ' + diff1.toFixed(4) + ' → <strong style="color:var(--teal)">近似相等，独立 ✓</strong><br>' +
+      '🃏 连续抽牌：|P(A∩B) − P(A)×P(B)| = ' + diff2.toFixed(4) + '（理论值 ≈ 0.0038）→ <strong style="color:var(--coral)">不等，不独立 ✗</strong>';
+  } else {
+    v.className = 'indep-result yes';
+    v.innerHTML = '继续实验...次数越多，差异越明显！';
+  }
+
+  var log = document.getElementById('indepLog');
+  log.innerHTML = '已完成 ' + n + ' 次实验。实验次数越多，独立性判断越准确。';
+}
+
+function renderIndepCanvases(){
+  // Canvas 1: Coin + Die visual
+  var c1 = document.getElementById('indepCanvas1');
+  var ctx1 = c1.getContext('2d');
+  ctx1.clearRect(0,0,200,120);
+  ctx1.fillStyle = '#FFFAF3';
+  roundRect(ctx1,0,0,200,120,10);ctx1.fill();
+  ctx1.font = '32px serif';
+  ctx1.textAlign = 'center';
+  ctx1.fillText('🪙',60,60);
+  ctx1.fillText('🎲',140,60);
+  ctx1.fillStyle = '#4ECDC4';
+  ctx1.font = 'bold 11px "Noto Sans SC",sans-serif';
+  ctx1.fillText('独立',100,105);
+
+  // Canvas 2: Cards visual
+  var c2 = document.getElementById('indepCanvas2');
+  var ctx2 = c2.getContext('2d');
+  ctx2.clearRect(0,0,200,120);
+  ctx2.fillStyle = '#FFFAF3';
+  roundRect(ctx2,0,0,200,120,10);ctx2.fill();
+  ctx2.font = '32px serif';
+  ctx2.textAlign = 'center';
+  ctx2.fillText('🃏',70,55);
+  ctx2.fillText('🃏',130,55);
+  ctx2.fillStyle = '#FF6B6B';
+  ctx2.font = 'bold 11px "Noto Sans SC",sans-serif';
+  ctx2.fillText('不独立',100,105);
+}
+
+function resetIndep(){
+  indepState = {n:0, a1:0, b1:0, ab1:0, a2:0, b2:0, ab2:0};
+  ['indep1PA','indep1PB','indep1Prod','indep1AB','indep2PA','indep2PB','indep2Prod','indep2AB'].forEach(function(id){
+    document.getElementById(id).textContent = '-';
+  });
+  document.getElementById('indepVerdict').style.display = 'none';
+  document.getElementById('indepLog').innerHTML = '点击按钮开始对比实验...';
+  renderIndepCanvases();
+}
+setTimeout(renderIndepCanvases, 100);
+
+/* ========================================
+   Game 3: 频率与概率（大数定律）
+   ======================================== */
+var freqState = {total:0, heads:0, history:[]};
+
+function drawFreqChart(){
+  var c = document.getElementById('freqCanvas');
+  var ctx = c.getContext('2d');
+  var W = c.width, H = c.height;
+  var pad = {top:30, right:30, bottom:40, left:55};
+  var gW = W - pad.left - pad.right;
+  var gH = H - pad.top - pad.bottom;
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#FFFAF3';
+  roundRect(ctx,0,0,W,H,16);ctx.fill();
+
+  // grid
+  ctx.strokeStyle = 'rgba(196,168,130,0.25)';
+  ctx.lineWidth = 1;
+  for(var i=0;i<=4;i++){
+    var y = pad.top + gH * i / 4;
+    ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(pad.left+gW,y);ctx.stroke();
+  }
+
+  // Y axis labels
+  ctx.fillStyle = '#A89090';
+  ctx.font = '11px "Noto Sans SC",sans-serif';
+  ctx.textAlign = 'right';
+  var yLabels = [1.0, 0.75, 0.5, 0.25, 0.0];
+  for(var i=0;i<5;i++){
+    var y = pad.top + gH * i / 4;
+    ctx.fillText(yLabels[i].toFixed(2), pad.left - 8, y + 4);
+  }
+
+  // X axis label
+  ctx.textAlign = 'center';
+  ctx.fillText('投掷次数', W/2, H - 8);
+
+  var hist = freqState.history;
+  if(hist.length < 2){
+    ctx.fillStyle = '#A89090';
+    ctx.font = '15px "Noto Sans SC",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🪙 点击按钮开始投币，观察频率变化曲线', W/2, H/2);
+    return;
+  }
+
+  // 0.5 reference line
+  var y05 = pad.top + gH * (1 - 0.5);
+  ctx.strokeStyle = 'rgba(255,107,107,0.5)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6,4]);
+  ctx.beginPath();ctx.moveTo(pad.left,y05);ctx.lineTo(pad.left+gW,y05);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#FF6B6B';
+  ctx.font = 'bold 12px "Noto Sans SC",sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('P = 0.5（理论值）', pad.left + 4, y05 - 8);
+
+  // frequency curve
+  var maxN = hist[hist.length - 1].n;
+  ctx.beginPath();
+  ctx.strokeStyle = '#4ECDC4';
+  ctx.lineWidth = 2.5;
+  hist.forEach(function(pt, idx){
+    var x = pad.left + (pt.n / maxN) * gW;
+    var y = pad.top + gH * (1 - pt.rate);
+    if(idx === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // gradient fill under curve
+  ctx.lineTo(pad.left + gW, pad.top + gH);
+  ctx.lineTo(pad.left, pad.top + gH);
+  ctx.closePath();
+  var grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + gH);
+  grad.addColorStop(0, 'rgba(78,205,196,0.15)');
+  grad.addColorStop(1, 'rgba(78,205,196,0.02)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // current point
+  var last = hist[hist.length - 1];
+  var lx = pad.left + (last.n / maxN) * gW;
+  var ly = pad.top + gH * (1 - last.rate);
+  ctx.beginPath();
+  ctx.arc(lx, ly, 5, 0, Math.PI*2);
+  ctx.fillStyle = '#FF6B6B';
+  ctx.fill();
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // X axis ticks
+  ctx.fillStyle = '#A89090';
+  ctx.font = '10px "Noto Sans SC",sans-serif';
+  ctx.textAlign = 'center';
+  var step = maxN <= 100 ? 10 : maxN <= 1000 ? 100 : maxN <= 10000 ? 1000 : 10000;
+  for(var n = step; n <= maxN; n += step){
+    var x = pad.left + (n / maxN) * gW;
+    ctx.fillText(n >= 1000 ? (n/1000)+'k' : n, x, pad.top + gH + 18);
+  }
+}
+
+function tossCoin(n){
+  for(var i = 0; i < n; i++){
+    freqState.total++;
+    if(Math.random() < 0.5) freqState.heads++;
+    // record at logarithmic intervals
+    var t = freqState.total;
+    if(t === 1 || t === 2 || t === 5 || t === 10 || t === 20 || t === 50 ||
+       t === 100 || t === 200 || t === 500 || t === 1000 || t === 2000 ||
+       t === 5000 || t === 10000 || t === 20000 || t === 50000 || t === 100000){
+      freqState.history.push({n: t, rate: freqState.heads / t});
+    }
+    if(t > 100 && t % Math.ceil(t/60) === 0 && freqState.history.length < 200){
+      if(!freqState.history.some(function(p){return p.n === t;})){
+        freqState.history.push({n: t, rate: freqState.heads / t});
+      }
+    }
+  }
+  // always add last
+  if(freqState.history.length === 0 || freqState.history[freqState.history.length-1].n !== freqState.total){
+    freqState.history.push({n: freqState.total, rate: freqState.heads / freqState.total});
+  }
+
+  document.getElementById('freqTotal').textContent = freqState.total;
+  document.getElementById('freqHeads').textContent = freqState.heads;
+  document.getElementById('freqRate').textContent = (freqState.heads / freqState.total).toFixed(4);
+
+  var log = document.getElementById('freqLog');
+  var msgs = [];
+  var milestones = [1, 10, 100, 1000, 10000, 100000];
+  for(var m = milestones.length - 1; m >= 0; m--){
+    if(freqState.total >= milestones[m]){
+      var rate = (freqState.heads / freqState.total * 100).toFixed(1);
+      msgs.push('投 ' + milestones[m] + ' 次时：正面频率 = ' + rate + '%');
+      if(m < milestones.length - 1) break;
+    }
+  }
+  log.innerHTML = msgs.join('<br>');
+  if(freqState.total >= 1000){
+    var diff = Math.abs(freqState.heads/freqState.total - 0.5);
+    var msg = diff < 0.01 ? '🎉 频率已非常接近 0.5！大数定律在起作用！' :
+              diff < 0.05 ? '📈 频率正在向 0.5 靠拢...' :
+              '🔄 继续投更多次，频率会逐渐稳定';
+    log.innerHTML += '<br><span class="highlight">' + msg + '</span>';
+  }
+
+  drawFreqChart();
+}
+
+function resetFreq(){
+  freqState = {total:0, heads:0, history:[]};
+  document.getElementById('freqTotal').textContent = '0';
+  document.getElementById('freqHeads').textContent = '0';
+  document.getElementById('freqRate').textContent = '-';
+  document.getElementById('freqLog').innerHTML = '点击按钮，见证频率如何收敛到概率...';
+  drawFreqChart();
+}
+setTimeout(drawFreqChart, 100);
+</script>
+</body>
+</html>
