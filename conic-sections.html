@@ -1118,7 +1118,7 @@
   // Case 6: Gravity assist / Slingshot
   var ssVp = document.getElementById('ss-vp'), ssVin = document.getElementById('ss-vin'), ssD = document.getElementById('ss-d');
   var ssVpv = document.getElementById('ss-vp-v'), ssVinv = document.getElementById('ss-vin-v'), ssDv = document.getElementById('ss-d-v');
-  var ssPhase = 0;
+  var ssAnimT = 0; // 0→1 animation progress
   function drawSlingshot() {
     if (rafSling) cancelAnimationFrame(rafSling);
     var data = setupCanvas('cvs-slingshot');
@@ -1132,54 +1132,232 @@
     document.getElementById('ss-info').innerHTML = '入射速度(相对行星): <span>'+vRel.toFixed(1)+'</span> | 出射速度(相对行星): <span>'+vRel.toFixed(1)+'</span> | 最终速度(相对太阳): <span>'+vOut.toFixed(1)+'</span>';
     drawGrid({ctx:ctx, w:w, h:h});
     ctx.save(); ctx.translate(ox, oy);
-    var scale = 1.5;
-    // planet fixed at center
-    var px = 0;
-    var py = 0;
-    ctx.fillStyle = '#f43f5e';
-    ctx.beginPath(); ctx.arc(px, -py, 18, 0, Math.PI*2); ctx.fill();
-    ctx.strokeStyle = 'rgba(244,63,94,0.5)'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(px, -py, 22, 0, Math.PI*2); ctx.stroke();
-    ctx.fillStyle = 'var(--muted)'; ctx.font = '12px JetBrainsMono'; ctx.fillText('Planet', px+24, -py-4);
-    ctx.fillStyle = '#f43f5e'; ctx.font = '10px JetBrainsMono'; ctx.fillText('v='+vp, px+24, -py+12);
-    // planet velocity arrow
-    ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(px+14, -py); ctx.lineTo(px+14+vp*0.6, -py); ctx.stroke();
-    // incoming path (lower left toward planet)
-    ctx.strokeStyle = 'rgba(34,211,238,0.25)'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(-w*0.3, d*0.5); ctx.lineTo(-d*0.15, d*0.08); ctx.stroke();
-    // hyperbolic trajectory bending near planet (Sun-frame conceptual)
-    ctx.strokeStyle = 'rgba(245,158,11,0.7)'; ctx.lineWidth = 2; ctx.setLineDash([3,3]);
+
+    // --- trajectory parametric path (sun-frame) ---
+    // phase 0→0.25: approach from lower-left (fast)
+    // phase 0.25→0.75: hyperbolic bend near planet (slow, detailed)
+    // phase 0.75→1.0: exit to upper-right (fast)
+    var startX = -w*0.38, startY = d*0.55;
+    var bendStartX = -d*0.2, bendStartY = d*0.1;
+    var bendEndX = d*0.2, bendEndY = -d*0.1;
+    var endX = w*0.38, endY = -d*0.55;
+
+    function trajectoryPoint(t) {
+      var x, y;
+      if (t <= 0.25) {
+        var s = t / 0.25;
+        x = startX + (bendStartX - startX) * s;
+        y = startY + (bendStartY - startY) * s;
+      } else if (t <= 0.75) {
+        var s = (t - 0.25) / 0.5;
+        var tt = (s - 0.5) * 5;
+        var hx = tt * w * 0.055;
+        var hy = d * Math.sqrt(1 + tt*tt) * 0.25 * Math.tanh(tt*2.5);
+        x = hx;
+        y = -hy;
+      } else {
+        var s = (t - 0.75) / 0.25;
+        x = bendEndX + (endX - bendEndX) * s;
+        y = bendEndY + (endY - bendEndY) * s;
+      }
+      return {x: x, y: y};
+    }
+
+    // draw full trajectory path
+    // incoming line
+    ctx.strokeStyle = 'rgba(34,211,238,0.2)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(startX, -startY); ctx.lineTo(bendStartX, -bendStartY); ctx.stroke();
+    // hyperbolic bend (highlighted, thicker)
+    ctx.strokeStyle = 'rgba(245,158,11,0.5)'; ctx.lineWidth = 2.5; ctx.setLineDash([4,4]);
     ctx.beginPath();
-    for (var i=0; i<=60; i++) {
-      var t = (i/60 - 0.5) * 5;
-      var hx = t * w * 0.12;
-      var hy = d * Math.sqrt(1 + t*t) * 0.35 * Math.tanh(t*2);
+    for (var i=0; i<=80; i++) {
+      var tt = (i/80 - 0.5) * 5;
+      var hx = tt * w * 0.055;
+      var hy = d * Math.sqrt(1 + tt*tt) * 0.25 * Math.tanh(tt*2.5);
       if (i===0) ctx.moveTo(hx, -hy); else ctx.lineTo(hx, -hy);
     }
     ctx.stroke(); ctx.setLineDash([]);
-    // outgoing path (from planet to upper right)
-    ctx.strokeStyle = 'rgba(34,211,238,0.25)'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(d*0.15, -d*0.08); ctx.lineTo(w*0.3, -d*0.5); ctx.stroke();
-    // spacecraft approaching
-    var scx = -w*0.25, scy = d*0.42;
-    ctx.fillStyle = '#22d3ee'; ctx.beginPath(); ctx.arc(scx, -scy, 5, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = 'var(--muted)'; ctx.font = '11px JetBrainsMono'; ctx.fillText('Spacecraft', scx-50, -scy-10);
-    ctx.fillStyle = '#22d3ee'; ctx.font = '10px JetBrainsMono'; ctx.fillText('v_in='+vin, scx-40, -scy+4);
-    // approach velocity vector
-    ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(scx, -scy); ctx.lineTo(scx + vin*0.4, -scy - vin*0.15); ctx.stroke();
-    // exit point
-    var ex = w*0.25, ey = -d*0.42;
-    ctx.fillStyle = '#f59e0b'; ctx.beginPath(); ctx.arc(ex, -ey, 5, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = 'var(--muted)'; ctx.font = '11px JetBrainsMono'; ctx.fillText('Exit', ex+8, -ey-4);
-    ctx.fillStyle = '#f59e0b'; ctx.font = '10px JetBrainsMono'; ctx.fillText('v_out≈'+vOut.toFixed(0), ex+8, -ey+10);
-    // exit velocity vector
-    ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(ex, -ey); ctx.lineTo(ex + vOut*0.4, -ey + vOut*0.15); ctx.stroke();
-    // legend
-    ctx.fillStyle = 'var(--muted)'; ctx.font = '11px JetBrainsMono';
-    ctx.fillText('Δv增益 ≈ '+Math.abs(vOut-vin).toFixed(1), -ox+10, -oy+18);
+    // outgoing line
+    ctx.strokeStyle = 'rgba(245,158,11,0.2)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(bendEndX, -bendEndY); ctx.lineTo(endX, -endY); ctx.stroke();
+
+    // --- draw incoming angle & outgoing angle at planet ---
+    // incoming direction: from bendStart to planet center
+    var inAngle = Math.atan2(-(-bendStartY), -(bendStartX)); // angle of approach toward planet
+    // outgoing direction: from planet center to bendEnd
+    var outAngle = Math.atan2(-(-bendEndY), bendEndX - 0); // angle of departure from planet
+    var angleR = 55; // radius for angle arc
+    // incoming angle arc (from approach direction to planet-body line)
+    var approachAngle = Math.atan2(bendStartY - 0, bendStartX - 0); // angle from planet to approach point
+    var departAngle = Math.atan2(bendEndY - 0, bendEndX - 0); // angle from planet to depart point
+    var deflectionAngle = Math.abs(departAngle - approachAngle);
+    // draw approach line extended
+    ctx.strokeStyle = 'rgba(34,211,238,0.5)'; ctx.lineWidth = 1.5; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(approachAngle)*angleR*1.5, -Math.sin(approachAngle)*angleR*1.5); ctx.stroke();
+    ctx.setLineDash([]);
+    // draw depart line extended
+    ctx.strokeStyle = 'rgba(245,158,11,0.5)'; ctx.lineWidth = 1.5; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(departAngle)*angleR*1.5, -Math.sin(departAngle)*angleR*1.5); ctx.stroke();
+    ctx.setLineDash([]);
+    // draw angle arcs
+    // incoming angle arc (between approach direction and -x axis)
+    var inArcR = angleR * 0.8;
+    ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    var aStart = Math.min(approachAngle, Math.PI);
+    var aEnd = Math.max(approachAngle, Math.PI);
+    ctx.arc(0, 0, inArcR, -aEnd, -aStart); // canvas y is inverted
+    ctx.stroke();
+    // incoming angle label
+    var inDeg = (Math.abs(approachAngle - Math.PI) * 180 / Math.PI).toFixed(0);
+    ctx.fillStyle = '#22d3ee'; ctx.font = '10px JetBrainsMono';
+    var inLabelAngle = (approachAngle + Math.PI) / 2;
+    ctx.fillText('入射角 ' + inDeg + '°', Math.cos(-inLabelAngle)*(inArcR+16) - 20, -Math.sin(-inLabelAngle)*(inArcR+16));
+
+    // outgoing angle arc
+    var outArcR = angleR * 0.6;
+    ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    var oStart = Math.min(0, departAngle);
+    var oEnd = Math.max(0, departAngle);
+    ctx.arc(0, 0, outArcR, -oEnd, -oStart);
+    ctx.stroke();
+    // outgoing angle label
+    var outDeg = (Math.abs(departAngle - 0) * 180 / Math.PI).toFixed(0);
+    ctx.fillStyle = '#f59e0b'; ctx.font = '10px JetBrainsMono';
+    var outLabelAngle = departAngle / 2;
+    ctx.fillText('出射角 ' + outDeg + '°', Math.cos(-outLabelAngle)*(outArcR+16) + 5, -Math.sin(-outLabelAngle)*(outArcR+16));
+
+    // deflection angle arc (between approach and depart)
+    var defArcR = angleR * 1.0;
+    ctx.strokeStyle = 'rgba(167,139,250,0.7)'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, defArcR, -Math.max(approachAngle, departAngle), -Math.min(approachAngle, departAngle));
+    ctx.stroke();
+    // deflection angle label
+    var defDeg = (deflectionAngle * 180 / Math.PI).toFixed(0);
+    ctx.fillStyle = '#a78bfa'; ctx.font = 'bold 11px JetBrainsMono';
+    var defLabelAngle = (approachAngle + departAngle) / 2;
+    ctx.fillText('偏转角 ' + defDeg + '°', Math.cos(-defLabelAngle)*(defArcR+18) - 18, -Math.sin(-defLabelAngle)*(defArcR+18));
+
+    // planet (drawn after angle arcs so it's on top)
+    ctx.fillStyle = '#f43f5e';
+    ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = 'rgba(244,63,94,0.4)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(0, 0, 24, 0, Math.PI*2); ctx.stroke();
+    // gravitational field rings
+    for (var r = 40; r <= 100; r += 20) {
+      ctx.strokeStyle = 'rgba(244,63,94,' + (0.15 - r*0.001) + ')';
+      ctx.lineWidth = 1; ctx.setLineDash([2,6]);
+      ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI*2); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'var(--muted)'; ctx.font = '12px JetBrainsMono'; ctx.fillText('Planet', 24, -8);
+    ctx.fillStyle = '#f43f5e'; ctx.font = '10px JetBrainsMono'; ctx.fillText('v_p='+vp, 24, 8);
+    // planet velocity arrow
+    ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(20, 0); ctx.lineTo(20+vp*0.5, 0); ctx.stroke();
+    // arrowhead
+    ctx.fillStyle = '#f43f5e'; ctx.beginPath();
+    ctx.moveTo(20+vp*0.5, 0); ctx.lineTo(20+vp*0.5-6, -4); ctx.lineTo(20+vp*0.5-6, 4); ctx.closePath(); ctx.fill();
+
+    // --- spacecraft animation ---
+    ssAnimT += 0.001;
+    if (ssAnimT > 1.2) ssAnimT = -0.2; // loop with gap
+    var t = ssAnimT;
+
+    if (t >= 0 && t <= 1) {
+      var pos = trajectoryPoint(t);
+      var scx = pos.x, scy = pos.y;
+
+      // color: cyan when approaching, yellow near planet, orange exiting
+      var r2, g2, b2;
+      if (t < 0.25) {
+        r2 = 34; g2 = 211; b2 = 238; // cyan
+      } else if (t < 0.75) {
+        var s = (t - 0.25) / 0.5;
+        r2 = Math.round(34 + (245-34)*s);
+        g2 = Math.round(211 + (158-211)*s);
+        b2 = Math.round(238 + (11-238)*s);
+      } else {
+        r2 = 245; g2 = 158; b2 = 11; // orange
+      }
+
+      // trail
+      var trailLen = 30;
+      for (var i = trailLen; i >= 1; i--) {
+        var tt2 = t - i * 0.005;
+        if (tt2 < 0) continue;
+        var tp = trajectoryPoint(tt2);
+        var alpha = (1 - i/trailLen) * 0.5;
+        ctx.fillStyle = 'rgba('+r2+','+g2+','+b2+','+alpha+')';
+        ctx.beginPath(); ctx.arc(tp.x, -tp.y, 3 - i*0.07, 0, Math.PI*2); ctx.fill();
+      }
+
+      // spacecraft body
+      ctx.fillStyle = 'rgb('+r2+','+g2+','+b2+')';
+      ctx.shadowColor = 'rgba('+r2+','+g2+','+b2+',0.6)';
+      ctx.shadowBlur = 12;
+      ctx.beginPath(); ctx.arc(scx, -scy, 6, 0, Math.PI*2); ctx.fill();
+      ctx.shadowBlur = 0;
+      // bright core
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(scx, -scy, 2.5, 0, Math.PI*2); ctx.fill();
+
+      // velocity vector arrow
+      var vLen, vDx, vDy;
+      if (t < 0.25) {
+        var next = trajectoryPoint(Math.min(t+0.01, 0.25));
+        vDx = (next.x - scx) * vin * 0.025;
+        vDy = -(next.y - scy) * vin * 0.025;
+        vLen = vin;
+      } else if (t < 0.75) {
+        var s3 = (t - 0.25) / 0.5;
+        var next = trajectoryPoint(Math.min(t+0.01, 0.75));
+        vDx = (next.x - scx) * (vin + (vOut-vin)*s3) * 0.02;
+        vDy = -(next.y - scy) * (vin + (vOut-vin)*s3) * 0.02;
+        vLen = vin + (vOut - vin) * s3;
+      } else {
+        var next = trajectoryPoint(Math.min(t+0.01, 1));
+        vDx = (next.x - scx) * vOut * 0.025;
+        vDy = -(next.y - scy) * vOut * 0.025;
+        vLen = vOut;
+      }
+      ctx.strokeStyle = 'rgb('+r2+','+g2+','+b2+')'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(scx, -scy); ctx.lineTo(scx + vDx, -scy + vDy); ctx.stroke();
+      // arrowhead
+      var angle = Math.atan2(vDy, vDx);
+      ctx.fillStyle = 'rgb('+r2+','+g2+','+b2+')';
+      ctx.beginPath();
+      ctx.moveTo(scx + vDx, -scy + vDy);
+      ctx.lineTo(scx + vDx - 8*Math.cos(angle-0.4), -scy + vDy - 8*Math.sin(angle-0.4));
+      ctx.lineTo(scx + vDx - 8*Math.cos(angle+0.4), -scy + vDy - 8*Math.sin(angle+0.4));
+      ctx.closePath(); ctx.fill();
+
+      // speed label near spacecraft
+      ctx.fillStyle = 'rgb('+r2+','+g2+','+b2+')'; ctx.font = 'bold 11px JetBrainsMono';
+      var labelX = scx + 12, labelY = -scy - 14;
+      if (t < 0.25) {
+        ctx.fillText('v = '+vin.toFixed(0), labelX, labelY);
+      } else if (t < 0.75) {
+        var s4 = (t - 0.25) / 0.5;
+        var curV = vin + (vOut - vin) * s4;
+        ctx.fillText('v = '+curV.toFixed(0), labelX, labelY);
+      } else {
+        ctx.fillText('v = '+vOut.toFixed(0), labelX, labelY);
+      }
+    }
+
+    // static labels
+    ctx.fillStyle = '#22d3ee'; ctx.font = '10px JetBrainsMono';
+    ctx.fillText('v_in = '+vin, startX + 5, -startY + 15);
+    ctx.fillStyle = '#f59e0b';
+    ctx.fillText('v_out = '+vOut.toFixed(0), endX - 60, -endY - 10);
+
+    // delta-v gain
+    ctx.fillStyle = 'var(--accent)'; ctx.font = 'bold 12px JetBrainsMono';
+    ctx.fillText('Delta-v \u2248 +' + Math.abs(vOut-vin).toFixed(1), -ox+10, -oy+20);
+
     ctx.restore();
     rafSling = requestAnimationFrame(drawSlingshot);
   }
