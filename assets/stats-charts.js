@@ -10,16 +10,16 @@
   // ====== 完整数据集：18个专业 × 3个学历 × 9个年份 ======
   // 就业率 (%)
   var employmentData = {
-    '计算机类':   { color:'#22d3ee', 本科:[92.0,93.0,94.0,93.0,91.0,88.0,85.0,82.4,81.0], 硕士:[94.0,94.5,95.0,94.5,93.0,91.0,89.0,86.5,85.0], 博士:[93.0,93.5,94.0,93.5,92.0,90.0,88.0,85.0,84.0] },
+    '计算机类':   { color:'#6BB6D6', 本科:[92.0,93.0,94.0,93.0,91.0,88.0,85.0,82.4,81.0], 硕士:[94.0,94.5,95.0,94.5,93.0,91.0,89.0,86.5,85.0], 博士:[93.0,93.5,94.0,93.5,92.0,90.0,88.0,85.0,84.0] },
     '软件工程':   { color:'#06b6d4', 本科:[90.0,91.0,92.0,93.0,92.0,90.0,87.0,83.0,82.0], 硕士:[92.0,93.0,94.0,94.5,93.5,92.0,90.0,87.0,86.0], 博士:[91.0,92.0,93.0,93.5,92.5,91.0,89.0,86.0,85.0] },
-    '电子信息类': { color:'#8b5cf6', 本科:[89.0,90.0,91.0,92.0,91.0,89.0,88.0,87.0,86.0], 硕士:[91.0,92.0,93.0,94.0,93.0,91.5,90.5,90.0,89.0], 博士:[90.0,91.0,92.0,93.0,92.0,90.5,89.5,89.0,88.0] },
-    '自动化类':   { color:'#f59e0b', 本科:[88.0,89.0,90.0,91.0,90.0,89.0,89.0,89.0,88.0], 硕士:[90.0,91.0,92.0,93.0,92.0,91.0,91.0,91.5,90.5], 博士:[89.0,90.0,91.0,92.0,91.0,90.0,90.0,90.5,89.5] },
+    '电子信息类': { color:'#B89AD9', 本科:[89.0,90.0,91.0,92.0,91.0,89.0,88.0,87.0,86.0], 硕士:[91.0,92.0,93.0,94.0,93.0,91.5,90.5,90.0,89.0], 博士:[90.0,91.0,92.0,93.0,92.0,90.5,89.5,89.0,88.0] },
+    '自动化类':   { color:'#E8A93E', 本科:[88.0,89.0,90.0,91.0,90.0,89.0,89.0,89.0,88.0], 硕士:[90.0,91.0,92.0,93.0,92.0,91.0,91.0,91.5,90.5], 博士:[89.0,90.0,91.0,92.0,91.0,90.0,90.0,90.5,89.5] },
     '机械类':     { color:'#d97706', 本科:[87.0,88.0,89.0,90.0,89.0,88.0,88.0,88.0,87.0], 硕士:[89.0,90.0,91.0,92.0,91.0,90.0,90.0,90.5,89.5], 博士:[88.0,89.0,90.0,91.0,90.0,89.0,89.0,89.5,88.5] },
     '新能源类':   { color:'#ec4899', 本科:[85.0,86.0,88.0,90.0,92.0,94.0,96.0,97.2,97.5], 硕士:[87.0,88.5,90.5,92.5,94.0,95.5,97.0,98.0,98.2], 博士:[86.0,87.5,89.5,91.5,93.0,94.5,96.0,97.0,97.5] },
     '土木工程':   { color:'#64748b', 本科:[91.0,92.0,93.0,92.0,89.0,86.0,85.0,85.0,84.0], 硕士:[93.0,93.5,94.5,94.0,91.5,89.0,88.0,88.0,87.0], 博士:[92.0,92.5,93.5,93.0,90.5,88.0,87.0,87.0,86.0] },
     '医学类':     { color:'#ef4444', 本科:[88.0,89.0,90.0,91.0,92.0,93.0,94.0,94.7,95.0], 硕士:[90.0,91.0,92.0,93.0,94.0,95.0,96.0,96.5,97.0], 博士:[91.0,92.0,93.0,94.0,95.0,96.0,97.0,97.5,98.0] },
     '生物医药':   { color:'#fb923c', 本科:[86.0,87.0,89.0,91.0,93.0,95.0,96.0,97.0,97.5], 硕士:[88.0,89.0,91.0,93.0,95.0,96.5,97.5,98.0,98.2], 博士:[87.0,88.5,90.5,92.5,94.5,96.0,97.0,97.5,98.0] },
-    '经济学类':   { color:'#a78bfa', 本科:[91.0,92.0,93.0,91.0,88.0,85.0,84.0,83.3,82.0], 硕士:[93.0,93.5,94.5,93.0,90.5,88.0,87.0,86.5,85.5], 博士:[92.0,92.5,93.5,92.0,89.5,87.0,86.0,85.5,84.5] },
+    '经济学类':   { color:'#FF8FA3', 本科:[91.0,92.0,93.0,91.0,88.0,85.0,84.0,83.3,82.0], 硕士:[93.0,93.5,94.5,93.0,90.5,88.0,87.0,86.5,85.5], 博士:[92.0,92.5,93.5,92.0,89.5,87.0,86.0,85.5,84.5] },
     '财经类':     { color:'#c084fc', 本科:[90.0,91.5,93.0,92.0,89.5,86.5,85.0,84.0,83.0], 硕士:[92.0,93.5,95.0,94.0,91.5,89.0,88.0,87.0,86.0], 博士:[91.0,92.5,94.0,93.0,90.5,88.0,87.0,86.0,85.0] },
     '教育学类':   { color:'#10b981', 本科:[89.0,90.0,91.0,92.0,91.0,88.0,86.0,85.0,84.0], 硕士:[91.0,92.0,93.0,94.0,93.0,90.5,89.0,88.0,87.0], 博士:[90.0,91.0,92.0,93.0,92.0,89.5,88.0,87.0,86.0] },
     '统计学':     { color:'#2dd4bf', 本科:[88.0,89.5,91.0,92.0,91.5,90.0,91.0,91.5,91.5], 硕士:[90.0,91.5,93.0,94.0,93.5,92.0,93.0,93.5,93.5], 博士:[89.0,90.5,92.0,93.0,92.5,91.0,92.0,92.5,92.5] },
@@ -27,20 +27,20 @@
     '化工类':     { color:'#84cc16', 本科:[87.0,88.0,89.0,90.0,89.0,88.0,87.0,86.0,85.0], 硕士:[89.0,90.0,91.0,92.0,91.0,90.0,89.0,88.0,87.0], 博士:[88.0,89.0,90.0,91.0,90.0,89.0,88.0,87.0,86.0] },
     '环境科学':   { color:'#4ade80', 本科:[84.0,85.0,87.0,89.0,91.0,93.0,94.0,95.0,96.0], 硕士:[86.0,87.5,89.5,91.5,93.0,95.0,96.0,96.5,97.0], 博士:[85.0,86.5,88.5,90.5,92.5,94.0,95.0,96.0,96.5] },
     '心理学':     { color:'#f472b6', 本科:[85.0,86.0,87.0,88.0,87.0,86.0,85.0,84.0,83.0], 硕士:[87.0,88.0,89.0,90.0,89.5,88.5,87.5,86.5,85.5], 博士:[86.0,87.0,88.0,89.0,88.5,87.5,86.5,85.5,84.5] },
-    '人文社科':   { color:'#94a3b8', 本科:[86.0,87.0,88.0,88.0,86.0,83.0,81.0,79.0,78.0], 硕士:[88.0,89.0,90.0,90.0,88.0,85.5,83.5,81.5,80.5], 博士:[87.0,88.0,89.0,89.0,87.0,84.5,82.5,80.5,79.5] }
+    '人文社科':   { color:'#9B8B7A', 本科:[86.0,87.0,88.0,88.0,86.0,83.0,81.0,79.0,78.0], 硕士:[88.0,89.0,90.0,90.0,88.0,85.5,83.5,81.5,80.5], 博士:[87.0,88.0,89.0,89.0,87.0,84.5,82.5,80.5,79.5] }
   };
 
   // 薪酬数据（元/月）—— 基于麦可思2024报告及行业调研推算
   var salaryData = {
-    '计算机类':   { color:'#22d3ee', 本科:[2800,3300,3900,4600,5400,5800,6300,6800,7350], 硕士:[4200,5000,5900,7000,8200,9200,10100,11000,11900], 博士:[7000,8300,9800,11600,13600,15300,16800,18300,19800] },
+    '计算机类':   { color:'#6BB6D6', 本科:[2800,3300,3900,4600,5400,5800,6300,6800,7350], 硕士:[4200,5000,5900,7000,8200,9200,10100,11000,11900], 博士:[7000,8300,9800,11600,13600,15300,16800,18300,19800] },
     '软件工程':   { color:'#06b6d4', 本科:[2900,3500,4100,4900,5700,6200,6700,7200,7800], 硕士:[4400,5200,6200,7400,8600,9700,10600,11600,12600], 博士:[7300,8700,10300,12200,14300,16100,17700,19300,20900] },
-    '电子信息类': { color:'#8b5cf6', 本科:[3000,3600,4300,5100,6000,6500,7000,7500,8100], 硕士:[4600,5500,6500,7700,9000,10100,11100,12100,13100], 博士:[7600,9100,10800,12800,15000,16800,18500,20200,21800] },
-    '自动化类':   { color:'#f59e0b', 本科:[2600,3100,3700,4400,5100,5600,6000,6500,7000], 硕士:[4000,4700,5600,6600,7700,8600,9400,10300,11200], 博士:[6600,7800,9300,11000,12800,14400,15800,17300,18700] },
+    '电子信息类': { color:'#B89AD9', 本科:[3000,3600,4300,5100,6000,6500,7000,7500,8100], 硕士:[4600,5500,6500,7700,9000,10100,11100,12100,13100], 博士:[7600,9100,10800,12800,15000,16800,18500,20200,21800] },
+    '自动化类':   { color:'#E8A93E', 本科:[2600,3100,3700,4400,5100,5600,6000,6500,7000], 硕士:[4000,4700,5600,6600,7700,8600,9400,10300,11200], 博士:[6600,7800,9300,11000,12800,14400,15800,17300,18700] },
     '机械类':     { color:'#d97706', 本科:[2400,2900,3400,4000,4700,5100,5500,6000,6500], 硕士:[3700,4400,5200,6100,7100,7900,8700,9500,10300], 博士:[6100,7300,8600,10200,11900,13300,14600,16000,17300] },
     '新能源类':   { color:'#ec4899', 本科:[2500,3000,3600,4300,5100,5700,6200,6700,7200], 硕士:[3900,4600,5500,6500,7700,8600,9500,10400,11300], 博士:[6400,7700,9100,10800,12700,14300,15700,17200,18600] },
     '土木工程':   { color:'#64748b', 本科:[2300,2700,3200,3800,4400,4800,5200,5500,5900], 硕士:[3500,4200,4900,5800,6700,7500,8200,9000,9800], 博士:[5800,6900,8200,9700,11200,12500,13800,15100,16300] },
     '医学类':     { color:'#ef4444', 本科:[2200,2600,3100,3700,4300,4800,5300,6000,6500], 硕士:[3400,4000,4800,5700,6600,7400,8200,9300,10100], 博士:[5600,6700,7900,9400,10900,12300,13600,15400,16700] },
-    '经济学类':   { color:'#a78bfa', 本科:[2400,2900,3400,4100,4700,5100,5400,5800,6300], 硕士:[3700,4400,5200,6200,7100,7900,8600,9300,10100], 博士:[6100,7300,8600,10300,11900,13300,14600,15800,17100] },
+    '经济学类':   { color:'#FF8FA3', 本科:[2400,2900,3400,4100,4700,5100,5400,5800,6300], 硕士:[3700,4400,5200,6200,7100,7900,8600,9300,10100], 博士:[6100,7300,8600,10300,11900,13300,14600,15800,17100] },
     '教育学类':   { color:'#10b981', 本科:[2000,2400,2800,3300,3900,4300,4700,5200,5600], 硕士:[3100,3700,4300,5100,6000,6700,7300,8000,8700], 博士:[5100,6100,7200,8500,9900,11100,12200,13400,14500] },
     '生物医药':   { color:'#fb923c', 本科:[2400,2800,3300,4000,4700,5200,5700,6200,6800], 硕士:[3800,4500,5300,6300,7300,8200,9100,10000,10900], 博士:[6200,7400,8800,10400,12200,13700,15100,16500,17900] },
     '财经类':     { color:'#c084fc', 本科:[2500,3000,3500,4200,4900,5400,5800,6300,6800], 硕士:[3800,4500,5300,6300,7200,8100,8900,9700,10500], 博士:[6200,7400,8800,10400,12100,13600,15000,16300,17600] },
@@ -49,15 +49,15 @@
     '化工类':     { color:'#84cc16', 本科:[2300,2700,3100,3700,4300,4700,5100,5500,5900], 硕士:[3500,4100,4800,5700,6500,7300,8000,8800,9500], 博士:[5700,6800,8000,9400,11000,12300,13500,14700,15900] },
     '环境科学':   { color:'#4ade80', 本科:[2200,2600,3100,3700,4300,4800,5300,5800,6300], 硕士:[3400,4000,4800,5700,6600,7400,8200,9100,9900], 博士:[5600,6700,7900,9300,10800,12200,13400,14600,15800] },
     '心理学':     { color:'#f472b6', 本科:[2100,2500,2900,3400,3900,4300,4600,5000,5400], 硕士:[3200,3800,4400,5200,6000,6700,7300,8000,8700], 博士:[5300,6300,7500,8800,10300,11500,12700,13800,14900] },
-    '人文社科':   { color:'#94a3b8', 本科:[1900,2300,2700,3100,3600,3900,4200,4600,5000], 硕士:[3000,3600,4200,4900,5600,6200,6800,7400,8000], 博士:[5000,6000,7100,8300,9600,10700,11800,12800,13800] }
+    '人文社科':   { color:'#9B8B7A', 本科:[1900,2300,2700,3100,3600,3900,4200,4600,5000], 硕士:[3000,3600,4200,4900,5600,6200,6800,7400,8000], 博士:[5000,6000,7100,8300,9600,10700,11800,12800,13800] }
   };
 
   // 产业需求指数
   var industryData = {
-    'IT/互联网': { color:'#22d3ee', values:[100,130,170,220,280,320,350,380,400] },
-    '制造业':    { color:'#f59e0b', values:[100,105,108,110,112,115,118,120,122] },
+    'IT/互联网': { color:'#6BB6D6', values:[100,130,170,220,280,320,350,380,400] },
+    '制造业':    { color:'#E8A93E', values:[100,105,108,110,112,115,118,120,122] },
     '教育':      { color:'#10b981', values:[100,102,105,108,110,115,120,125,128] },
-    '金融':      { color:'#a78bfa', values:[100,108,115,120,122,118,115,112,110] },
+    '金融':      { color:'#FF8FA3', values:[100,108,115,120,122,118,115,112,110] },
     '医疗':      { color:'#ef4444', values:[100,105,110,115,120,128,135,142,148] },
     '新能源':    { color:'#ec4899', values:[100,120,150,190,240,300,380,460,520] },
     '科研/政府': { color:'#64748b', values:[100,102,105,108,110,112,115,118,120] },
@@ -82,10 +82,10 @@
     return {
       backgroundColor: 'transparent',
       textStyle: { fontFamily: 'Outfit, sans-serif' },
-      tooltip: { trigger: 'axis', backgroundColor: '#1e293b', borderColor: '#334155', textStyle: { color: '#f1f5f9' } },
+      tooltip: { trigger: 'axis', backgroundColor: '#FFF5EE', borderColor: 'rgba(180,160,140,0.25)', textStyle: { color: '#4A3B2E' } },
       grid: { left: 50, right: 30, top: 40, bottom: 40 },
-      xAxis: { type: 'category', axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontFamily: 'JetBrainsMono' }, splitLine: { show: false } },
-      yAxis: { type: 'value', axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontFamily: 'JetBrainsMono' }, splitLine: { lineStyle: { color: '#33415540' } } }
+      xAxis: { type: 'category', axisLine: { lineStyle: { color: 'rgba(180,160,140,0.25)' } }, axisLabel: { color: '#9B8B7A', fontFamily: 'JetBrainsMono' }, splitLine: { show: false } },
+      yAxis: { type: 'value', axisLine: { lineStyle: { color: 'rgba(180,160,140,0.25)' } }, axisLabel: { color: '#9B8B7A', fontFamily: 'JetBrainsMono' }, splitLine: { lineStyle: { color: 'rgba(180,160,140,0.25)40' } } }
     };
   }
 
@@ -112,7 +112,7 @@
       { type: 'line', data: avgValues, showSymbol: true, smooth: true, lineStyle: { color: '#ec4899', width: 3 },
         itemStyle: { color: '#ec4899' }, areaStyle: { color: 'rgba(236,72,153,0.1)' },
         markLine: { silent: true, symbol: 'none', data: [
-          { yAxis: 90, lineStyle: { color: '#f59e0b', type: 'dashed' }, label: { formatter: '90% 基准线', color: '#f59e0b' } }
+          { yAxis: 90, lineStyle: { color: '#E8A93E', type: 'dashed' }, label: { formatter: '90% 基准线', color: '#E8A93E' } }
         ]}
       }
     ];
@@ -152,7 +152,7 @@
     opt.yAxis.min = yMin; opt.yAxis.max = yMax; opt.yAxis.name = yLabel;
     opt.legend = currentMajorFilter === 'all' ? {
       data: Object.keys(dataObj).map(function(m){return m;}),
-      top: 25, textStyle: { color: '#94a3b8', fontSize: 10 }, itemWidth: 16, itemHeight: 3
+      top: 25, textStyle: { color: '#9B8B7A', fontSize: 10 }, itemWidth: 16, itemHeight: 3
     } : undefined;
     opt.series = series;
     charts.major.setOption(opt);
@@ -177,7 +177,7 @@
     var opt = commonOption();
     opt.title = { text: '六大产业人才需求指数变化（2010-2026年）', left: 'center', top: 5, textStyle: { color: '#ec4899', fontSize: 13 } };
     opt.xAxis.data = years;
-    opt.legend = { data: Object.keys(industryData), top: 25, textStyle: { color: '#94a3b8', fontSize: 11 } };
+    opt.legend = { data: Object.keys(industryData), top: 25, textStyle: { color: '#9B8B7A', fontSize: 11 } };
     opt.series = series;
     charts.industry.setOption(opt);
   }
@@ -204,14 +204,14 @@
     var opt = {
       backgroundColor: 'transparent',
       textStyle: { fontFamily: 'Outfit, sans-serif' },
-      tooltip: { trigger: 'item', backgroundColor: '#1e293b', borderColor: '#334155', textStyle: { color: '#f1f5f9' },
+      tooltip: { trigger: 'item', backgroundColor: '#FFF5EE', borderColor: 'rgba(180,160,140,0.25)', textStyle: { color: '#4A3B2E' },
         formatter: function(p) { return p.data.name + '<br/>就业率: ' + p.data.value[1] + '%<br/>产业需求指数: ' + p.data.value[0]; } },
       grid: { left: 50, right: 30, top: 30, bottom: 40 },
-      xAxis: { type: 'value', name: '产业需求指数', nameTextStyle: { color: '#94a3b8' }, axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontFamily: 'JetBrainsMono' }, splitLine: { lineStyle: { color: '#33415540' } } },
-      yAxis: { type: 'value', name: '就业率(%)', min: 70, max: 100, nameTextStyle: { color: '#94a3b8' }, axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontFamily: 'JetBrainsMono' }, splitLine: { lineStyle: { color: '#33415540' } } },
+      xAxis: { type: 'value', name: '产业需求指数', nameTextStyle: { color: '#9B8B7A' }, axisLine: { lineStyle: { color: 'rgba(180,160,140,0.25)' } }, axisLabel: { color: '#9B8B7A', fontFamily: 'JetBrainsMono' }, splitLine: { lineStyle: { color: 'rgba(180,160,140,0.25)40' } } },
+      yAxis: { type: 'value', name: '就业率(%)', min: 70, max: 100, nameTextStyle: { color: '#9B8B7A' }, axisLine: { lineStyle: { color: 'rgba(180,160,140,0.25)' } }, axisLabel: { color: '#9B8B7A', fontFamily: 'JetBrainsMono' }, splitLine: { lineStyle: { color: 'rgba(180,160,140,0.25)40' } } },
       series: [{
         type: 'scatter', data: data, symbolSize: 18,
-        label: { show: true, formatter: function(p){return p.data.name;}, color: '#f1f5f9', fontSize: 10, position: 'top' }
+        label: { show: true, formatter: function(p){return p.data.name;}, color: '#4A3B2E', fontSize: 10, position: 'top' }
       }]
     };
     charts.scatter.setOption(opt);
@@ -242,8 +242,8 @@
       backgroundColor: 'transparent',
       textStyle: { fontFamily: 'Outfit, sans-serif' },
       grid: { left: 50, right: 30, top: 30, bottom: 40 },
-      xAxis: { type: 'category', data: data.map(function(d){return d[0];}), axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontSize: 10, rotate: 30 }, splitLine: { show: false } },
-      yAxis: { type: 'value', name: '专业数量', axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8' }, splitLine: { lineStyle: { color: '#33415540' } } },
+      xAxis: { type: 'category', data: data.map(function(d){return d[0];}), axisLine: { lineStyle: { color: 'rgba(180,160,140,0.25)' } }, axisLabel: { color: '#9B8B7A', fontSize: 10, rotate: 30 }, splitLine: { show: false } },
+      yAxis: { type: 'value', name: '专业数量', axisLine: { lineStyle: { color: 'rgba(180,160,140,0.25)' } }, axisLabel: { color: '#9B8B7A' }, splitLine: { lineStyle: { color: 'rgba(180,160,140,0.25)40' } } },
       series: [{ type: 'bar', data: data.map(function(d){return d[1];}), barWidth: '70%', itemStyle: { color: 'rgba(236,72,153,0.6)' } }]
     };
     charts.hist.setOption(opt);
@@ -312,7 +312,7 @@
     opt.title = { text: major + ' · 历年薪酬走势（月薪/元）', left: 'center', top: 5, textStyle: { color: '#ec4899', fontSize: 13 } };
     opt.xAxis.data = years;
     opt.yAxis.name = '月薪(元)';
-    opt.legend = { data: eduLevels, top: 25, textStyle: { color: '#94a3b8' } };
+    opt.legend = { data: eduLevels, top: 25, textStyle: { color: '#9B8B7A' } };
     opt.tooltip.formatter = function(params) {
       var res = params[0].axisValue + '年<br/>';
       params.forEach(function(p) {
@@ -358,9 +358,9 @@
     var opt = commonOption();
     opt.title = { text: '2024年 18个专业薪酬横向对比（元/月）', left: 'center', top: 5, textStyle: { color: '#ec4899', fontSize: 13 } };
     opt.xAxis.data = majors;
-    opt.xAxis.axisLabel = { color: '#94a3b8', fontSize: 9, rotate: 25, fontFamily: 'JetBrainsMono' };
+    opt.xAxis.axisLabel = { color: '#9B8B7A', fontSize: 9, rotate: 25, fontFamily: 'JetBrainsMono' };
     opt.yAxis.name = '月薪(元)';
-    opt.legend = { data: eduLevels, top: 25, textStyle: { color: '#94a3b8' } };
+    opt.legend = { data: eduLevels, top: 25, textStyle: { color: '#9B8B7A' } };
     opt.tooltip.formatter = function(params) {
       var res = params[0].axisValue + '<br/>';
       params.forEach(function(p) {
@@ -393,13 +393,13 @@
     var opt = {
       backgroundColor: 'transparent',
       textStyle: { fontFamily: 'Outfit, sans-serif' },
-      tooltip: { trigger: 'axis', backgroundColor: '#1e293b', borderColor: '#334155', textStyle: { color: '#f1f5f9' } },
+      tooltip: { trigger: 'axis', backgroundColor: '#FFF5EE', borderColor: 'rgba(180,160,140,0.25)', textStyle: { color: '#4A3B2E' } },
       grid: { left: 50, right: 30, top: 40, bottom: 40 },
-      xAxis: { type: 'value', name: '样本量', scale: true, axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontFamily: 'JetBrainsMono' }, splitLine: { lineStyle: { color: '#33415540' } } },
-      yAxis: { type: 'value', name: '样本均值(%)', min: 75, max: 95, axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontFamily: 'JetBrainsMono' }, splitLine: { lineStyle: { color: '#33415540' } } },
+      xAxis: { type: 'value', name: '样本量', scale: true, axisLine: { lineStyle: { color: 'rgba(180,160,140,0.25)' } }, axisLabel: { color: '#9B8B7A', fontFamily: 'JetBrainsMono' }, splitLine: { lineStyle: { color: 'rgba(180,160,140,0.25)40' } } },
+      yAxis: { type: 'value', name: '样本均值(%)', min: 75, max: 95, axisLine: { lineStyle: { color: 'rgba(180,160,140,0.25)' } }, axisLabel: { color: '#9B8B7A', fontFamily: 'JetBrainsMono' }, splitLine: { lineStyle: { color: 'rgba(180,160,140,0.25)40' } } },
       series: [
         { type: 'scatter', data: data, symbolSize: 10, itemStyle: { color: '#ec4899' } },
-        { type: 'line', markLine: { silent: true, symbol: 'none', data: [{ yAxis: trueMean, lineStyle: { color: '#f59e0b', type: 'dashed' }, label: { formatter: '真实均值 ' + trueMean.toFixed(2) + '%', color: '#f59e0b' } }] } }
+        { type: 'line', markLine: { silent: true, symbol: 'none', data: [{ yAxis: trueMean, lineStyle: { color: '#E8A93E', type: 'dashed' }, label: { formatter: '真实均值 ' + trueMean.toFixed(2) + '%', color: '#E8A93E' } }] } }
       ]
     };
     charts.lln.setOption(opt);
@@ -449,14 +449,14 @@
     var opt = {
       backgroundColor: 'transparent',
       textStyle: { fontFamily: 'Outfit, sans-serif' },
-      tooltip: { trigger: 'axis', backgroundColor: '#1e293b', borderColor: '#334155', textStyle: { color: '#f1f5f9' } },
+      tooltip: { trigger: 'axis', backgroundColor: '#FFF5EE', borderColor: 'rgba(180,160,140,0.25)', textStyle: { color: '#4A3B2E' } },
       grid: { left: 50, right: 30, top: 50, bottom: 40 },
-      legend: { data: ['样本均值直方图', '理论正态分布'], top: 10, textStyle: { color: '#94a3b8' } },
-      xAxis: { type: 'value', name: '样本均值(%)', min: 75, max: 100, axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontFamily: 'JetBrainsMono' }, splitLine: { lineStyle: { color: '#33415540' } } },
-      yAxis: { type: 'value', name: '频次', axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8' }, splitLine: { lineStyle: { color: '#33415540' } } },
+      legend: { data: ['样本均值直方图', '理论正态分布'], top: 10, textStyle: { color: '#9B8B7A' } },
+      xAxis: { type: 'value', name: '样本均值(%)', min: 75, max: 100, axisLine: { lineStyle: { color: 'rgba(180,160,140,0.25)' } }, axisLabel: { color: '#9B8B7A', fontFamily: 'JetBrainsMono' }, splitLine: { lineStyle: { color: 'rgba(180,160,140,0.25)40' } } },
+      yAxis: { type: 'value', name: '频次', axisLine: { lineStyle: { color: 'rgba(180,160,140,0.25)' } }, axisLabel: { color: '#9B8B7A' }, splitLine: { lineStyle: { color: 'rgba(180,160,140,0.25)40' } } },
       series: [
         { type: 'bar', name: '样本均值直方图', data: barData, barWidth: '90%', itemStyle: { color: 'rgba(236,72,153,0.6)' } },
-        { type: 'line', name: '理论正态分布', data: lineData, showSymbol: false, smooth: true, lineStyle: { color: '#f59e0b', width: 2 } }
+        { type: 'line', name: '理论正态分布', data: lineData, showSymbol: false, smooth: true, lineStyle: { color: '#E8A93E', width: 2 } }
       ]
     };
     charts.clt.setOption(opt);

@@ -1,0 +1,431 @@
+/* ========== 二次元卡通风格主题 ========== */
+/* 覆盖所有暗色系变量，统一为二次元卡通配色 */
+:root {
+  /* 主背景与容器 */
+  --bg: #FFF8F0 !important;
+  --bg2: #FFFDF7 !important;
+  --bg3: #FFF5EE !important;
+  --bg-card: rgba(255,255,255,0.9) !important;
+  --bg-panel: #FFF9F2 !important;
+  
+  /* 文字色 */
+  --ink: #4A3B2E !important;
+  --f1f5f9: #4A3B2E !important;
+  --muted: #9B8B7A !important;
+  --text: #4A3B2E !important;
+  --text-main: #4A3B2E !important;
+  --text-light: #8B7355 !important;
+  
+  /* 边框 */
+  --rule: rgba(180,160,140,0.25) !important;
+  --border: rgba(180,160,140,0.25) !important;
+  
+  /* 主色 - 粉 */
+  --accent: #FF8FA3 !important;
+  --pink: #FF8FA3 !important;
+  --pink-light: #FFD1DC !important;
+  --pink-dark: #E8468A !important;
+  
+  /* 蓝 */
+  --accent4: #6BB6D6 !important;
+  --blue: #6BB6D6 !important;
+  --blue-light: #C5E4F0 !important;
+  
+  /* 绿 */
+  --green: #7DCE82 !important;
+  --green-light: #C8ECCB !important;
+  
+  /* 紫 */
+  --purple: #B89AD9 !important;
+  --purple-light: #E0D4F0 !important;
+  
+  /* 黄/金 */
+  --accent2: #E8A93E !important;
+  --yellow: #FFD66B !important;
+  --yellow-light: #FFF3CC !important;
+  --gold: #E8A93E !important;
+  --gold-light: #FBE8C4 !important;
+  
+  /* 橙/珊瑚 */
+  --accent3: #FF9F7A !important;
+  --coral: #FF9F7A !important;
+  --coral-light: #FFD8C8 !important;
+  --orange: #FF8C42 !important;
+  
+  /* 青 */
+  --teal: #2EC4B6 !important;
+  
+  /* 阴影 */
+  --shadow: 0 4px 16px rgba(180,160,140,0.15) !important;
+  --shadow-deep: 0 8px 28px rgba(255,143,163,0.18) !important;
+  --shadow-hover: 0 8px 28px rgba(255,143,163,0.22) !important;
+  
+  /* 圆角 */
+  --radius: 20px !important;
+  --radius-sm: 12px !important;
+  
+  /* 字体 */
+  --font: 'Noto Sans SC', 'Quicksand', system-ui, sans-serif !important;
+  --font-mono: 'Noto Sans SC', monospace !important;
+  
+  /* 特殊色覆盖 */
+  --bg-cream: #FFF8F0 !important;
+  --cream: #FFF8F0 !important;
+  --paper: #FFFDF7 !important;
+}
+
+/* 字体 */
+*, *::before, *::after {
+  font-family: 'Noto Sans SC', 'Quicksand', system-ui, sans-serif !important;
+}
+h1, h2, h3, h4, h5, h6, .title-font {
+  font-family: 'ZCOOL KuaiLe', 'Noto Sans SC', sans-serif !important;
+  letter-spacing: 1px;
+}
+
+/* === Body 背景层 === */
+body {
+  background: #FFF8F0 !important;
+  color: #4A3B2E !important;
+  position: relative;
+  overflow-x: hidden;
+}
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background-image:
+    radial-gradient(circle at 15% 25%, rgba(255,209,220,0.25) 0%, transparent 2px),
+    radial-gradient(circle at 75% 15%, rgba(197,228,240,0.25) 0%, transparent 2px),
+    radial-gradient(circle at 45% 65%, rgba(255,243,204,0.25) 0%, transparent 2px),
+    radial-gradient(circle at 85% 55%, rgba(224,212,240,0.25) 0%, transparent 2px);
+  background-size: 120px 120px, 160px 160px, 100px 100px, 140px 140px;
+}
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(255,143,163,0.05) 1px, transparent 1px),
+    radial-gradient(circle, rgba(107,182,214,0.05) 1px, transparent 1px);
+  background-size: 30px 30px, 50px 50px;
+  background-position: 0 0, 15px 15px;
+}
+
+/* === Header === */
+header {
+  background: linear-gradient(180deg, rgba(255,143,163,0.08) 0%, transparent 100%) !important;
+  border-bottom: 2px dashed rgba(180,160,140,0.2) !important;
+}
+header h1 {
+  -webkit-text-fill-color: #FF8FA3 !important;
+  background: linear-gradient(135deg, #FF8FA3, #6BB6D6) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+
+/* === Container === */
+.container {
+  max-width: 1200px;
+  position: relative;
+  z-index: 1;
+}
+
+/* === Section === */
+section {
+  margin: 2.5rem 0;
+}
+section h2 {
+  color: #FF8FA3 !important;
+  border-bottom: 3px dashed #FFD1DC !important;
+}
+
+/* === Card 通用 === */
+.card,
+.card-grid > *,
+.prop-box,
+.law-card,
+.quantifier-card,
+.problem-box,
+.story-panel,
+.mod,
+.trend-card,
+.diag-item,
+.tl-card,
+.rung,
+.tip,
+.result-card {
+  background: #FFFDF7 !important;
+  border: 2px solid rgba(180,160,140,0.2) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 4px 16px rgba(180,160,140,0.12) !important;
+  transition: transform 0.25s, box-shadow 0.25s !important;
+}
+.card:hover,
+.prop-box:hover,
+.law-card:hover,
+.quantifier-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 28px rgba(255,143,163,0.18) !important;
+}
+
+/* === 按钮 === */
+button, .btn-sm, .fn-selector button, .btn-group button {
+  background: #FFF5EE !important;
+  border: 2px solid #FFD1DC !important;
+  color: #4A3B2E !important;
+  border-radius: 50px !important;
+  font-family: 'Noto Sans SC', sans-serif !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.25s !important;
+  padding: 0.5rem 1rem !important;
+}
+button:hover, .btn-sm:hover, .fn-selector button:hover, .btn-group button:hover {
+  border-color: #FF8FA3 !important;
+  color: #FF8FA3 !important;
+  background: rgba(255,143,163,0.08) !important;
+  transform: translateY(-1px) !important;
+}
+button.active, .btn-sm.active, .fn-selector button.active, .btn-group button.active {
+  background: linear-gradient(135deg, #FF8FA3, #FF6B8A) !important;
+  border-color: #FF8FA3 !important;
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgba(255,143,163,0.35) !important;
+}
+
+/* === 输入框 === */
+input[type="text"], input[type="number"], select, textarea {
+  background: #FFFDF7 !important;
+  border: 2px solid #FFD1DC !important;
+  color: #4A3B2E !important;
+  border-radius: 50px !important;
+  font-family: 'Noto Sans SC', sans-serif !important;
+  padding: 0.5rem 1rem !important;
+  transition: border-color 0.25s !important;
+  outline: none !important;
+}
+input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+  border-color: #FF8FA3 !important;
+  box-shadow: 0 0 0 4px rgba(255,143,163,0.1) !important;
+}
+input[type="range"] {
+  -webkit-appearance: none; height: 8px;
+  background: linear-gradient(90deg, #FFD1DC, #C5E4F0) !important;
+  border-radius: 4px !important;
+  border: none !important;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 22px; height: 22px;
+  border-radius: 50%; background: linear-gradient(135deg, #FF8FA3, #FF6B8A) !important;
+  cursor: pointer; border: 3px solid #fff !important;
+  box-shadow: 0 2px 8px rgba(255,107,138,0.4) !important;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: linear-gradient(135deg, #FF8FA3, #FF6B8A) !important;
+  cursor: pointer; border: 3px solid #fff !important;
+  box-shadow: 0 2px 8px rgba(255,107,138,0.4) !important;
+}
+
+/* === 表格 === */
+table, .truth-table, .data-table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  border: 2px solid rgba(180,160,140,0.2) !important;
+  box-shadow: 0 4px 16px rgba(180,160,140,0.1) !important;
+}
+table th, .truth-table th, .data-table th,
+table td, .truth-table td, .data-table td {
+  border: 1px solid rgba(180,160,140,0.15) !important;
+  padding: 0.6rem 0.8rem !important;
+}
+table th, .truth-table th, .data-table th {
+  background: linear-gradient(135deg, #FF8FA3, #6BB6D6) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+}
+table td, .truth-table td, .data-table td {
+  background: #FFFDF7 !important;
+  color: #4A3B2E !important;
+}
+table tr:nth-child(even) td, .truth-table tr:nth-child(even) td {
+  background: #FFF5EE !important;
+}
+
+/* === 公式显示 === */
+.formula-display {
+  background: linear-gradient(135deg, #FFF5EE, #FFF9F2) !important;
+  border: 2px dashed #FFD1DC !important;
+  border-radius: 16px !important;
+  color: #E8A93E !important;
+}
+
+/* === 标签/徽章 === */
+.tag, .result-badge, .elem-tag, .game-tag {
+  border-radius: 50px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px;
+}
+.tag.purple, .tag.purple, .result-badge.purple {
+  background: rgba(184,154,217,0.2) !important;
+  color: #B89AD9 !important;
+  border: 1px solid rgba(184,154,217,0.3) !important;
+}
+.tag.amber, .result-badge.amber {
+  background: rgba(232,169,62,0.15) !important;
+  color: #E8A93E !important;
+  border: 1px solid rgba(232,169,62,0.3) !important;
+}
+.tag.rose, .result-badge.red {
+  background: rgba(255,143,163,0.15) !important;
+  color: #FF8FA3 !important;
+  border: 1px solid rgba(255,143,163,0.3) !important;
+}
+.tag.cyan, .result-badge.cyan {
+  background: rgba(107,182,214,0.15) !important;
+  color: #6BB6D6 !important;
+  border: 1px solid rgba(107,182,214,0.3) !important;
+}
+.tag.green, .result-badge.green {
+  background: rgba(125,206,130,0.15) !important;
+  color: #7DCE82 !important;
+  border: 1px solid rgba(125,206,130,0.3) !important;
+}
+
+/* === Footer === */
+footer {
+  border-top: 2px dashed rgba(180,160,140,0.25) !important;
+  color: #9B8B7A !important;
+  background: transparent !important;
+}
+
+/* === 返回按钮 === */
+.anime-back-btn {
+  position: fixed !important;
+  top: 16px !important;
+  left: 20px !important;
+  z-index: 200 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: rgba(255,253,247,0.92) !important;
+  border: 2px solid #FFD1DC !important;
+  border-radius: 50px !important;
+  padding: 10px 22px !important;
+  text-decoration: none !important;
+  color: #4A3B2E !important;
+  font-family: 'Noto Sans SC', sans-serif !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 16px rgba(180,160,140,0.15) !important;
+  backdrop-filter: blur(10px) !important;
+  transition: all 0.25s !important;
+  cursor: pointer !important;
+}
+.anime-back-btn:hover {
+  background: rgba(255,209,220,0.4) !important;
+  transform: translate(-2px, -2px) !important;
+  box-shadow: 0 6px 20px rgba(255,143,163,0.25) !important;
+  border-color: #FF8FA3 !important;
+}
+.anime-back-btn:active {
+  transform: translate(1px, 1px) !important;
+  box-shadow: 0 2px 8px rgba(180,160,140,0.15) !important;
+}
+
+/* === 浮动装饰 === */
+.anime-deco-layer {
+  position: fixed !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+  overflow: hidden !important;
+}
+.anime-deco-layer .anime-deco {
+  position: absolute !important;
+  font-size: 20px !important;
+  opacity: 0 !important;
+  animation: animeFloatDeco linear infinite !important;
+}
+@keyframes animeFloatDeco {
+  0% { transform: translateY(100vh) rotate(0deg) scale(0.8); opacity: 0; }
+  10% { opacity: 0.25; }
+  90% { opacity: 0.15; }
+  100% { transform: translateY(-10vh) rotate(360deg) scale(1.1); opacity: 0; }
+}
+
+/* === Canvas 容器 === */
+canvas {
+  border-radius: 16px !important;
+}
+
+/* === SVG 样式 === */
+svg text {
+  fill: #4A3B2E !important;
+}
+
+/* === 滚动条 === */
+::-webkit-scrollbar {
+  width: 10px; height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #FFF5EE;
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #FF8FA3, #6BB6D6);
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #FF6B8A, #4AA8CC);
+}
+
+/* === 响应式 === */
+@media (max-width: 640px) {
+  .anime-back-btn {
+    top: 10px !important;
+    left: 10px !important;
+    padding: 8px 16px !important;
+    font-size: 0.78rem !important;
+  }
+}
+
+/* === 确保浅色文字在浅背景上可见 === */
+*[style*="color: #f1f5f9"],
+*[style*="color:#f1f5f9"],
+*[style*="color: var(--ink)"] {
+  color: #4A3B2E !important;
+}
+
+/* === 选项卡/导航高亮 === */
+.tab.active, nav a.active {
+  background: linear-gradient(135deg, #FF8FA3, #FF6B8A) !important;
+  color: #fff !important;
+  border-radius: 50px !important;
+}
+
+/* === 控件组标签 === */
+.control-group label,
+.slider-row label {
+  color: #9B8B7A !important;
+  font-weight: 600 !important;
+}
+.control-group label span.value,
+.slider-row .slider-val {
+  color: #E8A93E !important;
+  font-weight: 700 !important;
+}
+
+/* === 解决步骤 === */
+.solution-step {
+  border-bottom: 1px dashed rgba(180,160,140,0.2) !important;
+}
+.solution-step .step-num {
+  background: linear-gradient(135deg, #FF8FA3, #FF6B8A) !important;
+  color: #fff !important;
+}
+
+/* === 题目框 === */
+.problem-box {
+  background: linear-gradient(135deg, rgba(255,143,163,0.06), rgba(232,169,62,0.04)) !important;
+  border: 2px dashed #FFD1DC !important;
+}

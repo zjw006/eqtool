@@ -144,7 +144,7 @@
     ctx.fillRect(0, 0, W, H);
 
     // Axes
-    ctx.strokeStyle = '#334155';
+    ctx.strokeStyle = 'rgba(180,160,140,0.25)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(cx, 40); ctx.lineTo(cx, H - 40);
@@ -152,7 +152,7 @@
     ctx.stroke();
 
     // Axis labels
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillStyle = '#9B8B7A';
     ctx.font = '14px JetBrainsMono, monospace';
     ctx.textAlign = 'center';
     ctx.fillText('Re', W - 25, cy + 18);
@@ -166,7 +166,7 @@
       if (i === 0) continue;
       var tx = cx + i * scale / 2;
       var ty = cy - i * scale / 2;
-      ctx.strokeStyle = '#334155';
+      ctx.strokeStyle = 'rgba(180,160,140,0.25)';
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(tx, cy - 4); ctx.lineTo(tx, cy + 4); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(cx - 4, ty); ctx.lineTo(cx + 4, ty); ctx.stroke();
@@ -176,7 +176,7 @@
     }
 
     // Unit circle (dashed)
-    drawCircle(cx, cy, scale / 2, '#475569', true);
+    drawCircle(cx, cy, scale / 2, 'rgba(180,160,140,0.4)', true);
 
     // Current point
     var z = computeZ(state.time);
@@ -190,7 +190,7 @@
     dashedLine(px, py, cx, py, '#ec4899');
 
     // Vector arrow
-    drawArrow(cx, cy, px, py, '#f59e0b', 2.5);
+    drawArrow(cx, cy, px, py, '#E8A93E', 2.5);
 
     // Projection points
     ctx.fillStyle = '#06b6d4';
@@ -203,7 +203,7 @@
     ctx.fillStyle = 'rgba(245,158,11,0.15)';
     ctx.fill();
     ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2);
-    ctx.fillStyle = '#f59e0b';
+    ctx.fillStyle = '#E8A93E';
     ctx.fill();
 
     // Angle arc
@@ -230,7 +230,7 @@
     var depthX = 3, depthY = 3;
 
     // Shadow plane (pseudo-3D depth)
-    ctx.strokeStyle = '#1e293b';
+    ctx.strokeStyle = '#FFF5EE';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(cx - scale * 2 + depthX, cy + depthY);
@@ -242,7 +242,7 @@
     ctx.stroke();
 
     // Main axes
-    ctx.strokeStyle = '#334155';
+    ctx.strokeStyle = 'rgba(180,160,140,0.25)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(cx - scale * 2, cy); ctx.lineTo(cx + scale * 2, cy);
@@ -250,7 +250,7 @@
     ctx.stroke();
 
     // Axis labels
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillStyle = '#9B8B7A';
     ctx.font = '14px JetBrainsMono, monospace';
     ctx.textAlign = 'center';
     ctx.fillText('Re', cx + scale * 2 + 10, cy + 4);
@@ -314,7 +314,7 @@
       ctx.fillStyle = 'rgba(245,158,11,0.2)';
       ctx.fill();
       ctx.beginPath(); ctx.arc(last.x, last.y, 7, 0, Math.PI * 2);
-      ctx.fillStyle = '#f59e0b';
+      ctx.fillStyle = '#E8A93E';
       ctx.fill();
     }
   }
@@ -332,7 +332,7 @@
     var plotW = W - padL - padR;
 
     // Divider line
-    ctx.strokeStyle = '#334155';
+    ctx.strokeStyle = 'rgba(180,160,140,0.25)';
     ctx.lineWidth = 1;
     ctx.setLineDash([6, 4]);
     ctx.beginPath();
@@ -342,7 +342,7 @@
     ctx.setLineDash([]);
 
     // Time axis (bottom)
-    ctx.strokeStyle = '#334155';
+    ctx.strokeStyle = 'rgba(180,160,140,0.25)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(padL, H - padB);
@@ -354,7 +354,7 @@
     ctx.beginPath(); ctx.moveTo(padL, midY + 10); ctx.lineTo(padL, H - padB); ctx.stroke();
 
     // Labels
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillStyle = '#9B8B7A';
     ctx.font = '12px JetBrainsMono, monospace';
     ctx.textAlign = 'right';
     ctx.fillText('Re', padL - 8, padT + 12);
@@ -427,7 +427,7 @@
 
     // Current time vertical line
     var curX = padL + (state.time / 10) * plotW;
-    ctx.strokeStyle = '#f59e0b';
+    ctx.strokeStyle = '#E8A93E';
     ctx.lineWidth = 1.5;
     ctx.setLineDash([4, 3]);
     ctx.beginPath();
@@ -504,7 +504,7 @@
     els.btnSpiral.classList.toggle('active', mode === 'spiral');
     els.btnWave.classList.toggle('active', mode === 'wave');
     // Clear canvas on mode switch
-    ctx.fillStyle = '#1e293b';
+    ctx.fillStyle = '#FFF5EE';
     ctx.fillRect(0, 0, W, H);
   }
 
@@ -555,7 +555,7 @@
     els.phi.value = state.phi;
     els.time.value = state.time;
 
-    ctx.fillStyle = '#1e293b';
+    ctx.fillStyle = '#FFF5EE';
     ctx.fillRect(0, 0, W, H);
     updateInfo();
     animate();

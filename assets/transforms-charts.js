@@ -5,16 +5,16 @@
      CSS Variables & Common Config
      ============================ */
   var style = getComputedStyle(document.documentElement);
-  var accent = style.getPropertyValue('--accent').trim() || '#8b5cf6';
-  var accent2 = style.getPropertyValue('--accent2').trim() || '#f59e0b';
+  var accent = style.getPropertyValue('--accent').trim() || '#B89AD9';
+  var accent2 = style.getPropertyValue('--accent2').trim() || '#E8A93E';
   var accent3 = style.getPropertyValue('--accent3').trim() || '#ec4899';
-  var accent4 = style.getPropertyValue('--accent4').trim() || '#22d3ee';
-  var ink = style.getPropertyValue('--ink').trim() || '#e2e8f0';
-  var muted = style.getPropertyValue('--muted').trim() || '#94a3b8';
-  var rule = style.getPropertyValue('--rule').trim() || '#334155';
-  var bg = style.getPropertyValue('--bg').trim() || '#0f172a';
-  var bg2 = style.getPropertyValue('--bg2').trim() || '#1e293b';
-  var bg3 = style.getPropertyValue('--bg3').trim() || '#334155';
+  var accent4 = style.getPropertyValue('--accent4').trim() || '#6BB6D6';
+  var ink = style.getPropertyValue('--ink').trim() || '#4A3B2E';
+  var muted = style.getPropertyValue('--muted').trim() || '#9B8B7A';
+  var rule = style.getPropertyValue('--rule').trim() || 'rgba(180,160,140,0.25)';
+  var bg = style.getPropertyValue('--bg').trim() || '#FFF5EE';
+  var bg2 = style.getPropertyValue('--bg2').trim() || '#FFF5EE';
+  var bg3 = style.getPropertyValue('--bg3').trim() || 'rgba(180,160,140,0.25)';
 
   var charts = {};
 

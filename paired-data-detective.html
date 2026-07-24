@@ -1,0 +1,1911 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据侦探事务所 — 成对数据的统计分析</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --orange: #FF8C42;
+  --teal: #2EC4B6;
+  --yellow: #FFD23F;
+  --coral: #FF6B6B;
+  --bg: #FFFBF0;
+  --bg-card: #FFFFFF;
+  --text: #3D2C1E;
+  --text-light: #8B7355;
+  --shadow: 0 6px 20px rgba(255, 140, 66, 0.15);
+  --shadow-deep: 0 10px 40px rgba(46, 196, 182, 0.18);
+  --radius: 24px;
+  --radius-sm: 14px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Noto Sans SC', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, .title-font {
+  font-family: 'ZCOOL KuaiLe', 'Noto Sans SC', sans-serif;
+  letter-spacing: 1px;
+}
+
+/* Background particles */
+.bg-particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  font-size: 28px;
+  opacity: 0.5;
+  animation: floatUp linear infinite;
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(100vh) rotate(0deg) scale(0.8); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.4; }
+  100% { transform: translateY(-10vh) rotate(360deg) scale(1.1); opacity: 0; }
+}
+
+/* Home button */
+.home-btn {
+  position: fixed;
+  top: 18px;
+  left: 18px;
+  z-index: 1000;
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  color: #fff;
+  padding: 10px 22px;
+  border-radius: 50px;
+  text-decoration: none;
+  font-family: 'ZCOOL KuaiLe', sans-serif;
+  font-size: 16px;
+  box-shadow: 0 4px 14px rgba(255, 107, 107, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.home-btn:hover {
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+}
+
+/* Main container */
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  padding: 70px 20px 30px;
+  background: linear-gradient(135deg, #FFF5E6 0%, #E8F8F5 50%, #FFF9E6 100%);
+  border-radius: var(--radius);
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 160px;
+  height: 160px;
+  background: radial-gradient(circle, var(--yellow) 0%, transparent 70%);
+  opacity: 0.4;
+  border-radius: 50%;
+}
+
+.header h1 {
+  font-size: 42px;
+  background: linear-gradient(135deg, var(--orange), var(--coral), var(--teal));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+
+.header .subtitle {
+  font-size: 17px;
+  color: var(--text-light);
+  margin-bottom: 20px;
+}
+
+/* Character bar */
+.char-bar {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.char-avatar {
+  text-align: center;
+  transition: transform 0.3s;
+}
+
+.char-avatar:hover {
+  transform: translateY(-6px) scale(1.05);
+}
+
+.char-emoji {
+  font-size: 48px;
+  width: 70px;
+  height: 70px;
+  line-height: 70px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: var(--shadow);
+  display: inline-block;
+  border: 3px solid transparent;
+}
+
+.char-avatar:nth-child(1) .char-emoji { border-color: var(--coral); }
+.char-avatar:nth-child(2) .char-emoji { border-color: var(--orange); }
+.char-avatar:nth-child(3) .char-emoji { border-color: var(--teal); }
+.char-avatar:nth-child(4) .char-emoji { border-color: var(--yellow); }
+
+.char-name {
+  font-size: 12px;
+  color: var(--text-light);
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+/* Progress panel */
+.progress-panel {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.progress-item {
+  background: #fff;
+  padding: 10px 22px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.progress-item .num {
+  font-family: 'ZCOOL KuaiLe', sans-serif;
+  font-size: 22px;
+}
+
+.progress-item.stars .num { color: var(--yellow); }
+.progress-item.chapters .num { color: var(--teal); }
+.progress-item.correct .num { color: var(--orange); }
+
+/* Story panel */
+.story-panel {
+  background: linear-gradient(135deg, #FFF9F0 0%, #F0FAF8 100%);
+  border-radius: var(--radius);
+  padding: 32px;
+  margin-bottom: 24px;
+  border: 3px dashed var(--orange);
+  box-shadow: var(--shadow);
+  position: relative;
+}
+
+.story-panel.teal-border {
+  border-color: var(--teal);
+  background: linear-gradient(135deg, #F0FAF8 0%, #FFF9F0 100%);
+}
+
+.story-panel.coral-border {
+  border-color: var(--coral);
+  background: linear-gradient(135deg, #FFF5F5 0%, #FFFBEF 100%);
+}
+
+.panel-title {
+  font-size: 28px;
+  color: var(--orange);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.panel-title.teal { color: var(--teal); }
+.panel-title.coral { color: var(--coral); }
+
+.panel-badge {
+  font-size: 14px;
+  background: var(--orange);
+  color: #fff;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-weight: 700;
+}
+
+.panel-badge.teal { background: var(--teal); }
+.panel-badge.coral { background: var(--coral); }
+
+/* Speech bubbles */
+.speech-bubble {
+  position: relative;
+  background: #fff;
+  border-radius: 20px;
+  padding: 18px 22px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  max-width: 80%;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.speech-bubble.left {
+  margin-right: auto;
+  border-left: 5px solid var(--orange);
+  border-radius: 20px 20px 20px 4px;
+}
+
+.speech-bubble.right {
+  margin-left: auto;
+  border-right: 5px solid var(--teal);
+  border-radius: 20px 20px 4px 20px;
+  text-align: left;
+}
+
+.speech-bubble.coral-left {
+  border-left-color: var(--coral);
+}
+
+.speaker-tag {
+  display: inline-block;
+  font-family: 'ZCOOL KuaiLe', sans-serif;
+  font-size: 13px;
+  padding: 2px 12px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  color: #fff;
+}
+
+.speaker-tag.fox { background: var(--orange); }
+.speaker-tag.cat { background: var(--teal); }
+.speaker-tag.rabbit { background: var(--coral); }
+.speaker-tag.detective { background: var(--yellow); color: var(--text); }
+
+/* Scenario cards */
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.scenario-card {
+  background: #fff;
+  border-radius: var(--radius-sm);
+  padding: 18px;
+  box-shadow: var(--shadow);
+  transition: transform 0.25s, box-shadow 0.25s;
+  border-top: 4px solid var(--orange);
+}
+
+.scenario-card:nth-child(2) { border-top-color: var(--teal); }
+.scenario-card:nth-child(3) { border-top-color: var(--yellow); }
+.scenario-card:nth-child(4) { border-top-color: var(--coral); }
+.scenario-card:nth-child(5) { border-top-color: var(--orange); }
+.scenario-card:nth-child(6) { border-top-color: var(--teal); }
+
+.scenario-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-deep);
+}
+
+.scenario-card .icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.scenario-card h4 {
+  font-size: 16px;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.scenario-card p {
+  font-size: 13px;
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
+/* Tip panel */
+.tip-panel {
+  background: linear-gradient(135deg, #FFFDE7 0%, #FFF8E1 100%);
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  margin: 16px 0;
+  border-left: 5px solid var(--yellow);
+  box-shadow: var(--shadow);
+}
+
+.tip-panel .tip-title {
+  font-family: 'ZCOOL KuaiLe', sans-serif;
+  font-size: 18px;
+  color: var(--orange);
+  margin-bottom: 10px;
+}
+
+.tip-panel .formula {
+  background: #fff;
+  padding: 10px 16px;
+  border-radius: 10px;
+  margin: 8px 0;
+  font-family: 'Courier New', monospace;
+  font-size: 15px;
+  text-align: center;
+  color: var(--text);
+  border: 2px solid #FFE082;
+}
+
+.tip-panel .formula-desc {
+  font-size: 13px;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+
+/* Knowledge list */
+.know-list {
+  list-style: none;
+  padding: 0;
+}
+
+.know-list li {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px 18px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+  font-size: 14px;
+  line-height: 1.6;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.know-list li .bullet {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* Canvas section */
+.canvas-section {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 24px;
+  margin: 20px 0;
+  box-shadow: var(--shadow-deep);
+}
+
+.canvas-section h3 {
+  font-size: 22px;
+  color: var(--teal);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.canvas-section .desc {
+  font-size: 14px;
+  color: var(--text-light);
+  margin-bottom: 16px;
+}
+
+.canvas-wrap {
+  display: flex;
+  justify-content: center;
+  background: #FAFCFE;
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.04);
+  overflow-x: auto;
+}
+
+canvas {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  margin-top: 16px;
+  padding: 14px;
+  background: #F8F9FE;
+  border-radius: var(--radius-sm);
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-group label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+select {
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 14px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 2px solid var(--teal);
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+select:hover { border-color: var(--orange); }
+select:focus { border-color: var(--coral); }
+
+/* Buttons */
+.btn {
+  font-family: 'ZCOOL KuaiLe', sans-serif;
+  font-size: 15px;
+  padding: 10px 22px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  letter-spacing: 1px;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--orange), var(--coral));
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(255, 140, 66, 0.35);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--teal), #1DB5A7);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(46, 196, 182, 0.35);
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, var(--yellow), #FFC107);
+  color: var(--text);
+  box-shadow: 0 4px 12px rgba(255, 210, 63, 0.4);
+}
+
+.fit-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--coral);
+  background: #FFF0F0;
+  padding: 8px 16px;
+  border-radius: 10px;
+}
+
+/* Challenge section */
+.challenge-section {
+  margin-top: 20px;
+}
+
+.challenge-section h3 {
+  font-size: 22px;
+  color: var(--coral);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.question-card {
+  background: #fff;
+  border-radius: var(--radius-sm);
+  padding: 22px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  border-left: 5px solid var(--coral);
+  transition: border-color 0.3s;
+}
+
+.question-card.answered {
+  border-left-color: var(--teal);
+}
+
+.question-card .q-tag {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--coral);
+  background: #FFF0F0;
+  padding: 3px 10px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+
+.question-card .q-text {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 14px;
+  line-height: 1.6;
+}
+
+.option-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.option-btn {
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 14px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 2px solid #E0E0E0;
+  background: #FAFAFA;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.option-btn:hover:not(.locked) {
+  border-color: var(--orange);
+  background: #FFF8F0;
+  transform: translateX(4px);
+}
+
+.option-btn .opt-label {
+  font-family: 'ZCOOL KuaiLe', sans-serif;
+  font-size: 16px;
+  color: var(--orange);
+  flex-shrink: 0;
+}
+
+.option-btn.correct {
+  border-color: var(--teal);
+  background: #E8F8F5;
+  color: var(--teal);
+  font-weight: 700;
+}
+
+.option-btn.correct .opt-label { color: var(--teal); }
+
+.option-btn.wrong {
+  border-color: var(--coral);
+  background: #FFF0F0;
+  color: var(--coral);
+  opacity: 0.7;
+}
+
+.option-btn.locked {
+  cursor: not-allowed;
+}
+
+/* Epilogue */
+.epilogue {
+  background: linear-gradient(135deg, #FFFDE7 0%, #E8F8F5 50%, #FFF5F0 100%);
+  border-radius: var(--radius);
+  padding: 32px;
+  margin-bottom: 24px;
+  border: 3px dashed var(--yellow);
+  box-shadow: var(--shadow-deep);
+  text-align: center;
+}
+
+.medal {
+  font-size: 72px;
+  animation: medalBounce 2s ease-in-out infinite;
+}
+
+@keyframes medalBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.epilogue h2 {
+  font-size: 32px;
+  color: var(--orange);
+  margin: 12px 0;
+}
+
+.epilogue p {
+  font-size: 16px;
+  color: var(--text-light);
+  line-height: 1.8;
+  margin-bottom: 8px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+  text-align: left;
+}
+
+.summary-card {
+  background: #fff;
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  border-top: 4px solid var(--orange);
+}
+
+.summary-card:nth-child(2) { border-top-color: var(--teal); }
+.summary-card:nth-child(3) { border-top-color: var(--coral); }
+
+.summary-card .icon { font-size: 36px; margin-bottom: 8px; }
+.summary-card h4 { font-size: 17px; margin-bottom: 6px; }
+.summary-card p { font-size: 13px; color: var(--text-light); line-height: 1.6; }
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 24px;
+  font-size: 13px;
+  color: var(--text-light);
+  background: #fff;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+
+/* Toast */
+.toast-container {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  padding: 14px 24px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+  max-width: 360px;
+}
+
+.toast.success { background: linear-gradient(135deg, var(--teal), #1DB5A7); }
+.toast.error { background: linear-gradient(135deg, var(--coral), #E84545); }
+.toast.info { background: linear-gradient(135deg, var(--orange), #FF7700); }
+
+@keyframes toastIn {
+  from { transform: translateX(400px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes toastOut {
+  to { transform: translateX(400px); opacity: 0; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header h1 { font-size: 30px; }
+  .story-panel { padding: 20px; }
+  .canvas-section { padding: 16px; }
+  canvas { width: 100%; }
+  .option-list { grid-template-columns: 1fr; }
+  .char-bar { gap: 14px; }
+  .char-emoji { font-size: 40px; width: 60px; height: 60px; line-height: 60px; }
+}
+
+/* Case separator */
+.case-sep {
+  text-align: center;
+  font-size: 28px;
+  margin: 10px 0;
+  color: var(--orange);
+  opacity: 0.3;
+  letter-spacing: 8px;
+}
+</style>
+<link rel="stylesheet" href="./_shared/anime-cartoon-theme.css">
+</head>
+<body>
+
+<div class="bg-particles" id="bgParticles"></div>
+
+<a href="#" class="home-btn" onclick="history.back();return false;">⌂ HOME</a>
+
+<div class="container">
+
+<!-- ==================== HEADER ==================== -->
+<div class="header">
+  <h1>成对数据的统计分析</h1>
+  <p class="subtitle">数据侦探事务所 — 和狐狸探长一起破解数据之谜</p>
+
+  <div class="char-bar">
+    <div class="char-avatar">
+      <div class="char-emoji">🕵️</div>
+      <div class="char-name">数据小侦探</div>
+    </div>
+    <div class="char-avatar">
+      <div class="char-emoji">🦊</div>
+      <div class="char-name">狐狸探长</div>
+    </div>
+    <div class="char-avatar">
+      <div class="char-emoji">🐱</div>
+      <div class="char-name">猫咪技术员</div>
+    </div>
+    <div class="char-avatar">
+      <div class="char-emoji">🐰</div>
+      <div class="char-name">兔子局长</div>
+    </div>
+  </div>
+
+  <div class="progress-panel">
+    <div class="progress-item stars">
+      ⭐ <span class="num" id="starCount">0</span><span style="font-size:14px;color:var(--text-light)">/30</span>
+    </div>
+    <div class="progress-item chapters">
+      🏁 <span class="num" id="chapterCount">0</span><span style="font-size:14px;color:var(--text-light)">/3</span>
+    </div>
+    <div class="progress-item correct">
+      ✅ <span class="num" id="correctCount">0</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PROLOGUE ==================== -->
+<div class="story-panel">
+  <h2 class="panel-title">
+    <span>📋</span> 序章 · 事务所的邀请
+    <span class="panel-badge">START</span>
+  </h2>
+
+  <div class="speech-bubble left coral-left">
+    <span class="speaker-tag rabbit">🐰 兔子局长</span>
+    <p>欢迎来到数据侦探事务所！我是兔子局长。最近我们接到一系列棘手的案件——它们都和<b>"成对数据"</b>有关。</p>
+    <p>所谓<b>成对数据</b>，就是同时观测两个变量得到的数据对 (x₁, y₁), (x₂, y₂), ... , (xₙ, yₙ)。分析这些数据之间的关系，是现代统计学的核心技能！</p>
+    <p>小侦探，我需要你跟随狐狸探长和猫咪技术员，完成三个案件的侦破。每完成一个案件，你将获得侦探勋章碎片。准备好了吗？</p>
+  </div>
+
+  <div class="speech-bubble right">
+    <span class="speaker-tag detective">🕵️ 数据小侦探</span>
+    <p>收到！我马上开始调查！</p>
+  </div>
+
+  <h3 style="font-size:20px;color:var(--coral);margin:24px 0 6px;">🌍 成对数据统计分析的6大真实应用场景</h3>
+  <p style="font-size:14px;color:var(--text-light);margin-bottom:10px;">在正式开始之前，先了解一下这项技能在真实世界中的威力吧！</p>
+
+  <div class="scenario-grid">
+    <div class="scenario-card">
+      <div class="icon">🏥</div>
+      <h4>医疗健康</h4>
+      <p><b>吸烟与肺癌的卡方独立性检验</b> — 调查9965人，吸烟者2148人中49人患肺癌，不吸烟者7817人中42人患肺癌，χ²检验证明吸烟与肺癌显著相关。</p>
+    </div>
+    <div class="scenario-card">
+      <div class="icon">💰</div>
+      <h4>金融投资</h4>
+      <p><b>广告投入与销售增长的回归分析</b> — 某快消品公司发现每增加1万元广告预算，销售额平均增长3万元，线性回归量化广告ROI。</p>
+    </div>
+    <div class="scenario-card">
+      <div class="icon">🏠</div>
+      <h4>房地产</h4>
+      <p><b>房屋面积与房价的线性回归预测</b> — 综合面积、房间数、位置等特征预测房价，是房地产估价的核心方法。</p>
+    </div>
+    <div class="scenario-card">
+      <div class="icon">🛒</div>
+      <h4>电商运营</h4>
+      <p><b>用户性别与支付方式的列联表分析</b> — 验证"性别是否影响支付方式选择"，华东用户偏好支付宝，华北用户偏好微信支付。</p>
+    </div>
+    <div class="scenario-card">
+      <div class="icon">📈</div>
+      <h4>数据科学</h4>
+      <p><b>网站加载时间与跳出率的相关分析</b> — r=0.78强正相关，页面加载1-3秒区间影响最大。</p>
+    </div>
+    <div class="scenario-card">
+      <div class="icon">🏭</div>
+      <h4>质量控制</h4>
+      <p><b>设备安装位置与零件故障率的独立性检验</b> — 300台机器3个位置测试，卡方检验判断位置是否影响故障率。</p>
+    </div>
+  </div>
+</div>
+
+<div class="case-sep">✦ ✦ ✦</div>
+
+<!-- ==================== CASE 1 ==================== -->
+<div class="story-panel teal-border">
+  <h2 class="panel-title teal">
+    <span>🔍</span> 案件一：消失的相关性
+    <span class="panel-badge teal">CASE 01</span>
+  </h2>
+  <p style="font-size:15px;color:var(--text-light);margin-bottom:16px;">— 变量的相关关系</p>
+
+  <div class="speech-bubble left">
+    <span class="speaker-tag fox">🦊 狐狸探长</span>
+    <p>小侦探，第一桩案件来了！有人说两个变量之间"有关系"，但关系到底是什么样的？我们来一步步揭开。</p>
+  </div>
+
+  <div class="speech-bubble left">
+    <span class="speaker-tag fox">🦊 狐狸探长</span>
+    <p><b>📌 变量的相关关系</b>：当两个变量之间存在不确定性的关联时，称为<b>相关关系</b>。它不同于函数关系——函数关系是确定性的（如 y=2x），而相关关系存在随机波动。</p>
+    <p><b>📌 散点图</b>：将每一对数据 (xᵢ, yᵢ) 画为坐标系中的一个点，直观展示两个变量的关系走向。</p>
+    <p><b>📌 相关系数 r</b>：量化相关程度的指标，r ∈ [-1, 1]。|r| 越接近1，相关性越强。</p>
+    <p><b>📌 三种相关</b>：正相关（r>0，同增同减）、负相关（r<0，一增一减）、无相关（r≈0，杂乱无章）。</p>
+  </div>
+
+  <div class="tip-panel">
+    <div class="tip-title">💡 核心公式</div>
+    <div class="formula">r = Σ(xᵢ - x̄)(yᵢ - ȳ) / √[ Σ(xᵢ - x̄)² · Σ(yᵢ - ȳ)² ]</div>
+    <div class="formula-desc">x̄ 为 x 的均值，ȳ 为 y 的均值。r 的符号表示相关方向，|r| 的大小表示相关强度。</div>
+    <div style="margin-top:12px;">
+      <p style="font-size:14px;font-weight:700;margin-bottom:6px;">📊 相关强度判断标准：</p>
+      <p style="font-size:13px;">• |r| &lt; 0.3 → <span style="color:var(--text-light);">弱相关</span></p>
+      <p style="font-size:13px;">• 0.3 ≤ |r| &lt; 0.5 → <span style="color:var(--orange);">中等相关</span></p>
+      <p style="font-size:13px;">• |r| ≥ 0.5 → <span style="color:var(--coral);">强相关</span></p>
+    </div>
+  </div>
+
+  <div class="canvas-section">
+    <h3>📊 散点图探索器</h3>
+    <p class="desc">选择不同的数据集，观察散点分布和相关系数 r 的变化。点击"显示回归线"查看趋势方向。</p>
+    <div class="canvas-wrap">
+      <canvas id="scatterCanvas" width="800" height="420"></canvas>
+    </div>
+    <div class="controls">
+      <div class="input-group">
+        <label>📁 数据集：</label>
+        <select id="scatterDataset" onchange="drawScatter()">
+          <option value="height">身高 vs 体重</option>
+          <option value="ad">广告投入 vs 销售额</option>
+          <option value="loadtime">加载时间 vs 跳出率</option>
+          <option value="random">随机无相关</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="toggleCorrLine()">📈 显示/隐藏回归线</button>
+    </div>
+  </div>
+
+  <div class="challenge-section" id="challenge-case1"></div>
+</div>
+
+<div class="case-sep">✦ ✦ ✦</div>
+
+<!-- ==================== CASE 2 ==================== -->
+<div class="story-panel">
+  <h2 class="panel-title">
+    <span>📐</span> 案件二：预言之线
+    <span class="panel-badge">CASE 02</span>
+  </h2>
+  <p style="font-size:15px;color:var(--text-light);margin-bottom:16px;">— 一元线性回归模型</p>
+
+  <div class="speech-bubble right">
+    <span class="speaker-tag cat">🐱 猫咪技术员</span>
+    <p>嗨！我是猫咪技术员。这次由我来给你讲解回归分析——也就是那根能"预言"的直线！</p>
+  </div>
+
+  <div class="speech-bubble right">
+    <span class="speaker-tag cat">🐱 猫咪技术员</span>
+    <p><b>📌 回归分析</b>：对具有相关关系的两个变量进行统计分析，找出一条最能代表它们关系的直线。</p>
+    <p><b>📌 最小二乘法</b>：让所有数据点到回归直线的<b>残差平方和</b>最小，从而确定最优直线的方法。</p>
+    <p><b>📌 经验回归方程</b>：ŷ = bx + a，其中 b 是斜率，a 是截距，ŷ 是预测值。</p>
+    <p><b>📌 残差分析</b>：残差 eᵢ = yᵢ - ŷᵢ，即观测值与预测值之差。残差越小，拟合越好。</p>
+  </div>
+
+  <div class="tip-panel">
+    <div class="tip-title">💡 核心公式</div>
+    <div class="formula">斜率 b = Σ(xᵢ - x̄)(yᵢ - ȳ) / Σ(xᵢ - x̄)²</div>
+    <div class="formula">截距 a = ȳ - b · x̄</div>
+    <div class="formula">决定系数 R² = r²</div>
+    <div class="formula-desc">R² ∈ [0, 1]，越接近1表示回归直线对数据的拟合越好，即回归方程的解释力越强。</div>
+  </div>
+
+  <div class="canvas-section">
+    <h3>📐 回归直线拟合器</h3>
+    <p class="desc">选择数据集，自动计算最小二乘回归直线（红色）。灰色虚线为残差，R² 显示拟合优度。</p>
+    <div class="canvas-wrap">
+      <canvas id="regCanvas" width="800" height="420"></canvas>
+    </div>
+    <div class="controls">
+      <div class="input-group">
+        <label>📁 数据集：</label>
+        <select id="regDataset" onchange="drawRegression()">
+          <option value="house">房屋面积 vs 房价</option>
+          <option value="ad">广告投入 vs 销售额</option>
+          <option value="study">学习时间 vs 成绩</option>
+        </select>
+      </div>
+      <div class="fit-display">
+        R² = <span id="regR2">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="challenge-section" id="challenge-case2"></div>
+</div>
+
+<div class="case-sep">✦ ✦ ✦</div>
+
+<!-- ==================== CASE 3 ==================== -->
+<div class="story-panel coral-border">
+  <h2 class="panel-title coral">
+    <span>⚖️</span> 案件三：独立性审判
+    <span class="panel-badge coral">CASE 03</span>
+  </h2>
+  <p style="font-size:15px;color:var(--text-light);margin-bottom:16px;">— 列联表与独立性检验</p>
+
+  <div class="speech-bubble left coral-left">
+    <span class="speaker-tag fox">🦊 狐狸探长</span>
+    <p>最后一个案件也是最经典的——我们要用<b>卡方检验</b>来判断两个分类变量是否独立。这在医学、社会科学中极为常用！</p>
+  </div>
+
+  <div class="speech-bubble left coral-left">
+    <span class="speaker-tag fox">🦊 狐狸探长</span>
+    <p><b>📌 分类变量</b>：取值为类别的变量（如性别、是否患病、支付方式），而非具体的数值。</p>
+    <p><b>📌 列联表</b>：记录两个分类变量交叉频数的表格，最常见的是 2×2 列联表。</p>
+    <p><b>📌 卡方检验</b>：χ² = Σ (观测频数 - 期望频数)² / 期望频数，衡量观测值与"独立假设"下期望值的偏差。</p>
+    <p><b>📌 独立性判断</b>：若 χ² > 临界值，则拒绝 H₀（原假设：两变量独立），即认为两变量<b>不独立</b>（有关联）。</p>
+  </div>
+
+  <div class="tip-panel">
+    <div class="tip-title">💡 核心公式</div>
+    <div class="formula">χ² = Σ (观测频数 - 期望频数)² / 期望频数</div>
+    <div style="margin-top:10px;font-size:14px;font-weight:700;">2×2 列联表专用公式（n 为总样本量）：</div>
+    <div class="formula">χ² = n(ad - bc)² / [(a+b)(c+d)(a+c)(b+d)]</div>
+    <div class="formula-desc">其中 a, b, c, d 分别为 2×2 表中四个格子的频数。</div>
+    <div style="margin-top:12px;">
+      <p style="font-size:14px;font-weight:700;margin-bottom:6px;">📊 临界值表（自由度 = 1）：</p>
+      <p style="font-size:13px;">• α = 0.05 时，临界值 = <b style="color:var(--orange);">3.841</b></p>
+      <p style="font-size:13px;">• α = 0.01 时，临界值 = <b style="color:var(--coral);">6.635</b></p>
+    </div>
+  </div>
+
+  <div class="canvas-section">
+    <h3>⚖️ 列联表与卡方检验</h3>
+    <p class="desc">选择案例，查看 2×2 列联表（彩色格子内显示观测频数和期望频数），底部显示 χ² 值和检验结论。</p>
+    <div class="canvas-wrap">
+      <canvas id="chiCanvas" width="800" height="420"></canvas>
+    </div>
+    <div class="controls">
+      <div class="input-group">
+        <label>📁 案例：</label>
+        <select id="chiCase" onchange="drawChiSquare()">
+          <option value="smoking">吸烟与肺癌</option>
+          <option value="gender">性别与支付方式</option>
+          <option value="abtest">A/B 测试转化率</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="challenge-section" id="challenge-case3"></div>
+</div>
+
+<!-- ==================== EPILOGUE ==================== -->
+<div class="epilogue">
+  <div class="medal">🏅</div>
+  <h2>终章 · 侦探的勋章</h2>
+  <p>恭喜你完成了所有三个案件的侦破！</p>
+  <p>你已掌握了成对数据统计分析的核心技能，获得了数据侦探事务所的正式勋章！</p>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="icon">🔍</div>
+      <h4>相关关系</h4>
+      <p>用散点图和相关系数 r 量化两个变量之间的关联方向和强度。|r| 越接近1，相关性越强。</p>
+    </div>
+    <div class="summary-card">
+      <div class="icon">📐</div>
+      <h4>线性回归</h4>
+      <p>用最小二乘法拟合回归直线 ŷ = bx + a，通过残差分析和决定系数 R² 评估拟合质量。</p>
+    </div>
+    <div class="summary-card">
+      <div class="icon">⚖️</div>
+      <h4>独立性检验</h4>
+      <p>用列联表记录分类变量的交叉频数，通过卡方检验 χ² 判断两个分类变量是否独立。</p>
+    </div>
+  </div>
+
+  <div class="speech-bubble left" style="max-width:600px;margin:0 auto;">
+    <span class="speaker-tag fox">🦊 狐狸探长</span>
+    <p>小侦探，你做得太棒了！记住这三个核心武器：<b>相关分析看方向和强度、回归分析做预测、卡方检验判独立</b>。它们将在你未来的数据分析之路上大显身手！</p>
+  </div>
+</div>
+
+<!-- ==================== FOOTER ==================== -->
+<div class="footer">
+  <p>🎓 数据侦探事务所 · 成对数据的统计分析</p>
+  <p style="margin-top:6px;">本页面为教育学习用途 · Q版卡通侦探风格 · © 2026 Data Detective Agency</p>
+</div>
+
+</div><!-- /container -->
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ============================================================
+   STATE MANAGEMENT
+   ============================================================ */
+var state = {
+  score: 0,
+  questionsAnswered: new Set(),
+  chaptersCompleted: new Set()
+};
+
+var showCorrLine = false;
+var chRendered = false;
+
+/* ============================================================
+   DATA SETS
+   ============================================================ */
+
+/* --- Scatter plot datasets --- */
+var scatterData = {
+  height: {
+    name: '身高 vs 体重',
+    xLabel: '身高 (cm)',
+    yLabel: '体重 (kg)',
+    x: [160, 165, 170, 172, 175, 168, 163, 178, 180, 173, 176, 169, 171, 174, 167, 179, 162, 166, 177, 164],
+    y: [55, 60, 62, 65, 68, 58, 53, 72, 75, 66, 70, 59, 64, 67, 56, 74, 52, 57, 71, 54]
+  },
+  ad: {
+    name: '广告投入 vs 销售额',
+    xLabel: '广告投入 (万元)',
+    yLabel: '销售额 (万元)',
+    x: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    y: [12, 18, 25, 30, 38, 45, 52, 58, 65, 72, 78, 85]
+  },
+  loadtime: {
+    name: '加载时间 vs 跳出率',
+    xLabel: '加载时间 (秒)',
+    yLabel: '跳出率 (%)',
+    x: [0.5, 0.8, 1.0, 1.2, 1.5, 1.8, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5],
+    y: [20, 25, 28, 33, 40, 47, 52, 62, 70, 78, 85, 90]
+  },
+  random: {
+    name: '随机无相关',
+    xLabel: '变量 X',
+    yLabel: '变量 Y',
+    x: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+    y: [42, 15, 68, 25, 55, 12, 48, 33, 72, 20, 60, 38, 10, 52, 28]
+  }
+};
+
+/* --- Regression datasets --- */
+var regData = {
+  house: {
+    name: '房屋面积 vs 房价',
+    xLabel: '面积 (m²)',
+    yLabel: '房价 (万元)',
+    x: [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160],
+    y: [85, 100, 120, 135, 155, 170, 190, 210, 225, 245, 260, 280]
+  },
+  ad: {
+    name: '广告投入 vs 销售额',
+    xLabel: '广告投入 (万元)',
+    yLabel: '销售额 (万元)',
+    x: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    y: [12, 18, 25, 30, 38, 45, 52, 58, 65, 72, 78, 85]
+  },
+  study: {
+    name: '学习时间 vs 成绩',
+    xLabel: '学习时间 (小时/周)',
+    yLabel: '考试成绩 (分)',
+    x: [2, 4, 6, 8, 10, 12, 14, 16, 18, 20],
+    y: [55, 62, 68, 72, 78, 82, 85, 88, 91, 94]
+  }
+};
+
+/* --- Chi-square cases --- */
+var chiCases = {
+  smoking: {
+    name: '吸烟与肺癌',
+    rowLabels: ['吸烟', '不吸烟'],
+    colLabels: ['患肺癌', '未患肺癌'],
+    a: 49, b: 2099, c: 42, d: 7775,
+    n: 9965
+  },
+  gender: {
+    name: '性别与支付方式',
+    rowLabels: ['男性', '女性'],
+    colLabels: ['支付宝', '微信支付'],
+    a: 120, b: 80, c: 90, d: 110,
+    n: 400
+  },
+  abtest: {
+    name: 'A/B 测试转化率',
+    rowLabels: ['新设计(A)', '旧设计(B)'],
+    colLabels: ['转化', '未转化'],
+    a: 150, b: 850, c: 120, d: 880,
+    n: 2000
+  }
+};
+
+/* ============================================================
+   QUIZ QUESTIONS
+   ============================================================ */
+var chQuestions = [
+  // Case 1 - Correlation
+  {
+    group: 'case1',
+    groupLabel: '案件一 · 相关关系',
+    q: '相关系数 r 的取值范围是？',
+    opts: ['[0, 1]', '[-1, 1]', '(-∞, +∞)', '[0, 100]'],
+    ans: 1
+  },
+  {
+    group: 'case1',
+    groupLabel: '案件一 · 相关关系',
+    q: '当 |r| = 0.8 时，两个变量的相关关系属于哪种类型？',
+    opts: ['弱相关', '中等相关', '强相关', '完全无相关'],
+    ans: 2
+  },
+  // Case 2 - Regression
+  {
+    group: 'case2',
+    groupLabel: '案件二 · 线性回归',
+    q: '最小二乘法确定回归直线的目标是什么？',
+    opts: ['使残差之和最小', '使残差平方和最小', '使残差之积最小', '使残差绝对值之和最大'],
+    ans: 1
+  },
+  {
+    group: 'case2',
+    groupLabel: '案件二 · 线性回归',
+    q: '决定系数 R² = 0.95 说明了什么？',
+    opts: ['拟合效果很差', '回归直线解释了95%的数据变异', '相关系数为0.95', '斜率为0.95'],
+    ans: 1
+  },
+  // Case 3 - Chi-square
+  {
+    group: 'case3',
+    groupLabel: '案件三 · 独立性检验',
+    q: '在 α=0.05 的显著性水平下，2×2 列联表独立性检验的临界值是多少？',
+    opts: ['2.706', '3.841', '5.024', '6.635'],
+    ans: 1
+  },
+  {
+    group: 'case3',
+    groupLabel: '案件三 · 独立性检验',
+    q: '若卡方检验中 χ² = 10.5 > 6.635（α=0.01），则结论是？',
+    opts: ['接受 H₀，两变量独立', '拒绝 H₀，两变量不独立（有关联）', '无法判断', '需要更多数据'],
+    ans: 1
+  }
+];
+
+/* ============================================================
+   HELPER FUNCTIONS
+   ============================================================ */
+
+function roundRect(ctx, x, y, w, h, r) {
+  if (w < 2 * r) r = w / 2;
+  if (h < 2 * r) r = h / 2;
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function mean(arr) {
+  var s = 0;
+  for (var i = 0; i < arr.length; i++) s += arr[i];
+  return s / arr.length;
+}
+
+function calcCorrelation(x, y) {
+  var mx = mean(x), my = mean(y);
+  var num = 0, dx = 0, dy = 0;
+  for (var i = 0; i < x.length; i++) {
+    num += (x[i] - mx) * (y[i] - my);
+    dx += (x[i] - mx) * (x[i] - mx);
+    dy += (y[i] - my) * (y[i] - my);
+  }
+  if (dx === 0 || dy === 0) return 0;
+  return num / Math.sqrt(dx * dy);
+}
+
+function calcRegression(x, y) {
+  var mx = mean(x), my = mean(y);
+  var num = 0, den = 0;
+  for (var i = 0; i < x.length; i++) {
+    num += (x[i] - mx) * (y[i] - my);
+    den += (x[i] - mx) * (x[i] - mx);
+  }
+  var b = den === 0 ? 0 : num / den;
+  var a = my - b * mx;
+  var r = calcCorrelation(x, y);
+  var r2 = r * r;
+  return { a: a, b: b, r: r, r2: r2 };
+}
+
+function calcChiSquare(a, b, c, d, n) {
+  var num = n * (a * d - b * c) * (a * d - b * c);
+  var den = (a + b) * (c + d) * (a + c) * (b + d);
+  if (den === 0) return 0;
+  return num / den;
+}
+
+/* ============================================================
+   CANVAS 1: SCATTER PLOT
+   ============================================================ */
+function drawScatter() {
+  var canvas = document.getElementById('scatterCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+
+  ctx.clearRect(0, 0, W, H);
+
+  var sel = document.getElementById('scatterDataset');
+  var key = sel ? sel.value : 'height';
+  var data = scatterData[key];
+
+  var ml = 70, mr = 30, mt = 50, mb = 55;
+  var pw = W - ml - mr;
+  var ph = H - mt - mb;
+
+  var xmin = Math.min.apply(null, data.x);
+  var xmax = Math.max.apply(null, data.x);
+  var ymin = Math.min.apply(null, data.y);
+  var ymax = Math.max.apply(null, data.y);
+  var xpad = (xmax - xmin) * 0.1 || 1;
+  var ypad = (ymax - ymin) * 0.1 || 1;
+  xmin -= xpad; xmax += xpad; ymin -= ypad; ymax += ypad;
+
+  var sx = function(v) { return ml + (v - xmin) / (xmax - xmin) * pw; };
+  var sy = function(v) { return mt + ph - (v - ymin) / (ymax - ymin) * ph; };
+
+  /* Background */
+  ctx.fillStyle = '#FCFEFF';
+  roundRect(ctx, ml, mt, pw, ph, 8);
+  ctx.fill();
+
+  /* Grid lines */
+  ctx.strokeStyle = '#E8EDF2';
+  ctx.lineWidth = 1;
+  for (var gi = 1; gi < 5; gi++) {
+    var gx = ml + pw * gi / 5;
+    ctx.beginPath(); ctx.moveTo(gx, mt); ctx.lineTo(gx, mt + ph); ctx.stroke();
+    var gy = mt + ph * gi / 5;
+    ctx.beginPath(); ctx.moveTo(ml, gy); ctx.lineTo(ml + pw, gy); ctx.stroke();
+  }
+
+  /* Axes */
+  ctx.strokeStyle = '#5A4A3A';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(ml, mt);
+  ctx.lineTo(ml, mt + ph);
+  ctx.lineTo(ml + pw, mt + ph);
+  ctx.stroke();
+
+  /* Axis labels */
+  ctx.fillStyle = '#5A4A3A';
+  ctx.font = '13px "Noto Sans SC"';
+  ctx.textAlign = 'center';
+  ctx.fillText(data.xLabel, ml + pw / 2, H - 18);
+
+  ctx.save();
+  ctx.translate(20, mt + ph / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText(data.yLabel, 0, 0);
+  ctx.restore();
+
+  /* Tick labels */
+  ctx.font = '11px "Noto Sans SC"';
+  ctx.fillStyle = '#8B7355';
+  ctx.textAlign = 'right';
+  ctx.fillText(xmin.toFixed(1), ml, mt + ph + 16);
+  ctx.textAlign = 'center';
+  ctx.fillText(((xmin + xmax) / 2).toFixed(1), ml + pw / 2, mt + ph + 16);
+  ctx.textAlign = 'left';
+  ctx.fillText(xmax.toFixed(1), ml + pw, mt + ph + 16);
+
+  ctx.textAlign = 'right';
+  ctx.fillText(ymax.toFixed(1), ml - 6, mt + 6);
+  ctx.fillText(((ymin + ymax) / 2).toFixed(1), ml - 6, mt + ph / 2);
+  ctx.fillText(ymin.toFixed(1), ml - 6, mt + ph);
+
+  /* Points */
+  var colors = ['#FF6B6B', '#FF8C42', '#FFD23F', '#2EC4B6'];
+  var pointColor = colors[0];
+
+  for (var i = 0; i < data.x.length; i++) {
+    var px = sx(data.x[i]);
+    var py = sy(data.y[i]);
+    ctx.beginPath();
+    ctx.arc(px, py, 6, 0, Math.PI * 2);
+    ctx.fillStyle = pointColor;
+    ctx.globalAlpha = 0.8;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  /* Correlation coefficient */
+  var r = calcCorrelation(data.x, data.y);
+
+  /* Title */
+  ctx.fillStyle = '#3D2C1E';
+  ctx.font = '18px "ZCOOL KuaiLe"';
+  ctx.textAlign = 'left';
+  ctx.fillText('📊 ' + data.name, ml, 32);
+
+  /* r value box */
+  ctx.fillStyle = r > 0.5 ? '#FF6B6B' : (r > 0.3 ? '#FF8C42' : (Math.abs(r) < 0.3 ? '#8B7355' : '#2EC4B6'));
+  roundRect(ctx, ml + pw - 150, 12, 140, 30, 10);
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 15px "Noto Sans SC"';
+  ctx.textAlign = 'center';
+  var corrLabel = '';
+  if (Math.abs(r) < 0.3) corrLabel = '弱相关';
+  else if (Math.abs(r) < 0.5) corrLabel = '中等相关';
+  else corrLabel = r > 0 ? '强正相关' : '强负相关';
+  ctx.fillText('r = ' + r.toFixed(4) + '  ' + corrLabel, ml + pw - 80, 32);
+
+  /* Regression line */
+  if (showCorrLine) {
+    var reg = calcRegression(data.x, data.y);
+    var lx1 = xmin, ly1 = reg.a + reg.b * lx1;
+    var lx2 = xmax, ly2 = reg.a + reg.b * lx2;
+    ctx.strokeStyle = '#FF6B6B';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(sx(lx1), sy(ly1));
+    ctx.lineTo(sx(lx2), sy(ly2));
+    ctx.stroke();
+
+    /* Equation */
+    ctx.fillStyle = '#FF6B6B';
+    ctx.font = 'bold 14px "Noto Sans SC"';
+    ctx.textAlign = 'left';
+    var eqStr = 'ŷ = ' + reg.b.toFixed(3) + 'x + ' + reg.a.toFixed(2);
+    ctx.fillText(eqStr, ml + 10, mt + 22);
+  }
+}
+
+/* ============================================================
+   CANVAS 2: REGRESSION
+   ============================================================ */
+function drawRegression() {
+  var canvas = document.getElementById('regCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+
+  ctx.clearRect(0, 0, W, H);
+
+  var sel = document.getElementById('regDataset');
+  var key = sel ? sel.value : 'house';
+  var data = regData[key];
+
+  var ml = 70, mr = 30, mt = 50, mb = 55;
+  var pw = W - ml - mr;
+  var ph = H - mt - mb;
+
+  var xmin = Math.min.apply(null, data.x);
+  var xmax = Math.max.apply(null, data.x);
+  var ymin = Math.min.apply(null, data.y);
+  var ymax = Math.max.apply(null, data.y);
+  var xpad = (xmax - xmin) * 0.1 || 1;
+  var ypad = (ymax - ymin) * 0.1 || 1;
+  xmin -= xpad; xmax += xpad; ymin -= ypad; ymax += ypad;
+
+  var sx = function(v) { return ml + (v - xmin) / (xmax - xmin) * pw; };
+  var sy = function(v) { return mt + ph - (v - ymin) / (ymax - ymin) * ph; };
+
+  var reg = calcRegression(data.x, data.y);
+
+  /* Background */
+  ctx.fillStyle = '#FCFEFF';
+  roundRect(ctx, ml, mt, pw, ph, 8);
+  ctx.fill();
+
+  /* Grid */
+  ctx.strokeStyle = '#E8EDF2';
+  ctx.lineWidth = 1;
+  for (var gi = 1; gi < 5; gi++) {
+    var gx = ml + pw * gi / 5;
+    ctx.beginPath(); ctx.moveTo(gx, mt); ctx.lineTo(gx, mt + ph); ctx.stroke();
+    var gy = mt + ph * gi / 5;
+    ctx.beginPath(); ctx.moveTo(ml, gy); ctx.lineTo(ml + pw, gy); ctx.stroke();
+  }
+
+  /* Axes */
+  ctx.strokeStyle = '#5A4A3A';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(ml, mt); ctx.lineTo(ml, mt + ph); ctx.lineTo(ml + pw, mt + ph);
+  ctx.stroke();
+
+  /* Axis labels */
+  ctx.fillStyle = '#5A4A3A';
+  ctx.font = '13px "Noto Sans SC"';
+  ctx.textAlign = 'center';
+  ctx.fillText(data.xLabel, ml + pw / 2, H - 18);
+  ctx.save();
+  ctx.translate(20, mt + ph / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText(data.yLabel, 0, 0);
+  ctx.restore();
+
+  /* Tick labels */
+  ctx.font = '11px "Noto Sans SC"';
+  ctx.fillStyle = '#8B7355';
+  ctx.textAlign = 'right';
+  ctx.fillText(xmin.toFixed(1), ml, mt + ph + 16);
+  ctx.textAlign = 'center';
+  ctx.fillText(((xmin + xmax) / 2).toFixed(1), ml + pw / 2, mt + ph + 16);
+  ctx.textAlign = 'left';
+  ctx.fillText(xmax.toFixed(1), ml + pw, mt + ph + 16);
+  ctx.textAlign = 'right';
+  ctx.fillText(ymax.toFixed(1), ml - 6, mt + 6);
+  ctx.fillText(((ymin + ymax) / 2).toFixed(1), ml - 6, mt + ph / 2);
+  ctx.fillText(ymin.toFixed(1), ml - 6, mt + ph);
+
+  /* Residual lines */
+  ctx.strokeStyle = '#CCCCCC';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 4]);
+  for (var i = 0; i < data.x.length; i++) {
+    var px = sx(data.x[i]);
+    var py = sy(data.y[i]);
+    var pyhat = sy(reg.a + reg.b * data.x[i]);
+    ctx.beginPath();
+    ctx.moveTo(px, py);
+    ctx.lineTo(px, pyhat);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  /* Regression line */
+  var lx1 = xmin, ly1 = reg.a + reg.b * lx1;
+  var lx2 = xmax, ly2 = reg.a + reg.b * lx2;
+  ctx.strokeStyle = '#FF6B6B';
+  ctx.lineWidth = 3.5;
+  ctx.beginPath();
+  ctx.moveTo(sx(lx1), sy(ly1));
+  ctx.lineTo(sx(lx2), sy(ly2));
+  ctx.stroke();
+
+  /* Points */
+  for (var i = 0; i < data.x.length; i++) {
+    var px = sx(data.x[i]);
+    var py = sy(data.y[i]);
+    ctx.beginPath();
+    ctx.arc(px, py, 6, 0, Math.PI * 2);
+    ctx.fillStyle = '#2EC4B6';
+    ctx.globalAlpha = 0.85;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  /* Title */
+  ctx.fillStyle = '#3D2C1E';
+  ctx.font = '18px "ZCOOL KuaiLe"';
+  ctx.textAlign = 'left';
+  ctx.fillText('📐 ' + data.name, ml, 32);
+
+  /* Equation & R² */
+  ctx.fillStyle = '#2EC4B6';
+  roundRect(ctx, ml + pw - 220, 10, 210, 34, 10);
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 13px "Noto Sans SC"';
+  ctx.textAlign = 'center';
+  var eqText = 'ŷ = ' + reg.b.toFixed(3) + 'x + ' + reg.a.toFixed(2);
+  ctx.fillText(eqText, ml + pw - 115, 26);
+  ctx.fillText('R² = ' + reg.r2.toFixed(4), ml + pw - 115, 40);
+
+  /* Update R² display */
+  var r2El = document.getElementById('regR2');
+  if (r2El) r2El.textContent = reg.r2.toFixed(4);
+}
+
+/* ============================================================
+   CANVAS 3: CHI-SQUARE
+   ============================================================ */
+function drawChiSquare() {
+  var canvas = document.getElementById('chiCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+
+  ctx.clearRect(0, 0, W, H);
+
+  var sel = document.getElementById('chiCase');
+  var key = sel ? sel.value : 'smoking';
+  var cs = chiCases[key];
+
+  var a = cs.a, b = cs.b, c = cs.c, d = cs.d, n = cs.n;
+  var chiVal = calcChiSquare(a, b, c, d, n);
+
+  /* Expected frequencies */
+  var ea = (a + b) * (a + c) / n;
+  var eb = (a + b) * (b + d) / n;
+  var ec = (c + d) * (a + c) / n;
+  var ed = (c + d) * (b + d) / n;
+
+  /* Title */
+  ctx.fillStyle = '#3D2C1E';
+  ctx.font = '20px "ZCOOL KuaiLe"';
+  ctx.textAlign = 'center';
+  ctx.fillText('⚖️ ' + cs.name + ' — 2×2 列联表', W / 2, 30);
+
+  /* Table layout */
+  var tableX = 120, tableY = 60;
+  var cellW = 200, cellH = 100;
+  var headerH = 40, rowLabelW = 120;
+
+  /* Column headers */
+  ctx.fillStyle = '#FFFBF0';
+  roundRect(ctx, tableX + rowLabelW, tableY, cellW * 2, headerH, 8);
+  ctx.fill();
+
+  ctx.fillStyle = '#5A4A3A';
+  ctx.font = 'bold 15px "Noto Sans SC"';
+  ctx.textAlign = 'center';
+  ctx.fillText(cs.colLabels[0], tableX + rowLabelW + cellW / 2, tableY + 25);
+  ctx.fillText(cs.colLabels[1], tableX + rowLabelW + cellW * 1.5, tableY + 25);
+
+  /* Row headers */
+  var rowColors = ['#FFE0CC', '#D4F0EC'];
+  ctx.fillStyle = '#5A4A3A';
+  ctx.font = 'bold 15px "Noto Sans SC"';
+  ctx.textAlign = 'center';
+  ctx.fillText(cs.rowLabels[0], tableX + rowLabelW / 2, tableY + headerH + cellH / 2);
+  ctx.fillText(cs.rowLabels[1], tableX + rowLabelW / 2, tableY + headerH + cellH * 1.5);
+
+  /* Cells */
+  var cells = [
+    { val: a, exp: ea, color: '#FF8C42' },
+    { val: b, exp: eb, color: '#FFD23F' },
+    { val: c, exp: ec, color: '#2EC4B6' },
+    { val: d, exp: ed, color: '#FF6B6B' }
+  ];
+  var positions = [
+    { x: tableX + rowLabelW, y: tableY + headerH },
+    { x: tableX + rowLabelW + cellW, y: tableY + headerH },
+    { x: tableX + rowLabelW, y: tableY + headerH + cellH },
+    { x: tableX + rowLabelW + cellW, y: tableY + headerH + cellH }
+  ];
+
+  for (var i = 0; i < 4; i++) {
+    var cx = positions[i].x, cy = positions[i].y;
+    ctx.fillStyle = cells[i].color;
+    ctx.globalAlpha = 0.2;
+    roundRect(ctx, cx + 2, cy + 2, cellW - 4, cellH - 4, 8);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    ctx.strokeStyle = cells[i].color;
+    ctx.lineWidth = 2.5;
+    roundRect(ctx, cx + 2, cy + 2, cellW - 4, cellH - 4, 8);
+    ctx.stroke();
+
+    /* Observed frequency */
+    ctx.fillStyle = '#3D2C1E';
+    ctx.font = 'bold 26px "ZCOOL KuaiLe"';
+    ctx.textAlign = 'center';
+    ctx.fillText(cells[i].val, cx + cellW / 2, cy + cellH / 2);
+
+    /* Expected frequency */
+    ctx.fillStyle = '#8B7355';
+    ctx.font = '12px "Noto Sans SC"';
+    ctx.fillText('期望: ' + cells[i].exp.toFixed(1), cx + cellW / 2, cy + cellH / 2 + 22);
+  }
+
+  /* Margins */
+  ctx.fillStyle = '#5A4A3A';
+  ctx.font = 'bold 14px "Noto Sans SC"';
+  ctx.textAlign = 'center';
+  ctx.fillText('合计: ' + (a + b), tableX + rowLabelW + cellW / 2, tableY + headerH + cellH + 20);
+  ctx.fillText('合计: ' + (c + d), tableX + rowLabelW + cellW * 1.5, tableY + headerH + cellH + 20);
+
+  /* Chi-square result */
+  var resultY = tableY + headerH + cellH * 2 + 30;
+
+  ctx.fillStyle = '#FFFDE7';
+  roundRect(ctx, 80, resultY, W - 160, 70, 14);
+  ctx.fill();
+  ctx.strokeStyle = '#FFD23F';
+  ctx.lineWidth = 2;
+  roundRect(ctx, 80, resultY, W - 160, 70, 14);
+  ctx.stroke();
+
+  ctx.fillStyle = '#3D2C1E';
+  ctx.font = 'bold 20px "ZCOOL KuaiLe"';
+  ctx.textAlign = 'center';
+  ctx.fillText('χ² = ' + chiVal.toFixed(4), W / 2, resultY + 28);
+
+  ctx.font = '15px "Noto Sans SC"';
+  var conclusion, conColor;
+  if (chiVal > 6.635) {
+    conclusion = 'χ² > 6.635 → 拒绝 H₀（α=0.01）：两变量不独立，存在显著关联';
+    conColor = '#FF6B6B';
+  } else if (chiVal > 3.841) {
+    conclusion = 'χ² > 3.841 → 拒绝 H₀（α=0.05）：两变量不独立，存在关联';
+    conColor = '#FF8C42';
+  } else {
+    conclusion = 'χ² ≤ 3.841 → 接受 H₀：无法拒绝独立性假设，两变量可能独立';
+    conColor = '#2EC4B6';
+  }
+  ctx.fillStyle = conColor;
+  ctx.font = 'bold 14px "Noto Sans SC"';
+  ctx.fillText(conclusion, W / 2, resultY + 52);
+}
+
+/* ============================================================
+   CONTROL FUNCTIONS
+   ============================================================ */
+function toggleCorrLine() {
+  showCorrLine = !showCorrLine;
+  drawScatter();
+  showToast('info', showCorrLine ? '📈 已显示回归趋势线' : '📉 已隐藏回归趋势线');
+}
+
+/* ============================================================
+   QUIZ SYSTEM
+   ============================================================ */
+function renderChallenges() {
+  if (chRendered) return;
+  chRendered = true;
+
+  var groups = { case1: [], case2: [], case3: [] };
+  for (var i = 0; i < chQuestions.length; i++) {
+    var q = chQuestions[i];
+    if (groups[q.group]) groups[q.group].push({ idx: i, q: q });
+  }
+
+  var groupToContainer = {
+    case1: 'challenge-case1',
+    case2: 'challenge-case2',
+    case3: 'challenge-case3'
+  };
+
+  for (var gk in groups) {
+    var container = document.getElementById(groupToContainer[gk]);
+    if (!container) continue;
+
+    var title = document.createElement('h3');
+    title.innerHTML = '🎯 答题挑战';
+    container.appendChild(title);
+
+    for (var j = 0; j < groups[gk].length; j++) {
+      var item = groups[gk][j];
+      var qIdx = item.idx;
+      var qData = item.q;
+
+      var card = document.createElement('div');
+      card.className = 'question-card';
+      card.id = 'qcard-' + qIdx;
+
+      var tag = document.createElement('div');
+      tag.className = 'q-tag';
+      tag.textContent = '第 ' + (j + 1) + ' 题';
+      card.appendChild(tag);
+
+      var qText = document.createElement('div');
+      qText.className = 'q-text';
+      qText.textContent = qData.q;
+      card.appendChild(qText);
+
+      var optList = document.createElement('div');
+      optList.className = 'option-list';
+
+      for (var k = 0; k < qData.opts.length; k++) {
+        (function(qi, oi) {
+          var btn = document.createElement('button');
+          btn.className = 'option-btn';
+          btn.id = 'q' + qi + '-opt' + oi;
+          btn.innerHTML = '<span class="opt-label">' + String.fromCharCode(65 + oi) + '.</span> ' + qData.opts[oi];
+          btn.onclick = function() { selectAnswer(qi, oi); };
+          optList.appendChild(btn);
+        })(qIdx, k);
+      }
+
+      card.appendChild(optList);
+      container.appendChild(card);
+    }
+  }
+}
+
+function selectAnswer(qIndex, optIndex) {
+  if (state.questionsAnswered.has(qIndex)) {
+    showToast('info', '这题已经答过啦！');
+    return;
+  }
+
+  var q = chQuestions[qIndex];
+  var correctIdx = q.ans;
+
+  for (var k = 0; k < q.opts.length; k++) {
+    var btn = document.getElementById('q' + qIndex + '-opt' + k);
+    if (!btn) continue;
+    btn.classList.add('locked');
+    if (k === correctIdx) {
+      btn.classList.add('correct');
+    } else if (k === optIndex) {
+      btn.classList.add('wrong');
+    }
+  }
+
+  var card = document.getElementById('qcard-' + qIndex);
+  if (card) card.classList.add('answered');
+
+  state.questionsAnswered.add(qIndex);
+
+  if (optIndex === correctIdx) {
+    state.score += 5;
+    showToast('success', '🎉 回答正确！+5 星星');
+  } else {
+    showToast('error', '❌ 答错了，正确答案是 ' + String.fromCharCode(65 + correctIdx));
+  }
+
+  /* Check chapter completion */
+  var groups = { case1: [0, 1], case2: [2, 3], case3: [4, 5] };
+  for (var gk in groups) {
+    var indices = groups[gk];
+    var allDone = true;
+    for (var m = 0; m < indices.length; m++) {
+      if (!state.questionsAnswered.has(indices[m])) {
+        allDone = false;
+        break;
+      }
+    }
+    if (allDone && !state.chaptersCompleted.has(gk)) {
+      state.chaptersCompleted.add(gk);
+      var labels = { case1: '案件一', case2: '案件二', case3: '案件三' };
+      showToast('success', '🏅 ' + labels[gk] + ' 完成！获得侦探勋章碎片！');
+    }
+  }
+
+  updateProgress();
+}
+
+function updateProgress() {
+  var starEl = document.getElementById('starCount');
+  var chEl = document.getElementById('chapterCount');
+  var coEl = document.getElementById('correctCount');
+
+  /* Calculate correct answers */
+  var correctCount = 0;
+  state.questionsAnswered.forEach(function(qIdx) {
+    if (chQuestions[qIdx] && true) {
+      /* We stored correct ones with +5 score, so estimate */
+    }
+  });
+  /* Simpler: count based on score (5 per correct) */
+  correctCount = Math.floor(state.score / 5);
+
+  /* Total stars: 5 per correct answer + bonus for chapters */
+  var totalStars = state.score + state.chaptersCompleted.size * 5;
+
+  if (starEl) starEl.textContent = totalStars;
+  if (chEl) chEl.textContent = state.chaptersCompleted.size;
+  if (coEl) coEl.textContent = correctCount;
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+function showToast(type, message) {
+  var container = document.getElementById('toastContainer');
+  if (!container) return;
+
+  var toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  setTimeout(function() {
+    if (toast.parentNode) toast.parentNode.removeChild(toast);
+  }, 3000);
+}
+
+/* ============================================================
+   BACKGROUND PARTICLES
+   ============================================================ */
+function createParticles() {
+  var container = document.getElementById('bgParticles');
+  if (!container) return;
+
+  var emojis = ['🔍', '📊', '✨', '⭐', '📈', '📉', '🔢', '✦', '🎯', '💡'];
+  var count = 18;
+
+  for (var i = 0; i < count; i++) {
+    var p = document.createElement('div');
+    p.className = 'particle';
+    p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    p.style.left = Math.random() * 100 + '%';
+    p.style.fontSize = (18 + Math.random() * 22) + 'px';
+    p.style.animationDuration = (12 + Math.random() * 18) + 's';
+    p.style.animationDelay = (Math.random() * 15) + 's';
+    container.appendChild(p);
+  }
+}
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
+function initPage() {
+  createParticles();
+  renderChallenges();
+  setTimeout(function() {
+    drawScatter();
+    drawRegression();
+    drawChiSquare();
+  }, 300);
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPage);
+} else {
+  initPage();
+}
+</script>
+
+<script src="./_shared/anime-cartoon-tools.js"></script>
+</body>
+</html>

@@ -2,18 +2,18 @@
   'use strict';
 
   var COLORS = {
-    accent: '#f59e0b',
+    accent: '#E8A93E',
     accent2: '#06b6d4',
     accent3: '#ec4899',
     accent4: '#10b981',
-    accent5: '#8b5cf6',
+    accent5: '#B89AD9',
     red: '#ef4444',
-    muted: '#94a3b8',
-    rule: '#334155',
-    ink: '#f1f5f9',
-    bg: '#0b1120',
-    bg2: '#151e32',
-    bg3: '#1e293b'
+    muted: '#9B8B7A',
+    rule: 'rgba(180,160,140,0.25)',
+    ink: '#4A3B2E',
+    bg: '#FFF8F0',
+    bg2: '#FFFDF7',
+    bg3: '#FFF5EE'
   };
 
   // ===================== Shared ECharts Helpers =====================

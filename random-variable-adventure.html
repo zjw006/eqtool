@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>随机变量及其分布 — 命运占卜师的试炼</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=ZCOOL+KuaiLe&display=swap');
+
+:root {
+  --pink: #FF6B9D;
+  --pink-light: #FFB3D0;
+  --pink-dark: #E8468A;
+  --purple: #C77DFF;
+  --purple-light: #E0B0FF;
+  --blue: #74C0FC;
+  --blue-light: #A5D8FF;
+  --green: #69DB7C;
+  --green-light: #B2F2BB;
+  --yellow: #FFD43B;
+  --yellow-light: #FFF3BF;
+  --orange: #FF922B;
+  --bg-cream: #FFF8F0;
+  --bg-card: rgba(255,255,255,0.85);
+  --text-main: #4A3548;
+  --text-light: #7B6B7E;
+  --shadow: 0 4px 20px rgba(199,125,255,0.15);
+  --shadow-hover: 0 8px 30px rgba(255,107,157,0.25);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans SC', sans-serif;
+  background: var(--bg-cream);
+  color: var(--text-main);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* === 背景装饰粒子 === */
+.bg-particles {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.bg-particles span {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  animation: float-up linear infinite;
+  opacity: 0.3;
+}
+@keyframes float-up {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.3; }
+  90% { opacity: 0.3; }
+  100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+}
+
+/* === 主容器 === */
+.main-container {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* === 头部绘本标题 === */
+.book-header {
+  text-align: center;
+  padding: 40px 20px 30px;
+  position: relative;
+}
+.book-header h1 {
+  font-family: 'ZCOOL KuaiLe', cursive;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  background: linear-gradient(135deg, var(--pink), var(--purple), var(--blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(2px 4px 6px rgba(199,125,255,0.3));
+  margin-bottom: 8px;
+}
+.book-header .subtitle {
+  font-size: 1.1rem;
+  color: var(--text-light);
+  font-weight: 300;
+}
+.book-header .subtitle em {
+  color: var(--pink-dark);
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* 角色头像条 */
+.mascot-bar {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+.mascot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+.mascot:hover { transform: translateY(-5px); }
+.mascot-avatar {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  box-shadow: var(--shadow);
+  border: 3px solid white;
+  transition: box-shadow 0.3s;
+}
+.mascot:hover .mascot-avatar { box-shadow: var(--shadow-hover); }
+.mascot-name {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* === 进度条 === */
+.progress-bar-wrap {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 16px 24px;
+  margin: 20px auto;
+  max-width: 700px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+}
+.progress-bar-wrap .label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+  color: var(--text-light);
+}
+.progress-bar-wrap .label .score {
+  color: var(--pink-dark);
+  font-weight: 700;
+}
+.progress-track {
+  height: 12px;
+  background: linear-gradient(90deg, var(--pink-light), var(--purple-light), var(--blue-light));
+  border-radius: 6px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--pink), var(--purple), var(--blue));
+  border-radius: 6px;
+  transition: width 0.6s ease;
+  position: relative;
+}
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  right: 0; top: 0;
+  width: 20px; height: 100%;
+  background: rgba(255,255,255,0.5);
+  border-radius: 6px;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+/* === 章节卡片 === */
+.chapter-card {
+  background: var(--bg-card);
+  border-radius: 24px;
+  margin: 30px 0;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  border: 2px solid transparent;
+  transition: border-color 0.3s, transform 0.3s;
+}
+.chapter-card:hover {
+  border-color: var(--pink-light);
+  transform: translateY(-2px);
+}
+.chapter-card.completed {
+  border-color: var(--green);
+}
+.chapter-card.active {
+  border-color: var(--pink);
+}
+
+.chapter-header {
+  padding: 24px 30px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  user-select: none;
+}
+.chapter-number {
+  width: 48px; height: 48px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'ZCOOL KuaiLe', cursive;
+  font-size: 1.4rem;
+  color: white;
+  flex-shrink: 0;
+}
+.chapter-info h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.chapter-info p {
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+.chapter-status {
+  margin-left: auto;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.chapter-body {
+  padding: 0 30px 30px;
+  display: none;
+}
+.chapter-card.active .chapter-body {
+  display: block;
+}
+
+/* === 绘本内容区 === */
+.story-panel {
+  background: linear-gradient(135deg, #FFF5F9, #F5F0FF, #F0F8FF);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  border-left: 4px solid var(--pink);
+  font-size: 1rem;
+  line-height: 1.8;
+  position: relative;
+}
+.story-panel .speech-bubble {
+  position: relative;
+  background: white;
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin: 12px 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  display: inline-block;
+  max-width: 90%;
+}
+.story-panel .speech-bubble.left { margin-right: auto; }
+.story-panel .speech-bubble.right { margin-left: auto; text-align: right; }
+.story-panel .speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  width: 16px; height: 16px;
+  background: white;
+  transform: rotate(45deg);
+}
+.story-panel .speech-bubble.left::after { left: 20px; }
+.story-panel .speech-bubble.right::after { right: 20px; }
+
+.speaker-tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  color: white;
+}
+
+/* === Canvas 互动区 === */
+.canvas-section {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  margin: 20px 0;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.canvas-section h3 {
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+  color: var(--purple);
+}
+.canvas-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  border-radius: 12px;
+  background: #FAFAFE;
+  border: 2px solid #F0EEFF;
+}
+.canvas-wrap canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  cursor: pointer;
+}
+
+/* 控制栏 */
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.btn {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  color: white;
+  box-shadow: 0 4px 12px rgba(255,107,157,0.3);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255,107,157,0.4);
+}
+.btn-secondary {
+  background: linear-gradient(135deg, var(--blue-light), var(--green-light));
+  color: var(--text-main);
+}
+.btn-secondary:hover {
+  transform: translateY(-2px);
+}
+.btn-success {
+  background: linear-gradient(135deg, var(--green), #38d96a);
+  color: white;
+}
+.btn-warning {
+  background: linear-gradient(135deg, var(--orange), var(--yellow));
+  color: var(--text-main);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.input-group label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-light);
+}
+.input-group input, .input-group select {
+  padding: 8px 14px;
+  border: 2px solid var(--pink-light);
+  border-radius: 10px;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  background: white;
+  transition: border-color 0.3s;
+  width: 80px;
+}
+.input-group input:focus, .input-group select:focus {
+  border-color: var(--pink);
+}
+
+/* === 公式展示 === */
+.formula-box {
+  background: linear-gradient(135deg, #FFF9E6, #FFF0F5);
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin: 16px 0;
+  text-align: center;
+  border: 2px dashed var(--yellow);
+}
+.formula-box .formula {
+  font-size: clamp(1.2rem, 3vw, 1.8rem);
+  font-weight: 700;
+  color: var(--pink-dark);
+  margin: 8px 0;
+  letter-spacing: 2px;
+}
+.formula-box .desc {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin-top: 6px;
+}
+
+/* === 挑战区 === */
+.challenge-box {
+  background: linear-gradient(135deg, #F0FFF4, #F0F0FF);
+  border-radius: 16px;
+  padding: 24px;
+  margin: 20px 0;
+  border: 2px solid var(--green-light);
+  position: relative;
+}
+.challenge-box h3 {
+  color: var(--green);
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+}
+.challenge-box .question {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+.challenge-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+.option-btn {
+  padding: 14px 18px;
+  background: white;
+  border: 2px solid #E8E0F0;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: 'Noto Sans SC', sans-serif;
+  transition: all 0.25s;
+  text-align: center;
+}
+.option-btn:hover {
+  border-color: var(--purple);
+  background: #FAFAFF;
+  transform: translateY(-2px);
+}
+.option-btn.correct {
+  border-color: var(--green);
+  background: #E6FFE6;
+  color: #2B8A3E;
+  animation: pulse-green 0.5s;
+}
+.option-btn.wrong {
+  border-color: #FF6B6B;
+  background: #FFF0F0;
+  color: #C92A2A;
+  animation: shake 0.4s;
+}
+@keyframes pulse-green {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.feedback {
+  margin-top: 14px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  display: none;
+}
+.feedback.show { display: block; }
+.feedback.correct-fb {
+  background: #E6FFE6;
+  color: #2B8A3E;
+  border: 1px solid var(--green-light);
+}
+.feedback.wrong-fb {
+  background: #FFF0F0;
+  color: #C92A2A;
+  border: 1px solid #FFB3B3;
+}
+
+/* === 提示面板 === */
+.tip-panel {
+  background: linear-gradient(135deg, #FFF8E1, #FFF3E0);
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin: 12px 0;
+  font-size: 0.9rem;
+  color: #7B5E00;
+  border-left: 4px solid var(--yellow);
+}
+.tip-panel .tip-icon {
+  margin-right: 6px;
+}
+
+/* === 导航按钮 === */
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.nav-buttons .btn {
+  min-width: 140px;
+  justify-content: center;
+}
+
+/* === Toast 通知 === */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.toast {
+  padding: 14px 22px;
+  border-radius: 14px;
+  color: white;
+  font-size: 0.9rem;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  animation: slide-in 0.4s ease, fade-out 0.4s 2.6s ease forwards;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 360px;
+}
+.toast.success { background: linear-gradient(135deg, var(--green), #38d96a); }
+.toast.info { background: linear-gradient(135deg, var(--blue), var(--purple)); }
+.toast.warning { background: linear-gradient(135deg, var(--orange), var(--yellow)); }
+@keyframes slide-in {
+  from { transform: translateX(100px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes fade-out {
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+/* === 统计面板 === */
+.stats-bar {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+.stat-item .stat-val {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* === 拖拽排序区 === */
+.drag-container {
+  min-height: 60px;
+  border: 2px dashed var(--purple-light);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 10px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.drag-item {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, var(--pink-light), var(--purple-light));
+  color: var(--text-main);
+  border-radius: 10px;
+  cursor: grab;
+  font-size: 0.9rem;
+  font-weight: 500;
+  user-select: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.drag-item:active { cursor: grabbing; }
+.drag-item.dragging {
+  opacity: 0.5;
+  transform: scale(1.05);
+}
+.drag-item.correct-pos {
+  background: linear-gradient(135deg, var(--green-light), #c3f7d8);
+  border: 2px solid var(--green);
+}
+.drag-item.wrong-pos {
+  background: linear-gradient(135deg, #FFB3B3, #FFC9C9);
+  border: 2px solid #FF6B6B;
+}
+
+/* === 树形图展示 === */
+.tree-display {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+  overflow-x: auto;
+  padding: 10px;
+}
+
+/* === 页脚 === */
+.book-footer {
+  text-align: center;
+  padding: 40px 20px 30px;
+  color: var(--text-light);
+  font-size: 0.85rem;
+}
+.book-footer .hearts {
+  margin-bottom: 8px;
+  font-size: 1.2rem;
+  color: var(--pink);
+}
+
+/* === 响应式 === */
+@media (max-width: 768px) {
+  .main-container { padding: 12px; }
+  .chapter-header { padding: 16px 20px; }
+  .chapter-body { padding: 0 20px 20px; }
+  .story-panel { padding: 16px; }
+  .canvas-section { padding: 16px; }
+  .challenge-options { grid-template-columns: 1fr 1fr; }
+  .controls { gap: 8px; }
+  .btn { padding: 8px 16px; font-size: 0.85rem; }
+}
+
+/* === 入场动画 === */
+.fade-in {
+  animation: fadeIn 0.6s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.bounce-in {
+  animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+@keyframes bounceIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+/* 独立页面：chapter-body始终显示 */
+.chapter-body { display: block !important; padding: 0 30px 30px; }
+.main-container { max-width: 900px; }
+
+/* 试炼进度指示器 */
+.trial-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  background: linear-gradient(135deg, var(--purple), var(--pink));
+  color: white;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  float: right;
+}
+
+/* 返回链接 */
+.back-link {
+  display: inline-block;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #FF6B9D, #C77DFF);
+  color: #fff;
+  text-decoration: none;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(199,125,255,0.4);
+  margin-bottom: 20px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.back-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(199,125,255,0.5);
+}
+
+</style>
+</style>
+
+</head>
+<body>
+
+<nav style="position:fixed;top:12px;left:12px;z-index:999">
+  <a href="./index.html" class="back-link">⌂ HOME</a>
+</nav>
+
+<!-- 背景粒子 -->
+<div class="bg-particles" id="bgParticles"></div>
+
+<!-- Toast 容器 -->
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="main-container">
+
+  <!-- 绘本头部 -->
+  <header class="book-header fade-in">
+    <h1>随机变量及其分布</h1>
+    <p class="subtitle">命运占卜师的试炼 — 和<em>命运占卜师</em>一起探索概率分布的奇妙世界</p>
+    <div class="mascot-bar">
+      <div class="mascot" title="命运占卜师 - 概率大师" onclick="showToast('info', '命运占卜师: 不确定性也是一种美~')">
+        <div class="mascot-avatar" style="background: linear-gradient(135deg, #845EF7, #E64980)">&#127752;</div>
+        <span class="mascot-name">命运占卜师</span>
+      </div>
+      <div class="mascot" title="小数精灵" onclick="showToast('info', '小数精灵: 随机变量不可怕!')">
+        <div class="mascot-avatar" style="background: linear-gradient(135deg, var(--pink), var(--purple))">1</div>
+        <span class="mascot-name">小数精灵</span>
+      </div>
+      <div class="mascot" title="概率喵" onclick="showToast('info', '概率喵: 分布列就是概率的地图喵~')">
+        <div class="mascot-avatar" style="background: linear-gradient(135deg, var(--orange), var(--yellow))">P</div>
+        <span class="mascot-name">概率喵</span>
+      </div>
+      <div class="mascot" title="组合兔" onclick="showToast('info', '组合兔: 期望就是平均水平~')">
+        <div class="mascot-avatar" style="background: linear-gradient(135deg, var(--green), var(--blue))">C</div>
+        <span class="mascot-name">组合兔</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 进度条 -->
+  <div class="progress-bar-wrap fade-in">
+    <div class="label">
+      <span>试炼进度</span>
+      <span class="score" id="scoreDisplay">星星: 0 / 48</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-item">完成关卡: <span class="stat-val" id="chapterDone">0</span>/5</div>
+      <div class="stat-item">正确答题: <span class="stat-val" id="correctCount">0</span></div>
+      <div class="stat-item">连续正确: <span class="stat-val" id="streakCount">0</span></div>
+    </div>
+  </div>
+
+  <!-- 第六章内容 -->
+  
+
+      <!-- ======== 序章: 命运的邀请函 ======== -->
+      <div class="story-panel" style="background:linear-gradient(135deg,#2B1055,#4A154B);color:#fff;border-radius:20px;padding:28px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-20px;right:-20px;width:120px;height:120px;background:radial-gradient(circle,rgba(230,73,128,0.3),transparent);border-radius:50%"></div>
+        <div style="position:absolute;bottom:-30px;left:-30px;width:150px;height:150px;background:radial-gradient(circle,rgba(132,94,247,0.25),transparent);border-radius:50%"></div>
+        <h3 style="color:#FFB3D0;text-align:center;font-size:1.3em;text-shadow:0 0 20px rgba(255,107,157,0.5)">~ 序章 · 命运的邀请函 ~</h3>
+        <div style="display:flex;gap:20px;align-items:flex-start;margin:16px 0;flex-wrap:wrap;justify-content:center">
+          <div style="text-align:center;flex:0 0 auto">
+            <div style="width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#E64980,#845EF7);display:flex;align-items:center;justify-content:center;font-size:2.2rem;border:3px solid #FFB3D0;box-shadow:0 0 20px rgba(230,73,128,0.4);margin:0 auto">&#128302;</div>
+            <div style="font-size:0.75rem;color:#FFB3D0;margin-top:6px;font-weight:bold">命运占卜师</div>
+          </div>
+          <div style="text-align:center;flex:0 0 auto">
+            <div style="width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#FF6B9D,#FFB3D0);display:flex;align-items:center;justify-content:center;font-size:2.2rem;border:3px solid #fff;box-shadow:0 0 20px rgba(255,107,157,0.3);margin:0 auto">&#10024;</div>
+            <div style="font-size:0.75rem;color:#FFB3D0;margin-top:6px;font-weight:bold">你(旅行者)</div>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,179,208,0.3);border-radius:16px;padding:16px;margin:12px 0">
+          <div style="color:#FFB3D0;font-size:0.8rem;font-weight:bold;margin-bottom:6px">&#128302; 命运占卜师</div>
+          <div style="color:#E8D5F0;line-height:1.7;font-size:0.92rem">"欢迎来到命运占卜事务所，旅行者。我是这里的占卜师，专门用<strong style="color:#FFB3D0">随机变量</strong>来解读世界的不确定性。不要害怕——随机变量不是命运的黑箱，而是一把<strong style="color:#C77DFF">量化的钥匙</strong>。"</div>
+        </div>
+        <div class="speech-bubble left" style="opacity:0.9">
+          <span class="speaker-tag" style="background:var(--pink)">小数精灵</span><br>
+          "占卜师姐姐!随机变量真的能在现实中用吗?还是只是数学课本上的东西?"
+        </div>
+        <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,179,208,0.3);border-radius:16px;padding:16px;margin:12px 0">
+          <div style="color:#FFB3D0;font-size:0.8rem;font-weight:bold;margin-bottom:6px">&#128302; 命运占卜师</div>
+          <div style="color:#E8D5F0;line-height:1.7;font-size:0.92rem">"当然可以!让我先给你看看——<strong style="color:#FFB3D0">随机变量遍布你生活的每一个角落</strong>。"</div>
+        </div>
+      </div>
+
+      <!-- ======== 真实应用场景 ======== -->
+      <div style="margin:20px 0 8px;text-align:center">
+        <span style="background:linear-gradient(135deg,#E64980,#845EF7);color:#fff;padding:6px 18px;border-radius:20px;font-size:0.85rem;font-weight:bold">&#127758; 随机变量在现实世界的六大应用</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin:12px 0 20px">
+        <div class="story-panel" style="padding:14px;border-left:4px solid #E64980;position:relative;overflow:hidden">
+          <div style="position:absolute;top:-10px;right:-10px;width:50px;height:50px;background:radial-gradient(circle,rgba(230,73,128,0.15),transparent);border-radius:50%"></div>
+          <div style="font-size:1.6em">&#127973;</div>
+          <h4 style="color:#E64980;margin:4px 0 4px">医疗诊断 · 贝叶斯定理</h4>
+          <p style="font-size:0.8rem;color:#555;margin:0;line-height:1.6">乳腺癌筛查中，患病率仅1%，但检测灵敏度达95%。若一人检测结果阳性，真正患病的概率仅约<strong>16%</strong>——这就是贝叶斯公式修正"先验概率"的威力。在新冠检测中，低患病率+高假阳性率导致"阳性预测值"远低于直觉预期，是循证医学的核心数学工具。</p>
+        </div>
+        <div class="story-panel" style="padding:14px;border-left:4px solid #C77DFF;position:relative;overflow:hidden">
+          <div style="position:absolute;top:-10px;right:-10px;width:50px;height:50px;background:radial-gradient(circle,rgba(199,125,255,0.15),transparent);border-radius:50%"></div>
+          <div style="font-size:1.6em">&#128172;</div>
+          <h4 style="color:#C77DFF;margin:4px 0 4px">AI与机器学习 · 朴素贝叶斯</h4>
+          <p style="font-size:0.8rem;color:#555;margin:0;line-height:1.6">垃圾邮件过滤器用<strong>条件概率P(垃圾|含"免费")</strong>判断邮件类型。神经网络用<strong>伯努利分布</strong>实现Dropout随机丢弃神经元，用<strong>正态分布</strong>初始化权重。概率分布是AI模型的灵魂。</p>
+        </div>
+        <div class="story-panel" style="padding:14px;border-left:4px solid #FF922B;position:relative;overflow:hidden">
+          <div style="position:absolute;top:-10px;right:-10px;width:50px;height:50px;background:radial-gradient(circle,rgba(255,146,43,0.15),transparent);border-radius:50%"></div>
+          <div style="font-size:1.6em">&#127919;</div>
+          <h4 style="color:#FF922B;margin:4px 0 4px">工业质检 · 超几何分布</h4>
+          <p style="font-size:0.8rem;color:#555;margin:0;line-height:1.6">从1000件产品中抽50件检验，次品数X服从<strong>超几何分布H(1000,K,50)</strong>。期望E(X)=50K/1000告诉你"应该"检出多少次品，是工厂质量控制(AQL抽样方案)的数学基础。</p>
+        </div>
+        <div class="story-panel" style="padding:14px;border-left:4px solid #74C0FC;position:relative;overflow:hidden">
+          <div style="position:absolute;top:-10px;right:-10px;width:50px;height:50px;background:radial-gradient(circle,rgba(116,192,252,0.15),transparent);border-radius:50%"></div>
+          <div style="font-size:1.6em">&#128200;</div>
+          <h4 style="color:#74C0FC;margin:4px 0 4px">金融风控 · 期望与方差</h4>
+          <p style="font-size:0.8rem;color:#555;margin:0;line-height:1.6">马科维茨投资组合理论用<strong>期望E(R)衡量收益</strong>、<strong>方差D(R)衡量风险</strong>。VaR(风险价值)用正态分布估算"在99%置信度下，最大损失不超过多少"。Black-Scholes期权定价基于几何布朗运动(对数正态分布)。</p>
+        </div>
+        <div class="story-panel" style="padding:14px;border-left:4px solid #69DB7C;position:relative;overflow:hidden">
+          <div style="position:absolute;top:-10px;right:-10px;width:50px;height:50px;background:radial-gradient(circle,rgba(105,219,124,0.15),transparent);border-radius:50%"></div>
+          <div style="font-size:1.6em">&#127891;</div>
+          <h4 style="color:#51CF66;margin:4px 0 4px">教育测评 · 正态分布</h4>
+          <p style="font-size:0.8rem;color:#555;margin:0;line-height:1.6">SAT考试成绩标准化基于<strong>正态分布N(500,100²)</strong>。3-sigma原则告诉我们约<strong>99.7%</strong>的考生分数落在200-800之间。六西格玛管理要求过程能力达到6sigma水平，即百万分之3.4的缺陷率。</p>
+        </div>
+        <div class="story-panel" style="padding:14px;border-left:4px solid #FFD43B;position:relative;overflow:hidden">
+          <div style="position:absolute;top:-10px;right:-10px;width:50px;height:50px;background:radial-gradient(circle,rgba(255,212,59,0.15),transparent);border-radius:50%"></div>
+          <div style="font-size:1.6em">&#127760;</div>
+          <h4 style="color:#D9A006;margin:4px 0 4px">A/B测试 · 二项分布</h4>
+          <p style="font-size:0.8rem;color:#555;margin:0;line-height:1.6">互联网公司做A/B测试时，用户"点击/不点击"服从<strong>伯努利分布</strong>，n次观察中点击次数服从<strong>二项分布B(n,p)</strong>。通过比较两组的点击率差异是否显著，决定是否上线新功能——这是数据驱动决策的核心方法。</p>
+        </div>
+      </div>
+
+      <!-- ======== 试炼一: 条件概率与全概率公式 ======== -->
+      <div class="story-panel" style="margin:24px 0 16px;padding:24px;background:linear-gradient(135deg,#FFF0F5,#F0E6FF);border-radius:20px;border:2px dashed #E64980;position:relative;overflow:hidden">
+        <div style="position:absolute;top:10px;right:16px;background:linear-gradient(135deg,#E64980,#845EF7);color:#fff;padding:4px 14px;border-radius:12px;font-size:0.75rem;font-weight:bold">试炼 1/5</div>
+        <h3 style="color:#E64980">&#127919; 试炼一: 条件概率与全概率公式</h3>
+        <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,179,208,0.3);border-radius:16px;padding:14px;margin:12px 0">
+          <div style="color:#FFB3D0;font-size:0.8rem;font-weight:bold;margin-bottom:6px">&#128302; 命运占卜师</div>
+          <div style="color:#E8D5F0;line-height:1.7;font-size:0.9rem">"在已知某些信息的条件下，概率会发生变化。这就是<strong style="color:#FFB3D0">条件概率</strong>的魔力——就像知道了对方的星座，你对TA性格的判断就会更精确。"</div>
+        </div>
+        <div class="tip-panel">
+          <span class="tip-icon">&#128161;</span>
+          <strong>核心公式:</strong><br>
+          条件概率: P(A|B) = P(AB) / P(B)<br>
+          全概率公式: P(B) = &sum; P(A<sub>i</sub>)P(B|A<sub>i</sub>)<br>
+          <em style="color:#888">当 A<sub>1</sub>,A<sub>2</sub>,...,A<sub>n</sub> 构成样本空间的一个划分时</em>
+        </div>
+      </div>
+
+      <!-- 互动: 医疗诊断贝叶斯 -->
+      <div class="canvas-section">
+        <h3>&#127973; 互动: 疾病诊断模拟器 — 贝叶斯公式可视化</h3>
+        <p style="font-size:0.85rem;color:#666;margin:8px 0">调整参数，观察贝叶斯公式如何修正"真正患病"的概率。试试看：患病率很低时，即使检测很准，阳性结果也大概率是误报!</p>
+        <div class="canvas-wrap">
+          <canvas id="bayesCanvas" width="800" height="420"></canvas>
+        </div>
+        <div class="controls">
+          <div class="input-group">
+            <label>患病率 P(D):</label>
+            <input type="range" id="bayesPD" min="1" max="50" value="5" oninput="drawBayes();document.getElementById('bayesPDVal').textContent=this.value+'%'">
+            <span id="bayesPDVal" style="min-width:40px">5%</span>
+          </div>
+          <div class="input-group">
+            <label>灵敏度 P(+|D):</label>
+            <input type="range" id="bayesSen" min="50" max="99" value="95" oninput="drawBayes();document.getElementById('bayesSenVal').textContent=this.value+'%'">
+            <span id="bayesSenVal" style="min-width:40px">95%</span>
+          </div>
+          <div class="input-group">
+            <label>误报率 P(+|~D):</label>
+            <input type="range" id="bayesFPR" min="1" max="30" value="5" oninput="drawBayes();document.getElementById('bayesFPRVal').textContent=this.value+'%'">
+            <span id="bayesFPRVal" style="min-width:40px">5%</span>
+          </div>
+        </div>
+      </div>
+      <div id="ch6q1Container"></div>
+
+      <!-- ======== 试炼二: 离散型随机变量及分布列 ======== -->
+      <div class="story-panel" style="margin:24px 0 16px;padding:24px;background:linear-gradient(135deg,#F0F0FF,#E6F7FF);border-radius:20px;border:2px dashed #74C0FC;position:relative;overflow:hidden">
+        <div style="position:absolute;top:10px;right:16px;background:linear-gradient(135deg,#74C0FC,#5B8DEF);color:#fff;padding:4px 14px;border-radius:12px;font-size:0.75rem;font-weight:bold">试炼 2/5</div>
+        <h3 style="color:#5B8DEF">&#127922; 试炼二: 离散型随机变量及其分布列</h3>
+        <div class="speech-bubble right">
+          <span class="speaker-tag" style="background:#74C0FC">概率喵</span><br>
+          "随机变量就是把随机事件的结果<strong>数字化</strong>!掷骰子的点数X=1,2,3,4,5,6就是一个离散型随机变量喵~"
+        </div>
+        <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,179,208,0.3);border-radius:16px;padding:14px;margin:12px 0">
+          <div style="color:#FFB3D0;font-size:0.8rem;font-weight:bold;margin-bottom:6px">&#128302; 命运占卜师</div>
+          <div style="color:#E8D5F0;line-height:1.7;font-size:0.9rem">"<strong style="color:#FFB3D0">分布列</strong>就是随机变量的'档案'——记录了它所有可能的取值和对应的概率。掷骰子时，每个面出现的概率都是1/6。但当你大量投掷后，频率会越来越接近理论概率……这就是<strong style="color:#C77DFF">大数定律</strong>的雏形。"</div>
+        </div>
+        <div class="tip-panel">
+          <span class="tip-icon">&#128161;</span>
+          <strong>分布列:</strong> 列出X所有可能取值及其概率<br>
+          性质: P(X=x<sub>i</sub>) &ge; 0, 且 &sum;P(X=x<sub>i</sub>) = 1<br>
+          <em style="color:#888">分布列完整描述了离散型随机变量的概率规律</em>
+        </div>
+      </div>
+
+      <!-- 互动: 分布列编辑器 -->
+      <div class="canvas-section">
+        <h3>&#127922; 互动: 掷骰子分布列可视化</h3>
+        <p style="font-size:0.85rem;color:#666;margin:8px 0">点击骰子投掷，观察频率如何逼近理论概率(大数定律)!投掷次数越多，越接近1/6</p>
+        <div class="canvas-wrap">
+          <canvas id="distCanvas" width="800" height="400"></canvas>
+        </div>
+        <div class="controls">
+          <button class="btn btn-primary" onclick="rollDiceOnce()">&#127922; 投掷一次</button>
+          <button class="btn btn-primary" onclick="rollDiceMany(100)">投掷100次</button>
+          <button class="btn btn-primary" onclick="rollDiceMany(1000)">投掷1000次</button>
+          <button class="btn btn-secondary" onclick="resetDice()">&#128260; 重置</button>
+          <span style="margin-left:12px;color:#666;font-size:0.85rem">已投: <strong id="diceRollCount">0</strong> 次</span>
+        </div>
+      </div>
+
+      <!-- ======== 试炼三: 期望与方差 ======== -->
+      <div class="story-panel" style="margin:24px 0 16px;padding:24px;background:linear-gradient(135deg,#FFF5E6,#FFF0F0);border-radius:20px;border:2px dashed #FF922B;position:relative;overflow:hidden">
+        <div style="position:absolute;top:10px;right:16px;background:linear-gradient(135deg,#FF922B,#E64980);color:#fff;padding:4px 14px;border-radius:12px;font-size:0.75rem;font-weight:bold">试炼 3/5</div>
+        <h3 style="color:#FF922B">&#11088; 试炼三: 期望与方差 — 占卜的精度与波动</h3>
+        <div class="speech-bubble left">
+          <span class="speaker-tag" style="background:#FF922B">组合兔</span><br>
+          "<strong>期望E(X)</strong>是随机变量的'平均体重'——它告诉你'平均来说'会得到什么。"
+        </div>
+        <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,179,208,0.3);border-radius:16px;padding:14px;margin:12px 0">
+          <div style="color:#FFB3D0;font-size:0.8rem;font-weight:bold;margin-bottom:6px">&#128302; 命运占卜师</div>
+          <div style="color:#E8D5F0;line-height:1.7;font-size:0.9rem">"而<strong style="color:#FFB3D0">方差D(X)</strong>衡量结果的'波动程度'——方差越大，结果越不稳定，就像一个情绪起伏很大的人。在金融里，期望是收益，方差就是风险。"</div>
+        </div>
+        <div class="tip-panel">
+          <span class="tip-icon">&#128161;</span>
+          <strong>公式:</strong><br>
+          期望: E(X) = &sum;(x<sub>i</sub> &times; P(X=x<sub>i</sub>))<br>
+          方差: D(X) = E(X<sup>2</sup>) - [E(X)]<sup>2</sup><br>
+          标准差: &sigma; = &radic;D(X)
+        </div>
+      </div>
+
+      <!-- 互动: 期望方差可视化 -->
+      <div class="canvas-section">
+        <h3>&#11088; 互动: 期望与方差可视化</h3>
+        <p style="font-size:0.85rem;color:#666;margin:8px 0">选择不同的分布，观察期望(红线)和方差(蓝色区间)的变化</p>
+        <div class="canvas-wrap">
+          <canvas id="evCanvas" width="800" height="380"></canvas>
+        </div>
+        <div class="controls">
+          <div class="input-group">
+            <label>预设分布:</label>
+            <select id="evPreset" onchange="drawEV()">
+              <option value="fair">公平骰子 X~{1..6}</option>
+              <option value="biased">偏心骰子 X~{1:0.1,2:0.1,3:0.1,4:0.1,5:0.1,6:0.5}</option>
+              <option value="coin">硬币 X~{0:0.5,1:0.5}</option>
+              <option value="exam">考试成绩 X~{60:0.1,70:0.2,80:0.4,90:0.2,100:0.1}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="ch6q2Container"></div>
+
+      <!-- ======== 试炼四: 二项分布与超几何分布 ======== -->
+      <div class="story-panel" style="margin:24px 0 16px;padding:24px;background:linear-gradient(135deg,#F0FFF4,#E6FFF0);border-radius:20px;border:2px dashed #51CF66;position:relative;overflow:hidden">
+        <div style="position:absolute;top:10px;right:16px;background:linear-gradient(135deg,#51CF66,#2B8A3E);color:#fff;padding:4px 14px;border-radius:12px;font-size:0.75rem;font-weight:bold">试炼 4/5</div>
+        <h3 style="color:#2B8A3E">&#127793; 试炼四: 二项分布与超几何分布 — 放回与不放回的抉择</h3>
+        <div class="speech-bubble right">
+          <span class="speaker-tag" style="background:#51CF66">小数精灵</span><br>
+          "<strong>二项分布</strong>就像'有放回'抽样——每次概率不变!<strong>超几何分布</strong>是'无放回'抽样——抽走一个就少一个!"
+        </div>
+        <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,179,208,0.3);border-radius:16px;padding:14px;margin:12px 0">
+          <div style="color:#FFB3D0;font-size:0.8rem;font-weight:bold;margin-bottom:6px">&#128302; 命运占卜师</div>
+          <div style="color:#E8D5F0;line-height:1.7;font-size:0.9rem">"关键区别在于<strong style="color:#FFB3D0">独立性</strong>。有放回时每次试验独立，用二项分布;无放回时概率会变化，用超几何分布。但当总体N远大于样本n时，两者几乎一样——这叫做'超几何分布的二项近似'。"</div>
+        </div>
+        <div class="tip-panel">
+          <span class="tip-icon">&#128161;</span>
+          <strong>二项分布 X~B(n,p):</strong> n次独立试验，每次成功概率p<br>
+          P(X=k) = C(n,k) &times; p<sup>k</sup> &times; (1-p)<sup>n-k</sup> &nbsp; E(X)=np, D(X)=np(1-p)<br><br>
+          <strong>超几何分布 X~H(N,K,n):</strong> N件中K件次品，抽n件<br>
+          P(X=k) = C(K,k)&times;C(N-K,n-k) / C(N,n) &nbsp; E(X)=nK/N
+        </div>
+      </div>
+
+      <!-- 互动: 二项分布 vs 超几何分布 -->
+      <div class="canvas-section">
+        <h3>&#127793; 互动: 二项分布 vs 超几何分布对比</h3>
+        <p style="font-size:0.85rem;color:#666;margin:8px 0">调整参数，观察两种分布的差异。试试把N调大到1000——你会发现它们几乎重合!</p>
+        <div class="canvas-wrap">
+          <canvas id="binomHGCanvas" width="800" height="420"></canvas>
+        </div>
+        <div class="controls">
+          <div class="input-group">
+            <label>总产品数 N:</label>
+            <select id="hgN" onchange="drawBinomHG()">
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100" selected>100</option>
+              <option value="200">200</option>
+              <option value="1000">1000</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>次品数 K:</label>
+            <select id="hgK" onchange="drawBinomHG()">
+              <option value="10">10</option>
+              <option value="20" selected>20</option>
+              <option value="30">30</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>抽样数 n:</label>
+            <select id="hgn" onchange="drawBinomHG()">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="20">20</option>
+              <option value="30">30</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======== 试炼五: 正态分布 ======== -->
+      <div class="story-panel" style="margin:24px 0 16px;padding:24px;background:linear-gradient(135deg,#E6F7FF,#F0E6FF);border-radius:20px;border:2px dashed #5B8DEF;position:relative;overflow:hidden">
+        <div style="position:absolute;top:10px;right:16px;background:linear-gradient(135deg,#5B8DEF,#845EF7);color:#fff;padding:4px 14px;border-radius:12px;font-size:0.75rem;font-weight:bold">试炼 5/5</div>
+        <h3 style="color:#3B5BDB">&#127752; 试炼五: 正态分布 — 钟形曲线的命运之歌</h3>
+        <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,179,208,0.3);border-radius:16px;padding:14px;margin:12px 0">
+          <div style="color:#FFB3D0;font-size:0.8rem;font-weight:bold;margin-bottom:6px">&#128302; 命运占卜师</div>
+          <div style="color:#E8D5F0;line-height:1.7;font-size:0.9rem">"正态分布是自然界最常见的分布——身高、考试成绩、测量误差都近似服从正态分布。它那优美的<strong style="color:#FFB3D0">钟形曲线</strong>蕴含着深刻的数学规律。记住<strong style="color:#C77DFF">3-sigma原则</strong>：99.73%的数据落在均值&plusmn;3个标准差之内。"</div>
+        </div>
+        <div class="tip-panel">
+          <span class="tip-icon">&#128161;</span>
+          <strong>X ~ N(&mu;, &sigma;&sup2;):</strong><br>
+          f(x) = (1/(&sigma;&radic;(2&pi;))) &times; e<sup>-(x-&mu;)&sup2; / (2&sigma;&sup2;)</sup><br>
+          <strong>3-sigma 原则:</strong>
+          P(&mu;-&sigma; < X < &mu;+&sigma;) = 68.27%
+          P(&mu;-2&sigma; < X < &mu;+2&sigma;) = 95.45%
+          P(&mu;-3&sigma; < X < &mu;+3&sigma;) = 99.73%
+        </div>
+      </div>
+
+      <!-- 互动: 正态分布曲线 -->
+      <div class="canvas-section">
+        <h3>&#127752; 互动: 正态分布探索器</h3>
+        <p style="font-size:0.85rem;color:#666;margin:8px 0">拖动滑块改变均值和标准差，观察钟形曲线的变化。尝试把sigma调大——曲线会变矮变胖!</p>
+        <div class="canvas-wrap">
+          <canvas id="normalCanvas" width="800" height="420"></canvas>
+        </div>
+        <div class="controls">
+          <div class="input-group">
+            <label>均值 &mu;:</label>
+            <input type="range" id="normMu" min="-50" max="150" value="70" oninput="drawNormal();document.getElementById('normMuVal').textContent=this.value">
+            <span id="normMuVal" style="min-width:30px">70</span>
+          </div>
+          <div class="input-group">
+            <label>标准差 &sigma;:</label>
+            <input type="range" id="normSigma" min="5" max="50" value="15" oninput="drawNormal();document.getElementById('normSigVal').textContent=this.value">
+            <span id="normSigVal" style="min-width:30px">15</span>
+          </div>
+          <div class="input-group">
+            <label>显示区域:</label>
+            <select id="normRegion" onchange="drawNormal()">
+              <option value="0">无</option>
+              <option value="1">1-sigma (68.27%)</option>
+              <option value="2" selected>2-sigma (95.45%)</option>
+              <option value="3">3-sigma (99.73%)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="ch6q3Container"></div>
+      <div id="ch6FinalContainer"></div>
+
+      <!-- 终章 -->
+      <div class="story-panel" style="margin:24px 0;padding:24px;background:linear-gradient(135deg,#2B1055,#4A154B);color:#fff;border-radius:20px;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-20px;left:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(255,107,157,0.3),transparent);border-radius:50%"></div>
+        <div style="position:absolute;bottom:-20px;right:-20px;width:120px;height:120px;background:radial-gradient(circle,rgba(132,94,247,0.3),transparent);border-radius:50%"></div>
+        <h3 style="color:#FFB3D0;text-align:center;font-size:1.2em;text-shadow:0 0 20px rgba(255,107,157,0.5)">~ 终章 · 命运的馈赠 ~</h3>
+        <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,179,208,0.3);border-radius:16px;padding:14px;margin:12px 0">
+          <div style="color:#FFB3D0;font-size:0.8rem;font-weight:bold;margin-bottom:6px">&#128302; 命运占卜师</div>
+          <div style="color:#E8D5F0;line-height:1.7;font-size:0.92rem">"你已经掌握了随机变量及其分布的五个试炼。条件概率帮你修正判断，分布列帮你描述规律，期望和方差帮你衡量中心与波动，二项分布和超几何分布帮你处理抽样问题，正态分布帮你理解自然界的秩序。这些知识不是冰冷的公式——它们是理解这个不确定世界的<strong style="color:#FFB3D0">温柔之光</strong>。"</div>
+        </div>
+        <div class="speech-bubble left" style="opacity:0.9">
+          <span class="speaker-tag" style="background:var(--pink)">小数精灵</span><br>
+          "占卜师姐姐说得真好!我也要成为能用数学理解世界的人!"
+        </div>
+        <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,179,208,0.3);border-radius:16px;padding:14px;margin:12px 0">
+          <div style="color:#FFB3D0;font-size:0.8rem;font-weight:bold;margin-bottom:6px">&#128302; 命运占卜师</div>
+          <div style="color:#E8D5F0;line-height:1.7;font-size:0.92rem">"完成所有挑战题，就能获得我的认可。去吧，旅行者——<strong style="color:#FFB3D0">用概率的眼光去发现世界的美丽</strong>。"</div>
+        </div>
+      </div>
+
+    </div>
+  </d
+
+</div>
+
+<!-- 页脚 -->
+<footer class="book-footer fade-in">
+  <div class="hearts">&#10084;&#65039; &#127752; &#10024;</div>
+  <p>随机变量及其分布 — 命运占卜师的试炼 | 二次元乙女风格互动学习</p>
+</footer>
+
+<script>
+// =====================================================
+// 通用工具函数
+// =====================================================
+const state = {
+  score: 0,
+  totalStars: 60,
+  chaptersCompleted: new Set(),
+  correctCount: 0,
+  streak: 0,
+  maxStreak: 0,
+  questionsAnswered: new Set()
+};
+
+function showToast(type, msg) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  const icons = { success: '&#9989;', info: '&#128172;', warning: '&#9888;' };
+  toast.innerHTML = (icons[type] || '') + ' ' + msg;
+  container.appendChild(toast);
+  setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3200);
+}
+
+function addScore(pts) {
+  state.score += pts;
+  updateProgress();
+}
+
+function updateProgress() {
+  const pct = (state.score / state.totalStars * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('scoreDisplay').textContent = '星星: ' + state.score + ' / ' + state.totalStars;
+  document.getElementById('chapterDone').textContent = state.chaptersCompleted.size;
+  document.getElementById('correctCount').textContent = state.correctCount;
+  document.getElementById('streakCount').textContent = state.streak;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function createParticles() {
+  const container = document.getElementById('bgParticles');
+  const colors = ['#FF6B9D', '#C77DFF', '#74C0FC', '#69DB7C', '#FFD43B', '#FF922B'];
+  for (let i = 0; i < 30; i++) {
+    const span = document.createElement('span');
+    const size = Math.random() * 20 + 8;
+    span.style.width = size + 'px';
+    span.style.height = size + 'px';
+    span.style.left = Math.random() * 100 + '%';
+    span.style.background = colors[Math.floor(Math.random() * colors.length)];
+    span.style.animationDuration = (Math.random() * 15 + 10) + 's';
+    span.style.animationDelay = (Math.random() * 10) + 's';
+    container.appendChild(span);
+  }
+}
+createParticles();
+
+// =====================================================
+// 第六章: 随机变量及其分布 — Canvas + 答题
+// =====================================================
+var ch6Rendered = false;
+var ch6Questions = [
+  // Group 1: 条件概率与全概率公式
+  {group:1, q:'某地区患病率为2%，某种检测方法的灵敏度为90%（真阳性率），特异度为95%（真阴性率）。若某人检测结果为阳性，则他真正患病的概率约为多少？', opts:['约27%','约54%','约73%','约90%'], ans:0},
+  {group:1, q:'设A、B为两个事件，P(A)=0.4，P(B)=0.3，P(AB)=0.1，则P(A|B)等于多少？', opts:['1/4','1/3','3/4','1/2'], ans:1},
+  // Group 2: 期望与方差
+  {group:2, q:'随机变量X的分布列为：P(X=0)=0.2, P(X=1)=0.5, P(X=2)=0.3，则E(X)等于多少？', opts:['0.9','1.0','1.1','1.2'], ans:2},
+  {group:2, q:'若D(X)=4，则D(3X+2)等于多少？', opts:['12','14','36','38'], ans:2},
+  // Group 3: 二项分布与超几何分布
+  {group:3, q:'某射手每次射击命中率为0.6，独立射击5次，恰好命中3次的概率为？', opts:['C(5,3)×0.6³×0.4²','C(5,3)×0.6²×0.4³','0.6³×0.4²','5×0.6×0.4'], ans:0},
+  {group:3, q:'一批产品共100件，其中有10件次品，从中不放回地抽取5件，恰好抽到2件次品的概率用哪个分布计算？', opts:['二项分布B(5,0.1)','超几何分布H(100,10,5)','正态分布N(0.5,0.25)','泊松分布P(0.5)'], ans:1},
+  // Group 4: 正态分布
+  {group:4, q:'若X~N(2, 9)，则P(X<2)等于多少？', opts:['0.5','0.6827','0.9545','0.9973'], ans:0},
+  {group:4, q:'已知X~N(μ, σ²)，若P(μ-σ<X<μ+σ)=0.6827，则P(X<μ-2σ)约为多少？', opts:['0.0228','0.1587','0.4772','0.9772'], ans:0}
+];
+
+function renderCh6Challenges() {
+  if (ch6Rendered) return;
+  ch6Rendered = true;
+  var groups = {1:'ch6q1Container', 2:'ch6q2Container', 3:'ch6q3Container', 4:'ch6FinalContainer'};
+  var titles = {1:'&#127919; 关卡一挑战', 2:'&#11088; 关卡二+三挑战', 3:'&#127793; 关卡四挑战', 4:'&#127752; 关卡五挑战'};
+  var groupIdx = {};
+  ch6Questions.forEach(function(q,i) {
+    if (!groupIdx[q.group]) groupIdx[q.group] = 0;
+  });
+  ch6Questions.forEach(function(q,i) {
+    var container = document.getElementById(groups[q.group]);
+    if (!container) return;
+    var qi = groupIdx[q.group];
+    groupIdx[q.group]++;
+    var html = '<div class="challenge-box" id="ch6q'+i+'">' +
+      '<h3>' + titles[q.group] + (qi > 0 ? ' ' + (qi+1) : '') + '</h3>' +
+      '<div class="question">' + q.q + '</div>' +
+      '<div class="challenge-options">' +
+      q.opts.map(function(opt, oi) { return '<button class="option-btn" onclick="answerCh6('+i+', this, '+oi+')">'+opt+'</button>'; }).join('') +
+      '</div>' +
+      '<div class="feedback" id="ch6Fb'+i+'"></div>' +
+      '</div>';
+    container.innerHTML += html;
+  });
+}
+
+function answerCh6(qIdx, btn, selected) {
+  var key = 'ch6q' + qIdx;
+  if (state.questionsAnswered.has(key)) {
+    showToast('warning', '这道题已经回答过了哦!');
+    return;
+  }
+  var qData = ch6Questions[qIdx];
+  var parent = btn.closest('.challenge-box');
+  var fb = parent.querySelector('.feedback');
+  var options = parent.querySelectorAll('.option-btn');
+  var isCorrect = (selected === qData.ans);
+  options.forEach(function(o) { o.disabled = true; });
+  if (isCorrect) {
+    btn.classList.add('correct');
+    fb.className = 'feedback show correct-fb';
+    fb.innerHTML = '&#127881; 正确! +5 星星';
+    state.questionsAnswered.add(key);
+    state.correctCount++;
+    state.streak++;
+    addScore(5);
+  } else {
+    btn.classList.add('wrong');
+    options[qData.ans].classList.add('correct');
+    fb.className = 'feedback show wrong-fb';
+    fb.innerHTML = '&#128533; 差一点点! +1 星星(鼓励分)';
+    state.questionsAnswered.add(key);
+    state.streak = 0;
+    addScore(1);
+  }
+  checkChapterComplete('ch6');
+  updateProgress();
+}
+
+// --- Canvas 1: 贝叶斯诊断 ---
+function drawBayes() {
+  var canvas = document.getElementById('bayesCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var pD = parseInt(document.getElementById('bayesPD').value) / 100;
+  var sen = parseInt(document.getElementById('bayesSen').value) / 100;
+  var fpr = parseInt(document.getElementById('bayesFPR').value) / 100;
+  var pNoD = 1 - pD;
+  var pPos = pD * sen + pNoD * fpr; // P(+)
+  var pDgivenPos = pPos > 0 ? (pD * sen / pPos) : 0;
+
+  ctx.clearRect(0, 0, W, H);
+  var bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#FFF0F5');
+  bg.addColorStop(1, '#F0E6FF');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // 树形图展示全概率
+  var rootX = 400, rootY = 50;
+  var leftX = 200, rightX = 600, midY = 170;
+  var leafY = 310;
+
+  // 根节点
+  ctx.fillStyle = '#4A3548';
+  ctx.font = 'bold 14px "Noto Sans SC"';
+  ctx.textAlign = 'center';
+  ctx.fillText('全体人群 (100%)', rootX, rootY);
+  ctx.beginPath(); ctx.arc(rootX, rootY + 12, 8, 0, Math.PI * 2); ctx.fill();
+
+  // 连线到两层
+  ctx.strokeStyle = '#E64980'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(rootX, rootY + 20); ctx.lineTo(leftX, midY - 20); ctx.stroke();
+  ctx.strokeStyle = '#74C0FC';
+  ctx.beginPath(); ctx.moveTo(rootX, rootY + 20); ctx.lineTo(rightX, midY - 20); ctx.stroke();
+
+  // 患病节点
+  ctx.fillStyle = '#E64980';
+  ctx.font = 'bold 13px "Noto Sans SC"';
+  ctx.fillText('患病 P(D)=' + (pD*100).toFixed(1) + '%', leftX, midY);
+  ctx.strokeStyle = '#E64980'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(leftX, midY + 12, 25, 0, Math.PI * 2); ctx.stroke();
+
+  // 未患病节点
+  ctx.fillStyle = '#5B8DEF';
+  ctx.fillText('未患病 P(~D)=' + (pNoD*100).toFixed(1) + '%', rightX, midY);
+  ctx.strokeStyle = '#5B8DEF';
+  ctx.beginPath(); ctx.arc(rightX, midY + 12, 25, 0, Math.PI * 2); ctx.stroke();
+
+  // 连线到检测结果
+  ctx.setLineDash([6, 4]);
+  // 患病+阳性
+  ctx.strokeStyle = '#E64980'; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(leftX, midY + 37); ctx.lineTo(leftX - 80, leafY - 30); ctx.stroke();
+  // 患病+阴性
+  ctx.strokeStyle = '#999'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(leftX, midY + 37); ctx.lineTo(leftX + 80, leafY - 30); ctx.stroke();
+  // 未患病+阳性(误报)
+  ctx.strokeStyle = '#FF922B'; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(rightX, midY + 37); ctx.lineTo(rightX - 80, leafY - 30); ctx.stroke();
+  // 未患病+阴性
+  ctx.strokeStyle = '#999'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(rightX, midY + 37); ctx.lineTo(rightX + 80, leafY - 30); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 四个叶子节点
+  var leaves = [
+    { x: leftX - 80, label: '阳性(真阳性)', prob: (pD * sen * 100).toFixed(2) + '%', color: '#E64980', isTP: true },
+    { x: leftX + 80, label: '阴性(假阴性)', prob: (pD * (1-sen) * 100).toFixed(2) + '%', color: '#999' },
+    { x: rightX - 80, label: '阳性(假阳性)', prob: (pNoD * fpr * 100).toFixed(2) + '%', color: '#FF922B', isFP: true },
+    { x: rightX + 80, label: '阴性(真阴性)', prob: (pNoD * (1-fpr) * 100).toFixed(2) + '%', color: '#69DB7C' }
+  ];
+  leaves.forEach(function(leaf) {
+    ctx.fillStyle = leaf.color;
+    ctx.font = 'bold 11px "Noto Sans SC"';
+    ctx.textAlign = 'center';
+    ctx.fillText(leaf.label, leaf.x, leafY);
+    ctx.font = 'bold 13px "ZCOOL KuaiLe"';
+    ctx.fillText(leaf.prob, leaf.x, leafY + 20);
+    roundRect(ctx, leaf.x - 35, leafY + 26, 70, 20, 8);
+    ctx.strokeStyle = leaf.color; ctx.lineWidth = 1.5;
+    ctx.stroke();
+  });
+
+  // 底部结果: 贝叶斯公式
+  var resY = 395;
+  ctx.fillStyle = '#FFF';
+  roundRect(ctx, 100, resY - 15, 600, 35, 12);
+  ctx.fill();
+  ctx.strokeStyle = '#E64980'; ctx.lineWidth = 2;
+  roundRect(ctx, 100, resY - 15, 600, 35, 12);
+  ctx.stroke();
+  ctx.fillStyle = '#E64980';
+  ctx.font = 'bold 15px "ZCOOL KuaiLe"';
+  ctx.textAlign = 'center';
+  ctx.fillText('P(患病|阳性) = ' + (pD*sen*100).toFixed(2) + '% / ' + (pPos*100).toFixed(2) + '% = ' + (pDgivenPos*100).toFixed(1) + '%', 400, resY + 7);
+}
+
+// --- Canvas 2: 骰子分布列 ---
+var diceState = { counts: [0,0,0,0,0,0], total: 0 };
+function resetDice() {
+  diceState = { counts: [0,0,0,0,0,0], total: 0 };
+  document.getElementById('diceRollCount').textContent = '0';
+  drawDistChart();
+}
+function rollDiceOnce() { doRoll(1); }
+function rollDiceMany(n) { doRoll(n); }
+function doRoll(n) {
+  for (var i = 0; i < n; i++) {
+    var val = Math.floor(Math.random() * 6) + 1;
+    diceState.counts[val - 1]++;
+    diceState.total++;
+  }
+  document.getElementById('diceRollCount').textContent = diceState.total;
+  drawDistChart();
+}
+function drawDistChart() {
+  var canvas = document.getElementById('distCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  var bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#F0F0FF'); bg.addColorStop(1, '#E6F7FF');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+  var vals = [1,2,3,4,5,6];
+  var theorP = [1/6,1/6,1/6,1/6,1/6,1/6];
+  var colors = ['#FF6B9D','#C77DFF','#74C0FC','#69DB7C','#FFD43B','#FF922B'];
+  var maxFreq = Math.max.apply(null, diceState.counts);
+  if (maxFreq < 1) maxFreq = 1;
+  var barW = 70, gap = 30;
+  var startX = (W - 6 * barW - 5 * gap) / 2;
+  var maxBarH = 240;
+  var baseY = 320;
+
+  // 标题
+  ctx.fillStyle = '#4A3548'; ctx.font = 'bold 14px "Noto Sans SC"'; ctx.textAlign = 'center';
+  ctx.fillText('频率 vs 理论概率', W / 2, 25);
+
+  vals.forEach(function(v, i) {
+    var x = startX + i * (barW + gap);
+    var freq = diceState.total > 0 ? diceState.counts[i] / diceState.total : 0;
+    var barH = Math.max(4, freq / Math.max(theorP[i], 0.001) * 60);
+    barH = Math.min(barH, maxBarH);
+    var theoH = maxBarH;
+
+    // 理论概率柱(虚线框)
+    ctx.strokeStyle = colors[i]; ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
+    roundRect(ctx, x + 5, baseY - theoH, barW - 10, theoH, 8);
+    ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = colors[i]; ctx.globalAlpha = 0.15;
+    roundRect(ctx, x + 5, baseY - theoH, barW - 10, theoH, 8);
+    ctx.fill(); ctx.globalAlpha = 1;
+
+    // 实际频率柱(实心)
+    ctx.fillStyle = colors[i]; ctx.globalAlpha = 0.8;
+    roundRect(ctx, x + 12, baseY - barH, barW - 24, barH, 8);
+    ctx.fill(); ctx.globalAlpha = 1;
+
+    // 标签
+    ctx.fillStyle = '#4A3548'; ctx.font = 'bold 16px "ZCOOL KuaiLe"'; ctx.textAlign = 'center';
+    ctx.fillText(v, x + barW / 2, baseY + 20);
+    ctx.font = '11px "Noto Sans SC"';
+    if (diceState.total > 0) {
+      ctx.fillText((freq * 100).toFixed(1) + '%', x + barW / 2, baseY - barH - 8);
+    }
+    ctx.fillStyle = colors[i]; ctx.globalAlpha = 0.6;
+    ctx.fillText((theorP[i] * 100).toFixed(1) + '%', x + barW / 2, baseY - theoH - 8);
+    ctx.globalAlpha = 1;
+  });
+
+  // 图例
+  ctx.fillStyle = '#4A3548'; ctx.font = '12px "Noto Sans SC"'; ctx.textAlign = 'left';
+  ctx.setLineDash([6, 4]); ctx.strokeStyle = '#666'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(20, 370); ctx.lineTo(50, 370); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillText('理论概率 (1/6)', 55, 374);
+  ctx.fillStyle = '#74C0FC'; ctx.globalAlpha = 0.8;
+  ctx.fillRect(200, 364, 30, 12); ctx.globalAlpha = 1;
+  ctx.fillStyle = '#4A3548';
+  ctx.fillText('实际频率', 235, 374);
+}
+
+// --- Canvas 3: 期望与方差 ---
+function drawEV() {
+  var canvas = document.getElementById('evCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  var bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#FFF5E6'); bg.addColorStop(1, '#FFF0F0');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+  var presets = {
+    fair:  { vals: [1,2,3,4,5,6], probs: [1/6,1/6,1/6,1/6,1/6,1/6] },
+    biased:{ vals: [1,2,3,4,5,6], probs: [0.1,0.1,0.1,0.1,0.1,0.5] },
+    coin:  { vals: [0,1], probs: [0.5,0.5] },
+    exam:  { vals: [60,70,80,90,100], probs: [0.1,0.2,0.4,0.2,0.1] }
+  };
+  var key = document.getElementById('evPreset').value;
+  var data = presets[key];
+  var vals = data.vals, probs = data.probs;
+  var colors = ['#FF6B9D','#C77DFF','#74C0FC','#69DB7C','#FFD43B','#FF922B','#E64980','#845EF7'];
+
+  var EX = 0, EX2 = 0;
+  vals.forEach(function(v, i) { EX += v * probs[i]; EX2 += v * v * probs[i]; });
+  var DX = EX2 - EX * EX;
+  var sigma = Math.sqrt(Math.max(DX, 0));
+
+  var barW = Math.min(80, (W - 100) / vals.length - 10);
+  var startX = (W - vals.length * (barW + 10) + 10) / 2;
+  var maxBarH = 220;
+  var baseY = 300;
+
+  vals.forEach(function(v, i) {
+    var x = startX + i * (barW + 10);
+    var barH = Math.max(8, probs[i] * maxBarH / Math.max.apply(null, probs));
+    ctx.fillStyle = colors[i % colors.length]; ctx.globalAlpha = 0.7;
+    roundRect(ctx, x, baseY - barH, barW, barH, 10);
+    ctx.fill(); ctx.globalAlpha = 1;
+    ctx.fillStyle = '#FFF'; ctx.font = 'bold 14px "Noto Sans SC"'; ctx.textAlign = 'center';
+    ctx.fillText(v, x + barW / 2, baseY - barH / 2 + 5);
+    ctx.fillStyle = '#4A3548'; ctx.font = '11px "Noto Sans SC"';
+    ctx.fillText('P=' + parseFloat(probs[i].toFixed(4)), x + barW / 2, baseY + 16);
+  });
+
+  // 期望红线
+  var exX = startX + (EX - vals[0]) / (vals[vals.length-1] - vals[0]) * (vals.length * (barW + 10) - 10);
+  exX = Math.max(startX, Math.min(exX + barW/2, startX + vals.length * (barW + 10) - barW/2));
+  ctx.strokeStyle = '#E63946'; ctx.lineWidth = 3; ctx.setLineDash([8, 4]);
+  ctx.beginPath(); ctx.moveTo(exX, baseY - maxBarH - 20); ctx.lineTo(exX, baseY + 5); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#E63946'; ctx.font = 'bold 13px "ZCOOL KuaiLe"';
+  ctx.fillText('E(X)=' + EX.toFixed(2), exX, baseY - maxBarH - 28);
+
+  // 底部信息
+  ctx.fillStyle = '#FFF';
+  roundRect(ctx, 80, 335, W - 160, 35, 12);
+  ctx.fill(); ctx.strokeStyle = '#FF922B'; ctx.lineWidth = 1.5;
+  roundRect(ctx, 80, 335, W - 160, 35, 12);
+  ctx.stroke();
+  ctx.fillStyle = '#4A3548'; ctx.font = 'bold 14px "Noto Sans SC"'; ctx.textAlign = 'center';
+  ctx.fillText('E(X) = ' + EX.toFixed(2) + '    D(X) = ' + DX.toFixed(2) + '    sigma = ' + sigma.toFixed(2), W / 2, 357);
+}
+
+// --- Canvas 4: 二项 vs 超几何 ---
+function C(n, k) {
+  if (k < 0 || k > n) return 0;
+  if (k === 0 || k === n) return 1;
+  var r = 1;
+  for (var i = 0; i < k; i++) r = r * (n - i) / (i + 1);
+  return Math.round(r);
+}
+function drawBinomHG() {
+  var canvas = document.getElementById('binomHGCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var N = parseInt(document.getElementById('hgN').value);
+  var K = parseInt(document.getElementById('hgK').value);
+  var n = parseInt(document.getElementById('hgn').value);
+  var p = K / N;
+
+  ctx.clearRect(0, 0, W, H);
+  var bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#F0FFF4'); bg.addColorStop(1, '#E6FFF0');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+  // 计算概率
+  var binomP = [], hgP = [];
+  for (var k = 0; k <= n; k++) {
+    binomP.push(C(n, k) * Math.pow(p, k) * Math.pow(1 - p, n - k));
+    hgP.push(C(K, k) * C(N - K, n - k) / C(N, n));
+  }
+  var maxP = Math.max.apply(null, binomP.concat(hgP));
+  if (maxP <= 0) maxP = 1;
+
+  var leftX = 120, rightX = 530;
+  var barW = Math.min(50, 350 / (n + 1) - 2);
+  var maxH = 280, baseY = 340;
+
+  // 二项分布柱
+  ctx.fillStyle = '#E64980'; ctx.font = 'bold 14px "ZCOOL KuaiLe"'; ctx.textAlign = 'center';
+  ctx.fillText('二项分布 B(' + n + ', ' + p.toFixed(2) + ')', leftX + 175, 25);
+  binomP.forEach(function(prob, k) {
+    var x = leftX + k * (barW + 3);
+    var h = Math.max(2, prob / maxP * maxH);
+    ctx.fillStyle = '#E64980'; ctx.globalAlpha = 0.7;
+    roundRect(ctx, x, baseY - h, barW, h, 4);
+    ctx.fill(); ctx.globalAlpha = 1;
+    if (n <= 15) {
+      ctx.fillStyle = '#4A3548'; ctx.font = '10px "Noto Sans SC"';
+      ctx.fillText(k, x + barW / 2, baseY + 14);
+    }
+  });
+
+  // 超几何分布柱
+  ctx.fillStyle = '#5B8DEF'; ctx.font = 'bold 14px "ZCOOL KuaiLe"';
+  ctx.fillText('超几何分布 H(' + N + ',' + K + ',' + n + ')', rightX + 175, 25);
+  hgP.forEach(function(prob, k) {
+    var x = rightX + k * (barW + 3);
+    var h = Math.max(2, prob / maxP * maxH);
+    ctx.fillStyle = '#5B8DEF'; ctx.globalAlpha = 0.7;
+    roundRect(ctx, x, baseY - h, barW, h, 4);
+    ctx.fill(); ctx.globalAlpha = 1;
+    if (n <= 15) {
+      ctx.fillStyle = '#4A3548'; ctx.font = '10px "Noto Sans SC"';
+      ctx.fillText(k, x + barW / 2, baseY + 14);
+    }
+  });
+
+  // 底部对比
+  ctx.fillStyle = '#FFF';
+  roundRect(ctx, 80, 365, W - 160, 40, 12);
+  ctx.fill(); ctx.strokeStyle = '#51CF66'; ctx.lineWidth = 1.5;
+  roundRect(ctx, 80, 365, W - 160, 40, 12);
+  ctx.stroke();
+  ctx.fillStyle = '#4A3548'; ctx.font = 'bold 12px "Noto Sans SC"'; ctx.textAlign = 'center';
+  var diff = 0;
+  for (var k = 0; k <= n; k++) diff += Math.abs(binomP[k] - hgP[k]);
+  ctx.fillText('E(二项)=np=' + (n*p).toFixed(1) + '  E(超几何)=nK/N=' + (n*K/N).toFixed(1) + '  最大概率差=' + (diff * 100).toFixed(2) + '%  (N越大越接近)', W / 2, 389);
+}
+
+// --- Canvas 5: 正态分布 ---
+function normalPDF(x, mu, sigma) {
+  return (1 / (sigma * Math.sqrt(2 * Math.PI))) * Math.exp(-Math.pow(x - mu, 2) / (2 * sigma * sigma));
+}
+function drawNormal() {
+  var canvas = document.getElementById('normalCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+  var mu = parseFloat(document.getElementById('normMu').value);
+  var sigma = parseFloat(document.getElementById('normSigma').value);
+  var region = parseInt(document.getElementById('normRegion').value);
+
+  ctx.clearRect(0, 0, W, H);
+  var bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, '#E6F7FF'); bg.addColorStop(1, '#F0E6FF');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+  var plotL = mu - 4 * sigma, plotR = mu + 4 * sigma;
+  var plotW = plotR - plotL;
+  var marginL = 60, marginR = 60;
+  var plotAreaW = W - marginL - marginR;
+  var baseY = 340, maxH = 260;
+  var maxPDF = normalPDF(mu, mu, sigma);
+
+  function toX(x) { return marginL + (x - plotL) / plotW * plotAreaW; }
+  function toH(f) { return f / maxPDF * maxH; }
+
+  // 填充sigma区域
+  if (region > 0) {
+    var regColors = ['rgba(255,107,157,0.25)', 'rgba(255,107,157,0.2)', 'rgba(255,107,157,0.15)'];
+    ctx.fillStyle = regColors[region - 1];
+    ctx.beginPath();
+    ctx.moveTo(toX(mu - region * sigma), baseY);
+    for (var px = mu - region * sigma; px <= mu + region * sigma; px += 0.5) {
+      ctx.lineTo(toX(px), baseY - toH(normalPDF(px, mu, sigma)));
+    }
+    ctx.lineTo(toX(mu + region * sigma), baseY);
+    ctx.closePath(); ctx.fill();
+  }
+
+  // 曲线
+  ctx.strokeStyle = '#3B5BDB'; ctx.lineWidth = 3;
+  ctx.beginPath();
+  for (var px = plotL; px <= plotR; px += 0.5) {
+    var x = toX(px), y = baseY - toH(normalPDF(px, mu, sigma));
+    if (px === plotL) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // 坐标轴
+  ctx.strokeStyle = '#4A3548'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(marginL, baseY); ctx.lineTo(W - marginR, baseY); ctx.stroke();
+  // 刻度
+  ctx.fillStyle = '#4A3548'; ctx.font = '11px "Noto Sans SC"'; ctx.textAlign = 'center';
+  for (var s = -4; s <= 4; s++) {
+    var val = mu + s * sigma;
+    var sx = toX(val);
+    ctx.beginPath(); ctx.moveTo(sx, baseY); ctx.lineTo(sx, baseY + 6); ctx.stroke();
+    ctx.fillText(Math.round(val), sx, baseY + 18);
+    if (s !== 0) {
+      ctx.fillStyle = '#999'; ctx.fillText(s + 'sigma', sx, baseY + 32);
+    } else {
+      ctx.fillStyle = '#E63946'; ctx.font = 'bold 11px "Noto Sans SC"';
+      ctx.fillText('mu', sx, baseY + 32);
+    }
+    ctx.fillStyle = '#4A3548';
+  }
+
+  // mu线
+  ctx.strokeStyle = '#E63946'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]);
+  ctx.beginPath(); ctx.moveTo(toX(mu), baseY); ctx.lineTo(toX(mu), baseY - maxH - 10); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // 标题
+  ctx.fillStyle = '#3B5BDB'; ctx.font = 'bold 14px "ZCOOL KuaiLe"'; ctx.textAlign = 'center';
+  ctx.fillText('X ~ N(' + mu + ', ' + sigma + '^2)', W / 2, 25);
+
+  // 3-sigma信息
+  ctx.fillStyle = '#FFF';
+  roundRect(ctx, 80, 365, W - 160, 40, 12);
+  ctx.fill(); ctx.strokeStyle = '#5B8DEF'; ctx.lineWidth = 1.5;
+  roundRect(ctx, 80, 365, W - 160, 40, 12);
+  ctx.stroke();
+  ctx.fillStyle = '#4A3548'; ctx.font = 'bold 12px "Noto Sans SC"'; ctx.textAlign = 'center';
+  ctx.fillText('1-sigma: 68.27%  |  2-sigma: 95.45%  |  3-sigma: 99.73%  |  E(X)=' + mu + '  D(X)=' + (sigma*sigma).toFixed(1), W / 2, 389);
+}
+
+
+
+// =====================================================
+// 初始化
+// =====================================================
+window.addEventListener('DOMContentLoaded', function() {
+  createParticles();
+  renderCh6Challenges();
+  setTimeout(function() {
+    drawBayes();
+    // 预掷100次骰子，让离散型分布列有初始数据
+    doRoll(100); // 内部已调用 drawDistChart
+
+    drawEV();
+    drawBinomHG();
+    drawNormal();
+  }, 300);
+});
+
+// 独立页面的章节完成检测（简化版）
+function checkChapterComplete(chId) {
+  // 检查所有8道题是否完成
+  let done = true;
+  for (let i = 0; i < ch6Questions.length; i++) {
+    if (!state.questionsAnswered.has('ch6q' + i)) { done = false; break; }
+  }
+  if (done) {
+    if (!state.chaptersCompleted.has('ch6')) {
+      state.chaptersCompleted.add('ch6');
+      addScore(10);
+      showToast('success', '全部通关! 命运占卜师认可了你! +10 额外星星!');
+    }
+  }
+}
+</script>
+
+</body>
+</html>

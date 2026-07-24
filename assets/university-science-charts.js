@@ -3,11 +3,11 @@
   var majors = ['数学','物理','化学','生物','地理','统计学'];
   var destColors = {
     '企业就业': '#3b82f6',
-    '国内升学': '#f59e0b',
+    '国内升学': '#E8A93E',
     '出国深造': '#10b981',
     '机关事业单位': '#ef4444',
-    '灵活就业/其他': '#94a3b8',
-    '未落实': '#334155'
+    '灵活就业/其他': '#9B8B7A',
+    '未落实': 'rgba(180,160,140,0.25)'
   };
   var currentTier = 'all';
   var currentMajor = 'all';
@@ -77,10 +77,10 @@
     return {
       backgroundColor: 'transparent',
       textStyle: { fontFamily: 'Outfit, sans-serif' },
-      tooltip: { trigger: 'axis', backgroundColor: '#1e293b', borderColor: '#334155', textStyle: { color: '#f1f5f9' } },
+      tooltip: { trigger: 'axis', backgroundColor: '#FFF5EE', borderColor: 'rgba(180,160,140,0.25)', textStyle: { color: '#4A3B2E' } },
       grid: { left: 55, right: 30, top: 40, bottom: 45 },
-      xAxis: { type: 'category', axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontFamily: 'JetBrainsMono', fontSize: 11 }, splitLine: { show: false } },
-      yAxis: { type: 'value', axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontFamily: 'JetBrainsMono' }, splitLine: { lineStyle: { color: '#33415540' } } }
+      xAxis: { type: 'category', axisLine: { lineStyle: { color: 'rgba(180,160,140,0.25)' } }, axisLabel: { color: '#9B8B7A', fontFamily: 'JetBrainsMono', fontSize: 11 }, splitLine: { show: false } },
+      yAxis: { type: 'value', axisLine: { lineStyle: { color: 'rgba(180,160,140,0.25)' } }, axisLabel: { color: '#9B8B7A', fontFamily: 'JetBrainsMono' }, splitLine: { lineStyle: { color: 'rgba(180,160,140,0.25)40' } } }
     };
   }
 
@@ -102,7 +102,7 @@
     opt.yAxis.min = 80; opt.yAxis.max = 100; opt.yAxis.name = '就业率(%)';
     opt.series = [{
       type: 'bar', data: vals.map(function(v, i) { return { value: v, itemStyle: { color: colors[i] } }; }),
-      barMaxWidth: 30, label: { show: true, position: 'top', color: '#f1f5f9', fontSize: 10, fontFamily: 'JetBrainsMono' }
+      barMaxWidth: 30, label: { show: true, position: 'top', color: '#4A3B2E', fontSize: 10, fontFamily: 'JetBrainsMono' }
     }];
     charts.univ.setOption(opt);
   }
@@ -132,10 +132,10 @@
     opt.xAxis.data = univs;
     opt.xAxis.axisLabel.fontSize = 10;
     opt.yAxis.min = 0; opt.yAxis.max = 100; opt.yAxis.name = '百分比(%)';
-    opt.legend = { data: ['就业率','升学率'], top: 22, textStyle: { color: '#94a3b8', fontSize: 10 } };
+    opt.legend = { data: ['就业率','升学率'], top: 22, textStyle: { color: '#9B8B7A', fontSize: 10 } };
     opt.series = [
       { type: 'bar', name: '就业率', data: emp, itemStyle: { color: '#3b82f6' }, barMaxWidth: 14, barGap: '20%' },
-      { type: 'bar', name: '升学率', data: up, itemStyle: { color: '#f59e0b' }, barMaxWidth: 14 }
+      { type: 'bar', name: '升学率', data: up, itemStyle: { color: '#E8A93E' }, barMaxWidth: 14 }
     ];
     charts.bachelor.setOption(opt);
   }
@@ -165,7 +165,7 @@
     opt.xAxis.data = univs;
     opt.xAxis.axisLabel.fontSize = 10;
     opt.yAxis.min = 0; opt.yAxis.max = 100; opt.yAxis.name = '百分比(%)';
-    opt.legend = { data: ['就业率','继续深造率'], top: 22, textStyle: { color: '#94a3b8', fontSize: 10 } };
+    opt.legend = { data: ['就业率','继续深造率'], top: 22, textStyle: { color: '#9B8B7A', fontSize: 10 } };
     opt.series = [
       { type: 'bar', name: '就业率', data: emp, itemStyle: { color: '#3b82f6' }, barMaxWidth: 14, barGap: '20%' },
       { type: 'bar', name: '继续深造率', data: up, itemStyle: { color: '#ef4444' }, barMaxWidth: 14 }
@@ -203,7 +203,7 @@
     opt.xAxis.data = univs;
     opt.xAxis.axisLabel.rotate = univs.length > 8 ? 30 : 0;
     opt.yAxis.min = 0; opt.yAxis.max = 100; opt.yAxis.name = '占比(%)';
-    opt.legend = { data: destKeys, top: 22, textStyle: { color: '#94a3b8', fontSize: 10 }, itemWidth: 14, itemHeight: 8 };
+    opt.legend = { data: destKeys, top: 22, textStyle: { color: '#9B8B7A', fontSize: 10 }, itemWidth: 14, itemHeight: 8 };
     opt.tooltip.formatter = function(params) {
       var res = params[0].axisValue + '<br/>';
       params.forEach(function(p) {
@@ -244,10 +244,10 @@
     opt.title = { text: (currentTier === 'all' ? '全部' : currentTier === '985' ? '985' : '211/双一流') + '院校 · 六大理科专业平均表现', left: 'center', top: 5, textStyle: { color: '#3b82f6', fontSize: 13 } };
     opt.xAxis.data = majors;
     opt.yAxis.min = 0; opt.yAxis.max = 100; opt.yAxis.name = '百分比(%)';
-    opt.legend = { data: ['本科就业率','本科升学率','硕士就业率','硕士深造率'], top: 22, textStyle: { color: '#94a3b8', fontSize: 10 } };
+    opt.legend = { data: ['本科就业率','本科升学率','硕士就业率','硕士深造率'], top: 22, textStyle: { color: '#9B8B7A', fontSize: 10 } };
     opt.series = [
       { type: 'bar', name: '本科就业率', data: bEmp, itemStyle: { color: '#3b82f6' }, barMaxWidth: 12, barGap: '15%' },
-      { type: 'bar', name: '本科升学率', data: bUp, itemStyle: { color: '#f59e0b' }, barMaxWidth: 12 },
+      { type: 'bar', name: '本科升学率', data: bUp, itemStyle: { color: '#E8A93E' }, barMaxWidth: 12 },
       { type: 'bar', name: '硕士就业率', data: mEmp, itemStyle: { color: '#10b981' }, barMaxWidth: 12 },
       { type: 'bar', name: '硕士深造率', data: mUp, itemStyle: { color: '#ef4444' }, barMaxWidth: 12 }
     ];

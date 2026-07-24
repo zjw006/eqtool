@@ -65,10 +65,10 @@
     return {
       backgroundColor: 'transparent',
       textStyle: { fontFamily: 'Outfit, sans-serif' },
-      tooltip: { trigger: 'axis', backgroundColor: '#1e293b', borderColor: '#334155', textStyle: { color: '#f1f5f9' } },
+      tooltip: { trigger: 'axis', backgroundColor: '#FFF5EE', borderColor: 'rgba(180,160,140,0.25)', textStyle: { color: '#4A3B2E' } },
       grid: { left: 50, right: 30, top: 30, bottom: 40 },
-      xAxis: { type: 'value', axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontFamily: 'JetBrainsMono' }, splitLine: { lineStyle: { color: '#33415540' } } },
-      yAxis: { type: 'value', axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontFamily: 'JetBrainsMono' }, splitLine: { lineStyle: { color: '#33415540' } } }
+      xAxis: { type: 'value', axisLine: { lineStyle: { color: 'rgba(180,160,140,0.25)' } }, axisLabel: { color: '#9B8B7A', fontFamily: 'JetBrainsMono' }, splitLine: { lineStyle: { color: 'rgba(180,160,140,0.25)40' } } },
+      yAxis: { type: 'value', axisLine: { lineStyle: { color: 'rgba(180,160,140,0.25)' } }, axisLabel: { color: '#9B8B7A', fontFamily: 'JetBrainsMono' }, splitLine: { lineStyle: { color: 'rgba(180,160,140,0.25)40' } } }
     };
   }
 
@@ -104,13 +104,13 @@
     opt.yAxis.splitLine.show = false;
     opt.series = [{
       type: 'line', data: data, showSymbol: false, smooth: true,
-      lineStyle: { color: '#22d3ee', width: 2 },
+      lineStyle: { color: '#6BB6D6', width: 2 },
       markArea: { silent: true, data: markAreas },
       markLine: { silent: true, symbol: 'none', lineStyle: { color: '#ef4444', type: 'dashed', width: 1 },
         data: fnKey === 'recip' ? [{ xAxis: 0, label: { formatter: 'x=0 无定义', color: '#ef4444', fontSize: 10 } }] :
               fnKey === 'tan' ? [{ xAxis: -1.57, label: { formatter: 'x=-π/2', color: '#ef4444', fontSize: 10 } },
                                   { xAxis: 1.57, label: { formatter: 'x=π/2', color: '#ef4444', fontSize: 10 } }] :
-              fnKey === 'sqrt' ? [{ xAxis: 0, label: { formatter: 'x=0 起点', color: '#f59e0b', fontSize: 10 } }] :
+              fnKey === 'sqrt' ? [{ xAxis: 0, label: { formatter: 'x=0 起点', color: '#E8A93E', fontSize: 10 } }] :
               fnKey === 'ln' ? [{ xAxis: 0, label: { formatter: 'x=0 渐近线', color: '#ef4444', fontSize: 10 } }] : []
       }
     }];
@@ -135,12 +135,12 @@
     var yPad = (yMax - yMin) * 0.15 || 1;
 
     var opt = commonOption();
-    opt.title = { text: '有效值域区间（橙色背景）', left: 'center', top: 5, textStyle: { color: '#f59e0b', fontSize: 12 } };
+    opt.title = { text: '有效值域区间（橙色背景）', left: 'center', top: 5, textStyle: { color: '#E8A93E', fontSize: 12 } };
     opt.xAxis.min = d.domainArr[0]; opt.xAxis.max = d.domainArr[1];
     opt.yAxis.min = yMin - yPad; opt.yAxis.max = yMax + yPad;
     opt.series = [{
       type: 'line', data: data, showSymbol: false, smooth: true,
-      lineStyle: { color: '#22d3ee', width: 2 },
+      lineStyle: { color: '#6BB6D6', width: 2 },
       markArea: { silent: true, data: [[
         { yAxis: yMin, itemStyle: { color: 'rgba(245,158,11,0.10)' } },
         { yAxis: yMax }
@@ -185,7 +185,7 @@
     } else {
       series.push({
         type: 'line', data: fullData, showSymbol: false, smooth: true,
-        lineStyle: { color: '#22d3ee', width: 2 }
+        lineStyle: { color: '#6BB6D6', width: 2 }
       });
     }
 
@@ -199,7 +199,7 @@
     }
 
     var opt = commonOption();
-    opt.title = { text: '单调区间：绿色=递增，红色=递减', left: 'center', top: 5, textStyle: { color: '#f1f5f9', fontSize: 12 } };
+    opt.title = { text: '单调区间：绿色=递增，红色=递减', left: 'center', top: 5, textStyle: { color: '#4A3B2E', fontSize: 12 } };
     opt.xAxis.min = d.domainArr[0]; opt.xAxis.max = d.domainArr[1];
     var yMin = Infinity, yMax = -Infinity;
     for (var i = 0; i < fullData.length; i++) {
@@ -208,7 +208,7 @@
     var yPad = (yMax - yMin) * 0.1 || 1;
     opt.yAxis.min = yMin - yPad; opt.yAxis.max = yMax + yPad;
     opt.legend = legendData.length > 0 ? {
-      data: legendData, top: 25, textStyle: { color: '#94a3b8', fontSize: 11 },
+      data: legendData, top: 25, textStyle: { color: '#9B8B7A', fontSize: 11 },
       itemWidth: 18, itemHeight: 3
     } : undefined;
     opt.series = series;
@@ -228,7 +228,7 @@
 
     var series = [{
       type: 'line', data: data, showSymbol: false, smooth: true,
-      lineStyle: { color: '#22d3ee', width: 2.5 }, name: 'f(x)'
+      lineStyle: { color: '#6BB6D6', width: 2.5 }, name: 'f(x)'
     }];
 
     if (d.parity !== 'none') {
@@ -240,7 +240,7 @@
     } else {
       series.push({
         type: 'line', data: negData, showSymbol: false, smooth: true,
-        lineStyle: { color: '#94a3b8', width: 2, type: 'dashed' },
+        lineStyle: { color: '#9B8B7A', width: 2, type: 'dashed' },
         name: 'f(-x) ≠ ±f(x)'
       });
     }
@@ -256,10 +256,10 @@
     var titleText = d.parity === 'even' ? '偶函数：f(x) 与 f(-x) 完全重合（关于 y 轴对称）' :
                     d.parity === 'odd' ? '奇函数：f(-x) = -f(x)（关于原点对称）' :
                     '非奇非偶：f(x) 与 f(-x) 无对称关系';
-    opt.title = { text: titleText, left: 'center', top: 5, textStyle: { color: '#f1f5f9', fontSize: 12 } };
+    opt.title = { text: titleText, left: 'center', top: 5, textStyle: { color: '#4A3B2E', fontSize: 12 } };
     opt.xAxis.min = d.domainArr[0]; opt.xAxis.max = d.domainArr[1];
     opt.yAxis.min = yMin - yPad; opt.yAxis.max = yMax + yPad;
-    opt.legend = { data: ['f(x)', series[1].name], top: 25, textStyle: { color: '#94a3b8', fontSize: 11 } };
+    opt.legend = { data: ['f(x)', series[1].name], top: 25, textStyle: { color: '#9B8B7A', fontSize: 11 } };
     opt.series = series;
     charts.parity.setOption(opt);
   }

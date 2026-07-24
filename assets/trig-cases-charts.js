@@ -35,7 +35,7 @@
       yAxis: {
         axisLine: { lineStyle: { color: rule } },
         axisLabel: { color: muted, fontFamily: 'JetBrainsMono, monospace' },
-        splitLine: { lineStyle: { color: '#33415540' } }
+        splitLine: { lineStyle: { color: 'rgba(180,160,140,0.25)40' } }
       }
     };
   }
@@ -384,7 +384,7 @@
       var syA = sunY - sunR * Math.sin(avgH);
 
       // 绘制太阳轨迹弧
-      ctx.strokeStyle = '#334155';
+      ctx.strokeStyle = 'rgba(180,160,140,0.25)';
       ctx.lineWidth = 1;
       ctx.setLineDash([3, 3]);
       ctx.beginPath();
@@ -792,7 +792,7 @@
           ctx.strokeStyle = accent2;
           ctx.lineWidth = 2.5;
         } else {
-          ctx.strokeStyle = '#334155';
+          ctx.strokeStyle = 'rgba(180,160,140,0.25)';
           ctx.lineWidth = 1;
         }
         ctx.beginPath();

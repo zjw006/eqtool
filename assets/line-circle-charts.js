@@ -1,16 +1,16 @@
 (function() {
   'use strict';
 
-  var PRIMARY = '#a78bfa';
+  var PRIMARY = '#FF8FA3';
   var SECONDARY = '#f472b6';
   var ACCENT3 = '#38bdf8';
   var ACCENT4 = '#34d399';
   var ACCENT5 = '#fbbf24';
-  var INK = '#f1f5f9';
-  var MUTED = '#94a3b8';
-  var RULE = '#334155';
-  var BG3 = '#1e293b';
-  var BG2 = '#151e32';
+  var INK = '#4A3B2E';
+  var MUTED = '#9B8B7A';
+  var RULE = 'rgba(180,160,140,0.25)';
+  var BG3 = '#FFF5EE';
+  var BG2 = '#FFFDF7';
   var DEG = 180 / Math.PI;
 
   // ===================== Tool Functions =====================

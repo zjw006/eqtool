@@ -6,7 +6,7 @@
   var currentAge = 35;
   var viewMode = 'all'; // 'all' | 'stack' | 'individual'
 
-  var colors = ['#f43f5e', '#f59e0b', '#22d3ee', '#8b5cf6', '#10b981', '#ec4899', '#06b6d4', '#ef4444', '#84cc16', '#a78bfa'];
+  var colors = ['#FF6B8A', '#E8A93E', '#6BB6D6', '#B89AD9', '#10b981', '#ec4899', '#06b6d4', '#ef4444', '#84cc16', '#FF8FA3'];
 
   // 年龄段定义 [min, max]
   var ageGroups = [
@@ -165,25 +165,25 @@
       textStyle: { fontFamily: 'Outfit, sans-serif' },
       tooltip: {
         trigger: 'axis',
-        backgroundColor: '#1e293b',
-        borderColor: '#334155',
-        textStyle: { color: '#f1f5f9', fontFamily: 'JetBrainsMono, monospace', fontSize: 12 }
+        backgroundColor: '#FFF5EE',
+        borderColor: 'rgba(180,160,140,0.25)',
+        textStyle: { color: '#4A3B2E', fontFamily: 'JetBrainsMono, monospace', fontSize: 12 }
       },
       grid: { left: 55, right: 30, top: 40, bottom: 45 },
       xAxis: {
         type: 'value',
         name: '\u5e74\u9f84',
         min: 0, max: maxAge,
-        axisLine: { lineStyle: { color: '#334155' } },
-        axisLabel: { color: '#94a3b8', fontFamily: 'JetBrainsMono, monospace' },
+        axisLine: { lineStyle: { color: 'rgba(180,160,140,0.25)' } },
+        axisLabel: { color: '#9B8B7A', fontFamily: 'JetBrainsMono, monospace' },
         splitLine: { show: false }
       },
       yAxis: {
         type: 'value',
         name: '\u6027\u683c\u503c',
-        axisLine: { lineStyle: { color: '#334155' } },
-        axisLabel: { color: '#94a3b8', fontFamily: 'JetBrainsMono, monospace' },
-        splitLine: { lineStyle: { color: '#33415540' } },
+        axisLine: { lineStyle: { color: 'rgba(180,160,140,0.25)' } },
+        axisLabel: { color: '#9B8B7A', fontFamily: 'JetBrainsMono, monospace' },
+        splitLine: { lineStyle: { color: 'rgba(180,160,140,0.25)40' } },
         min: function(value) { return Math.floor(value.min - 2); },
         max: function(value) { return Math.ceil(value.max + 2); }
       }
@@ -323,12 +323,12 @@
         type: 'line', name: '\u6027\u683c\u5f62\u6210\u66f2\u7ebf',
         data: ts.ages.map(function(a, i) { return [a, ts.values[i]]; }),
         smooth: true, showSymbol: false,
-        lineStyle: { color: '#f43f5e', width: 3 },
+        lineStyle: { color: '#FF6B8A', width: 3 },
         areaStyle: { color: 'rgba(244,63,94,0.1)' },
         markLine: {
           silent: true, symbol: 'none',
           data: [
-            { yAxis: 0, lineStyle: { color: '#334155', type: 'dashed' } }
+            { yAxis: 0, lineStyle: { color: 'rgba(180,160,140,0.25)', type: 'dashed' } }
           ]
         }
       });
@@ -363,12 +363,12 @@
         type: 'line', name: '\u6027\u683c\u5f62\u6210\u66f2\u7ebf',
         data: ts.ages.map(function(a, i) { return [a, ts.values[i]]; }),
         smooth: true, showSymbol: false,
-        lineStyle: { color: '#f43f5e', width: 3 },
+        lineStyle: { color: '#FF6B8A', width: 3 },
         areaStyle: { color: 'rgba(244,63,94,0.12)' },
         markLine: {
           silent: true, symbol: 'none',
           data: [
-            { yAxis: 0, lineStyle: { color: '#334155', type: 'dashed' } }
+            { yAxis: 0, lineStyle: { color: 'rgba(180,160,140,0.25)', type: 'dashed' } }
           ]
         }
       });
@@ -393,10 +393,10 @@
     }
 
     var opt = commonOption();
-    opt.title = { text: '\u6027\u683c\u5f62\u6210\u66f2\u7ebf\uff08' + (viewMode === 'all' ? '\u53e0\u52a0+\u5206\u91cf' : viewMode === 'stack' ? '\u5806\u53e0' : '\u603b\u66f2\u7ebf') + '\uff09', left: 'center', top: 5, textStyle: { color: '#f43f5e', fontSize: 13 } };
+    opt.title = { text: '\u6027\u683c\u5f62\u6210\u66f2\u7ebf\uff08' + (viewMode === 'all' ? '\u53e0\u52a0+\u5206\u91cf' : viewMode === 'stack' ? '\u5806\u53e0' : '\u603b\u66f2\u7ebf') + '\uff09', left: 'center', top: 5, textStyle: { color: '#FF6B8A', fontSize: 13 } };
     opt.legend = viewMode === 'individual' ? undefined : {
       data: series.map(function(s) { return s.name; }),
-      top: 28, textStyle: { color: '#94a3b8', fontSize: 10 },
+      top: 28, textStyle: { color: '#9B8B7A', fontSize: 10 },
       itemWidth: 14, itemHeight: 3,
       type: 'scroll'
     };
@@ -440,10 +440,10 @@
     });
 
     var opt = commonOption();
-    opt.title = { text: '\u6bcf\u4e2a\u4e8b\u4ef6\u7684"\u6655\u67d3"\u8f68\u8ff9\uff08\u672a\u53e0\u52a0\uff09', left: 'center', top: 5, textStyle: { color: '#f43f5e', fontSize: 13 } };
+    opt.title = { text: '\u6bcf\u4e2a\u4e8b\u4ef6\u7684"\u6655\u67d3"\u8f68\u8ff9\uff08\u672a\u53e0\u52a0\uff09', left: 'center', top: 5, textStyle: { color: '#FF6B8A', fontSize: 13 } };
     opt.legend = {
       data: events.map(function(e) { return e.name; }),
-      top: 28, textStyle: { color: '#94a3b8', fontSize: 10 },
+      top: 28, textStyle: { color: '#9B8B7A', fontSize: 10 },
       itemWidth: 14, itemHeight: 3,
       type: 'scroll'
     };

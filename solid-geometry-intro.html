@@ -8,7 +8,7 @@
 @font-face { font-family:'Outfit'; src:url('./_shared/fonts/Outfit-Regular.ttf') format('truetype'); font-weight:400; }
 @font-face { font-family:'Outfit'; src:url('./_shared/fonts/Outfit-Bold.ttf') format('truetype'); font-weight:700; }
 @font-face { font-family:'JetBrainsMono'; src:url('./_shared/fonts/JetBrainsMono-Regular.ttf') format('truetype'); font-weight:400; }
-:root { --bg:#0b1120; --bg2:#151e32; --bg3:#1e293b; --ink:#f1f5f9; --muted:#94a3b8; --rule:#334155; --accent:#22d3ee; --accent2:#f59e0b; --accent3:#f43f5e; --accent4:#a78bfa; --font:'Outfit',system-ui,sans-serif; --font-mono:'JetBrainsMono',monospace; --max:1200px; }
+:root { --bg:#FFF8F0; --bg2:#FFFDF7; --bg3:#FFF5EE; --ink:#4A3B2E; --muted:#9B8B7A; --rule:rgba(180,160,140,0.25); --accent:#22d3ee; --accent2:#f59e0b; --accent3:#f43f5e; --accent4:#a78bfa; --font:'Outfit',system-ui,sans-serif; --font-mono:'JetBrainsMono',monospace; --max:1200px; }
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
 html { font-size:16px; scroll-behavior:smooth; }
 body { font-family:var(--font); color:var(--ink); background:var(--bg); line-height:1.6; }
@@ -71,6 +71,10 @@ input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:18px;
 @media (max-width:768px) { header h1 { font-size:1.8rem; } .geo-canvas { height:300px; } .compare-table { font-size:0.75rem; } .compare-table th,.compare-table td { padding:0.4rem 0.3rem; } .oblique-grid { grid-template-columns:1fr; } }
 footer { text-align:center; padding:2rem 1rem; color:var(--muted); font-size:0.85rem; border-top:1px solid var(--rule); margin-top:2rem; }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./_shared/anime-cartoon-theme.css">
 </head>
 <body>
 
@@ -301,7 +305,7 @@ footer { text-align:center; padding:2rem 1rem; color:var(--muted); font-size:0.8
 
 <script>
 (function(){
-  var ACCENT='#22d3ee',ACCENT2='#f59e0b',ACCENT3='#f43f5e',ACCENT4='#a78bfa',BG3='#1e293b',INK='#f1f5f9',RULE='#334155';
+  var ACCENT='#6BB6D6',ACCENT2='#E8A93E',ACCENT3='#FF6B8A',ACCENT4='#FF8FA3',BG3='#FFF5EE',INK='#4A3B2E',RULE='rgba(180,160,140,0.4)';
   var PI=Math.PI;
 
   /* ========== Utility functions ========== */
@@ -400,7 +404,7 @@ footer { text-align:center; padding:2rem 1rem; color:var(--muted); font-size:0.8
     function render() {
       var w = canvas.offsetWidth, h = canvas.offsetHeight;
       ctx.clearRect(0,0,w,h);
-      ctx.fillStyle = '#1e293b'; ctx.fillRect(0,0,w,h);
+      ctx.fillStyle = '#FFF5EE'; ctx.fillRect(0,0,w,h);
       drawScene(ctx, project, drawAxes);
     }
 
@@ -465,7 +469,7 @@ footer { text-align:center; padding:2rem 1rem; color:var(--muted); font-size:0.8
   function drawLabel3D(ctx, proj, pos, text, color, offset) {
     var p = proj(pos[0], pos[1], pos[2]);
     ctx.font = 'bold 13px Outfit, sans-serif';
-    ctx.fillStyle = color || '#f1f5f9';
+    ctx.fillStyle = color || '#4A3B2E';
     var off = offset || [8, -8];
     ctx.fillText(text, p.x + off[0], p.y + off[1]);
   }
@@ -477,7 +481,7 @@ footer { text-align:center; padding:2rem 1rem; color:var(--muted); font-size:0.8
     var p2 = proj(vertex[0]+dir2[0]*size, vertex[1]+dir2[1]*size, vertex[2]+dir2[2]*size);
     ctx.beginPath();
     ctx.moveTo(p1.x, p1.y); ctx.lineTo(pCorner.x, pCorner.y); ctx.lineTo(p2.x, p2.y);
-    ctx.strokeStyle = '#f1f5f9'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.strokeStyle = '#4A3B2E'; ctx.lineWidth = 1.5; ctx.stroke();
   }
 
   /* ========================= 1. 基本立体图形 ========================= */
@@ -690,8 +694,8 @@ footer { text-align:center; padding:2rem 1rem; color:var(--muted); font-size:0.8
     obOrigCtx.strokeStyle = RULE; obOrigCtx.lineWidth = 1;
     obOrigCtx.beginPath(); obOrigCtx.moveTo(cx - origW*0.8, cy); obOrigCtx.lineTo(cx + origW*0.8, cy); obOrigCtx.stroke();
     obOrigCtx.beginPath(); obOrigCtx.moveTo(cx, cy + origH*0.6); obOrigCtx.lineTo(cx, cy - origH*0.8); obOrigCtx.stroke();
-    label(obOrigCtx, cx + origW*0.8 + 5, cy + 15, 'x', '#94a3b8');
-    label(obOrigCtx, cx + 8, cy - origH*0.8, 'y', '#94a3b8');
+    label(obOrigCtx, cx + origW*0.8 + 5, cy + 15, 'x', '#9B8B7A');
+    label(obOrigCtx, cx + 8, cy - origH*0.8, 'y', '#9B8B7A');
     // Draw shape
     obOrigCtx.strokeStyle = ACCENT; obOrigCtx.lineWidth = 2;
     if (obShape === 'square' || obShape === 'rectangle') {
@@ -723,8 +727,8 @@ footer { text-align:center; padding:2rem 1rem; color:var(--muted); font-size:0.8
     var axEndX = cx + origH*0.7*k*Math.cos(rad);
     var axEndY = cy - origH*0.7*Math.sin(rad);
     obProjCtx.beginPath(); obProjCtx.moveTo(cx, cy + origH*0.3*k*Math.sin(rad)); obProjCtx.lineTo(axEndX, axEndY); obProjCtx.stroke();
-    label(obProjCtx, cx + origW*0.8 + 5, cy + 15, "x'", '#94a3b8');
-    label(obProjCtx, axEndX + 8, axEndY - 5, "y'", '#94a3b8');
+    label(obProjCtx, cx + origW*0.8 + 5, cy + 15, "x'", '#9B8B7A');
+    label(obProjCtx, axEndX + 8, axEndY - 5, "y'", '#9B8B7A');
     // Draw projected shape
     obProjCtx.strokeStyle = ACCENT2; obProjCtx.lineWidth = 2;
     if (obShape === 'square' || obShape === 'rectangle') {
@@ -1221,5 +1225,6 @@ footer { text-align:center; padding:2rem 1rem; color:var(--muted); font-size:0.8
 
 })();
 </script>
+<script src="./_shared/anime-cartoon-tools.js"></script>
 </body>
 </html>

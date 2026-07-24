@@ -4,16 +4,16 @@
 
   function tooltipStyle() {
     return {
-      backgroundColor: '#1e293b',
-      borderColor: '#334155',
-      textStyle: { color: '#f1f5f9', fontFamily: 'Outfit, sans-serif' }
+      backgroundColor: '#FFF5EE',
+      borderColor: 'rgba(180,160,140,0.25)',
+      textStyle: { color: '#4A3B2E', fontFamily: 'Outfit, sans-serif' }
     };
   }
 
   function axisStyle() {
     return {
-      axisLine: { lineStyle: { color: '#334155' } },
-      axisLabel: { color: '#94a3b8', fontFamily: 'JetBrainsMono, monospace' },
+      axisLine: { lineStyle: { color: 'rgba(180,160,140,0.25)' } },
+      axisLabel: { color: '#9B8B7A', fontFamily: 'JetBrainsMono, monospace' },
       splitLine: { lineStyle: { color: 'rgba(51,65,85,0.25)' } }
     };
   }
@@ -49,12 +49,12 @@
       itemStyle: { color: 'rgba(244,63,94,0.08)' },
       data: [
         [
-          { xAxis: 25, label: { show: true, position: 'insideTop', color: '#f43f5e',
+          { xAxis: 25, label: { show: true, position: 'insideTop', color: '#FF6B8A',
             formatter: '\u4e8f\u635f\u533a', fontSize: 10 } },
           { xAxis: be1 }
         ],
         [
-          { xAxis: be2, label: { show: true, position: 'insideTop', color: '#f43f5e',
+          { xAxis: be2, label: { show: true, position: 'insideTop', color: '#FF6B8A',
             formatter: '\u4e8f\u635f\u533a', fontSize: 10 } },
           { xAxis: 75 }
         ]
@@ -75,19 +75,19 @@
       title: {
         text: '\u5546\u54c1\u5b9a\u4ef7\u4e0e\u5229\u6da6\u66f2\u7ebf',
         left: 'center', top: 5,
-        textStyle: { color: '#f59e0b', fontSize: 13, fontWeight: 'bold' }
+        textStyle: { color: '#E8A93E', fontSize: 13, fontWeight: 'bold' }
       },
       grid: { left: 65, right: 30, top: 55, bottom: 50 },
       xAxis: Object.assign({
         type: 'value',
         name: '\u552e\u4ef7(\u5143)',
-        nameTextStyle: { color: '#94a3b8' },
+        nameTextStyle: { color: '#9B8B7A' },
         min: 25, max: 75
       }, axisStyle()),
       yAxis: Object.assign({
         type: 'value',
         name: '\u5229\u6da6(\u5143)',
-        nameTextStyle: { color: '#94a3b8' }
+        nameTextStyle: { color: '#9B8B7A' }
       }, axisStyle()),
       series: [
         {
@@ -96,7 +96,7 @@
           data: lineData,
           smooth: true,
           showSymbol: false,
-          lineStyle: { color: '#f59e0b', width: 2.5 },
+          lineStyle: { color: '#E8A93E', width: 2.5 },
           markArea: markAreaLoss,
           z: 2
         },
@@ -126,10 +126,10 @@
           type: 'scatter',
           data: [[be1, 0], [be2, 0]],
           symbolSize: 10,
-          itemStyle: { color: '#f43f5e' },
+          itemStyle: { color: '#FF6B8A' },
           label: {
             show: true, position: 'bottom',
-            color: '#f43f5e', fontSize: 10,
+            color: '#FF6B8A', fontSize: 10,
             formatter: '\u76c8\u4e8f\u5e73\u8861\u70b9'
           },
           z: 10
@@ -200,7 +200,7 @@
     }
 
     // Axes
-    ctx.strokeStyle = '#334155';
+    ctx.strokeStyle = 'rgba(180,160,140,0.25)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(originX, pad.top);
@@ -209,7 +209,7 @@
     ctx.stroke();
 
     // Axis labels
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillStyle = '#9B8B7A';
     ctx.font = '11px JetBrainsMono, monospace';
     ctx.textAlign = 'center';
     ctx.fillText('\u6c34\u5e73\u8ddd\u79bb(m)', pad.left + plotW / 2, H - 5);
@@ -235,7 +235,7 @@
     }
 
     // Ground line
-    ctx.strokeStyle = '#475569';
+    ctx.strokeStyle = 'rgba(180,160,140,0.4)';
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(originX, originY);
@@ -243,7 +243,7 @@
     ctx.stroke();
 
     // Launch pad
-    ctx.fillStyle = '#475569';
+    ctx.fillStyle = 'rgba(180,160,140,0.4)';
     ctx.fillRect(originX - 6, originY - 8, 12, 8);
 
     // Full trajectory as faded dashed line
@@ -277,7 +277,7 @@
     ctx.fillText('\u6700\u9ad8\u70b9: ' + vertexY.toFixed(1) + 'm', toCanvasX(vertexX) + 8, toCanvasY(vertexY) - 4);
 
     // Landing point marker
-    ctx.strokeStyle = '#f43f5e';
+    ctx.strokeStyle = '#FF6B8A';
     ctx.lineWidth = 2;
     var landSize = 6;
     ctx.beginPath();
@@ -286,7 +286,7 @@
     ctx.moveTo(toCanvasX(range) + landSize, toCanvasY(0) - landSize);
     ctx.lineTo(toCanvasX(range) - landSize, toCanvasY(0) + landSize);
     ctx.stroke();
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillStyle = '#9B8B7A';
     ctx.font = '11px JetBrainsMono, monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
@@ -328,8 +328,8 @@
       ctx.stroke();
 
       // Animated dot
-      ctx.fillStyle = '#f59e0b';
-      ctx.shadowColor = '#f59e0b';
+      ctx.fillStyle = '#E8A93E';
+      ctx.shadowColor = '#E8A93E';
       ctx.shadowBlur = 10;
       ctx.beginPath();
       ctx.arc(toCanvasX(cx), toCanvasY(cy), 5, 0, 2 * Math.PI);
@@ -397,20 +397,20 @@
       title: {
         text: '\u62f1\u6865\u629b\u7269\u7ebf\u622a\u9762',
         left: 'center', top: 5,
-        textStyle: { color: '#f59e0b', fontSize: 13, fontWeight: 'bold' }
+        textStyle: { color: '#E8A93E', fontSize: 13, fontWeight: 'bold' }
       },
       grid: { left: 65, right: 30, top: 55, bottom: 50 },
       xAxis: Object.assign({
         type: 'value',
         name: '\u6c34\u5e73\u4f4d\u7f6e(m)',
-        nameTextStyle: { color: '#94a3b8' },
+        nameTextStyle: { color: '#9B8B7A' },
         min: -halfW - 5,
         max: halfW + 5
       }, axisStyle()),
       yAxis: Object.assign({
         type: 'value',
         name: '\u9ad8\u5ea6(m)',
-        nameTextStyle: { color: '#94a3b8' },
+        nameTextStyle: { color: '#9B8B7A' },
         min: -6,
         max: H * 1.3
       }, axisStyle()),
@@ -421,7 +421,7 @@
           data: archData,
           smooth: true,
           showSymbol: false,
-          lineStyle: { color: '#f59e0b', width: 2.5 },
+          lineStyle: { color: '#E8A93E', width: 2.5 },
           areaStyle: { color: 'rgba(245,158,11,0.15)' },
           markPoint: {
             data: [{
@@ -477,7 +477,7 @@
           data: [[-halfW, 0], [-halfW, -5]],
           showSymbol: false,
           silent: true,
-          lineStyle: { color: '#475569', width: 3 },
+          lineStyle: { color: 'rgba(180,160,140,0.4)', width: 3 },
           z: 2
         },
         {
@@ -486,7 +486,7 @@
           data: [[halfW, 0], [halfW, -5]],
           showSymbol: false,
           silent: true,
-          lineStyle: { color: '#475569', width: 3 },
+          lineStyle: { color: 'rgba(180,160,140,0.4)', width: 3 },
           z: 2
         }
       ]
@@ -558,23 +558,23 @@
       title: {
         text: '\u6536\u5165\u4e0e\u6210\u672c\u66f2\u7ebf\u5bf9\u6bd4',
         left: 'center', top: 5,
-        textStyle: { color: '#f59e0b', fontSize: 13, fontWeight: 'bold' }
+        textStyle: { color: '#E8A93E', fontSize: 13, fontWeight: 'bold' }
       },
       legend: {
         data: ['\u6536\u5165\u66f2\u7ebf', '\u6210\u672c\u66f2\u7ebf'],
-        top: 28, textStyle: { color: '#94a3b8' }
+        top: 28, textStyle: { color: '#9B8B7A' }
       },
       grid: { left: 70, right: 30, top: 60, bottom: 50 },
       xAxis: Object.assign({
         type: 'value',
         name: '\u4ea7\u91cf(\u4ef6)',
-        nameTextStyle: { color: '#94a3b8' },
+        nameTextStyle: { color: '#9B8B7A' },
         min: 0, max: 100
       }, axisStyle()),
       yAxis: Object.assign({
         type: 'value',
         name: '\u91d1\u989d(\u5143)',
-        nameTextStyle: { color: '#94a3b8' }
+        nameTextStyle: { color: '#9B8B7A' }
       }, axisStyle()),
       series: [
         {
@@ -591,7 +591,7 @@
           data: costData,
           smooth: true,
           showSymbol: false,
-          lineStyle: { color: '#f59e0b', width: 2.5 },
+          lineStyle: { color: '#E8A93E', width: 2.5 },
           z: 3
         },
         {
@@ -629,10 +629,10 @@
           type: 'scatter',
           data: [[be1, 200 * be1], [be2, 200 * be2]],
           symbolSize: 10,
-          itemStyle: { color: '#f43f5e' },
+          itemStyle: { color: '#FF6B8A' },
           label: {
             show: true, position: 'top',
-            color: '#f43f5e', fontSize: 10,
+            color: '#FF6B8A', fontSize: 10,
             formatter: '\u76c8\u4e8f\u5e73\u8861'
           },
           z: 10
@@ -650,7 +650,7 @@
           type: 'scatter',
           data: [[quantity, curC]],
           symbolSize: 9,
-          itemStyle: { color: '#f59e0b', borderColor: '#fff', borderWidth: 1.5 },
+          itemStyle: { color: '#E8A93E', borderColor: '#fff', borderWidth: 1.5 },
           z: 10
         },
         {
@@ -747,23 +747,23 @@
       title: {
         text: '\u6210\u672c\u4e0e\u9884\u7b97\u7ea6\u675f',
         left: 'center', top: 5,
-        textStyle: { color: '#f59e0b', fontSize: 13, fontWeight: 'bold' }
+        textStyle: { color: '#E8A93E', fontSize: 13, fontWeight: 'bold' }
       },
       legend: {
         data: ['\u6210\u672c\u66f2\u7ebf', '\u9884\u7b97\u7ebf'],
-        top: 28, textStyle: { color: '#94a3b8' }
+        top: 28, textStyle: { color: '#9B8B7A' }
       },
       grid: { left: 70, right: 30, top: 60, bottom: 50 },
       xAxis: Object.assign({
         type: 'value',
         name: '\u4ea7\u91cf(\u4ef6)',
-        nameTextStyle: { color: '#94a3b8' },
+        nameTextStyle: { color: '#9B8B7A' },
         min: 0, max: xMax
       }, axisStyle()),
       yAxis: Object.assign({
         type: 'value',
         name: '\u6210\u672c(\u4e07\u5143)',
-        nameTextStyle: { color: '#94a3b8' },
+        nameTextStyle: { color: '#9B8B7A' },
         min: 0, max: maxBudget
       }, axisStyle()),
       series: [
@@ -773,7 +773,7 @@
           data: costData,
           smooth: true,
           showSymbol: false,
-          lineStyle: { color: '#f59e0b', width: 2.5 },
+          lineStyle: { color: '#E8A93E', width: 2.5 },
           markLine: markLines.length > 0 ? { silent: true, data: markLines, z: 5 } : undefined,
           z: 4
         },
@@ -810,10 +810,10 @@
           type: 'scatter',
           data: rootScatter,
           symbolSize: 10,
-          itemStyle: { color: '#f43f5e' },
+          itemStyle: { color: '#FF6B8A' },
           label: {
             show: true, position: 'top',
-            color: '#f43f5e', fontSize: 10,
+            color: '#FF6B8A', fontSize: 10,
             formatter: function(p) { return '(' + p.data[0].toFixed(1) + ', ' + p.data[1] + ')'; }
           },
           z: 10
@@ -879,7 +879,7 @@
     setText('infoBEStatus', status);
     var statusEl = document.getElementById('infoBEStatus');
     if (statusEl) {
-      statusEl.style.color = profit > 0 ? '#10b981' : profit < 0 ? '#f43f5e' : '#94a3b8';
+      statusEl.style.color = profit > 0 ? '#10b981' : profit < 0 ? '#FF6B8A' : '#9B8B7A';
     }
     setText('formulaBreakEven', 'P(' + quantity + ') = -2(' + quantity + ')\u00b2 + 180(' + quantity + ') - 5000 = ' + profit);
   }
@@ -951,19 +951,19 @@
       title: {
         text: '\u5e73\u5747\u6210\u672c\u66f2\u7ebf',
         left: 'center', top: 5,
-        textStyle: { color: '#f59e0b', fontSize: 13, fontWeight: 'bold' }
+        textStyle: { color: '#E8A93E', fontSize: 13, fontWeight: 'bold' }
       },
       grid: { left: 75, right: 30, top: 55, bottom: 50 },
       xAxis: Object.assign({
         type: 'value',
         name: '\u4ea7\u91cf(\u4ef6)',
-        nameTextStyle: { color: '#94a3b8' },
+        nameTextStyle: { color: '#9B8B7A' },
         min: 0, max: xMax
       }, axisStyle()),
       yAxis: Object.assign({
         type: 'value',
         name: '\u5e73\u5747\u6210\u672c(\u5143/\u4ef6)',
-        nameTextStyle: { color: '#94a3b8' },
+        nameTextStyle: { color: '#9B8B7A' },
         min: 0, max: yMax
       }, axisStyle()),
       series: [
@@ -982,7 +982,7 @@
           type: 'line',
           data: [[0, targetCost], [xMax, targetCost]],
           showSymbol: false,
-          lineStyle: { color: '#f59e0b', width: 2, type: 'dashed' },
+          lineStyle: { color: '#E8A93E', width: 2, type: 'dashed' },
           z: 2
         }
       ]
@@ -1054,19 +1054,19 @@
       title: {
         text: '\u8840\u836f\u6d53\u5ea6\u66f2\u7ebf',
         left: 'center', top: 5,
-        textStyle: { color: '#f59e0b', fontSize: 13, fontWeight: 'bold' }
+        textStyle: { color: '#E8A93E', fontSize: 13, fontWeight: 'bold' }
       },
       grid: { left: 65, right: 30, top: 55, bottom: 50 },
       xAxis: Object.assign({
         type: 'value',
         name: '\u65f6\u95f4(\u5c0f\u65f6)',
-        nameTextStyle: { color: '#94a3b8' },
+        nameTextStyle: { color: '#9B8B7A' },
         min: 0, max: tMax
       }, axisStyle()),
       yAxis: Object.assign({
         type: 'value',
         name: '\u6d53\u5ea6(mg/L)',
-        nameTextStyle: { color: '#94a3b8' },
+        nameTextStyle: { color: '#9B8B7A' },
         min: 0, max: yTop
       }, axisStyle()),
       series: [
@@ -1085,7 +1085,7 @@
           type: 'line',
           data: [[0, thresh], [tMax, thresh]],
           showSymbol: false,
-          lineStyle: { color: '#f59e0b', width: 2, type: 'dashed' },
+          lineStyle: { color: '#E8A93E', width: 2, type: 'dashed' },
           z: 2
         }
       ]
@@ -1164,19 +1164,19 @@
       title: {
         text: '\u6c61\u67d3\u7269\u6d53\u5ea6\u8870\u51cf\u66f2\u7ebf',
         left: 'center', top: 5,
-        textStyle: { color: '#f59e0b', fontSize: 13, fontWeight: 'bold' }
+        textStyle: { color: '#E8A93E', fontSize: 13, fontWeight: 'bold' }
       },
       grid: { left: 75, right: 30, top: 55, bottom: 50 },
       xAxis: Object.assign({
         type: 'value',
         name: '\u8ddd\u79bb(m)',
-        nameTextStyle: { color: '#94a3b8' },
+        nameTextStyle: { color: '#9B8B7A' },
         min: 0, max: dMax
       }, axisStyle()),
       yAxis: Object.assign({
         type: 'value',
         name: '\u6d53\u5ea6(\u03bcg/m\u00b3)',
-        nameTextStyle: { color: '#94a3b8' },
+        nameTextStyle: { color: '#9B8B7A' },
         min: 0, max: yTop
       }, axisStyle()),
       series: [
@@ -1195,7 +1195,7 @@
           type: 'line',
           data: [[0, thresh], [dMax, thresh]],
           showSymbol: false,
-          lineStyle: { color: '#f59e0b', width: 2, type: 'dashed' },
+          lineStyle: { color: '#E8A93E', width: 2, type: 'dashed' },
           z: 2
         }
       ]
@@ -1229,7 +1229,7 @@
 
     var markAreaData = [];
     markAreaData.push([
-      { xAxis: -20, label: { show: true, position: 'insideTop', color: '#f43f5e',
+      { xAxis: -20, label: { show: true, position: 'insideTop', color: '#FF6B8A',
         formatter: '\u5371\u9669', fontSize: 10 } },
       { xAxis: 100, itemStyle: { color: 'rgba(16,185,129,0.1)' },
         label: { show: true, position: 'insideTop', color: '#10b981',
@@ -1238,7 +1238,7 @@
     markAreaData.push([
       { xAxis: 100, label: { show: false },
         itemStyle: { color: 'rgba(244,63,94,0.08)' } },
-      { xAxis: 300, label: { show: true, position: 'insideTop', color: '#f43f5e',
+      { xAxis: 300, label: { show: true, position: 'insideTop', color: '#FF6B8A',
         formatter: '\u5371\u9669', fontSize: 10 } }
     ]);
     markAreaData.push([
@@ -1268,19 +1268,19 @@
       title: {
         text: '\u6750\u6599\u5f3a\u5ea6\u7cfb\u6570',
         left: 'center', top: 5,
-        textStyle: { color: '#f59e0b', fontSize: 13, fontWeight: 'bold' }
+        textStyle: { color: '#E8A93E', fontSize: 13, fontWeight: 'bold' }
       },
       grid: { left: 65, right: 30, top: 55, bottom: 50 },
       xAxis: Object.assign({
         type: 'value',
         name: '\u6e29\u5ea6(\u2103)',
-        nameTextStyle: { color: '#94a3b8' },
+        nameTextStyle: { color: '#9B8B7A' },
         min: TMin, max: TMax
       }, axisStyle()),
       yAxis: Object.assign({
         type: 'value',
         name: '\u5f3a\u5ea6\u7cfb\u6570',
-        nameTextStyle: { color: '#94a3b8' }
+        nameTextStyle: { color: '#9B8B7A' }
       }, axisStyle()),
       series: [
         {
@@ -1322,7 +1322,7 @@
     setText('infoMatStatus', safe ? '\u5b89\u5168' : '\u5371\u9669');
     var statusEl = document.getElementById('infoMatStatus');
     if (statusEl) {
-      statusEl.style.color = safe ? '#10b981' : '#f43f5e';
+      statusEl.style.color = safe ? '#10b981' : '#FF6B8A';
     }
   }
 
@@ -1342,7 +1342,7 @@
       { xAxis: pMin, label: { show: true, position: 'insideTop', color: '#10b981',
         formatter: '\u76c8\u5229', fontSize: 10 } },
       { xAxis: 30, itemStyle: { color: 'rgba(244,63,94,0.08)' },
-        label: { show: true, position: 'insideTop', color: '#f43f5e',
+        label: { show: true, position: 'insideTop', color: '#FF6B8A',
           formatter: '\u4e8f\u635f', fontSize: 10 } }
     ]);
     markAreaData.push([
@@ -1354,7 +1354,7 @@
     markAreaData.push([
       { xAxis: 60, label: { show: false },
         itemStyle: { color: 'rgba(244,63,94,0.08)' } },
-      { xAxis: 120, label: { show: true, position: 'insideTop', color: '#f43f5e',
+      { xAxis: 120, label: { show: true, position: 'insideTop', color: '#FF6B8A',
         formatter: '\u4e8f\u635f', fontSize: 10 } }
     ]);
     markAreaData.push([
@@ -1386,19 +1386,19 @@
       title: {
         text: '\u7efc\u5408\u5229\u6da6\u66f2\u7ebf',
         left: 'center', top: 5,
-        textStyle: { color: '#f59e0b', fontSize: 13, fontWeight: 'bold' }
+        textStyle: { color: '#E8A93E', fontSize: 13, fontWeight: 'bold' }
       },
       grid: { left: 65, right: 30, top: 55, bottom: 50 },
       xAxis: Object.assign({
         type: 'value',
         name: '\u5b9a\u4ef7(\u5143)',
-        nameTextStyle: { color: '#94a3b8' },
+        nameTextStyle: { color: '#9B8B7A' },
         min: pMin, max: pMax
       }, axisStyle()),
       yAxis: Object.assign({
         type: 'value',
         name: '\u5229\u6da6(\u4e07\u5143)',
-        nameTextStyle: { color: '#94a3b8' }
+        nameTextStyle: { color: '#9B8B7A' }
       }, axisStyle()),
       series: [
         {
@@ -1424,10 +1424,10 @@
           type: 'scatter',
           data: [[30, 0], [60, 0], [120, 0]],
           symbolSize: 10,
-          itemStyle: { color: '#f43f5e' },
+          itemStyle: { color: '#FF6B8A' },
           label: {
             show: true, position: 'bottom',
-            color: '#f43f5e', fontSize: 10,
+            color: '#FF6B8A', fontSize: 10,
             formatter: function(p) { return 'p=' + p.data[0]; }
           },
           z: 10
@@ -1453,7 +1453,7 @@
     setText('infoMultiStatus', profit ? '\u76c8\u5229' : '\u4e8f\u635f');
     var statusEl = document.getElementById('infoMultiStatus');
     if (statusEl) {
-      statusEl.style.color = profit ? '#10b981' : '#f43f5e';
+      statusEl.style.color = profit ? '#10b981' : '#FF6B8A';
     }
   }
 
@@ -1470,7 +1470,7 @@
 
     var markAreaData = [];
     markAreaData.push([
-      { xAxis: NMin, label: { show: true, position: 'insideTop', color: '#f43f5e',
+      { xAxis: NMin, label: { show: true, position: 'insideTop', color: '#FF6B8A',
         formatter: '\u7f29\u51cf', fontSize: 10 } },
       { xAxis: 200, itemStyle: { color: 'rgba(16,185,129,0.1)' },
         label: { show: true, position: 'insideTop', color: '#10b981',
@@ -1485,7 +1485,7 @@
     markAreaData.push([
       { xAxis: 500, label: { show: false },
         itemStyle: { color: 'rgba(244,63,94,0.08)' } },
-      { xAxis: 800, label: { show: true, position: 'insideTop', color: '#f43f5e',
+      { xAxis: 800, label: { show: true, position: 'insideTop', color: '#FF6B8A',
         formatter: '\u7f29\u51cf', fontSize: 10 } }
     ]);
     markAreaData.push([
@@ -1517,19 +1517,19 @@
       title: {
         text: '\u79cd\u7fa4\u51c0\u589e\u957f\u7387\u66f2\u7ebf',
         left: 'center', top: 5,
-        textStyle: { color: '#f59e0b', fontSize: 13, fontWeight: 'bold' }
+        textStyle: { color: '#E8A93E', fontSize: 13, fontWeight: 'bold' }
       },
       grid: { left: 75, right: 30, top: 55, bottom: 50 },
       xAxis: Object.assign({
         type: 'value',
         name: '\u79cd\u7fa4\u6570\u91cf(\u53ea)',
-        nameTextStyle: { color: '#94a3b8' },
+        nameTextStyle: { color: '#9B8B7A' },
         min: NMin, max: NMax
       }, axisStyle()),
       yAxis: Object.assign({
         type: 'value',
         name: '\u51c0\u589e\u957f\u7387',
-        nameTextStyle: { color: '#94a3b8' }
+        nameTextStyle: { color: '#9B8B7A' }
       }, axisStyle()),
       series: [
         {
@@ -1555,10 +1555,10 @@
           type: 'scatter',
           data: [[200, 0], [500, 0], [800, 0]],
           symbolSize: 10,
-          itemStyle: { color: '#f43f5e' },
+          itemStyle: { color: '#FF6B8A' },
           label: {
             show: true, position: 'bottom',
-            color: '#f43f5e', fontSize: 10,
+            color: '#FF6B8A', fontSize: 10,
             formatter: function(p) { return 'N=' + p.data[0]; }
           },
           z: 10
@@ -1584,12 +1584,12 @@
     setText('infoPopG', growing ? '\u6b63\u503c' : '\u8d1f\u503c');
     var gEl = document.getElementById('infoPopG');
     if (gEl) {
-      gEl.style.color = growing ? '#10b981' : '#f43f5e';
+      gEl.style.color = growing ? '#10b981' : '#FF6B8A';
     }
     setText('infoPopTrend', growing ? '\u589e\u957f' : '\u7f29\u51cf');
     var trendEl = document.getElementById('infoPopTrend');
     if (trendEl) {
-      trendEl.style.color = growing ? '#10b981' : '#f43f5e';
+      trendEl.style.color = growing ? '#10b981' : '#FF6B8A';
     }
   }
 

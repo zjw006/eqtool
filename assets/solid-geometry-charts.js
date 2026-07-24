@@ -3,26 +3,26 @@
 
   // ==================== 通用工具 ====================
   var COLORS = {
-    primary: '#22d3ee',
-    secondary: '#334155',
-    accent: '#f59e0b',
+    primary: '#6BB6D6',
+    secondary: 'rgba(180,160,140,0.25)',
+    accent: '#E8A93E',
     fill: 'rgba(34,211,238,0.08)',
     fillStrong: 'rgba(34,211,238,0.18)',
     faceFill: 'rgba(34,211,238,0.12)',
-    edgeGlow: '#22d3ee',
+    edgeGlow: '#6BB6D6',
     vertex: '#ffffff',
-    bg: '#0f172a',
-    text: '#f1f5f9',
-    muted: '#94a3b8',
-    axis: '#334155',
-    barColors: ['#22d3ee', '#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#a855f7']
+    bg: '#FFF5EE',
+    text: '#4A3B2E',
+    muted: '#9B8B7A',
+    axis: 'rgba(180,160,140,0.25)',
+    barColors: ['#6BB6D6', '#3b82f6', '#E8A93E', '#10b981', '#ef4444', '#a855f7']
   };
 
   function tooltipStyle() {
-    return { backgroundColor: '#1e293b', borderColor: '#334155', textStyle: { color: '#f1f5f9', fontFamily: 'Outfit, sans-serif' } };
+    return { backgroundColor: '#FFF5EE', borderColor: 'rgba(180,160,140,0.25)', textStyle: { color: '#4A3B2E', fontFamily: 'Outfit, sans-serif' } };
   }
   function axisStyle() {
-    return { axisLine: { lineStyle: { color: '#334155' } }, axisLabel: { color: '#94a3b8', fontFamily: 'JetBrainsMono, monospace' }, splitLine: { lineStyle: { color: 'rgba(51,65,85,0.25)' } } };
+    return { axisLine: { lineStyle: { color: 'rgba(180,160,140,0.25)' } }, axisLabel: { color: '#9B8B7A', fontFamily: 'JetBrainsMono, monospace' }, splitLine: { lineStyle: { color: 'rgba(51,65,85,0.25)' } } };
   }
 
   // 3D 数学工具
@@ -1159,7 +1159,7 @@
         type: 'bar',
         data: names.map(function(n, i) { return { value: 0, itemStyle: { color: COLORS.barColors[i] } }; }),
         barMaxWidth: 28,
-        label: { show: true, position: 'right', color: '#f1f5f9', fontSize: 10, fontFamily: 'JetBrainsMono, monospace' }
+        label: { show: true, position: 'right', color: '#4A3B2E', fontSize: 10, fontFamily: 'JetBrainsMono, monospace' }
       }]
     });
 

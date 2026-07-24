@@ -10,8 +10,8 @@
   @font-face { font-family: 'JetBrainsMono'; src: url('./_shared/fonts/JetBrainsMono-Regular.ttf') format('truetype'); }
 
   :root {
-    --bg: #0b1120; --bg2: #151e32; --bg3: #1e293b;
-    --ink: #f1f5f9; --muted: #94a3b8; --rule: #334155;
+    --bg: #FFF8F0; --bg2: #FFFDF7; --bg3: #FFF5EE;
+    --ink: #4A3B2E; --muted: #9B8B7A; --rule: rgba(180,160,140,0.25);
     --accent: #a78bfa; --accent2: #f59e0b; --accent3: #f43f5e; --accent4: #22d3ee;
   }
 
@@ -56,7 +56,7 @@
   .dark-card {
     background: var(--bg2); border: 1px solid var(--rule); border-radius: 14px; padding: 16px;
   }
-  canvas { display: block; width: 100%; height: 500px; border-radius: 10px; background: #0f172a; }
+  canvas { display: block; width: 100%; height: 500px; border-radius: 10px; background: #FFF5EE; }
   .canvas-wrap { position: relative; }
 
   .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 14px; }
@@ -123,6 +123,10 @@
     .app-case canvas { height: 260px; }
   }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./_shared/anime-cartoon-theme.css">
 </head>
 <body>
 <div class="container">
@@ -483,19 +487,19 @@
     ctx.beginPath(); ctx.moveTo(0, -b); ctx.lineTo(0, b); ctx.stroke();
     ctx.setLineDash([]);
     // foci
-    ctx.fillStyle = '#f43f5e';
+    ctx.fillStyle = '#FF6B8A';
     ctx.beginPath(); ctx.arc(c, 0, 4, 0, Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.arc(-c, 0, 4, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#f43f5e'; ctx.font = 'bold 12px JetBrainsMono';
+    ctx.fillStyle = '#FF6B8A'; ctx.font = 'bold 12px JetBrainsMono';
     ctx.fillText('F₁(-'+c.toFixed(1)+',0)', -c-70, -12); ctx.fillText('F₂('+c.toFixed(1)+',0)', c+6, -12);
     // axis labels with values
-    ctx.fillStyle = '#a78bfa'; ctx.font = '12px JetBrainsMono';
+    ctx.fillStyle = '#FF8FA3'; ctx.font = '12px JetBrainsMono';
     ctx.fillText('a='+a, a/2-12, 16); ctx.fillText('a='+a, -a-8, 16);
     ctx.fillText('b='+b, 8, -b/2+4); ctx.fillText('b='+b, 8, b/2+4);
     ctx.fillStyle = 'rgba(167,139,250,0.5)'; ctx.font = '11px JetBrainsMono';
     ctx.fillText('2a='+a*2, a-20, 14);
     // curve
-    ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = 2.5;
+    ctx.strokeStyle = '#6BB6D6'; ctx.lineWidth = 2.5;
     ctx.beginPath();
     for (let i = 0, t = 0; t <= Math.PI*2 + 0.001; i++, t += 0.02) { const x = a*Math.cos(t), y = b*Math.sin(t); if (i===0) ctx.moveTo(x, -y); else ctx.lineTo(x, -y); }
     ctx.stroke();
@@ -524,16 +528,16 @@
     ctx.beginPath(); ctx.moveTo(-a, -(b/a)*a); ctx.lineTo(a, (b/a)*a); ctx.stroke();
     ctx.setLineDash([]);
     // foci
-    ctx.fillStyle = '#f43f5e';
+    ctx.fillStyle = '#FF6B8A';
     ctx.beginPath(); ctx.arc(c, 0, 4, 0, Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.arc(-c, 0, 4, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#f43f5e'; ctx.font = 'bold 12px JetBrainsMono';
+    ctx.fillStyle = '#FF6B8A'; ctx.font = 'bold 12px JetBrainsMono';
     ctx.fillText('F₁(-'+c.toFixed(1)+',0)', -c-75, -12); ctx.fillText('F₂('+c.toFixed(1)+',0)', c+6, -12);
     // vertex markers
-    ctx.fillStyle = '#22d3ee';
+    ctx.fillStyle = '#6BB6D6';
     ctx.beginPath(); ctx.arc(a, 0, 3, 0, Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.arc(-a, 0, 3, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#22d3ee'; ctx.font = '11px JetBrainsMono';
+    ctx.fillStyle = '#6BB6D6'; ctx.font = '11px JetBrainsMono';
     ctx.fillText('('+a+',0)', a+6, -10); ctx.fillText('(-'+a+',0)', -a-45, -10);
     // a dimension line
     ctx.strokeStyle = 'rgba(167,139,250,0.4)'; ctx.lineWidth = 1; ctx.setLineDash([3,3]);
@@ -541,7 +545,7 @@
     ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(0, -8); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(a, -20); ctx.lineTo(a, -8); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = '#a78bfa'; ctx.font = '11px JetBrainsMono';
+    ctx.fillStyle = '#FF8FA3'; ctx.font = '11px JetBrainsMono';
     ctx.fillText('a='+a, a/2-14, -20);
     // c dimension line
     ctx.strokeStyle = 'rgba(244,63,94,0.5)'; ctx.lineWidth = 1; ctx.setLineDash([3,3]);
@@ -549,7 +553,7 @@
     ctx.beginPath(); ctx.moveTo(0, 8); ctx.lineTo(0, 20); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(c, 8); ctx.lineTo(c, 20); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = '#f43f5e'; ctx.font = '11px JetBrainsMono';
+    ctx.fillStyle = '#FF6B8A'; ctx.font = '11px JetBrainsMono';
     ctx.fillText('c='+c.toFixed(1), c/2-18, 28);
     // b dimension line
     ctx.strokeStyle = 'rgba(34,211,238,0.4)'; ctx.setLineDash([3,3]);
@@ -557,14 +561,14 @@
     ctx.beginPath(); ctx.moveTo(-20, 0); ctx.lineTo(-8, 0); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(-20, -b); ctx.lineTo(-8, -b); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = '#22d3ee'; ctx.fillText('b='+b, -40, -b/2+4);
+    ctx.fillStyle = '#6BB6D6'; ctx.fillText('b='+b, -40, -b/2+4);
     // asymptote labels
     ctx.fillStyle = 'rgba(245,158,11,0.7)'; ctx.font = '11px JetBrainsMono';
     const aslope = (b/a).toFixed(2);
     ctx.fillText('y='+aslope+'x', a+10, -(b/a)*a-8);
     ctx.fillText('y=-'+aslope+'x', a+10, (b/a)*a+14);
     // curve right
-    ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = 2.5;
+    ctx.strokeStyle = '#6BB6D6'; ctx.lineWidth = 2.5;
     ctx.beginPath();
     const tMax = Math.acosh(Math.max(1, (Math.min(ox, w-ox))/a));
     for (let i = 0, t = -tMax; t <= tMax + 0.001; i++, t += 0.03) { const x = a*Math.cosh(t), y = b*Math.sinh(t); if (i===0) ctx.moveTo(x, -y); else ctx.lineTo(x, -y); }
@@ -594,7 +598,7 @@
     // directrix
     ctx.strokeStyle = 'rgba(244,63,94,0.7)'; ctx.setLineDash([6,4]); ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(-f, -oy); ctx.lineTo(-f, oy); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = '#f43f5e'; ctx.font = 'bold 12px JetBrainsMono'; ctx.fillText('准线 x=-'+f.toFixed(1), -f+6, -oy+18);
+    ctx.fillStyle = '#FF6B8A'; ctx.font = 'bold 12px JetBrainsMono'; ctx.fillText('准线 x=-'+f.toFixed(1), -f+6, -oy+18);
     // focus
     ctx.beginPath(); ctx.arc(f, 0, 4, 0, Math.PI*2); ctx.fill();
     ctx.fillText('F('+f.toFixed(1)+',0)', f+6, -8);
@@ -604,18 +608,18 @@
     ctx.beginPath(); ctx.moveTo(0, 4); ctx.lineTo(0, 16); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(f, 4); ctx.lineTo(f, 16); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = '#f43f5e'; ctx.font = '11px JetBrainsMono';
+    ctx.fillStyle = '#FF6B8A'; ctx.font = '11px JetBrainsMono';
     ctx.fillText('p/2='+f.toFixed(1), 2, 26);
     // vertex label
-    ctx.fillStyle = '#22d3ee'; ctx.font = '11px JetBrainsMono';
+    ctx.fillStyle = '#6BB6D6'; ctx.font = '11px JetBrainsMono';
     ctx.fillText('O(0,0)', 6, 16);
     // p dimension label at a point on curve
-    ctx.fillStyle = '#22d3ee'; ctx.font = '12px JetBrainsMono';
+    ctx.fillStyle = '#6BB6D6'; ctx.font = '12px JetBrainsMono';
     const labelY = (Math.min(oy, h-oy))*0.6; // use a y value for reference point
     const labelX = labelY*labelY/(2*p);
     ctx.fillText('('+labelX.toFixed(0)+', '+labelY.toFixed(0)+')', labelX+8, -labelY-4);
     // curve x = y²/(2p)
-    ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = 2.5;
+    ctx.strokeStyle = '#6BB6D6'; ctx.lineWidth = 2.5;
     ctx.beginPath();
     const yMax = Math.min(oy, h-oy);
     for (let y = -yMax; y <= yMax; y += 2) { const x = y*y/(2*p); if (y===-yMax) ctx.moveTo(x, -y); else ctx.lineTo(x, -y); }
@@ -658,36 +662,36 @@
 
     let a=120, b=80, p=100;
     // curve equation label on canvas
-    ctx.fillStyle = '#22d3ee'; ctx.font = '13px JetBrainsMono';
+    ctx.fillStyle = '#6BB6D6'; ctx.font = '13px JetBrainsMono';
     if (type === 'ellipse') {
       a=160; b=100;
       ctx.fillText('x²/'+a+'² + y²/'+b+'² = 1', -ox+10, -oy+20);
-      ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#6BB6D6'; ctx.lineWidth = 2.5;
       ctx.beginPath(); ctx.moveTo(a,0); for (let t=0; t<=Math.PI*2+0.001; t+=0.03) ctx.lineTo(a*Math.cos(t), -b*Math.sin(t)); ctx.stroke();
     } else if (type === 'hyperbola') {
       a=100; b=80;
       ctx.fillText('x²/'+a+'² − y²/'+b+'² = 1', -ox+10, -oy+20);
-      ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#6BB6D6'; ctx.lineWidth = 2.5;
       const tM = Math.acosh(Math.max(1, (Math.min(ox,w-ox))/a));
       ctx.beginPath(); ctx.moveTo(a*Math.cosh(-tM), -b*Math.sinh(-tM)); for (let t=-tM; t<=tM+0.001; t+=0.03) ctx.lineTo(a*Math.cosh(t), -b*Math.sinh(t)); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(-a*Math.cosh(-tM), -b*Math.sinh(-tM)); for (let t=-tM; t<=tM+0.001; t+=0.03) ctx.lineTo(-a*Math.cosh(t), -b*Math.sinh(t)); ctx.stroke();
     } else {
       p=100;
       ctx.fillText('y² = 2·'+p+'·x', -ox+10, -oy+20);
-      ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#6BB6D6'; ctx.lineWidth = 2.5;
       const yM = Math.min(oy, h-oy);
       ctx.beginPath(); ctx.moveTo(yM*yM/(2*p), yM); for (let y=-yM; y<=yM+0.001; y+=2) ctx.lineTo(y*y/(2*p), -y); ctx.stroke();
     }
 
     // line y = kx + m
-    ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2; ctx.setLineDash([4,3]);
+    ctx.strokeStyle = '#E8A93E'; ctx.lineWidth = 2; ctx.setLineDash([4,3]);
     const xL = -ox, xR = w-ox;
     ctx.beginPath(); ctx.moveTo(xL, -(k*xL + m)); ctx.lineTo(xR, -(k*xR + m)); ctx.stroke(); ctx.setLineDash([]);
     // line equation label
-    ctx.fillStyle = '#f59e0b'; ctx.font = '12px JetBrainsMono';
+    ctx.fillStyle = '#E8A93E'; ctx.font = '12px JetBrainsMono';
     ctx.fillText('y='+k.toFixed(2)+'x'+(m>=0?'+':'')+m, -ox+10, -(k*(-ox)+m)-10);
     // curve params
-    ctx.fillStyle = '#22d3ee'; ctx.font = '11px JetBrainsMono';
+    ctx.fillStyle = '#6BB6D6'; ctx.font = '11px JetBrainsMono';
     if (type === 'ellipse') ctx.fillText('a='+a+' b='+b, -ox+10, oy-10);
     else if (type === 'hyperbola') ctx.fillText('a='+a+' b='+b, -ox+10, oy-10);
     else ctx.fillText('p='+p, -ox+10, oy-10);
@@ -719,8 +723,8 @@
     }
 
     pts.forEach(([x,y]) => {
-      ctx.fillStyle = '#f43f5e'; ctx.beginPath(); ctx.arc(x, -y, 5, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#f1f5f9'; ctx.font = '11px JetBrainsMono';
+      ctx.fillStyle = '#FF6B8A'; ctx.beginPath(); ctx.arc(x, -y, 5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#4A3B2E'; ctx.font = '11px JetBrainsMono';
       ctx.fillText('('+x.toFixed(1)+', '+y.toFixed(1)+')', x+8, -y-8);
     });
     if (pts.length) info += '交点: '+pts.map(function(p){return '('+p[0].toFixed(1)+', '+p[1].toFixed(1)+')';}).join('  ');
@@ -749,23 +753,23 @@
     ctx.strokeStyle = 'rgba(34,211,238,0.5)'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(a,0); for (let t=0; t<=Math.PI*2+0.001; t+=0.03) ctx.lineTo(a*Math.cos(t), -b*Math.sin(t)); ctx.stroke();
     // sun at focus
-    ctx.fillStyle = '#f59e0b';
+    ctx.fillStyle = '#E8A93E';
     ctx.beginPath(); ctx.arc(c, 0, 8, 0, Math.PI*2); ctx.fill();
-    ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 16;
+    ctx.shadowColor = '#E8A93E'; ctx.shadowBlur = 16;
     ctx.beginPath(); ctx.arc(c, 0, 8, 0, Math.PI*2); ctx.fill();
     ctx.shadowBlur = 0;
     ctx.fillStyle = 'var(--muted)'; ctx.font = '12px JetBrainsMono'; ctx.fillText('Sun', c-10, -14);
     // dimension labels on axes
-    ctx.fillStyle = '#a78bfa'; ctx.font = '11px JetBrainsMono';
+    ctx.fillStyle = '#FF8FA3'; ctx.font = '11px JetBrainsMono';
     ctx.fillText('a='+a.toFixed(0), a/2-12, 14);
-    ctx.fillStyle = '#22d3ee'; ctx.font = '11px JetBrainsMono';
+    ctx.fillStyle = '#6BB6D6'; ctx.font = '11px JetBrainsMono';
     ctx.fillText('b='+b.toFixed(0), 8, -b/2+4);
-    ctx.fillStyle = '#f43f5e'; ctx.font = '11px JetBrainsMono';
+    ctx.fillStyle = '#FF6B8A'; ctx.font = '11px JetBrainsMono';
     ctx.fillText('c='+c.toFixed(0), c/2-10, -14);
     // planet
     orbT += 0.015;
     const px = a*Math.cos(orbT), py = b*Math.sin(orbT);
-    ctx.fillStyle = '#22d3ee';
+    ctx.fillStyle = '#6BB6D6';
     ctx.beginPath(); ctx.arc(px, -py, 5, 0, Math.PI*2); ctx.fill();
     // radius vector
     ctx.strokeStyle = 'rgba(34,211,238,0.3)'; ctx.lineWidth = 1;
@@ -789,11 +793,11 @@
     drawGrid({ctx, w, h});
     ctx.save(); ctx.translate(ox, oy);
     // parabola
-    ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = 2.5;
+    ctx.strokeStyle = '#6BB6D6'; ctx.lineWidth = 2.5;
     const yM = Math.min(oy, h-oy);
     ctx.beginPath(); ctx.moveTo(yM*yM/(2*p), yM); for (let y=-yM; y<=yM+0.001; y+=2) ctx.lineTo(y*y/(2*p), -y); ctx.stroke();
     // focus
-    ctx.fillStyle = '#f43f5e'; ctx.beginPath(); ctx.arc(f, 0, 4, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#FF6B8A'; ctx.beginPath(); ctx.arc(f, 0, 4, 0, Math.PI*2); ctx.fill();
     ctx.fillText('F', f+6, -8);
     // p/2 dimension
     ctx.strokeStyle = 'rgba(244,63,94,0.5)'; ctx.lineWidth = 1; ctx.setLineDash([3,3]);
@@ -801,7 +805,7 @@
     ctx.beginPath(); ctx.moveTo(0, 8); ctx.lineTo(0, 20); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(f, 8); ctx.lineTo(f, 20); ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = '#f43f5e'; ctx.font = '11px JetBrainsMono';
+    ctx.fillStyle = '#FF6B8A'; ctx.font = '11px JetBrainsMono';
     ctx.fillText('p/2='+f.toFixed(1), 4, 28);
     // rays
     focPhase += 0.015;
@@ -863,7 +867,7 @@
     // angle arc
     ctx.strokeStyle = 'rgba(245,158,11,0.6)'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(ox, oy, 30, -ang, 0); ctx.stroke();
-    ctx.fillStyle = '#f59e0b'; ctx.font = '11px JetBrainsMono';
+    ctx.fillStyle = '#E8A93E'; ctx.font = '11px JetBrainsMono';
     ctx.fillText(projAng.value+'°', ox+34, oy-8);
     // trajectory
     ctx.strokeStyle = 'rgba(34,211,238,0.5)'; ctx.lineWidth = 2; ctx.setLineDash([3,3]);
@@ -872,7 +876,7 @@
     projT += 0.06; if (projT > tFlight) projT = 0;
     const px = ox + vx*projT*scale;
     const py = oy - (vy*projT - 0.5*g*projT*projT)*scale;
-    ctx.fillStyle = '#f59e0b';
+    ctx.fillStyle = '#E8A93E';
     ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI*2); ctx.fill();
     // info
     ctx.fillStyle = 'var(--muted)'; ctx.font = '12px JetBrainsMono';
@@ -939,7 +943,7 @@
     ctx.closePath(); ctx.fill();
 
     // hyperbola profile lines
-    ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = 2.5;
+    ctx.strokeStyle = '#6BB6D6'; ctx.lineWidth = 2.5;
     ctx.beginPath();
     for (let y=-yM; y<=yM; y+=2) { const x = towerR(y); if (y===-yM) ctx.moveTo(x, -y); else ctx.lineTo(x, -y); }
     ctx.stroke();
@@ -953,9 +957,9 @@
     ctx.beginPath(); ctx.moveTo(-a, -(b/a)*a); ctx.lineTo(a, (b/a)*a); ctx.stroke(); ctx.setLineDash([]);
 
     // a, b labels
-    ctx.fillStyle = '#a78bfa'; ctx.font = '13px JetBrainsMono';
+    ctx.fillStyle = '#FF8FA3'; ctx.font = '13px JetBrainsMono';
     ctx.fillText('a='+a, towerR(yM*0.7)+8, -yM*0.7+4);
-    ctx.fillStyle = '#f59e0b'; ctx.font = '12px JetBrainsMono';
+    ctx.fillStyle = '#E8A93E'; ctx.font = '12px JetBrainsMono';
     ctx.fillText('b='+b, -a-40, 14);
     // asymptote labels
     ctx.fillStyle = 'rgba(245,158,11,0.6)'; ctx.font = '11px JetBrainsMono';
@@ -997,19 +1001,19 @@
     // velocity labels at 3 heights
     ctx.font = '11px JetBrainsMono';
     // bottom label
-    ctx.fillStyle = '#22d3ee';
+    ctx.fillStyle = '#6BB6D6';
     ctx.fillText('v=' + vBase_ref.toFixed(1) + ' m/s', towerR(yBase) + 10, -yBase);
     // waist label
-    ctx.fillStyle = '#f59e0b';
+    ctx.fillStyle = '#E8A93E';
     ctx.fillText('v=' + vWaist.toFixed(1) + ' m/s', rWaist + 10, 8);
     // top label
-    ctx.fillStyle = '#a78bfa';
+    ctx.fillStyle = '#FF8FA3';
     ctx.fillText('v=' + vTop.toFixed(1) + ' m/s', rTop + 10, -yTop);
 
     // upward arrow indicators
     var arrowPositions = [yBase, 0, yTop];
     var arrowSpeeds = [vBase_ref, vWaist, vTop];
-    var arrowColors = ['#22d3ee', '#f59e0b', '#a78bfa'];
+    var arrowColors = ['#6BB6D6', '#E8A93E', '#FF8FA3'];
     for (var j = 0; j < 3; j++) {
       var ay = -arrowPositions[j];
       var arrowLen = 12 + arrowSpeeds[j] * 3; // scale arrow length by speed
@@ -1061,7 +1065,7 @@
     // Earth
     var earthR = 6371 * scale;
     var grad = ctx.createRadialGradient(0, 0, earthR*0.3, 0, 0, earthR);
-    grad.addColorStop(0, '#22d3ee'); grad.addColorStop(0.5, '#0e7490'); grad.addColorStop(1, '#083344');
+    grad.addColorStop(0, '#6BB6D6'); grad.addColorStop(0.5, '#0e7490'); grad.addColorStop(1, '#083344');
     ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(0, 0, earthR, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = 'rgba(34,211,238,0.4)'; ctx.lineWidth = 1.5; ctx.stroke();
     ctx.fillStyle = 'var(--muted)'; ctx.font = '12px JetBrainsMono'; ctx.fillText('Earth', earthR+6, 6);
@@ -1072,43 +1076,43 @@
        ctx.strokeStyle = 'rgba(34,211,238,0.5)'; ctx.lineWidth = 2; ctx.setLineDash([4,3]);
        ctx.beginPath(); ctx.arc(0, 0, rActual*scale, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
        // labels
-       ctx.fillStyle = '#22d3ee'; ctx.font = '11px JetBrainsMono';
+       ctx.fillStyle = '#6BB6D6'; ctx.font = '11px JetBrainsMono';
        ctx.fillText('r='+(rActual)+'km', (rActual*scale)/2-20, -14);
        ctx.fillText('v='+v.toFixed(2)+'km/s', (rActual*scale)-50, 10);
        ctx.fillText('T='+((T/3600).toFixed(1))+'h', (rActual*scale)-50, 26);
        // satellite position
        satAngle += v/(rActual*scale)*0.15;
        var sx = rActual*scale*Math.cos(satAngle), sy = rActual*scale*Math.sin(satAngle);
-      ctx.fillStyle = '#f59e0b'; ctx.beginPath(); ctx.arc(sx, -sy, 6, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#E8A93E'; ctx.beginPath(); ctx.arc(sx, -sy, 6, 0, Math.PI*2); ctx.fill();
       ctx.fillStyle = 'var(--muted)'; ctx.font = '10px JetBrainsMono'; ctx.fillText('Sat', sx+8, -sy-4);
       // velocity vector (tangent)
-      ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
+      ctx.strokeStyle = '#E8A93E'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(sx, -sy); ctx.lineTo(sx - sy*0.3, -sy - sx*0.3); ctx.stroke();
-      ctx.fillStyle = '#f59e0b'; ctx.font = '10px JetBrainsMono'; ctx.fillText('v', sx - sy*0.3 + 4, -sy - sx*0.3 - 4);
+      ctx.fillStyle = '#E8A93E'; ctx.font = '10px JetBrainsMono'; ctx.fillText('v', sx - sy*0.3 + 4, -sy - sx*0.3 - 4);
       // force vector (radial)
-      ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 2;
+      ctx.strokeStyle = '#FF6B8A'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(sx, -sy); ctx.lineTo(sx - sx*0.25, -sy + sy*0.25); ctx.stroke();
-      ctx.fillStyle = '#f43f5e'; ctx.font = '10px JetBrainsMono'; ctx.fillText('F', sx - sx*0.25 + 4, -sy + sy*0.25 - 4);
+      ctx.fillStyle = '#FF6B8A'; ctx.font = '10px JetBrainsMono'; ctx.fillText('F', sx - sx*0.25 + 4, -sy + sy*0.25 - 4);
     } else {
        var aOrb = rActual, cOrb = aOrb*ecc, bOrb = Math.sqrt(aOrb*aOrb - cOrb*cOrb);
        ctx.strokeStyle = 'rgba(34,211,238,0.5)'; ctx.lineWidth = 2; ctx.setLineDash([4,3]);
        ctx.beginPath(); ctx.moveTo(aOrb*scale, 0);
        for (var t=0; t<=Math.PI*2+0.001; t+=0.03) ctx.lineTo((aOrb*Math.cos(t) + cOrb)*scale, -bOrb*Math.sin(t)*scale);
        ctx.stroke(); ctx.setLineDash([]);
-       ctx.fillStyle = '#22d3ee'; ctx.font = '11px JetBrainsMono';
+       ctx.fillStyle = '#6BB6D6'; ctx.font = '11px JetBrainsMono';
        ctx.fillText('a='+(aOrb)+'km', (aOrb*scale)/2-20, -14);
       ctx.fillText('e='+ecc.toFixed(2), (aOrb*scale)-40, 10);
       // satellite position on ellipse
       satAngle += 0.03;
       var sx2 = (aOrb*Math.cos(satAngle) + cOrb)*scale, sy2 = bOrb*Math.sin(satAngle)*scale;
-      ctx.fillStyle = '#f59e0b'; ctx.beginPath(); ctx.arc(sx2, -sy2, 6, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#E8A93E'; ctx.beginPath(); ctx.arc(sx2, -sy2, 6, 0, Math.PI*2); ctx.fill();
       ctx.fillStyle = 'var(--muted)'; ctx.font = '10px JetBrainsMono'; ctx.fillText('Sat', sx2+8, -sy2-4);
       // velocity vector
       var vx = -aOrb*Math.sin(satAngle), vy = bOrb*Math.cos(satAngle);
       var vl = Math.sqrt(vx*vx + vy*vy); vx /= vl; vy /= vl;
-      ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
+      ctx.strokeStyle = '#E8A93E'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(sx2, -sy2); ctx.lineTo(sx2 + vx*30, -sy2 - vy*30); ctx.stroke();
-      ctx.fillStyle = '#f59e0b'; ctx.font = '10px JetBrainsMono'; ctx.fillText('v', sx2+vx*30+4, -sy2-vy*30-4);
+      ctx.fillStyle = '#E8A93E'; ctx.font = '10px JetBrainsMono'; ctx.fillText('v', sx2+vx*30+4, -sy2-vy*30-4);
     }
     ctx.restore();
     rafSat = requestAnimationFrame(drawSatellite);
@@ -1202,7 +1206,7 @@
     // draw angle arcs
     // incoming angle arc (between approach direction and -x axis)
     var inArcR = angleR * 0.8;
-    ctx.strokeStyle = '#22d3ee'; ctx.lineWidth = 1.5;
+    ctx.strokeStyle = '#6BB6D6'; ctx.lineWidth = 1.5;
     ctx.beginPath();
     var aStart = Math.min(approachAngle, Math.PI);
     var aEnd = Math.max(approachAngle, Math.PI);
@@ -1210,13 +1214,13 @@
     ctx.stroke();
     // incoming angle label
     var inDeg = (Math.abs(approachAngle - Math.PI) * 180 / Math.PI).toFixed(0);
-    ctx.fillStyle = '#22d3ee'; ctx.font = '10px JetBrainsMono';
+    ctx.fillStyle = '#6BB6D6'; ctx.font = '10px JetBrainsMono';
     var inLabelAngle = (approachAngle + Math.PI) / 2;
     ctx.fillText('入射角 ' + inDeg + '°', Math.cos(-inLabelAngle)*(inArcR+16) - 20, -Math.sin(-inLabelAngle)*(inArcR+16));
 
     // outgoing angle arc
     var outArcR = angleR * 0.6;
-    ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 1.5;
+    ctx.strokeStyle = '#E8A93E'; ctx.lineWidth = 1.5;
     ctx.beginPath();
     var oStart = Math.min(0, departAngle);
     var oEnd = Math.max(0, departAngle);
@@ -1224,7 +1228,7 @@
     ctx.stroke();
     // outgoing angle label
     var outDeg = (Math.abs(departAngle - 0) * 180 / Math.PI).toFixed(0);
-    ctx.fillStyle = '#f59e0b'; ctx.font = '10px JetBrainsMono';
+    ctx.fillStyle = '#E8A93E'; ctx.font = '10px JetBrainsMono';
     var outLabelAngle = departAngle / 2;
     ctx.fillText('出射角 ' + outDeg + '°', Math.cos(-outLabelAngle)*(outArcR+16) + 5, -Math.sin(-outLabelAngle)*(outArcR+16));
 
@@ -1236,12 +1240,12 @@
     ctx.stroke();
     // deflection angle label
     var defDeg = (deflectionAngle * 180 / Math.PI).toFixed(0);
-    ctx.fillStyle = '#a78bfa'; ctx.font = 'bold 11px JetBrainsMono';
+    ctx.fillStyle = '#FF8FA3'; ctx.font = 'bold 11px JetBrainsMono';
     var defLabelAngle = (approachAngle + departAngle) / 2;
     ctx.fillText('偏转角 ' + defDeg + '°', Math.cos(-defLabelAngle)*(defArcR+18) - 18, -Math.sin(-defLabelAngle)*(defArcR+18));
 
     // planet (drawn after angle arcs so it's on top)
-    ctx.fillStyle = '#f43f5e';
+    ctx.fillStyle = '#FF6B8A';
     ctx.beginPath(); ctx.arc(0, 0, 18, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = 'rgba(244,63,94,0.4)'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(0, 0, 24, 0, Math.PI*2); ctx.stroke();
@@ -1253,12 +1257,12 @@
     }
     ctx.setLineDash([]);
     ctx.fillStyle = 'var(--muted)'; ctx.font = '12px JetBrainsMono'; ctx.fillText('Planet', 24, -8);
-    ctx.fillStyle = '#f43f5e'; ctx.font = '10px JetBrainsMono'; ctx.fillText('v_p='+vp, 24, 8);
+    ctx.fillStyle = '#FF6B8A'; ctx.font = '10px JetBrainsMono'; ctx.fillText('v_p='+vp, 24, 8);
     // planet velocity arrow
-    ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 2;
+    ctx.strokeStyle = '#FF6B8A'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(20, 0); ctx.lineTo(20+vp*0.5, 0); ctx.stroke();
     // arrowhead
-    ctx.fillStyle = '#f43f5e'; ctx.beginPath();
+    ctx.fillStyle = '#FF6B8A'; ctx.beginPath();
     ctx.moveTo(20+vp*0.5, 0); ctx.lineTo(20+vp*0.5-6, -4); ctx.lineTo(20+vp*0.5-6, 4); ctx.closePath(); ctx.fill();
 
     // --- spacecraft animation ---
@@ -1349,9 +1353,9 @@
     }
 
     // static labels
-    ctx.fillStyle = '#22d3ee'; ctx.font = '10px JetBrainsMono';
+    ctx.fillStyle = '#6BB6D6'; ctx.font = '10px JetBrainsMono';
     ctx.fillText('v_in = '+vin, startX + 5, -startY + 15);
-    ctx.fillStyle = '#f59e0b';
+    ctx.fillStyle = '#E8A93E';
     ctx.fillText('v_out = '+vOut.toFixed(0), endX - 60, -endY - 10);
 
     // delta-v gain
@@ -1373,5 +1377,6 @@
   });
 })();
 </script>
+<script src="./_shared/anime-cartoon-tools.js"></script>
 </body>
 </html>

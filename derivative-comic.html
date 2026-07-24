@@ -402,6 +402,10 @@ main{padding-top:56px}
   font-size:14px;color:#666;
 }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./_shared/anime-cartoon-theme.css">
 </head>
 <body>
 
@@ -619,7 +623,7 @@ main{padding-top:56px}
       <span class="val" id="val4a_Q0">500</span>
     </div>
     <div class="slider-row">
-      <label>需求弹性 k：</label>
+      <label>需求弹性 k：<span style="font-size:11px;color:#888;font-weight:400">每降价 1 元，销量增加 k 件</span></label>
       <input type="range" id="slider4a_k" min="5" max="80" step="1" value="25">
       <span class="val" id="val4a_k">25</span>
       <label style="margin-left:16px">成本价 C：</label>
@@ -2800,5 +2804,6 @@ function switchTab(idx){
   sections.forEach(s => observer.observe(s));
 })();
 </script>
+<script src="./_shared/anime-cartoon-tools.js"></script>
 </body>
 </html>
