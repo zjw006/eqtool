@@ -75,8 +75,8 @@
   <a href="./index.html" onclick="history.back();return false;" style="position:fixed;top:1rem;left:1rem;z-index:100;background:var(--bg2);border:1px solid var(--rule);color:var(--ink);padding:0.5rem 1rem;border-radius:8px;text-decoration:none;font-size:0.9rem;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--rule)'">&larr; 返回首页</a>
 
   <header>
-    <h1>直线与圆的方程</h1>
-    <p>交互式探索直线与圆的方程，直观理解几何关系</p>
+    <h1><span data-i18n="h1">直线与圆的方程</span></h1>
+    <p><span data-i18n="subtitle">交互式探索直线与圆的方程，直观理解几何关系</span></p>
   </header>
 
   <div class="container">
@@ -253,5 +253,22 @@
   <script src="./_shared/js/echarts.min.js"></script>
   <script src="./assets/line-circle-charts.js?v=2"></script>
 <script src="./_shared/anime-cartoon-tools.js"></script>
+<script src="./_shared/subpage-i18n.js"></script>
+<script>
+window.__PAGE_I18N__ = {
+  "zh": {
+    "back_btn": "← 返回绘本馆",
+    "page_title": "直线与圆的方程",
+    "h1": "直线与圆的方程",
+    "subtitle": "交互式探索直线方程和圆的方程及其位置关系"
+  },
+  "en": {
+    "back_btn": "← Back to Library",
+    "page_title": "Equations of Lines and Circles",
+    "h1": "Equations of Lines and Circles",
+    "subtitle": "Interactive exploration of line and circle equations and their positional relationships"
+  }
+};
+</script>
 </body>
 </html>

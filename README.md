@@ -1,8 +1,8 @@
-# Math Visualization Series
+# 高中全学科绘本馆
 
-一套面向高中与大学数学的交互式可视化学习工具，用动画和可调参数让抽象的数学概念变得可触可感。
+一套面向高中全学科的交互式可视化学习工具，用动画和可调参数让抽象概念变得温暖可触。
 
-**版本**: v1.4.0 (2026-07-21)
+**版本**: v2.0.0 (2026-07-25)
 
 ## 在线预览
 
@@ -68,6 +68,9 @@
 | `stats-visualization.html` | 计算原理与概率统计 | 蒙特卡洛模拟、概率分布、大数定律、中心极限定理、排列组合 |
 | `stats-cases.html` | 高中统计实际案例 | 抽样方法、数字特征、回归分析、独立性检验、正态分布 |
 | `probability-adventure.html` | 概率冒险记（互动绘本） | 绘本风格游戏化概率教学：命运骰子（古典概型）、独立性实验室（对比实验）、大数定律投币台（频率收敛曲线）；9 个真实应用案例（天气预报、贝叶斯医疗诊断、金融风控、AI/自动驾驶、保险精算、司法 DNA 证据、质量管理、供应链泊松分布、本福特定律审计） |
+| `counting-adventure.html` | 计数原理冒险记（互动绘本） | 二次元绘本风格游戏化计数教学：路径计数、服装搭配器、排列生成器、组合可视化、树形图挑战；9 个真实应用案例（密码学、彩票、 seating arrangement 等） |
+| `random-variable-adventure.html` | 随机变量及其分布（互动绘本） | 二次元乙女风格游戏化学习：条件概率与贝叶斯公式、离散型分布列、期望与方差、二项分布与超几何分布、正态分布；5 个 Canvas 互动可视化；6 大真实应用场景 |
+| `paired-data-detective.html` | 成对数据的统计分析（Q版侦探） | Q 版卡通游戏化学习：变量的相关关系与散点图、一元线性回归模型与最小二乘法、列联表与卡方独立性检验；3 个 Canvas 互动可视化；6 大真实应用场景 |
 | `university-science.html` | 一本院校理科就业分析 | 985/211 六大专业就业率、升学率、去向可视化 |
 
 #### 导数英雄传详情
@@ -97,6 +100,7 @@
 |------|------|------|
 | `trig-cases.html` | 三角函数实际案例 | 建筑测量、潮汐预测、简谐运动、卫星轨道、音频波形 |
 | `ancient-scholar-ai.html` | 古代状元如何看待AI | 王安石、文天祥、苏轼、范仲淹的 AI 策论 |
+| `gaokao-chinese-130plus.html` | 高考语文130+提分攻略 | 起点定位→五大考情趋势→四大提分模块（古诗文/现代文阅读/作文/语用）→提分路径→全年四阶段规划→目标阶梯 |
 | `classical-chinese/` | 文言文装叉指南 (React SPA) | 输入白话文，一键生成文言文金句，179+ 语料库 |
 | `quantum-educator/` | 从量子纠缠看教育者的角色 (React SPA) | 量子物理视角下的教育隐喻 |
 
@@ -107,9 +111,16 @@
 - **3D 几何**: 纯 Canvas 2D 正交投影引擎，支持鼠标拖拽旋转 (立体几何模块)
 - **物理模拟**: 万有引力、开普勒定律、活力公式、连续性方程、伯努利原理、引力助推速度合成
 - **子项目**: React + Vite (文言文指南、量子教育者、三大变换 SPA)
-- **字体**: Outfit + JetBrains Mono + ZCOOL KuaiLe (概率冒险记) + Orbitron (数列核心协议) + Bangers (导数英雄传漫画字)
-- **样式**: 原生 CSS，CSS Variables 管理主题色
-- **i18n**: 首页 `index.html` 支持中英双语切换（`data-i18n` + localStorage 持久化），所有卡片标签、统计栏、章节标题均双语
+- **字体**: ZCOOL KuaiLe + Noto Sans SC + Quicksand (全局二次元绘本风格)
+- **样式**: 原生 CSS，CSS Variables 管理主题色，`_shared/anime-cartoon-theme.css` 统一二次元绘本风格
+- **主题工具**: `_shared/anime-cartoon-tools.js` 自动注入字体、主题 CSS、浮动装饰和返回按钮
+- **i18n**: 首页 `index.html` 和全部 25 个数学子页面支持中英双语切换
+  - 首页：`data-i18n` + `data-title-zh` / `data-title-en` + `setLang()` 函数
+  - 子页面：`_shared/subpage-i18n.js` + `window.__PAGE_I18N__` 字典 + `data-i18n` 属性
+  - 语言状态通过 `localStorage('mathos_lang')` 跨页面持久化与同步（storage 事件 + focus 事件）
+  - 控制按钮统一在主页面，默认中文
+  - 语文相关子页面（`gaokao-chinese-130plus.html`、`ancient-scholar-ai.html`）不做中英文适配
+- **美术风格**: 统一二次元绘本风格（粉/蓝/绿/紫/黄/珊瑚色系 + 圆角卡片 + 浮动装饰 + 暖色渐变背景）
 - **构建**: 无需构建，纯静态文件，直接部署
 
 ## 项目结构
@@ -134,15 +145,23 @@ trigonometry-visualization/
 ├── derivative-comic.html               # 导数英雄传 (美式漫画风格互动导数学习，6 章节 + 3 交互案例)
 ├── stats-visualization.html            # 计算原理与概率统计
 ├── stats-cases.html                    # 高中统计实际案例
+├── counting-adventure.html             # 计数原理冒险记 (绘本风格互动游戏)
 ├── probability-adventure.html          # 概率冒险记 (绘本风格互动游戏)
+├── random-variable-adventure.html      # 随机变量及其分布 (乙女风格互动游戏)
+├── paired-data-detective.html          # 成对数据的统计分析 (Q版侦探游戏)
 ├── university-science.html             # 一本院校理科就业分析
 ├── transforms-visualization.html       # 三大变换基础可视化
 ├── convolution-life.html               # 数学卷积人生计算器
 ├── trig-cases.html                     # 三角函数实际案例
 ├── ancient-scholar-ai.html             # 古代状元如何看待AI
+├── gaokao-chinese-130plus.html         # 高考语文130+提分攻略
+├── chinese130-assets/                 # 语文130+攻略图片资源
 ├── _shared/
 │   ├── fonts/                          # Outfit, JetBrainsMono
-│   └── js/echarts.min.js              # ECharts 5.5.1
+│   ├── js/echarts.min.js             # ECharts 5.5.1
+│   ├── anime-cartoon-theme.css       # 全局二次元绘本主题
+│   ├── anime-cartoon-tools.js        # 主题注入工具（字体/CSS/装饰/返回按钮）
+│   └── subpage-i18n.js               # 子页面中英文切换工具
 ├── assets/                             # 各页面的图表逻辑
 │   ├── charts.js                       # 三角函数
 │   ├── exponential-charts.js           # 指数函数
@@ -153,6 +172,7 @@ trigonometry-visualization/
 │   ├── quadratic-charts.js             # 一元二次
 │   ├── quadratic-cases-charts.js       # 二次应用案例
 │   ├── stats-charts.js                 # 概率统计
+│   ├── counting-adventure-charts.js    # 计数原理
 │   ├── stats-cases-charts.js           # 统计案例
 │   ├── university-science-charts.js    # 就业分析
 │   ├── trig-cases-charts.js            # 三角案例
@@ -166,6 +186,38 @@ trigonometry-visualization/
 ```
 
 ## 更新日志
+
+### v2.0.0 (2026-07-25)
+
+- **新增** 计数原理冒险记（`counting-adventure.html`）：二次元绘本风格游戏化计数教学页面
+  - 路径计数、服装搭配器、排列生成器、组合可视化、树形图挑战
+  - 9 个真实应用案例（密码学、彩票、座位排列等）
+  - **新增** 随机变量及其分布（`random-variable-adventure.html`）：二次元乙女风格游戏化学习页面
+    - 条件概率与贝叶斯公式、离散型分布列、期望与方差、二项分布与超几何分布、正态分布
+    - 5 个 Canvas 互动可视化
+    - 6 大真实应用场景
+  - **新增** 成对数据的统计分析（`paired-data-detective.html`）：Q 版卡通游戏化学习页面
+    - 变量的相关关系与散点图、一元线性回归模型与最小二乘法、列联表与卡方独立性检验
+    - 3 个 Canvas 互动可视化
+    - 6 大真实应用场景
+  - **新增** 高考语文130+提分攻略（`gaokao-chinese-130plus.html`）：完整的语文提分系统
+    - 起点定位 → 五大考情趋势 → 四大提分模块（古诗文/现代文阅读/作文/语用）
+    - 提分路径 → 全年四阶段规划 → 目标阶梯
+  - **新增** 文言文装叉指南（`ancient-scholar-ai.html`）：古代状元 AI 策论
+  - **重构** 首页（`index.html`）升级为「高中全学科绘本馆」
+    - 二次元绘本风格（粉/蓝/绿/紫/黄/珊瑚色系 + 圆角卡片 + 浮动装饰）
+    - 二级标签导航：学科（全部/数学/语文）+ 分类（代数/函数/几何/数列/概率统计/应用）
+    - 卡片支持 `data-title-zh` / `data-title-en` / `data-desc-zh` / `data-desc-en` 自定义双语
+  - **重构** 全部子页面统一二次元绘本美术风格
+    - 创建 `_shared/anime-cartoon-theme.css` 统一主题变量
+    - 创建 `_shared/anime-cartoon-tools.js` 自动注入字体、主题 CSS、浮动装饰和返回按钮
+    - 批量处理 25+ 个子页面，替换暗色变量为暖色系
+  - **新增** 全部 25 个数学子页面中英文适配
+    - 创建 `_shared/subpage-i18n.js` 子页面语言切换工具
+    - 通过 `window.__PAGE_I18N__` 字典 + `data-i18n` 属性实现元素级翻译
+    - 语言状态通过 `localStorage('mathos_lang')` 跨页面持久化与实时同步
+    - 控制按钮统一在主页面，默认中文
+    - 语文相关子页面不做中英文适配
 
 ### v1.4.0 (2026-07-21)
 

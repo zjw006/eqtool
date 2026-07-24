@@ -676,7 +676,7 @@ body {
 
   <!-- 绘本头部 -->
   <header class="book-header fade-in">
-    <h1>计数原理冒险记</h1>
+    <h1><span data-i18n="h1">计数原理冒险记</span></h1>
     <p class="subtitle">和<em>小数精灵</em>一起探索排列组合的奇妙世界</p>
     <div class="mascot-bar">
       <div class="mascot" title="小数精灵 - 计数达人" onclick="showToast('info', '小数精灵: 排列组合难不倒我!')">
@@ -3671,5 +3671,22 @@ function drawNormal() {
 </script>
 
 <script src="./_shared/anime-cartoon-tools.js"></script>
+<script src="./_shared/subpage-i18n.js"></script>
+<script>
+window.__PAGE_I18N__ = {
+  "zh": {
+    "back_btn": "← 返回绘本馆",
+    "page_title": "计数原理冒险记",
+    "h1": "计数原理冒险记",
+    "subtitle": "在冒险故事中学习排列组合与计数原理"
+  },
+  "en": {
+    "back_btn": "← Back to Library",
+    "page_title": "Counting Principles Adventure",
+    "h1": "Counting Principles Adventure",
+    "subtitle": "Learn permutations, combinations, and counting principles through adventure stories"
+  }
+};
+</script>
 </body>
 </html>

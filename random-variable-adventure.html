@@ -714,7 +714,7 @@ body {
 
   <!-- 绘本头部 -->
   <header class="book-header fade-in">
-    <h1>随机变量及其分布</h1>
+    <h1><span data-i18n="h1">随机变量及其分布</span></h1>
     <p class="subtitle">命运占卜师的试炼 — 和<em>命运占卜师</em>一起探索概率分布的奇妙世界</p>
     <div class="mascot-bar">
       <div class="mascot" title="命运占卜师 - 概率大师" onclick="showToast('info', '命运占卜师: 不确定性也是一种美~')">
@@ -1688,5 +1688,22 @@ function checkChapterComplete(chId) {
 }
 </script>
 
+<script src="./_shared/subpage-i18n.js"></script>
+<script>
+window.__PAGE_I18N__ = {
+  "zh": {
+    "back_btn": "← 返回绘本馆",
+    "page_title": "随机变量及其分布",
+    "h1": "随机变量及其分布",
+    "subtitle": "在冒险故事中学习离散型随机变量及其概率分布"
+  },
+  "en": {
+    "back_btn": "← Back to Library",
+    "page_title": "Random Variables & Distributions",
+    "h1": "Random Variables and Their Distributions",
+    "subtitle": "Learn discrete random variables and probability distributions through adventure stories"
+  }
+};
+</script>
 </body>
 </html>

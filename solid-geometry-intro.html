@@ -82,8 +82,8 @@ footer { text-align:center; padding:2rem 1rem; color:var(--muted); font-size:0.8
 
 <header>
   <div class="container">
-    <h1>立体几何初步</h1>
-    <p>交互式探索基本立体图形、直观图画法、表面积与体积、空间位置关系及平行垂直判定</p>
+    <h1><span data-i18n="h1">立体几何初步</span></h1>
+    <p><span data-i18n="subtitle">交互式探索基本立体图形、直观图画法、表面积与体积、空间位置关系及平行垂直判定</span></p>
   </div>
 </header>
 
@@ -1226,5 +1226,22 @@ footer { text-align:center; padding:2rem 1rem; color:var(--muted); font-size:0.8
 })();
 </script>
 <script src="./_shared/anime-cartoon-tools.js"></script>
+<script src="./_shared/subpage-i18n.js"></script>
+<script>
+window.__PAGE_I18N__ = {
+  "zh": {
+    "back_btn": "← 返回绘本馆",
+    "page_title": "立体几何初步",
+    "h1": "立体几何初步",
+    "subtitle": "认识空间中的基本几何体：棱柱、棱锥、圆柱、圆锥、球"
+  },
+  "en": {
+    "back_btn": "← Back to Library",
+    "page_title": "Introduction to Solid Geometry",
+    "h1": "Introduction to Solid Geometry",
+    "subtitle": "Learn basic 3D geometric bodies: prisms, pyramids, cylinders, cones, and spheres"
+  }
+};
+</script>
 </body>
 </html>

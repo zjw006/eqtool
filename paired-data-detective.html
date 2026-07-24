@@ -773,8 +773,8 @@ select:focus { border-color: var(--coral); }
 
 <!-- ==================== HEADER ==================== -->
 <div class="header">
-  <h1>成对数据的统计分析</h1>
-  <p class="subtitle">数据侦探事务所 — 和狐狸探长一起破解数据之谜</p>
+  <h1><span data-i18n="h1">成对数据的统计分析</span></h1>
+  <p class="subtitle"><span data-i18n="subtitle">数据侦探事务所 — 和狐狸探长一起破解数据之谜</span></p>
 
   <div class="char-bar">
     <div class="char-avatar">
@@ -1907,5 +1907,22 @@ if (document.readyState === 'loading') {
 </script>
 
 <script src="./_shared/anime-cartoon-tools.js"></script>
+<script src="./_shared/subpage-i18n.js"></script>
+<script>
+window.__PAGE_I18N__ = {
+  "zh": {
+    "back_btn": "← 返回绘本馆",
+    "page_title": "数据侦探事务所 — 成对数据的统计分析",
+    "h1": "成对数据的统计分析",
+    "subtitle": "化身数据侦探，在真实案件中学习相关性、回归与独立性检验"
+  },
+  "en": {
+    "back_btn": "← Back to Library",
+    "page_title": "Data Detective Agency — Statistical Analysis of Paired Data",
+    "h1": "Statistical Analysis of Paired Data",
+    "subtitle": "Become a data detective — learn correlation, regression, and independence tests through real cases"
+  }
+};
+</script>
 </body>
 </html>
