@@ -401,6 +401,22 @@ main{padding-top:56px}
   font-family:'Bangers',cursive;letter-spacing:2px;
   font-size:14px;color:#666;
 }
+
+/* === 漫画风格浮动返回按钮 === */
+.back-btn{
+  position:fixed;top:16px;left:20px;z-index:200;
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--red);color:#fff;
+  border:3px solid var(--ink);border-radius:4px;
+  padding:8px 18px;text-decoration:none;
+  font-family:'Bangers','Noto Sans SC',cursive;
+  font-size:16px;letter-spacing:1px;text-transform:uppercase;
+  box-shadow:var(--card-shadow);cursor:pointer;
+  transition:transform 0.15s;
+}
+.back-btn:hover{transform:translateY(-2px);background:var(--yellow);color:var(--ink);}
+.back-btn:active{transform:translate(2px,3px);box-shadow:1px 1px 0 rgba(0,0,0,0.15);}
+@media(max-width:768px){.back-btn{top:10px;left:10px;padding:6px 14px;font-size:14px;}}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -408,6 +424,7 @@ main{padding-top:56px}
 <link rel="stylesheet" href="./_shared/anime-cartoon-theme.css">
 </head>
 <body>
+<a class="back-btn" href="./index.html" onclick="if(window.history.length>1){event.preventDefault();window.history.back();}">← HOME</a>
 
 <!-- ===================== NAVIGATION ===================== -->
 <nav class="comic-nav">

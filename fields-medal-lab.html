@@ -36,7 +36,7 @@
   .scroll-hint::after{content:"";display:block;width:1px;height:42px;margin:10px auto 0;background:linear-gradient(var(--gold),transparent);animation:drip 1.6s ease-in-out infinite;}
   @keyframes drip{0%{transform:scaleY(0);transform-origin:top;}50%{transform:scaleY(1);transform-origin:top;}51%{transform-origin:bottom;}100%{transform:scaleY(0);transform-origin:bottom;}}
 
-  section{max-width:1080px;margin:0 auto;padding:80px 20px 30px;}
+  section{max-width:1200px;margin:0 auto;padding:80px 20px 30px;}
   .demo{
     background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:0 4px 20px rgba(0,0,0,.25);
     overflow:hidden;opacity:0;transform:translateY(40px);
@@ -44,7 +44,7 @@
   }
   .demo.show{opacity:1;transform:translateY(0);}
   .demo:hover{border-color:var(--gold);box-shadow:0 8px 30px rgba(232,196,104,.2);}
-  .d-head{padding:28px 30px 8px;display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;}
+  .d-head{padding:28px 30px 8px;display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;justify-content:center;}
   .d-num{
     flex:0 0 auto;width:52px;height:52px;border-radius:14px;font-size:22px;
     display:flex;align-items:center;justify-content:center;
@@ -54,10 +54,10 @@
   .d-title .who{font-size:12.5px;color:var(--sub);letter-spacing:1px;margin-bottom:4px;}
   .d-title h2{font-size:clamp(20px,3vw,26px);color:var(--gold2);font-weight:700;}
   .d-title .app-tag{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--accent);background:rgba(92,200,255,.1);border:1px solid rgba(92,200,255,.3);padding:4px 12px;border-radius:14px;}
-  .d-body{display:grid;grid-template-columns:1fr 300px;gap:0;}
-  @media(max-width:860px){.d-body{grid-template-columns:1fr;}}
+  .d-body{display:grid;grid-template-columns:1fr 320px;gap:0;}
+  @media(max-width:900px){.d-body{grid-template-columns:1fr;}}
   .stage{position:relative;padding:18px 22px 24px;}
-  .stage canvas{width:100%;display:block;border-radius:14px;background:#0a0f22;border:1px solid rgba(255,255,255,.06);}
+  .stage canvas{width:100%;height:auto;aspect-ratio:900/420;display:block;border-radius:14px;background:#0a0f22;border:1px solid rgba(255,255,255,.06);}
   .ctrl{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap;font-size:13px;color:var(--sub);}
   .ctrl input[type=range]{flex:1;min-width:140px;accent-color:var(--gold);}
   .ctrl .val{color:var(--gold2);min-width:70px;font-variant-numeric:tabular-nums;}
@@ -67,7 +67,7 @@
   }
   .ctrl button:hover{background:rgba(232,196,104,.25);}
   .d-side{padding:24px 26px 26px;border-left:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:14px;}
-  @media(max-width:860px){.d-side{border-left:none;border-top:1px solid rgba(255,255,255,.06);}}
+  @media(max-width:900px){.d-side{border-left:none;border-top:1px solid rgba(255,255,255,.06);}}
 
   .d-side h4{font-size:14px;color:var(--accent);letter-spacing:2px;}
   .d-side .explain{font-size:14.5px;line-height:1.95;color:#cdd6ec;}
@@ -76,6 +76,46 @@
   .d-side .real b{color:var(--gold);}
 
   footer{text-align:center;color:#5a6684;font-size:12px;padding:40px 20px;border-top:1px solid rgba(255,255,255,.05);margin-top:60px;line-height:2;}
+
+  /* ===== 返回按钮（暗色主题适配） ===== */
+  .back-btn{
+    position:fixed;top:16px;left:20px;z-index:200;
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(20,29,56,0.9);
+    border:2px solid var(--gold);border-radius:50px;
+    padding:8px 20px;text-decoration:none;color:var(--gold2);
+    font-family:'Noto Sans SC','Quicksand',sans-serif;font-size:.85rem;font-weight:600;
+    box-shadow:0 4px 16px rgba(0,0,0,.3);
+    backdrop-filter:blur(8px);transition:all .2s;cursor:pointer;
+  }
+  .back-btn:hover{background:rgba(232,196,104,.15);transform:translate(-2px,-2px);box-shadow:0 6px 20px rgba(232,196,104,.25);}
+  .back-btn:active{transform:translate(2px,3px);box-shadow:0 2px 8px rgba(0,0,0,.3);}
+
+  /* ===== 响应式适配 ===== */
+  @media(max-width:900px){
+    nav{gap:1px;padding:7px 4px;}
+    nav a{font-size:11.5px;padding:5px 8px;}
+    .d-head{padding:22px 20px 8px;}
+    .d-num{width:44px;height:44px;font-size:18px;}
+    .stage{padding:14px 16px 18px;}
+    .d-side{padding:20px 18px 22px;}
+    .d-side .explain{font-size:14px;line-height:1.85;}
+    section{padding:60px 16px 24px;}
+  }
+  @media(max-width:600px){
+    header{min-height:80vh;padding:90px 16px 40px;}
+    .back-btn{top:10px;left:10px;padding:6px 14px;font-size:.8rem;}
+    .medal{width:90px;height:90px;}
+    .medal span{font-size:32px;}
+    .tagline{font-size:14px;}
+    .d-head{flex-direction:column;gap:10px;}
+    .d-num{width:40px;height:40px;font-size:16px;}
+    .d-title .who{font-size:11.5px;}
+    .ctrl{font-size:12px;gap:8px;}
+    .ctrl button{padding:5px 12px;font-size:12px;}
+    .d-side .explain{font-size:13.5px;}
+    .d-side .real{font-size:12px;padding:12px 14px;}
+  }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -84,6 +124,9 @@
 <body>
 <canvas id="stars"></canvas>
 <div id="progress"></div>
+
+<!-- 返回绘本馆 -->
+<a class="back-btn" href="./index.html" onclick="if(window.history.length>1){event.preventDefault();window.history.back();}">← 返回绘本馆</a>
 
 <nav id="nav">
   <a href="#d1">🌌 物理宇宙</a>
@@ -1857,6 +1900,5 @@ draw();
 })();
 
 </script>
-<script src="./_shared/anime-cartoon-tools.js"></script>
 </body>
 </html>
