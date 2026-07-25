@@ -298,7 +298,8 @@ footer {
   background: transparent !important;
 }
 
-/* === 返回按钮 === */
+/* === 返回按钮 (与 gaokao-chinese-130plus.html 保持一致) === */
+.back-btn,
 .anime-back-btn {
   position: fixed !important;
   top: 16px !important;
@@ -307,29 +308,30 @@ footer {
   display: inline-flex !important;
   align-items: center !important;
   gap: 6px !important;
-  background: rgba(255,253,247,0.92) !important;
-  border: 2px solid #FFD1DC !important;
+  background: rgba(255,253,247,0.9) !important;
+  border: 2px solid #4A3B2E !important;
   border-radius: 50px !important;
-  padding: 10px 22px !important;
+  padding: 8px 20px !important;
   text-decoration: none !important;
   color: #4A3B2E !important;
   font-family: 'Noto Sans SC', sans-serif !important;
   font-size: 0.85rem !important;
   font-weight: 600 !important;
-  box-shadow: 0 4px 16px rgba(180,160,140,0.15) !important;
-  backdrop-filter: blur(10px) !important;
-  transition: all 0.25s !important;
+  box-shadow: 3px 4px 0 rgba(74,58,46,0.2) !important;
+  backdrop-filter: blur(8px) !important;
+  transition: all 0.2s !important;
   cursor: pointer !important;
 }
+.back-btn:hover,
 .anime-back-btn:hover {
-  background: rgba(255,209,220,0.4) !important;
+  background: #FBE8C4 !important;
   transform: translate(-2px, -2px) !important;
-  box-shadow: 0 6px 20px rgba(255,143,163,0.25) !important;
-  border-color: #FF8FA3 !important;
+  box-shadow: 5px 6px 0 rgba(74,58,46,0.2) !important;
 }
+.back-btn:active,
 .anime-back-btn:active {
-  transform: translate(1px, 1px) !important;
-  box-shadow: 0 2px 8px rgba(180,160,140,0.15) !important;
+  transform: translate(2px, 3px) !important;
+  box-shadow: 1px 1px 0 rgba(74,58,46,0.2) !important;
 }
 
 /* === 浮动装饰 === */

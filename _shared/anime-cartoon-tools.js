@@ -27,12 +27,31 @@
   document.head.appendChild(themeCSS);
 
   // 3. 添加返回按钮（如果没有）
-  if (!document.querySelector('.anime-back-btn, .back-btn, .home-btn, .back-link')) {
+  if (!document.querySelector('.back-btn, .anime-back-btn, .home-btn, .back-link, .nav-home, .back-home')) {
     const backBtn = document.createElement('a');
-    backBtn.className = 'anime-back-btn';
+    backBtn.className = 'back-btn';
     backBtn.href = './index.html';
     backBtn.textContent = '← 返回绘本馆';
+    // 点击返回时优先使用 history.back() 以恢复浏览状态
+    backBtn.addEventListener('click', function(e) {
+      if (window.history.length > 1) {
+        e.preventDefault();
+        window.history.back();
+      }
+    });
     document.body.appendChild(backBtn);
+  } else {
+    // 如果页面已有返回按钮，统一替换为 .back-btn 样式并绑定 history.back()
+    var existing = document.querySelector('.anime-back-btn, .home-btn, .back-link, .nav-home, .back-home');
+    if (existing && !existing.classList.contains('back-btn')) {
+      existing.classList.add('back-btn');
+      existing.addEventListener('click', function(e) {
+        if (window.history.length > 1) {
+          e.preventDefault();
+          window.history.back();
+        }
+      });
+    }
   }
 
   // 4. 添加浮动装饰

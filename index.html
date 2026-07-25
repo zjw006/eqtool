@@ -954,6 +954,17 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
   // Search
   searchBox.addEventListener('input', filterCards);
 
+  // Save state before navigating to subpage
+  cards.forEach(function(card){
+    card.addEventListener('click', function(){
+      try {
+        localStorage.setItem('pb_last_subject', currentSubject);
+        localStorage.setItem('pb_last_cat', currentCat);
+        localStorage.setItem('pb_last_scroll', window.scrollY.toString());
+      } catch(e) {}
+    });
+  });
+
   // ===== COUNT UPDATE =====
   var subjectCounts = {all: 0, math: 0, chinese: 0};
   var catCounts = {all: 0, algebra: 0, function: 0, geometry: 0, sequence: 0, probability: 0, app: 0, chinese: 0};
@@ -991,6 +1002,58 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
   document.getElementById('cntSequence').textContent = '(' + catCounts.sequence + ')';
   document.getElementById('cntProbability').textContent = '(' + catCounts.probability + ')';
   document.getElementById('cntApp').textContent = '(' + catCounts.app + ')';
+
+  // ===== RESTORE TAB & SCROLL STATE (inside IIFE so filterCards is accessible) =====
+  window.addEventListener('pageshow', function(e){
+    var savedSubject = null, savedCat = null, savedScroll = 0;
+    try {
+      savedSubject = localStorage.getItem('pb_last_subject');
+      savedCat = localStorage.getItem('pb_last_cat');
+      savedScroll = parseInt(localStorage.getItem('pb_last_scroll') || '0', 10);
+    } catch(err) {}
+
+    if(savedSubject){
+      // Restore subject tab
+      subjectTabs.forEach(function(t){ t.classList.remove('active'); });
+      var subjTab = document.querySelector('.subject-tab[data-subject="' + savedSubject + '"]');
+      if(subjTab) subjTab.classList.add('active');
+      currentSubject = savedSubject;
+
+      // Show/hide sub-tab bar
+      if(currentSubject === 'math'){
+        subTabBar.classList.remove('hidden');
+      } else {
+        subTabBar.classList.add('hidden');
+      }
+
+      // Restore sub-tab
+      if(savedCat && currentSubject !== 'chinese'){
+        subTabs.forEach(function(t){ t.classList.remove('active'); });
+        var catTab = document.querySelector('.tab[data-cat="' + savedCat + '"]');
+        if(catTab) catTab.classList.add('active');
+        currentCat = savedCat;
+      } else {
+        currentCat = 'all';
+        subTabs.forEach(function(t){ t.classList.remove('active'); });
+        var allTab = document.querySelector('.tab[data-cat="all"]');
+        if(allTab) allTab.classList.add('active');
+      }
+
+      filterCards();
+
+      // Restore scroll position after layout settles
+      setTimeout(function(){
+        window.scrollTo(0, savedScroll);
+      }, 50);
+
+      // Clear saved state so it doesn't reapply on manual refresh
+      try {
+        localStorage.removeItem('pb_last_subject');
+        localStorage.removeItem('pb_last_cat');
+        localStorage.removeItem('pb_last_scroll');
+      } catch(err) {}
+    }
+  });
 })();
 
 // ===== FALLBACK: ensure i18n is applied after all scripts run =====
