@@ -1,0 +1,2365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文言文填词游戏 — 高中全学科绘本馆</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Ma+Shan+Zheng&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFF8F0; --bg2:#FFFDF7; --bg3:#FFF5EE;
+  --ink:#4A3B2E; --ink-light:#9B8B7A;
+  --pink:#FF8FA3; --pink-light:#FFD1DC; --pink-dim:rgba(255,143,163,0.12);
+  --blue:#6BB6D6; --blue-light:#C5E4F0; --blue-dim:rgba(107,182,214,0.12);
+  --green:#7DCE82; --green-light:#C8ECCB; --green-dim:rgba(125,206,130,0.12);
+  --purple:#B89AD9; --purple-light:#E0D4F0; --purple-dim:rgba(184,154,217,0.12);
+  --yellow:#FFD66B; --yellow-light:#FFF3CC; --yellow-dim:rgba(255,214,107,0.15);
+  --coral:#FF9F7A; --coral-light:#FFD8C8; --coral-dim:rgba(255,159,122,0.12);
+  --chinese:#D4726A; --chinese-light:#F0C4C0;
+  --shadow:0 4px 16px rgba(180,160,140,0.15);
+  --shadow-hover:0 8px 28px rgba(255,143,163,0.22);
+  --radius:20px; --radius-sm:12px;
+  --font-zcool:'ZCOOL KuaiLe','Noto Sans SC',sans-serif;
+  --font-mashan:'Ma Shan Zheng','Noto Sans SC',serif;
+  --font-body:'Noto Sans SC','Quicksand',system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-body); background:var(--bg); color:var(--ink);
+  min-height:100vh; overflow-x:hidden; position:relative;
+  background-image:
+    radial-gradient(ellipse at 20% 10%,rgba(255,143,163,0.08) 0%,transparent 40%),
+    radial-gradient(ellipse at 80% 80%,rgba(107,182,214,0.08) 0%,transparent 40%),
+    radial-gradient(ellipse at 50% 50%,rgba(255,214,107,0.05) 0%,transparent 50%);
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background-image:
+    radial-gradient(circle at 15% 25%,rgba(255,209,220,0.3) 0%,transparent 2px),
+    radial-gradient(circle at 75% 15%,rgba(197,228,240,0.3) 0%,transparent 2px),
+    radial-gradient(circle at 45% 65%,rgba(255,243,204,0.3) 0%,transparent 2px),
+    radial-gradient(circle at 85% 55%,rgba(224,212,240,0.3) 0%,transparent 2px);
+  background-size:120px 120px,160px 160px,100px 100px,140px 140px;
+}
+/* 浮动装饰 */
+.float-deco{position:fixed;font-size:20px;opacity:0.25;pointer-events:none;z-index:0;animation:floatUp 20s linear infinite}
+@keyframes floatUp{
+  0%{transform:translateY(100vh) rotate(0deg) scale(0.8);opacity:0}
+  10%{opacity:0.25} 90%{opacity:0.15}
+  100%{transform:translateY(-10vh) rotate(360deg) scale(1.1);opacity:0}
+}
+/* 返回按钮 */
+.back-btn{
+  position:fixed;top:16px;left:20px;z-index:9999;
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,253,247,0.9);border:2px solid var(--ink);
+  border-radius:50px;padding:8px 20px;text-decoration:none;
+  color:var(--ink);font-family:var(--font-body);font-size:0.85rem;font-weight:600;
+  box-shadow:3px 4px 0 rgba(74,58,46,0.2);backdrop-filter:blur(8px);
+  transition:all 0.2s;cursor:pointer;
+}
+.back-btn:hover{background:#FBE8C4;transform:translate(-2px,-2px);box-shadow:5px 6px 0 rgba(74,58,46,0.2)}
+.back-btn:active{transform:translate(2px,3px);box-shadow:1px 1px 0 rgba(74,58,46,0.2)}
+@media(max-width:768px){.back-btn{top:10px;left:10px;padding:6px 14px;font-size:0.8rem}}
+
+/* 主容器 */
+.game-wrap{max-width:900px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+
+/* 屏幕切换 */
+.screen{display:none;animation:fadeSlide 0.5s ease}
+.screen.active{display:block}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* === INTRO 屏幕 === */
+.intro{text-align:center;padding:3rem 1rem 2rem}
+.intro .badge{
+  display:inline-block;font-family:var(--font-zcool);font-size:0.8rem;letter-spacing:3px;
+  color:var(--chinese);border:2px dashed var(--chinese-light);background:rgba(255,255,255,0.6);
+  padding:6px 20px;border-radius:50px;margin-bottom:20px;
+}
+.intro h1{
+  font-family:var(--font-mashan);font-size:clamp(2rem,6vw,3.5rem);
+  color:var(--ink);letter-spacing:4px;margin-bottom:12px;
+  text-shadow:2px 2px 0 rgba(212,114,106,0.15);
+}
+.intro .subtitle{font-size:1.1rem;color:var(--ink-light);margin-bottom:2rem;line-height:1.8}
+.intro .story-card{
+  background:rgba(255,255,255,0.85);border:2px solid var(--chinese-light);
+  border-radius:var(--radius);padding:2rem 1.5rem;margin:0 auto 2rem;max-width:560px;
+  box-shadow:var(--shadow);position:relative;
+}
+.intro .story-card::before{
+  content:'📜';position:absolute;top:-20px;left:50%;transform:translateX(-50%);
+  font-size:2.5rem;background:var(--bg);padding:0 8px;
+}
+.story-card p{font-size:0.95rem;line-height:1.9;color:var(--ink);margin-bottom:0.8rem}
+.story-card .highlight{color:var(--chinese);font-weight:700}
+/* 句式图例 */
+.legend-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:560px;margin:1.5rem auto;
+}
+.legend-item{
+  display:flex;align-items:center;gap:10px;padding:12px 16px;
+  border-radius:var(--radius-sm);background:rgba(255,255,255,0.7);
+  border:2px solid var(--border-color,rgba(180,160,140,0.2));
+  font-size:0.85rem;
+}
+.legend-item .dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.legend-item .name{font-weight:700;color:var(--ink)}
+.legend-item .desc{font-size:0.75rem;color:var(--ink-light)}
+
+/* 按钮 */
+.btn-primary{
+  display:inline-flex !important;align-items:center !important;gap:8px !important;
+  font-family:var(--font-zcool) !important;font-size:1.2rem !important;letter-spacing:2px !important;
+  padding:14px 40px !important;border:none !important;border-radius:50px !important;cursor:pointer !important;
+  background:linear-gradient(135deg,var(--pink),#FF6B8A) !important;color:#fff !important;
+  box-shadow:0 6px 20px rgba(255,143,163,0.35) !important;
+  transition:all 0.25s !important;text-decoration:none !important;
+}
+.btn-primary:hover{transform:translateY(-3px) !important;box-shadow:0 10px 28px rgba(255,143,163,0.4) !important}
+.btn-primary:active{transform:translateY(0) !important}
+.btn-secondary{
+  display:inline-flex !important;align-items:center !important;gap:6px !important;
+  font-family:var(--font-body) !important;font-size:0.9rem !important;font-weight:600 !important;
+  padding:10px 24px !important;border:2px solid var(--ink) !important;border-radius:50px !important;cursor:pointer !important;
+  background:rgba(255,255,255,0.8) !important;color:var(--ink) !important;
+  transition:all 0.2s !important;text-decoration:none !important;
+}
+.btn-secondary:hover{background:var(--yellow-light) !important;transform:translateY(-2px) !important}
+.btn-secondary:active{transform:translateY(0) !important}
+
+/* === 章节选择 === */
+.chapter-title{text-align:center;margin-bottom:2rem}
+.chapter-title h2{font-family:var(--font-zcool);font-size:1.8rem;color:var(--ink);letter-spacing:2px}
+.chapter-title p{color:var(--ink-light);font-size:0.9rem;margin-top:6px}
+
+.chapter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem}
+.chapter-card{
+  background:linear-gradient(160deg,#FFFFFF 0%,#FFF8F5 100%);
+  border:2px solid var(--chinese-light);border-radius:var(--radius);
+  padding:1.8rem 1.4rem;cursor:pointer;transition:all 0.3s;
+  position:relative;overflow:hidden;text-align:center;
+  box-shadow:var(--shadow);
+}
+.chapter-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:5px;
+  background:linear-gradient(90deg,var(--chinese),var(--coral),var(--yellow));
+}
+.chapter-card:hover{transform:translateY(-6px);border-color:var(--chinese);box-shadow:var(--shadow-hover)}
+.chapter-card .ch-icon{font-size:3rem;margin-bottom:10px;display:block}
+.chapter-card h3{font-family:var(--font-mashan);font-size:1.5rem;color:var(--ink);margin-bottom:6px}
+.chapter-card .ch-meta{font-size:0.75rem;color:var(--ink-light);margin-bottom:10px}
+.chapter-card .ch-desc{font-size:0.82rem;color:var(--ink-light);line-height:1.6}
+.chapter-card .ch-stars{margin-top:10px;font-size:0.9rem}
+.chapter-card .ch-stars .star{color:var(--yellow)}
+.chapter-card .ch-stars .star-empty{color:var(--ink-light);opacity:0.3}
+.chapter-card.locked{opacity:0.5;pointer-events:none;filter:grayscale(0.5)}
+.chapter-card.completed{border-color:var(--green)}
+
+/* === 游戏主界面 === */
+.game-hud{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:1.5rem;flex-wrap:wrap;gap:12px;
+}
+.hud-left{display:flex;align-items:center;gap:12px}
+.hud-chapter{
+  font-family:var(--font-zcool);font-size:1.1rem;color:var(--chinese);
+  letter-spacing:1px;
+}
+.hud-progress{
+  display:flex;gap:4px;align-items:center;
+}
+.hud-dot{
+  width:12px;height:12px;border-radius:50%;background:rgba(180,160,140,0.25);
+  transition:all 0.3s;
+}
+.hud-dot.done{background:var(--green)}
+.hud-dot.current{background:var(--pink);transform:scale(1.3);box-shadow:0 0 8px rgba(255,143,163,0.4)}
+.hud-right{display:flex;align-items:center;gap:16px}
+.hud-score{
+  font-family:var(--font-zcool);font-size:1rem;color:var(--ink);
+  background:rgba(255,255,255,0.8);border:2px solid var(--yellow-light);
+  border-radius:50px;padding:6px 18px;
+}
+.hud-score .star-icon{color:var(--yellow)}
+
+/* 题目卡片 */
+.question-card{
+  background:linear-gradient(160deg,#FFFFFF 0%,#FFFBF5 100%);
+  border:2px solid var(--chinese-light);border-radius:var(--radius);
+  padding:2rem 1.8rem;box-shadow:var(--shadow);position:relative;overflow:hidden;
+  margin-bottom:1.5rem;
+}
+.question-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:5px;
+  background:linear-gradient(90deg,var(--chinese),var(--coral),var(--yellow));
+}
+.q-num{
+  position:absolute;top:14px;right:18px;
+  font-family:var(--font-zcool);font-size:0.75rem;color:var(--ink-light);
+  letter-spacing:1px;
+}
+.q-type-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:0.72rem;font-weight:700;letter-spacing:1px;
+  padding:4px 14px;border-radius:50px;margin-bottom:1.2rem;
+}
+.q-type-tag.hidden-mode{opacity:0.3;filter:blur(3px);cursor:pointer}
+.q-type-tag .tag-dot{width:8px;height:8px;border-radius:50%}
+
+/* 句式颜色 */
+.type-judge{background:var(--blue-dim);color:var(--blue)}
+.type-judge .tag-dot{background:var(--blue)}
+.type-passive{background:var(--purple-dim);color:var(--purple)}
+.type-passive .tag-dot{background:var(--purple)}
+.type-inverted{background:var(--green-dim);color:var(--green)}
+.type-inverted .tag-dot{background:var(--green)}
+.type-omitted{background:var(--coral-dim);color:var(--coral)}
+.type-omitted .tag-dot{background:var(--coral)}
+
+/* 文言文段落 */
+.passage-box{
+  background:var(--bg2);border-radius:var(--radius-sm);
+  padding:1.8rem 1.6rem;margin-bottom:1.5rem;
+  border:1px solid rgba(212,114,106,0.15);
+  position:relative;
+}
+.passage-box::before{
+  content:'「';position:absolute;top:-8px;left:8px;
+  font-family:var(--font-mashan);font-size:2rem;color:var(--chinese-light);
+}
+.passage-box::after{
+  content:'」';position:absolute;bottom:-18px;right:8px;
+  font-family:var(--font-mashan);font-size:2rem;color:var(--chinese-light);
+}
+.passage-text{
+  font-family:var(--font-mashan);font-size:1.5rem;line-height:2.2;
+  color:var(--ink);text-align:center;letter-spacing:2px;
+}
+.passage-blank{
+  display:inline-block;min-width:50px;padding:0 6px;margin:0 4px;
+  border-bottom:3px solid var(--chinese);
+  text-align:center;color:var(--chinese);font-weight:700;
+  transition:all 0.3s;
+}
+.passage-blank.filled{
+  background:var(--green-light);border-bottom:3px solid var(--green);
+  border-radius:6px 6px 0 0;color:var(--ink);
+}
+.passage-blank.wrong{
+  background:#FFD0D0;border-bottom:3px solid #E85A5A;
+  border-radius:6px 6px 0 0;color:#E85A5A;animation:shake 0.4s;
+}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.passage-source{
+  text-align:right;font-size:0.78rem;color:var(--ink-light);
+  margin-top:10px;font-family:var(--font-body);
+}
+
+/* 词库 */
+.wordbank-label{
+  font-family:var(--font-zcool);font-size:0.9rem;color:var(--ink-light);
+  margin-bottom:10px;letter-spacing:1px;
+}
+.wordbank{
+  display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+  margin-bottom:1.2rem;
+}
+.word-chip{
+  font-family:var(--font-mashan) !important;font-size:1.3rem;
+  padding:10px 20px;border-radius:var(--radius-sm);
+  background:rgba(255,255,255,0.9) !important;border:2px solid var(--chinese-light) !important;
+  color:var(--ink) !important;cursor:pointer;transition:all 0.2s;
+  box-shadow:0 2px 8px rgba(180,160,140,0.1);
+  user-select:none;letter-spacing:2px;
+}
+.word-chip:hover{border-color:var(--chinese) !important;background:#FFF5EE !important;transform:translateY(-2px);box-shadow:0 4px 12px rgba(212,114,106,0.15)}
+.word-chip:active{transform:translateY(0)}
+.word-chip.used{opacity:0.3;pointer-events:none;transform:scale(0.9)}
+.word-chip.correct{background:var(--green-light) !important;border-color:var(--green) !important;color:var(--ink) !important}
+.word-chip.wrong{background:#FFD0D0 !important;border-color:#E85A5A !important;animation:shake 0.4s}
+
+/* 提示按钮 */
+.hint-row{display:flex;justify-content:center;gap:12px;margin-bottom:1rem}
+.hint-btn{
+  font-family:var(--font-body) !important;font-size:0.82rem;font-weight:600;
+  padding:8px 20px;border:2px dashed var(--yellow) !important;border-radius:50px;
+  background:rgba(255,243,204,0.4) !important;color:var(--ink) !important;cursor:pointer;
+  transition:all 0.2s;
+}
+.hint-btn:hover{background:var(--yellow-light) !important;border-style:solid !important}
+.hint-btn:disabled{opacity:0.4;cursor:not-allowed}
+.hint-text{
+  text-align:center;font-size:0.85rem;color:var(--ink-light);
+  background:var(--yellow-light);border-radius:var(--radius-sm);
+  padding:10px 16px;margin-bottom:1rem;display:none;
+  animation:fadeSlide 0.3s ease;
+}
+.hint-text.show{display:block}
+
+/* === 答案解析面板 === */
+.reveal-panel{
+  background:rgba(255,255,255,0.95);border:2px solid var(--chinese-light);
+  border-radius:var(--radius);padding:1.8rem 1.6rem;margin-bottom:1.5rem;
+  box-shadow:var(--shadow);display:none;animation:fadeSlide 0.5s ease;
+  position:relative;overflow:hidden;
+}
+.reveal-panel.show{display:block}
+.reveal-panel::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:5px;
+  background:linear-gradient(90deg,var(--green),var(--blue),var(--purple));
+}
+.reveal-header{
+  display:flex;align-items:center;gap:10px;margin-bottom:1rem;
+  flex-wrap:wrap;
+}
+.reveal-status{
+  font-family:var(--font-zcool);font-size:1.3rem;letter-spacing:2px;
+}
+.reveal-status.correct{color:var(--green)}
+.reveal-status.wrong{color:#E85A5A}
+.reveal-type-tag{
+  font-size:0.78rem;font-weight:700;padding:4px 14px;border-radius:50px;
+  letter-spacing:1px;
+}
+.reveal-answer{
+  font-family:var(--font-mashan);font-size:1.6rem;text-align:center;
+  margin-bottom:1rem;color:var(--chinese);
+}
+.reveal-answer .ans{color:var(--green);font-size:1.8rem}
+.reveal-section{margin-bottom:1rem}
+.reveal-section h4{
+  font-family:var(--font-zcool);font-size:0.9rem;color:var(--ink);
+  letter-spacing:1px;margin-bottom:6px;display:flex;align-items:center;gap:6px;
+}
+.reveal-section h4 .icon{font-size:1.1rem}
+.reveal-section p{font-size:0.88rem;line-height:1.8;color:var(--ink)}
+.reveal-section .example{
+  background:var(--bg3);border-radius:var(--radius-sm);
+  padding:10px 14px;font-family:var(--font-mashan);font-size:1.1rem;
+  color:var(--ink);line-height:1.8;margin-top:6px;
+}
+.reveal-section .example .mark{color:var(--chinese);font-weight:700}
+.reveal-section .translation{
+  background:var(--blue-dim);border-radius:var(--radius-sm);
+  padding:10px 14px;font-size:0.85rem;color:var(--ink);line-height:1.7;
+}
+.reveal-nav{display:flex;justify-content:space-between;align-items:center;margin-top:1.2rem;flex-wrap:wrap;gap:10px}
+
+/* === 章节完成 === */
+.complete-card{
+  background:linear-gradient(160deg,#FFFFFF 0%,#FFF8F5 100%);
+  border:2px solid var(--chinese-light);border-radius:var(--radius);
+  padding:2.5rem 2rem;text-align:center;box-shadow:var(--shadow);
+  position:relative;overflow:hidden;
+}
+.complete-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:5px;
+  background:linear-gradient(90deg,var(--green),var(--yellow),var(--pink));
+}
+.complete-icon{font-size:3.5rem;margin-bottom:12px}
+.complete-card h2{font-family:var(--font-zcool);font-size:1.8rem;color:var(--ink);letter-spacing:2px;margin-bottom:8px}
+.complete-card .sub{color:var(--ink-light);font-size:0.9rem;margin-bottom:1.5rem}
+.score-display{
+  font-family:var(--font-zcool);font-size:3rem;color:var(--chinese);
+  margin-bottom:6px;
+}
+.score-stars{font-size:2rem;margin-bottom:1.5rem}
+.score-stars .star{color:var(--yellow)}
+.score-stars .star-empty{color:var(--ink-light);opacity:0.3}
+.mastery-breakdown{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:420px;margin:1.5rem auto;
+}
+.mastery-cell{
+  background:var(--bg2);border-radius:var(--radius-sm);padding:12px;
+  text-align:left;border:2px solid transparent;
+}
+.mastery-cell .m-name{font-size:0.8rem;font-weight:700;margin-bottom:4px}
+.mastery-cell .m-bar{
+  height:8px;border-radius:4px;background:rgba(180,160,140,0.15);
+  overflow:hidden;margin-bottom:4px;
+}
+.mastery-cell .m-fill{height:100%;border-radius:4px;transition:width 0.8s ease}
+.mastery-cell .m-pct{font-size:0.72rem;color:var(--ink-light)}
+.complete-actions{display:flex;gap:12px;justify-content:center;margin-top:1.5rem;flex-wrap:wrap}
+
+/* === 最终结果 === */
+.final-card{
+  background:linear-gradient(160deg,#FFFFFF 0%,#FFF8F5 100%);
+  border:2px solid var(--chinese-light);border-radius:var(--radius);
+  padding:2.5rem 2rem;text-align:center;box-shadow:var(--shadow);
+  position:relative;overflow:hidden;
+}
+.final-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:5px;
+  background:linear-gradient(90deg,var(--pink),var(--blue),var(--green),var(--yellow));
+}
+.final-card h2{font-family:var(--font-zcool);font-size:2rem;color:var(--ink);letter-spacing:3px;margin-bottom:12px}
+.final-total{font-family:var(--font-zcool);font-size:3.5rem;color:var(--chinese);margin:10px 0}
+.final-medal{font-size:3rem;margin-bottom:8px}
+.final-mastery{margin:1.5rem auto;max-width:480px}
+.final-actions{display:flex;gap:12px;justify-content:center;margin-top:1.5rem;flex-wrap:wrap}
+
+/* 响应式 */
+@media(max-width:640px){
+  .game-wrap{padding:1.5rem 1rem 3rem}
+  .intro h1{font-size:1.8rem}
+  .passage-text{font-size:1.25rem}
+  .word-chip{font-size:1.1rem;padding:8px 16px}
+  .legend-grid{grid-template-columns:1fr}
+  .mastery-breakdown{grid-template-columns:1fr}
+  .chapter-grid{grid-template-columns:1fr}
+}
+</style>
+<link rel="stylesheet" href="./_shared/anime-cartoon-theme.css">
+</head>
+<body>
+<!-- 浮动装饰 -->
+<span class="float-deco" style="left:5%;animation-delay:0s">📜</span>
+<span class="float-deco" style="left:20%;animation-delay:5s">🌸</span>
+<span class="float-deco" style="left:40%;animation-delay:10s">✨</span>
+<span class="float-deco" style="left:60%;animation-delay:3s">🌿</span>
+<span class="float-deco" style="left:80%;animation-delay:7s">🏮</span>
+<span class="float-deco" style="left:90%;animation-delay:12s">📖</span>
+
+<!-- 返回按钮 -->
+<a class="back-btn" href="./index.html" onclick="if(window.history.length>1){event.preventDefault();window.history.back();}">← 返回绘本馆</a>
+
+<div class="game-wrap">
+
+<!-- ========== INTRO 屏幕 ========== -->
+<div class="screen active" id="screen-intro">
+  <div class="intro">
+    <span class="badge">语文 · 文言文语法</span>
+    <h1>文言文填词游戏</h1>
+    <p class="subtitle">穿越古今，以填词之名，破语法之壁</p>
+    <div class="story-card">
+      <p>你是一位穿越时空的书生，来到了古代学塾。</p>
+      <p>先生留下的经典篇目中，有<span class="highlight">关键虚词与实词</span>被墨迹遮盖。</p>
+      <p>你需要根据文意与<span class="highlight">语法结构</span>，选出正确的字填入空缺。</p>
+      <p>每填对一题，将揭示隐藏的<span class="highlight">文言特殊句式</span>——</p>
+      <p>判断句、被动句、倒装句、省略句，一网打尽！</p>
+    </div>
+
+    <div class="legend-grid">
+      <div class="legend-item" style="border-color:var(--blue-light)">
+        <span class="dot" style="background:var(--blue)"></span>
+        <div><div class="name">判断句</div><div class="desc">者…也、乃、即、非</div></div>
+      </div>
+      <div class="legend-item" style="border-color:var(--purple-light)">
+        <span class="dot" style="background:var(--purple)"></span>
+        <div><div class="name">被动句</div><div class="desc">于、见、为…所、意念</div></div>
+      </div>
+      <div class="legend-item" style="border-color:var(--green-light)">
+        <span class="dot" style="background:var(--green)"></span>
+        <div><div class="name">倒装句</div><div class="desc">宾语前置、状语后置等</div></div>
+      </div>
+      <div class="legend-item" style="border-color:var(--coral-light)">
+        <span class="dot" style="background:var(--coral)"></span>
+        <div><div class="name">省略句</div><div class="desc">省主语、宾语、介词</div></div>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="showChapterSelect()">开始闯关 📖</button>
+  </div>
+</div>
+
+<!-- ========== 章节选择 ========== -->
+<div class="screen" id="screen-chapters">
+  <div class="chapter-title">
+    <h2>选择篇目</h2>
+    <p>完成所有篇目即可查看语法掌握度</p>
+  </div>
+  <div class="chapter-grid" id="chapterGrid"></div>
+  <div style="text-align:center;margin-top:2rem">
+    <button class="btn-secondary" onclick="showScreen('screen-intro')">← 返回</button>
+  </div>
+</div>
+
+<!-- ========== 游戏主界面 ========== -->
+<div class="screen" id="screen-game">
+  <div class="game-hud">
+    <div class="hud-left">
+      <span class="hud-chapter" id="hudChapter">劝学</span>
+      <div class="hud-progress" id="hudProgress"></div>
+    </div>
+    <div class="hud-right">
+      <div class="hud-score"><span class="star-icon">⭐</span> <span id="hudScore">0</span></div>
+    </div>
+  </div>
+
+  <div class="question-card" id="questionCard">
+    <span class="q-num" id="qNum">第 1 / 5 题</span>
+    <div id="qTypeTag"></div>
+    <div class="passage-box">
+      <div class="passage-text" id="passageText"></div>
+      <div class="passage-source" id="passageSource"></div>
+    </div>
+    <div class="hint-row">
+      <button class="hint-btn" id="hintBtn" onclick="showHint()">💡 提示（-5分）</button>
+      <button class="hint-btn" id="typeBtn" onclick="toggleType()">🏷 显示句式</button>
+    </div>
+    <div class="hint-text" id="hintText"></div>
+    <div class="wordbank-label">词库 · 选择正确的字填入空缺</div>
+    <div class="wordbank" id="wordbank"></div>
+  </div>
+
+  <div class="reveal-panel" id="revealPanel"></div>
+</div>
+
+<!-- ========== 章节完成 ========== -->
+<div class="screen" id="screen-complete">
+  <div class="complete-card">
+    <div class="complete-icon" id="completeIcon">🎉</div>
+    <h2 id="completeTitle">篇目完成！</h2>
+    <p class="sub" id="completeSub">恭喜你完成了本篇目的所有题目</p>
+    <div class="score-display"><span id="chapterScore">0</span> / <span id="chapterTotal">0</span></div>
+    <div class="score-stars" id="chapterStars"></div>
+    <div class="mastery-breakdown" id="chapterMastery"></div>
+    <div class="complete-actions">
+      <button class="btn-secondary" onclick="showChapterSelect()">选择其他篇目</button>
+      <button class="btn-primary" style="font-size:1rem;padding:10px 28px" id="nextChapterBtn" onclick="nextChapter()">下一篇 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 最终结果 ========== -->
+<div class="screen" id="screen-final">
+  <div class="final-card">
+    <div class="final-medal" id="finalMedal">🏆</div>
+    <h2>闯关完成！</h2>
+    <p style="color:var(--ink-light);font-size:0.9rem">你已完成所有篇目的填词挑战</p>
+    <div class="final-total"><span id="finalScore">0</span> 分</div>
+    <p style="color:var(--ink-light);font-size:0.85rem" id="finalComment">继续努力！</p>
+    <div class="final-mastery">
+      <div class="mastery-breakdown" id="finalMastery"></div>
+    </div>
+    <div class="final-actions">
+      <button class="btn-secondary" onclick="resetGame()">🔄 重新开始</button>
+      <button class="btn-secondary" onclick="showChapterSelect()">📚 再练一篇</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /game-wrap -->
+
+<script>
+/* ========== 游戏数据 ========== */
+const GAME_DATA = {
+  "劝学": {
+    source: "《荀子·劝学》",
+    icon: "荀",
+    desc: "学不可以已，青取之于蓝",
+    questions: [
+      {
+        passage: "君子生非异也，善假于___也",
+        blankPos: "善假于___也",
+        answer: "物",
+        options: ["物","人","师","道"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "注意句末的「也」字，这是判断语气标志",
+        explanation: "句末用「也」表判断语气。「君子生非异也」是否定判断（用「非」），「善假于物也」是肯定判断（用「也」）。翻译时需补出「是/不是」。",
+        structure: "善假于物也 → 君子（主语）+ 善假于物（名词性谓语）+ 也（判断语气）",
+        translation: "君子的本性同一般人并没有什么不同，只是善于借助外物罢了。",
+        example: "君子生非异也，善假于物也。——《荀子·劝学》"
+      },
+      {
+        passage: "锲而不舍，金石可___",
+        blankPos: "金石可___",
+        answer: "镂",
+        options: ["镂","刻","雕","断"],
+        type: "passive",
+        typeName: "被动句（意念被动）",
+        hint: "「金石」是被雕刻的对象，思考谁是动作的承受者",
+        explanation: "「镂」意为雕刻。「金石」是「镂」的承受者（被雕刻），但没有使用「于/见/为…所」等被动标志，属于意念被动句。翻译时需补出「被」字。",
+        structure: "金石可镂 → 金石（受事主语）+ 可（助动词）+ 镂（动词）",
+        translation: "如果不停地刻下去，金石也能被雕刻成功。",
+        example: "锲而不舍，金石可镂。——《荀子·劝学》"
+      },
+      {
+        passage: "青，取之___蓝，而青于蓝",
+        blankPos: "取之___蓝",
+        answer: "于",
+        options: ["于","从","自","以"],
+        type: "inverted",
+        typeName: "状语后置句",
+        hint: "介词结构表示来源，位于动词之后是倒装",
+        explanation: "「于蓝」是介词结构，修饰动词「取」，正常语序应为「于蓝取之」（从蓝草中取出它）。这里将介词结构后置，形成状语后置句。翻译时需调整语序。",
+        structure: "取之于蓝 → 正常语序：于蓝取之（从蓝草中取它）",
+        translation: "靛青是从蓝草中提取的，却比蓝草更青。",
+        example: "青，取之于蓝，而青于蓝。——《荀子·劝学》"
+      },
+      {
+        passage: "輮___为轮，其曲中规",
+        blankPos: "輮___为轮",
+        answer: "之",
+        options: ["之","以","而","且"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「輮」后面省略了什么成分？想想「使」的宾语",
+        explanation: "此处省略了宾语「之」（代木材）。完整句式应为「輮（之）以（之）为轮」，即「用火烤使它弯曲，把它做成车轮」。文言文中常省略宾语，翻译时需根据上下文补出。",
+        structure: "輮[之]为轮 → 补充：輮（之）以（之）为轮",
+        translation: "用火烤使木材弯曲，把它做成车轮，它的弧度符合圆规。",
+        example: "輮以为轮，其曲中规。——《荀子·劝学》"
+      },
+      {
+        passage: "蚓无爪牙之利，筋骨___强",
+        blankPos: "筋骨___强",
+        answer: "之",
+        options: ["之","其","而","且"],
+        type: "inverted",
+        typeName: "定语后置句",
+        hint: "「之」在这里不是「的」，而是定语后置的标志",
+        explanation: "「之」是定语后置的标志，无实在语义。正常语序为「利爪牙」「强筋骨」，即「利的爪牙」「强的筋骨」。将定语「利」「强」后置于中心词之后，形成定语后置句。",
+        structure: "爪牙之利 → 正常语序：利之爪牙（利的爪牙）",
+        translation: "蚯蚓没有锋利的爪牙和强健的筋骨。",
+        example: "蚓无爪牙之利，筋骨之强。——《荀子·劝学》"
+      }
+    ]
+  },
+  "师说": {
+    source: "韩愈《师说》",
+    icon: "韩",
+    desc: "师者，传道受业解惑也",
+    questions: [
+      {
+        passage: "师者，所以传道受业___也",
+        blankPos: "受业___也",
+        answer: "解惑",
+        options: ["解惑","授业","明理","修身"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "「者…也」是典型的判断句结构",
+        explanation: "用「者…也」结构表判断。「师者」中「者」表提顿，引出判断；句末「也」表判断语气。「所以…也」意为「是用来…的人」。这是文言文判断句最典型的格式之一。",
+        structure: "师者，所以传道受业解惑也 → 者（提顿）+ …也（判断）",
+        translation: "老师，是用来传授道理、教授学业、解答疑难问题的人。",
+        example: "师者，所以传道受业解惑也。——韩愈《师说》"
+      },
+      {
+        passage: "句读之不___，惑之不解",
+        blankPos: "之不___",
+        answer: "知",
+        options: ["知","明","通","晓"],
+        type: "inverted",
+        typeName: "宾语前置句",
+        hint: "「之」在这里不是结构助词，而是提宾标志",
+        explanation: "「之」是提宾标志词，无实在语义。宾语「句读」「惑」被提前到动词「知」「解」之前。正常语序为「不知句读，不解惑」。用「之」字将宾语提前，是为了强调宾语。",
+        structure: "句读之不知 → 正常语序：不知句读",
+        translation: "不懂得断句，不能解决疑惑。",
+        example: "句读之不知，惑之不解，或师焉，或不焉。——韩愈《师说》"
+      },
+      {
+        passage: "道之所存，师之所存___",
+        blankPos: "所存___",
+        answer: "也",
+        options: ["也","矣","哉","耳"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "句末缺什么字来表判断？",
+        explanation: "句末用「也」表判断。「道之所存，师之所存也」意为「道理存在的地方，就是老师存在的地方」。省略「者」，仅用「也」表判断，这是文言文中最常见的判断句格式。",
+        structure: "道之所存，师之所存[也] → …也（判断语气）",
+        translation: "道理存在的地方，就是老师存在的地方。",
+        example: "道之所存，师之所存也。——韩愈《师说》"
+      },
+      {
+        passage: "爱其子，择师而教___",
+        blankPos: "而教___",
+        answer: "之",
+        options: ["之","其","彼","尔"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「教」的宾语是什么？原文省略了",
+        explanation: "省略了宾语「之」（代「其子」）。完整句式为「择师而教（之）」。文言文中常省略代词宾语「之」，翻译时需根据上下文补出。",
+        structure: "择师而教[之] → 补充宾语：教（之）",
+        translation: "疼爱他的孩子，选择老师来教他。",
+        example: "爱其子，择师而教之；于其身也，则耻师焉。——韩愈《师说》"
+      },
+      {
+        passage: "人非生而知___者，孰能无惑",
+        blankPos: "而知___者",
+        answer: "之",
+        options: ["之","理","道","学"],
+        type: "judge",
+        typeName: "判断句（否定判断）",
+        hint: "「非…者」是表否定的判断句",
+        explanation: "用「非」表否定判断，意为「不是」。「非生而知之者」译为「不是生下来就懂得道理的人」。「非」是文言文判断句中唯一的否定词，不能用「不」「无」替代。",
+        structure: "人非生而知之者 → 非（否定判断）= 不是",
+        translation: "人不是生下来就懂得道理的，谁能没有疑惑呢？",
+        example: "人非生而知之者，孰能无惑？——韩愈《师说》"
+      }
+    ]
+  },
+  "赤壁赋": {
+    source: "苏轼《赤壁赋》",
+    icon: "苏",
+    desc: "固一世之雄也，而今安在哉",
+    questions: [
+      {
+        passage: "固一世之___也，而今安在哉",
+        blankPos: "之___也",
+        answer: "雄",
+        options: ["雄","杰","豪","才"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "句末「也」表判断，谓语是什么？",
+        explanation: "句末用「也」表判断。「一世之雄」是名词性谓语，直接对主语（曹操）的身份进行判断。译为「本是一代的英雄啊」。「也」在此加强判断语气。",
+        structure: "固一世之雄也 → 雄（名词谓语）+ 也（判断语气）",
+        translation: "他本是一代的英雄啊，而如今又在哪里呢？",
+        example: "固一世之雄也，而今安在哉。——苏轼《赤壁赋》"
+      },
+      {
+        passage: "此非孟德之困___周郎者乎",
+        blankPos: "困___周郎",
+        answer: "于",
+        options: ["于","为","见","被"],
+        type: "passive",
+        typeName: "被动句",
+        hint: "「于」引出动作的施动者（发出者）",
+        explanation: "「于」引出施动者「周郎」，表被动。「困于周郎」意为「被周郎围困」。这是文言文被动句的常见格式「动词+于+施动者」。全句用「非…乎」表反问判断。",
+        structure: "困于周郎 → 困（动词）+ 于（引出施动者）+ 周郎",
+        translation: "这不是曹操被周瑜围困的地方吗？",
+        example: "此非孟德之困于周郎者乎？——苏轼《赤壁赋》"
+      },
+      {
+        passage: "而今安___哉",
+        blankPos: "安___哉",
+        answer: "在",
+        options: ["在","存","往","至"],
+        type: "inverted",
+        typeName: "宾语前置句",
+        hint: "疑问代词「安」作宾语，被前置了",
+        explanation: "「安」是疑问代词（意为「哪里」），作动词「在」的宾语。在疑问句中，疑问代词作宾语需前置。正常语序为「而今在安哉」，前置后变为「而今安在哉」。",
+        structure: "而今安在哉 → 正常语序：而今在安哉",
+        translation: "而如今他又在哪里呢？",
+        example: "固一世之雄也，而今安在哉？——苏轼《赤壁赋》"
+      },
+      {
+        passage: "何___其然也",
+        blankPos: "何___其然",
+        answer: "为",
+        options: ["为","以","因","故"],
+        type: "inverted",
+        typeName: "宾语前置句",
+        hint: "疑问代词「何」作介词宾语被前置",
+        explanation: "「何」是疑问代词，作介词「为」的宾语。在疑问句中，疑问代词作介词宾语需前置。正常语序为「为何其然也」（为什么它这样呢），前置后变为「何为其然也」。",
+        structure: "何为其然也 → 正常语序：为何其然也",
+        translation: "为什么它发出这样的声音呢？",
+        example: "何为其然也？——苏轼《赤壁赋》"
+      },
+      {
+        passage: "是造物者之无尽___也",
+        blankPos: "无尽___也",
+        answer: "藏",
+        options: ["藏","宝","物","景"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "「是…也」构成判断，「是」在这里是代词",
+        explanation: "「是」在此为指示代词（意为「这」），而非判断动词。句末「也」表判断。全句译为「这是造物者无穷无尽的宝藏啊」。注意：文言文中的「是」多作指示代词，不可与现代汉语的判断动词「是」混淆。",
+        structure: "是造物者之无尽藏也 → 是（指示代词，这）+ …也（判断）",
+        translation: "这是造物者无穷无尽的宝藏啊。",
+        example: "是造物者之无尽藏也，而吾与子之所共适。——苏轼《赤壁赋》"
+      }
+    ]
+  },
+  "鸿门宴": {
+    source: "司马迁《史记·项羽本纪》",
+    icon: "项",
+    desc: "楚汉相争，鸿门一宴定乾坤",
+    questions: [
+      {
+        passage: "楚左尹项伯者，项羽季___也",
+        blankPos: "项羽季___也",
+        answer: "父",
+        options: ["父","兄","叔","子"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "「者…也」是典型判断句结构",
+        explanation: "用「者…也」结构表判断。「者」用在主语后表提顿，「也」用在句末表判断语气。译为「楚国的左尹项伯，是项羽的叔父」。这是文言文判断句最典型、最古老的格式。",
+        structure: "楚左尹项伯者，项羽季父也 → 者（提顿）+ …也（判断）",
+        translation: "楚国的左尹项伯，是项羽的叔父。",
+        example: "楚左尹项伯者，项羽季父也。——司马迁《鸿门宴》"
+      },
+      {
+        passage: "若属皆且为___虏",
+        blankPos: "为___虏",
+        answer: "所",
+        options: ["所","之","其","此"],
+        type: "passive",
+        typeName: "被动句",
+        hint: "「为」后面跟什么字构成被动标志？",
+        explanation: "「为……所」是文言被动句中最固定、最常用的格式。「为」表被动，「所」与「为」搭配。此处施动者（项羽）省略，完整结构为「为（项羽）所虏」。译为「你们这些人都将要被他俘虏了」。",
+        structure: "为[所]虏 → 为（被动标志）+ 所（搭配）+ 虏（动词）",
+        translation: "你们这些人都将要被他俘虏了。",
+        example: "不者，若属皆且为所虏。——司马迁《鸿门宴》"
+      },
+      {
+        passage: "沛公安___",
+        blankPos: "沛公安___",
+        answer: "在",
+        options: ["在","往","去","至"],
+        type: "inverted",
+        typeName: "宾语前置句",
+        hint: "疑问代词「安」作宾语被前置了",
+        explanation: "「安」是疑问代词（意为「哪里」），作动词「在」的宾语。疑问句中疑问代词作宾语需前置。正常语序为「沛公在安」，前置后变为「沛公安在」。译为「沛公在哪里？」",
+        structure: "沛公安在 → 正常语序：沛公在安",
+        translation: "沛公在哪里？",
+        example: "沛公安在？——司马迁《鸿门宴》"
+      },
+      {
+        passage: "大王来何___",
+        blankPos: "来何___",
+        answer: "操",
+        options: ["操","持","带","携"],
+        type: "inverted",
+        typeName: "宾语前置句",
+        hint: "疑问代词「何」作宾语被前置了",
+        explanation: "「何」是疑问代词，作动词「操」的宾语。疑问句中疑问代词作宾语需前置。正常语序为「大王来操何」，前置后变为「大王来何操」。译为「大王来时带了什么？」",
+        structure: "大王来何操 → 正常语序：大王来操何",
+        translation: "大王来的时候带了什么礼物？",
+        example: "大王来何操？——司马迁《鸿门宴》"
+      },
+      {
+        passage: "交戟之卫士欲止___",
+        blankPos: "欲止___",
+        answer: "不",
+        options: ["不","勿","毋","莫"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「止」后面省略了什么？想想樊哙",
+        explanation: "此处省略了宾语「樊哙」。完整句式应为「欲止（樊哙）不（内）」，即「想要阻止樊哙不让他进去」。「内」通「纳」，意为让进入。文言文中常省略宾语，翻译时需补出。",
+        structure: "欲止[樊哙]不[内] → 补充宾语",
+        translation: "交叉持戟的卫士想阻止他，不让他进去。",
+        example: "交戟之卫士欲止不内。——司马迁《鸿门宴》"
+      }
+    ]
+  },
+  "阿房宫赋": {
+    source: "杜牧《阿房宫赋》",
+    icon: "杜",
+    desc: "灭六国者六国也，非秦也",
+    questions: [
+      {
+        passage: "灭六国者六国___，非秦也",
+        blankPos: "六国___",
+        answer: "也",
+        options: ["也","矣","哉","耳"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "句末用什么字表判断？",
+        explanation: "用「者…也」结构表判断。「者」表提顿，「也」表判断语气。这是一个双重判断句：先肯定「灭六国的是六国自己」，再用「非」否定「不是秦国」。译为「灭掉六国的是六国自己，不是秦国」。",
+        structure: "灭六国者六国也，非秦也 → 者…也（肯定判断）+ 非…也（否定判断）",
+        translation: "灭掉六国的是六国自己，不是秦国。",
+        example: "灭六国者六国也，非秦也；族秦者秦也，非天下也。——杜牧《阿房宫赋》"
+      },
+      {
+        passage: "函谷___",
+        blankPos: "函谷___",
+        answer: "举",
+        options: ["举","破","陷","失"],
+        type: "passive",
+        typeName: "被动句（意念被动）",
+        hint: "「函谷」是被攻占的对象，没有被动标志词",
+        explanation: "「举」意为「被攻占」。「函谷关」是「举」的承受者（被攻占），但没有使用任何被动标志词，属于意念被动句。需结合语境判断主语是动作承受者。译为「函谷关被攻占了」。",
+        structure: "函谷举 → 函谷（受事主语）+ 举（动词，被攻占）",
+        translation: "函谷关被攻占了。",
+        example: "戍卒叫，函谷举，楚人一炬，可怜焦土。——杜牧《阿房宫赋》"
+      },
+      {
+        passage: "多于南亩之___",
+        blankPos: "南亩之___",
+        answer: "农夫",
+        options: ["农夫","耕者","田者","农人"],
+        type: "inverted",
+        typeName: "状语后置句",
+        hint: "介词结构「于…」位于形容词之后是倒装",
+        explanation: "「于南亩之农夫」是介词结构，修饰形容词「多」，正常语序应为「于南亩之农夫多」（比南边田地里的农夫还多）。这里将介词结构后置，形成状语后置句。",
+        structure: "多于南亩之农夫 → 正常语序：于南亩之农夫多",
+        translation: "比南面田地里的农夫还要多。",
+        example: "钉头磷磷，多于在庾之粟粒；瓦缝参差，多于周身之帛缕。——杜牧《阿房宫赋》"
+      },
+      {
+        passage: "一人之心，千万人之心___",
+        blankPos: "千万人之心___",
+        answer: "也",
+        options: ["也","矣","哉","耳"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "句末用「也」表判断",
+        explanation: "句末用「也」表判断。「一人之心」是主语，「千万人之心」是名词性谓语，直接对主语进行判断。省略「者」，仅用「也」表判断。译为「一个人的心，也就是千万个人的心」。",
+        structure: "一人之心，千万人之心也 → …也（判断语气）",
+        translation: "一个人的心，也就是千万个人的心。",
+        example: "嗟乎！一人之心，千万人之心也。——杜牧《阿房宫赋》"
+      },
+      {
+        passage: "秦人无暇自___",
+        blankPos: "自___",
+        answer: "哀",
+        options: ["哀","悲","叹","怜"],
+        type: "inverted",
+        typeName: "宾语前置句（代词宾语前置）",
+        hint: "「自」是代词宾语，放在动词前面了",
+        explanation: "「自」是代词，作「哀」的宾语，被前置到动词之前。正常语序为「自哀」→「哀自」（哀叹自己）。这是反身代词「自」作宾语时前置的固定用法。译为「秦国人没有空闲来哀叹自己」。",
+        structure: "秦人无暇自哀 → 正常语序：哀自（哀叹自己）",
+        translation: "秦国人来不及哀叹自己。",
+        example: "秦人无暇自哀，而后人哀之。——杜牧《阿房宫赋》"
+      }
+    ]
+  },
+  "六国论": {
+    source: "苏洵《六国论》",
+    icon: "洵",
+    desc: "六国破灭，非兵不利，弊在赂秦",
+    questions: [
+      {
+        passage: "六国破灭，非兵不___，战不善",
+        blankPos: "非兵不___",
+        answer: "利",
+        options: ["利","强","锐","坚"],
+        type: "judge",
+        typeName: "判断句（否定判断）",
+        hint: "「非」表否定判断",
+        explanation: "用「非」表否定判断，意为「不是」。「非兵不利」译为「不是兵器不锋利」。「非」是文言文判断句中唯一的否定词，不能用「不」「无」替代。全句通过否定判断引出中心论点：六国灭亡的弊病在于贿赂秦国。",
+        structure: "非兵不利 → 非（否定判断）= 不是",
+        translation: "六国灭亡，不是兵器不锋利，仗打得不好，弊病在于贿赂秦国。",
+        example: "六国破灭，非兵不利，战不善，弊在赂秦。——苏洵《六国论》"
+      },
+      {
+        passage: "而为秦人积威之所___",
+        blankPos: "之所___",
+        answer: "劫",
+        options: ["劫","迫","逼","制"],
+        type: "passive",
+        typeName: "被动句",
+        hint: "「为……所」是被动标志",
+        explanation: "「为……所」是文言被动句中最固定的格式。「为」表被动，「秦人积威」是施动者，「所」与「为」搭配。「劫」意为胁迫、控制。译为「被秦国人积累的威势所胁迫」。",
+        structure: "为秦人积威之所劫 → 为（被动）+ 施动者 + 所（搭配）+ 劫（动词）",
+        translation: "被秦国人积累的威势所胁迫。",
+        example: "有如此之势，而为秦人积威之所劫，日削月割，以趋于亡。——苏洵《六国论》"
+      },
+      {
+        passage: "洎牧以谗___",
+        blankPos: "以谗___",
+        answer: "诛",
+        options: ["诛","杀","废","免"],
+        type: "passive",
+        typeName: "被动句（意念被动）",
+        hint: "「牧」是被诛杀的对象，但没有被动标志词",
+        explanation: "「诛」意为「被诛杀」。「牧」（李牧）是「诛」的承受者（被诛杀），但没有使用任何被动标志词，属于意念被动句。需结合语境判断主语是动作承受者。译为「等到李牧因为谗言被诛杀」。",
+        structure: "洎牧以谗诛 → 牧（受事主语）+ 诛（动词，被诛杀）",
+        translation: "等到李牧因为谗言被诛杀。",
+        example: "洎牧以谗诛，邯郸为郡，惜其用武而不终也。——苏洵《六国论》"
+      },
+      {
+        passage: "举以___人",
+        blankPos: "举以___人",
+        answer: "予",
+        options: ["予","赠","赐","送"],
+        type: "omitted",
+        typeName: "省略句（省略宾语+状语后置）",
+        hint: "「举」后面省略了什么？「以」后面又省略了什么？",
+        explanation: "此处省略了宾语「之」（代土地）。完整句式应为「举（之）以（之）予人」，即「拿它（土地）来送给别人」。同时「以予人」也是状语后置，正常语序为「以人予」（把给别人的东西）。译为「拿它来送给别人」。",
+        structure: "举[之]以[之]予人 → 补充省略的宾语",
+        translation: "拿它来送给别人。",
+        example: "举以予人，如弃草芥。——苏洵《六国论》"
+      },
+      {
+        passage: "其势弱___秦",
+        blankPos: "弱___秦",
+        answer: "于",
+        options: ["于","比","较","如"],
+        type: "inverted",
+        typeName: "状语后置句",
+        hint: "介词结构「于秦」位于形容词之后",
+        explanation: "「于秦」是介词结构，修饰形容词「弱」，正常语序应为「于秦弱」（比秦国弱）。这里将介词结构后置，形成状语后置句。译为「他们的势力比秦国弱」。",
+        structure: "其势弱于秦 → 正常语序：于秦弱（比秦国弱）",
+        translation: "他们的势力比秦国弱。",
+        example: "其势弱于秦，而犹有可以不赂而胜之之势。——苏洵《六国论》"
+      }
+    ]
+  },
+  "出师表": {
+    source: "诸葛亮《出师表》",
+    icon: "葛",
+    desc: "此诚危急存亡之秋也",
+    questions: [
+      {
+        passage: "此诚危急存亡之___也",
+        blankPos: "之___也",
+        answer: "秋",
+        options: ["秋","时","刻","际"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "「也」表判断，谓语是什么？",
+        explanation: "句末用「也」表判断。「此」是主语（指示代词「这」），「危急存亡之秋」是名词性谓语，直接对主语进行判断。「秋」在此意为「时期」「时刻」。译为「这确实是国家危急存亡的时期啊」。",
+        structure: "此诚危急存亡之秋也 → 此（主语）+ 危急存亡之秋（名词谓语）+ 也（判断）",
+        translation: "这确实是国家危急存亡的时期啊。",
+        example: "此诚危急存亡之秋也。——诸葛亮《出师表》"
+      },
+      {
+        passage: "臣本布___",
+        blankPos: "臣本布___",
+        answer: "衣",
+        options: ["衣","民","人","客"],
+        type: "judge",
+        typeName: "判断句（无标志）",
+        hint: "没有「者」「也」等标志，但仍是判断句",
+        explanation: "这是无标志判断句（意念判断句）。主语「臣」直接接名词性谓语「布衣」，无任何判断标志，需结合语境理解。「布衣」借代平民百姓。译为「我本来是平民百姓」。",
+        structure: "臣本布衣 → 臣（主语）+ 布衣（名词谓语，表判断）",
+        translation: "我本来是平民百姓。",
+        example: "臣本布衣，躬耕于南阳。——诸葛亮《出师表》"
+      },
+      {
+        passage: "苟全性命___乱世间",
+        blankPos: "性命___乱世间",
+        answer: "于",
+        options: ["于","在","处","居"],
+        type: "inverted",
+        typeName: "状语后置句",
+        hint: "介词结构表示地点，位于动词之后是倒装",
+        explanation: "「于乱世间」是介词结构，修饰动词「全」，正常语序应为「于乱世间全性命」（在乱世中保全性命）。这里将介词结构后置，形成状语后置句。译为「在乱世中苟且保全性命」。",
+        structure: "苟全性命于乱世间 → 正常语序：于乱世间全性命",
+        translation: "只求在乱世中苟且保全性命。",
+        example: "苟全性命于乱世，不求闻达于诸侯。——诸葛亮《出师表》"
+      },
+      {
+        passage: "受任___败军之际",
+        blankPos: "受任___败军之际",
+        answer: "于",
+        options: ["于","在","当","值"],
+        type: "inverted",
+        typeName: "状语后置句",
+        hint: "介词结构表示时间，位于动词之后",
+        explanation: "「于败军之际」是介词结构，修饰动词「受任」，正常语序应为「于败军之际受任」（在兵败的时候接受任命）。将介词结构后置，形成状语后置句。译为「在兵败的时候接受了任命」。",
+        structure: "受任于败军之际 → 正常语序：于败军之际受任",
+        translation: "在兵败的时候接受了任命。",
+        example: "受任于败军之际，奉命于危难之间。——诸葛亮《出师表》"
+      },
+      {
+        passage: "悉以咨___",
+        blankPos: "咨___",
+        answer: "之",
+        options: ["之","其","彼","尔"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「咨」后面省略了什么？想想咨询的对象",
+        explanation: "此处省略了宾语「之」（代指郭攸之、费祎、董允等人）。完整句式为「悉以咨（之）」，即「都拿来询问他们」。文言文中常省略代词宾语「之」，翻译时需根据上下文补出。",
+        structure: "悉以咨[之] → 补充宾语：咨（之）",
+        translation: "都拿来询问他们。",
+        example: "愚以为宫中之事，事无大小，悉以咨之。——诸葛亮《出师表》"
+      }
+    ]
+  },
+  "烛之武退秦师": {
+    source: "《左传》",
+    icon: "烛",
+    desc: "夫晋，何厌之有",
+    questions: [
+      {
+        passage: "夫晋，何厌___有",
+        blankPos: "何厌___有",
+        answer: "之",
+        options: ["之","其","而","以"],
+        type: "inverted",
+        typeName: "宾语前置句",
+        hint: "「之」在这里不是结构助词，而是提宾标志",
+        explanation: "「之」是提宾标志词，无实在语义。宾语「何厌」（什么满足）被提前到动词「有」之前。正常语序为「有何厌」（有什么满足的）。用「之」字将宾语提前，是为了强调宾语。译为「晋国有什么满足的呢？」",
+        structure: "何厌之有 → 正常语序：有何厌",
+        translation: "晋国有什么满足的呢？",
+        example: "夫晋，何厌之有？——《左传·烛之武退秦师》"
+      },
+      {
+        passage: "以其无礼___晋",
+        blankPos: "无礼___晋",
+        answer: "于",
+        options: ["于","对","向","与"],
+        type: "inverted",
+        typeName: "状语后置句",
+        hint: "介词结构「于晋」位于动词之后",
+        explanation: "「于晋」是介词结构，修饰动词「无礼」，正常语序应为「于晋无礼」（对晋国无礼）。将介词结构后置，形成状语后置句。译为「因为郑国对晋国无礼」。",
+        structure: "无礼于晋 → 正常语序：于晋无礼",
+        translation: "因为郑国对晋国无礼。",
+        example: "以其无礼于晋，且贰于楚也。——《左传·烛之武退秦师》"
+      },
+      {
+        passage: "佚之狐言___郑伯曰",
+        blankPos: "言___郑伯",
+        answer: "于",
+        options: ["于","对","向","与"],
+        type: "omitted",
+        typeName: "省略句+状语后置",
+        hint: "「言」后面省略了什么？介词「于」引出对象",
+        explanation: "此处省略了宾语「之」（代郑伯），同时「于郑伯」是介词结构后置。完整句式为「佚之狐言（之）于郑伯曰」，即「佚之狐对郑伯说」。文言文中常省略宾语，翻译时需补出。",
+        structure: "言[之]于郑伯 → 补充宾语 + 状语后置",
+        translation: "佚之狐对郑伯说。",
+        example: "佚之狐言于郑伯曰。——《左传·烛之武退秦师》"
+      },
+      {
+        passage: "敢以烦___",
+        blankPos: "烦___",
+        answer: "执事",
+        options: ["执事","左右","大人","阁下"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「以」后面省略了什么？",
+        explanation: "此处省略了宾语「之」（代这件事）。完整句式为「敢以（之）烦执事」，即「怎敢拿这件事来烦劳您」。「执事」是对对方的敬称，不直称对方而称其手下。文言文中常省略宾语。",
+        structure: "敢以[之]烦执事 → 补充宾语：以（之）",
+        translation: "怎敢拿这件事来烦劳您的手下。",
+        example: "若亡郑而有益于君，敢以烦执事。——《左传·烛之武退秦师》"
+      },
+      {
+        passage: "微夫人之力不及___",
+        blankPos: "不及___",
+        answer: "此",
+        options: ["此","彼","斯","是"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「不及」后面省略了什么？",
+        explanation: "此处省略了宾语「此」（代这件事/这个地步）。完整句式为「微夫人之力不及（此）」，即「如果没有那个人的力量，就不会到这个地步」。「微」意为「如果没有」，表示假设。文言文中常省略宾语。",
+        structure: "不及[此] → 补充宾语",
+        translation: "如果没有那个人的力量，就不会到今天这个地步。",
+        example: "微夫人之力不及此。——《左传·烛之武退秦师》"
+      }
+    ]
+  },
+  "谏太宗十思疏": {
+    source: "魏征《谏太宗十思疏》",
+    icon: "征",
+    desc: "思国之安者，必积其德义",
+    questions: [
+      {
+        passage: "臣闻求木之长者，必___其根本",
+        blankPos: "必___其根本",
+        answer: "固",
+        options: ["固","培","深","实"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "「必」后面跟什么动词表判断？",
+        explanation: "「必固其根本」中「固」是形容词作动词，意为「使……牢固」。全句用判断语气表达：想要树木长得高的，一定要使它的根本牢固。「之」是结构助词，用于主谓之间取消句子独立性。「长」也是形容词作动词，意为「生长得高」。这是典型的使动用法。",
+        structure: "求木之长者 → 必固其根本（使动用法）",
+        translation: "臣听说想要树木长得高的，一定要使它的根本牢固。",
+        example: "臣闻求木之长者，必固其根本。——魏征《谏太宗十思疏》"
+      },
+      {
+        passage: "源不深而望流之___",
+        blankPos: "流之___",
+        answer: "远",
+        options: ["远","长","深","广"],
+        type: "inverted",
+        typeName: "宾语前置句",
+        hint: "「之」在这里是提宾标志",
+        explanation: "「流之远」中「之」是提宾标志词。「远」本来是「流」的谓语（流远），用「之」将谓语提前，形成主谓倒装以强调。正常语序为「流远」。译为「水源不深却希望水流得远」。这种「之」字提宾在文言文中很常见。",
+        structure: "流之远 → 正常语序：流远（谓语前置）",
+        translation: "水源不深却希望水流得远。",
+        example: "源不深而望流之远，根不固而求木之长。——魏征《谏太宗十思疏》"
+      },
+      {
+        passage: "虽董之以严刑，振之以___",
+        blankPos: "之以___",
+        answer: "威怒",
+        options: ["威怒","暴怒","威严","怒气"],
+        type: "inverted",
+        typeName: "状语后置句",
+        hint: "介词结构「以严刑」「以威怒」放在动词之后",
+        explanation: "「董之以严刑」和「振之以威怒」都是状语后置句。正常语序为「以严刑董之」「以威怒振之」。「董」意为督责，「振」同「震」，威吓。「之」指代百姓。两句用「以」引出工具状语，后置以强调。译为「即使用严刑督责他们，用威怒震慑他们」。",
+        structure: "董之以严刑 → 正常语序：以严刑董之",
+        translation: "即使用严刑来督责他们，用威怒来震慑他们。",
+        example: "虽董之以严刑，振之以威怒。——魏征《谏太宗十思疏》"
+      },
+      {
+        passage: "怨不在大，可畏惟___",
+        blankPos: "可畏惟___",
+        answer: "人",
+        options: ["人","民","众","心"],
+        type: "inverted",
+        typeName: "宾语前置句",
+        hint: "「惟」是范围副词，宾语被前置",
+        explanation: "「可畏惟人」中「人」是「可畏」的宾语，因为强调而前置。「惟」是范围副词，意为「只有」。正常语序为「惟人可畏」。译为「怨恨不在大小，可怕的只有百姓」。此处将宾语「人」前置以强调，体现了以民为本的思想。",
+        structure: "可畏惟人 → 正常语序：惟人可畏",
+        translation: "怨恨不在大小，可怕的只有百姓。",
+        example: "怨不在大，可畏惟人。——魏征《谏太宗十思疏》"
+      },
+      {
+        passage: "宏兹九德，简能而任___",
+        blankPos: "任___",
+        answer: "之",
+        options: ["之","者","也","矣"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「任」后面省略了什么？",
+        explanation: "此处省略了宾语「之」（代有才能的人）。完整句式为「简能而任（之）」，即「选拔有才能的人来任用他们」。「简」通「拣」，选拔。「宏」意为弘扬。九德指九种品德。文言文中常省略宾语，翻译时需补出。",
+        structure: "简能而任[之] → 补充宾语",
+        translation: "弘扬这九种品德，选拔有才能的人来任用他们。",
+        example: "总此十思，弘兹九德，简能而任之，择善而从之。——魏征《谏太宗十思疏》"
+      }
+    ]
+  },
+  "答司马谏议书": {
+    source: "王安石《答司马谏议书》",
+    icon: "安",
+    desc: "名实已明，而天下之理得矣",
+    questions: [
+      {
+        passage: "重念蒙君实视遇___",
+        blankPos: "视遇___",
+        answer: "厚",
+        options: ["厚","深","重","殷"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "「厚」是形容词作谓语表判断",
+        explanation: "「视遇厚」是判断句的省略形式，完整结构为「视遇（之）厚」，即「看待对待（我）很厚道」。「厚」是形容词作谓语，直接表判断。「视遇」意为看待、对待。此处省略了宾语「之」（代作者自己）。译为「又想到蒙您厚待」。",
+        structure: "视遇厚 → 视遇[之]厚（省略宾语+判断）",
+        translation: "又想到蒙您厚待。",
+        example: "重念蒙君实视遇厚，于反复不宜卤莽。——王安石《答司马谏议书》"
+      },
+      {
+        passage: "终必不蒙见___",
+        blankPos: "不蒙见___",
+        answer: "察",
+        options: ["察","谅","知","明"],
+        type: "passive",
+        typeName: "被动句",
+        hint: "「见」表被动，「察」是被动的动词",
+        explanation: "「见察」是被动句式，「见」用在动词前表被动。「察」意为体察、理解。全句「终必不蒙见察」意为「最终一定不会蒙受被体察（理解）」。「蒙」表谦敬。译为「最终一定不会被您理解」。这是文言文被动句的典型格式：见+动词。",
+        structure: "蒙见察 → 见（被动标志）+ 察（动词）",
+        translation: "最终一定不会被您体察理解。",
+        example: "虽欲强聒，终必不蒙见察。——王安石《答司马谏议书》"
+      },
+      {
+        passage: "举先王之政，以兴利除___",
+        blankPos: "除___",
+        answer: "弊",
+        options: ["弊","害","患","恶"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「以」后面省略了什么？",
+        explanation: "此处省略了介词宾语「之」（代先王之政）。完整句式为「举先王之政，以（之）兴利除弊」，即「推行先王的政令，用它来兴办有利的事业，消除弊端」。「以」后省略宾语，是文言文常见的省略类型。译为「推行先王的政令，来兴利除弊」。",
+        structure: "以[之]兴利除弊 → 补充介词宾语",
+        translation: "推行先王的政令，来兴办有利的事业，革除弊端。",
+        example: "举先王之政，以兴利除弊，不为生事。——王安石《答司马谏议书》"
+      },
+      {
+        passage: "如曰今日当一切不事___",
+        blankPos: "不事___",
+        answer: "事",
+        options: ["事","为","行","做"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「不事事」中第二个「事」是什么词性？",
+        explanation: "「不事事」是省略句。第一个「事」是动词（做），第二个「事」是名词（事情）。完整句意为「不做事」。此处的「事事」是动宾结构，第二个「事」是宾语。翻译时需明确词性。译为「如果说今天应当一切都不做事」。",
+        structure: "不事事 → 不事（动词）+ 事（名词宾语）",
+        translation: "如果说今天应当一切都不做事。",
+        example: "如曰今日当一切不事事，守前所为而已。——王安石《答司马谏议书》"
+      },
+      {
+        passage: "则非某之所敢___",
+        blankPos: "所敢___",
+        answer: "知",
+        options: ["知","为","言","受"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "「非」表否定判断，「所敢知」是「所」字结构",
+        explanation: "「非某之所敢知」是判断句。「非」表否定判断，相当于「不是」。「所敢知」是「所」字结构，意为「敢于领受/承认的事情」。「所+动词」构成名词性结构。译为「这就不是我敢于领受的了」。这是文言文判断句的否定形式。",
+        structure: "非某之所敢知 → 非（否定判断）+ 所敢知（所字结构）",
+        translation: "这就不是我敢于领受的了。",
+        example: "则非某之所敢知。——王安石《答司马谏议书》"
+      }
+    ]
+  },
+  "逍遥游": {
+    source: "庄子《逍遥游》",
+    icon: "庄",
+    desc: "鹏之徙于南冥也，水击三千里",
+    questions: [
+      {
+        passage: "南冥者，天___也",
+        blankPos: "天___也",
+        answer: "池",
+        options: ["池","渊","海","泽"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "「者……也」是典型判断句结构",
+        explanation: "「南冥者，天池也」是典型的判断句。「者」用在主语后表提顿，「也」用在句末表判断语气。「天池」指天然的水池。译为「南冥，是天然的水池」。这是文言文判断句最经典的格式：A者，B也。",
+        structure: "南冥者，天池也 → 者（提顿）+ ……也（判断）",
+        translation: "南冥，是天然的水池。",
+        example: "南冥者，天池也。——庄子《逍遥游》"
+      },
+      {
+        passage: "鹏之背，不知其几千里___",
+        blankPos: "几千里___",
+        answer: "也",
+        options: ["也","矣","哉","乎"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「也」在这里表什么语气？",
+        explanation: "「不知其几千里也」中「也」表陈述语气，相当于「啊」。「其」指代鹏。全句省略了量词单位，直译为「不知道它有几千里啊」。文言文中数量词后常用「也」表感叹或陈述语气。",
+        structure: "不知其几千里也 → 也（语气词）",
+        translation: "鹏的背，不知道有几千里长。",
+        example: "鹏之背，不知其几千里也。——庄子《逍遥游》"
+      },
+      {
+        passage: "怒而飞，其翼若垂天___云",
+        blankPos: "垂天___云",
+        answer: "之",
+        options: ["之","其","而","以"],
+        type: "inverted",
+        typeName: "定语后置句",
+        hint: "「垂天之云」中「之」连接定语和中心语",
+        explanation: "「垂天之云」可分析为定语后置句。正常语序为「天之垂云」（天边垂下的云），但文言文中常将定语放在中心语前用「之」连接，形成「垂天之云」即「垂于天之云」的省略形式。译为「它的翅膀像垂挂在天空的云」。「怒」意为奋起。",
+        structure: "垂天之云 → 垂（于）天之云（定语后置/修饰）",
+        translation: "它奋起而飞，翅膀像垂挂在天空的云。",
+        example: "怒而飞，其翼若垂天之云。——庄子《逍遥游》"
+      },
+      {
+        passage: "奚以___九万里而南为",
+        blankPos: "奚以___九万里",
+        answer: "之",
+        options: ["之","其","此","彼"],
+        type: "inverted",
+        typeName: "宾语前置句",
+        hint: "「奚」是疑问代词，作宾语前置",
+        explanation: "「奚以之九万里而南为」中「奚」是疑问代词（意为「什么」「为什么」），作介词「以」的宾语被前置。正常语序为「以奚」（凭什么）。「之」指代飞行。「为」是语气词。固定句式「奚以……为」意为「哪里用得着……呢」。译为「哪里用得着飞九万里往南去呢」。",
+        structure: "奚以之九万里而南为 → 奚（前置宾语）+ 以（介词）",
+        translation: "哪里用得着飞九万里往南去呢？",
+        example: "奚以之九万里而南为？——庄子《逍遥游》"
+      },
+      {
+        passage: "且___水之积也不厚",
+        blankPos: "且___水之积",
+        answer: "夫",
+        options: ["夫","而","则","若"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「且夫」是发语词，表议论开始",
+        explanation: "「且夫」是文言文常见的发语词组合，用于句首，表将发表议论，可译为「再说」「况且」。「水之积」中「之」用于主谓之间取消句子独立性。全句译为「再说水积聚得不够深」。此处的「夫」无实义，是语气助词。",
+        structure: "且夫（发语词）+ 水之积也不厚",
+        translation: "再说，水积聚得不够深。",
+        example: "且夫水之积也不厚，则其负大舟也无力。——庄子《逍遥游》"
+      }
+    ]
+  },
+  "过秦论": {
+    source: "贾谊《过秦论》",
+    icon: "谊",
+    desc: "仁义不施而攻守之势异也",
+    questions: [
+      {
+        passage: "然陈涉瓮牖绳枢之子，___隶之人也",
+        blankPos: "___隶之人也",
+        answer: "氓",
+        options: ["氓","庶","贱","流"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "「……之人也」是判断句结构",
+        explanation: "「氓隶之人也」是判断句，「也」用于句末表判断。「氓隶」指农村的平民百姓。「瓮牖绳枢」意为用破瓮做窗户，用绳子系门轴，形容家境贫寒。译为「是农村的平民百姓」。此句用判断句式强调陈涉出身的低微。",
+        structure: "氓隶之人也 → ……也（判断语气）",
+        translation: "是农村的平民百姓。",
+        example: "然陈涉瓮牖绳枢之子，氓隶之人也。——贾谊《过秦论》"
+      },
+      {
+        passage: "一夫作难而七庙___",
+        blankPos: "七庙___",
+        answer: "隳",
+        options: ["隳","毁","亡","灭"],
+        type: "passive",
+        typeName: "被动句",
+        hint: "「隳」是被动语态，意为「被毁」",
+        explanation: "「七庙隳」是意念被动句（无标志被动句）。「隳」意为毁坏，此处表示被动，即「七庙被毁」。七庙指天子的宗庙。文言文中有些被动句没有「于」「为」「见」等标志，直接用动词表被动，需根据语境判断。译为「一个人发难而七庙被毁」。",
+        structure: "七庙隳 → 隳（意念被动，无标志）",
+        translation: "一个人发难而起，天子的七庙就被毁坏了。",
+        example: "一夫作难而七庙隳，身死人手，为天下笑者，何也？——贾谊《过秦论》"
+      },
+      {
+        passage: "身死人手，为天下___者",
+        blankPos: "为天下___者",
+        answer: "笑",
+        options: ["笑","讥","耻","讽"],
+        type: "passive",
+        typeName: "被动句",
+        hint: "「为……所」式被动句的变体",
+        explanation: "「为天下笑」是被动句，「为」表被动，「天下」是施动者，「笑」是被动的动词。译为「被天下人耻笑」。此处省略了「所」，完整结构为「为天下所笑」。文言文中「为+施动者+动词」也表被动。此句与前句「七庙隳」形成对比，一为意念被动，一为标志被动。",
+        structure: "为天下笑 → 为（被动标志）+ 天下（施动者）+ 笑（动词）",
+        translation: "自己死在别人手里，被天下人耻笑。",
+        example: "身死人手，为天下笑者，何也？——贾谊《过秦论》"
+      },
+      {
+        passage: "仁义不施而攻守之势___也",
+        blankPos: "之势___也",
+        answer: "异",
+        options: ["异","变","殊","反"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "「……也」表判断语气",
+        explanation: "「攻守之势异也」是判断句，「也」用于句末表判断。「异」意为不同。全句意为「攻和守的形势不同啊」。「之」用于主谓之间取消句子独立性。这是全文结论句，用判断句式点明秦亡的原因：没有施行仁义。译为「不施行仁义，而进攻和防守的形势不同了」。",
+        structure: "攻守之势异也 → ……也（判断语气）",
+        translation: "不施行仁义，而进攻和防守的形势就不同了。",
+        example: "仁义不施而攻守之势异也。——贾谊《过秦论》"
+      },
+      {
+        passage: "天下云集响应，赢粮而景___",
+        blankPos: "景___",
+        answer: "从",
+        options: ["从","随","趋","赴"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「景」通「影」，「景从」意为如影随形",
+        explanation: "「景从」中「景」通「影」，是名词作状语，意为「像影子一样」。「从」意为跟随。此处省略了主语「天下百姓」。完整句式为「（天下百姓）景从」。译为「天下百姓像影子一样跟从」。名词作状语是文言文重要语法现象。",
+        structure: "景从 → 景（通「影」，名词作状语）+ 从（动词）",
+        translation: "天下百姓像影子一样跟从。",
+        example: "天下云集响应，赢粮而景从。——贾谊《过秦论》"
+      }
+    ]
+  },
+  "陈情表": {
+    source: "李密《陈情表》",
+    icon: "密",
+    desc: "臣无祖母，无以至今日",
+    questions: [
+      {
+        passage: "臣以险衅，夙遭闵___",
+        blankPos: "闵___",
+        answer: "凶",
+        options: ["凶","难","祸","忧"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "「闵凶」是并列结构，表判断",
+        explanation: "「夙遭闵凶」可视为判断句的变体。「闵凶」指忧患凶丧之事，「夙」意为早。全句意为「臣因为命运不好，早就遭遇了忧患凶丧之事」。「闵」通「悯」，忧患。「凶」指不幸的事。此句奠定全文悲情基调。",
+        structure: "夙遭闵凶 → 遭（动词）+ 闵凶（宾语，判断内容）",
+        translation: "臣因为命运坎坷，早就遭遇了不幸。",
+        example: "臣以险衅，夙遭闵凶。——李密《陈情表》"
+      },
+      {
+        passage: "生孩六月，慈父见___",
+        blankPos: "见___",
+        answer: "背",
+        options: ["背","弃","亡","逝"],
+        type: "passive",
+        typeName: "被动句",
+        hint: "「见」表被动，「背」指背离/抛弃",
+        explanation: "「见背」是被动句，「见」用在动词「背」前表被动。「背」意为背离、离开（婉辞，指去世）。译为「被抛弃」即「父亲去世了」。「见+动词」是文言文被动句的重要格式。此句用被动句式和婉辞表达丧父之痛。",
+        structure: "见背 → 见（被动标志）+ 背（动词，去世）",
+        translation: "生下六个月，慈父就去世了。",
+        example: "生孩六月，慈父见背。——李密《陈情表》"
+      },
+      {
+        passage: "外无期功强近之亲，内无应门五尺之___",
+        blankPos: "五尺之___",
+        answer: "僮",
+        options: ["僮","童","仆","子"],
+        type: "inverted",
+        typeName: "定语后置句",
+        hint: "「五尺之僮」中「五尺」是修饰语",
+        explanation: "「五尺之僮」中「五尺」修饰「僮」（童仆），「之」连接定语和中心语。此句用对偶句式，「外」和「内」互文，「无」前后呼应。译为「外面没有近亲，里面没有照应门户的童仆」。「五尺」形容身材矮小。此处「之」用于定语和中心语之间。",
+        structure: "五尺之僮 → 五尺（定语）+ 之 + 僮（中心语）",
+        translation: "里面没有应接来客的五尺童仆。",
+        example: "外无期功强近之亲，内无应门五尺之僮。——李密《陈情表》"
+      },
+      {
+        passage: "是臣尽节___陛下之日长",
+        blankPos: "尽节___陛下",
+        answer: "于",
+        options: ["于","对","向","为"],
+        type: "inverted",
+        typeName: "状语后置句",
+        hint: "介词结构「于陛下」位于动词之后",
+        explanation: "「尽节于陛下」是状语后置句。正常语序为「于陛下尽节」。「于陛下」是介词结构，修饰动词「尽节」，意为「对陛下尽节」。将介词结构后置以强调。译为「这样臣为陛下尽节的日子还长」。状语后置是文言文常见句式。",
+        structure: "尽节于陛下 → 正常语序：于陛下尽节",
+        translation: "这样臣为陛下尽忠节义的日子还长。",
+        example: "是臣尽节于陛下之日长，报养刘之日短也。——李密《陈情表》"
+      },
+      {
+        passage: "母孙二人，更相为___",
+        blankPos: "更相为___",
+        answer: "命",
+        options: ["命","生","活","恃"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「为命」后面省略了什么？",
+        explanation: "「更相为命」意为「相依为命」。「更相」意为互相，「为」意为作为，「命」指生命、命脉。此处省略了介词宾语，完整结构为「更相以（之）为命」，即「互相把它当作命脉」。「之」指代彼此。译为「母孙二人，相依为命」。",
+        structure: "更相为[以之]命 → 省略介词结构",
+        translation: "祖母和孙儿两个人，相依为命。",
+        example: "母孙二人，更相为命。——李密《陈情表》"
+      }
+    ]
+  },
+  "项脊轩志": {
+    source: "归有光《项脊轩志》",
+    icon: "归",
+    desc: "庭有枇杷树，吾妻死之年所手植也",
+    questions: [
+      {
+        passage: "项脊轩，旧南阁子___",
+        blankPos: "旧南阁子___",
+        answer: "也",
+        options: ["也","矣","哉","耳"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "「也」用于句末表判断",
+        explanation: "「项脊轩，旧南阁子也」是判断句。「也」用于句末表判断语气。主语「项脊轩」和谓语「旧南阁子」之间不用判断词，直接用「也」表判断。译为「项脊轩，就是过去的南阁子」。这是无标志判断句的变体，仅用「也」表判断。",
+        structure: "项脊轩，旧南阁子也 → ……也（判断语气）",
+        translation: "项脊轩，就是过去的南阁子。",
+        example: "项脊轩，旧南阁子也。——归有光《项脊轩志》"
+      },
+      {
+        passage: "妪，先大母婢___",
+        blankPos: "先大母婢___",
+        answer: "也",
+        options: ["也","矣","耳","哉"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "句末用「也」表判断",
+        explanation: "「妪，先大母婢也」是判断句。「妪」是主语（老妇人），「先大母婢」是谓语（已故祖母的婢女），「也」用于句末表判断。「先大母」指已去世的祖母。译为「这个老婆婆，是已故祖母的婢女」。此处用「也」表判断，是文言文判断句的标准格式。",
+        structure: "妪，先大母婢也 → ……也（判断）",
+        translation: "这个老婆婆，是已故祖母的婢女。",
+        example: "妪，先大母婢也。——归有光《项脊轩志》"
+      },
+      {
+        passage: "吾妻死之年所手___也",
+        blankPos: "手___也",
+        answer: "植",
+        options: ["植","种","栽","培"],
+        type: "inverted",
+        typeName: "定语后置句",
+        hint: "「所手植」是「所」字结构作定语",
+        explanation: "「吾妻死之年所手植也」中「所手植」是「所」字结构，作「枇杷树」的定语后置。正常语序为「所手植（之）枇杷树」。「手植」意为亲手种植，「手」是名词作状语。全句译为「是我妻子去世那年亲手种的」。「所+动词」构成名词性结构。",
+        structure: "枇杷树，吾妻死之年所手植也 → 所手植（定语后置）",
+        translation: "庭院中有枇杷树，是我妻子去世那年亲手种植的。",
+        example: "庭有枇杷树，吾妻死之年所手植也。——归有光《项脊轩志》"
+      },
+      {
+        passage: "轩东故尝___厨",
+        blankPos: "故尝___厨",
+        answer: "为",
+        options: ["为","作","是","成"],
+        type: "passive",
+        typeName: "被动句",
+        hint: "「为」在这里表被动",
+        explanation: "「为厨」是被动句，「为」表被动。全句「轩东故尝为厨」意为「轩的东面以前曾经被用作厨房」。「故」意为以前，「尝」意为曾经。「为」在此处是被动标志，意为「被当作」。译为「项脊轩的东面以前曾经被用作厨房」。",
+        structure: "为厨 → 为（被动标志）+ 厨（名词作动词）",
+        translation: "项脊轩的东面以前曾经被用作厨房。",
+        example: "轩东故尝为厨，人往，从轩前过。——归有光《项脊轩志》"
+      },
+      {
+        passage: "余自束发读书___中",
+        blankPos: "读书___中",
+        answer: "轩",
+        options: ["轩","室","阁","房"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「读书轩中」省略了什么介词？",
+        explanation: "「读书轩中」省略了介词「于」。完整句式为「读书（于）轩中」，即「在轩中读书」。「于」引出动作发生的处所。文言文中常省略介词「于」。译为「我从束发之年就在轩中读书」。「束发」指十五岁。",
+        structure: "读书[于]轩中 → 省略介词「于」",
+        translation: "我从束发之年起就在轩中读书。",
+        example: "余自束发读书轩中。——归有光《项脊轩志》"
+      }
+    ]
+  },
+  "归去来兮辞": {
+    source: "陶渊明《归去来兮辞》",
+    icon: "渊",
+    desc: "归去来兮，田园将芜胡不归",
+    questions: [
+      {
+        passage: "归去来___，田园将芜胡不归",
+        blankPos: "归去来___",
+        answer: "兮",
+        options: ["兮","矣","哉","乎"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「兮」是语气词，表感叹",
+        explanation: "「归去来兮」中「兮」是语气助词，表感叹。「来」是助词，无实义。「归去」意为回去。全句译为「回家去吧！田园快要荒芜了，为什么还不回去呢？」。「胡」是疑问代词，意为「为什么」。此句是全文起兴之句。",
+        structure: "归去来兮 → 兮（语气词，表感叹）",
+        translation: "回家去吧！田园快要荒芜了，为什么还不回去呢？",
+        example: "归去来兮，田园将芜胡不归？——陶渊明《归去来兮辞》"
+      },
+      {
+        passage: "胡为乎遑遑欲___之",
+        blankPos: "欲___之",
+        answer: "何",
+        options: ["何","之","往","去"],
+        type: "inverted",
+        typeName: "宾语前置句",
+        hint: "「何」是疑问代词作宾语被前置",
+        explanation: "「欲何之」中「何」是疑问代词（意为「哪里」），作动词「之」（意为「去、往」）的宾语被前置。正常语序为「欲之何」（想去哪里）。疑问句中疑问代词作宾语需前置。译为「为什么还要惶惶不安地想要去哪里呢？」。",
+        structure: "欲何之 → 正常语序：欲之何",
+        translation: "为什么还要惶惶不安地想去哪里呢？",
+        example: "胡为乎遑遑欲何之？——陶渊明《归去来兮辞》"
+      },
+      {
+        passage: "将有事___西畴",
+        blankPos: "有事___西畴",
+        answer: "于",
+        options: ["于","在","去","至"],
+        type: "inverted",
+        typeName: "状语后置句",
+        hint: "介词结构「于西畴」后置",
+        explanation: "「有事于西畴」是状语后置句。正常语序为「于西畴有事」。「于西畴」是介词结构，修饰动词「有事」（意为从事农事）。「西畴」指西边的田地。将介词结构后置以强调处所。译为「将要到西边的田地里去从事农事」。",
+        structure: "有事于西畴 → 正常语序：于西畴有事",
+        translation: "将要到西边的田地里从事农事。",
+        example: "农人告余以春及，将有事于西畴。——陶渊明《归去来兮辞》"
+      },
+      {
+        passage: "悦亲戚之情___",
+        blankPos: "之情___",
+        answer: "话",
+        options: ["话","言","语","谈"],
+        type: "inverted",
+        typeName: "宾语前置句",
+        hint: "「情话」中「话」是什么意思？",
+        explanation: "「悦亲戚之情话」中「悦」是意动用法（以……为悦）。「亲戚」指内亲外戚，「情话」指知心话。此处可分析为「悦（于）亲戚之情话」的省略，即「对亲戚的知心话感到喜悦」。译为「喜欢和亲戚们说知心话」。文言文中「话」可作名词，意为言谈。",
+        structure: "悦亲戚之情话 → 悦（意动）+ 亲戚之情话（宾语）",
+        translation: "喜欢和亲戚们谈知心话。",
+        example: "悦亲戚之情话，乐琴书以消忧。——陶渊明《归去来兮辞》"
+      },
+      {
+        passage: "聊乘化___归尽",
+        blankPos: "乘化___归尽",
+        answer: "以",
+        options: ["以","而","则","且"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「以」连接两个动作，表目的",
+        explanation: "「聊乘化以归尽」中「以」是连词，表目的，连接「乘化」和「归尽」。「聊」意为姑且，「乘化」指顺应自然变化，「归尽」指走向生命的尽头。全句译为「姑且顺应自然的变化，走向生命的尽头」。此句表现了作者达观的人生态度。",
+        structure: "乘化以归尽 → 以（连词，表目的）",
+        translation: "姑且顺应自然造化，走向生命的尽头。",
+        example: "聊乘化以归尽，乐夫天命复奚疑！——陶渊明《归去来兮辞》"
+      }
+    ]
+  },
+  "短歌行": {
+    source: "曹操《短歌行》",
+    icon: "操",
+    desc: "对酒当歌，人生几何",
+    questions: [
+      {
+        passage: "何以___忧？唯有杜康",
+        blankPos: "何以___忧",
+        answer: "解",
+        options: ["解","忘","消","除"],
+        type: "inverted",
+        typeName: "宾语前置句",
+        hint: "疑问代词「何」作宾语被前置",
+        explanation: "「何以解忧」是宾语前置句。疑问代词「何」作介词「以」的宾语被前置。正常语序为「以何解忧」（用什么来解除忧愁）。「以」是介词，意为「用」。「解」意为解除。译为「用什么来解除忧愁呢？只有杜康酒」。「杜康」借代酒。",
+        structure: "何以解忧 → 正常语序：以何解忧",
+        translation: "用什么来解除忧愁呢？只有杜康酒。",
+        example: "何以解忧？唯有杜康。——曹操《短歌行》"
+      },
+      {
+        passage: "青青子___，悠悠我心",
+        blankPos: "青青子___",
+        answer: "衿",
+        options: ["衿","佩","衣","衿"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「子衿」指什么人？",
+        explanation: "「青青子衿」出自《诗经·郑风·子衿》，「衿」指衣领。「青衿」是周代学子的服装，此处借代有才学的人。全句意为「青青的是你的衣领，悠悠的是我的思念」。用典表达对贤才的渴慕。「子」是对人的尊称。此处省略了主语「汝」（你）。",
+        structure: "青青子衿 → 子衿（借代贤才）",
+        translation: "青青的是你的衣领，悠悠的是我的思念。",
+        example: "青青子衿，悠悠我心。——曹操《短歌行》"
+      },
+      {
+        passage: "呦呦鹿鸣，食野之___",
+        blankPos: "食野之___",
+        answer: "苹",
+        options: ["苹","蒿","萍","苹"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「之」连接定语和中心语",
+        explanation: "「食野之苹」中「之」连接定语「野」和中心语「苹」。「苹」指艾蒿，一种野草。全句出自《诗经·小雅·鹿鸣》，意为「鹿儿呦呦地叫着，吃着野地里的艾蒿」。此处省略了主语「鹿」。曹操引用此句表达招纳贤才之意，如同鹿鸣宴请宾客。",
+        structure: "食野之苹 → 野（定语）+ 之 + 苹（中心语）",
+        translation: "鹿儿呦呦地叫着，吃着野地里的艾蒿。",
+        example: "呦呦鹿鸣，食野之苹。——曹操《短歌行》"
+      },
+      {
+        passage: "越陌度阡，枉用相___",
+        blankPos: "枉用相___",
+        answer: "存",
+        options: ["存","访","问","看"],
+        type: "inverted",
+        typeName: "宾语前置句",
+        hint: "「相」指代宾语，前置",
+        explanation: "「枉用相存」中「相」指代宾语「我」（曹操自己），前置到动词「存」之前。「枉」意为委屈，「用」意为以，「存」意为问候、探望。正常语序为「枉用存（我）」。译为「委屈您远道来问候我」。文言文中「相」可指代第一、二、三人称宾语。",
+        structure: "枉用相存 → 相（代词宾语「我」前置）+ 存（动词）",
+        translation: "委屈您远道跋涉来探望我。",
+        example: "越陌度阡，枉用相存。——曹操《短歌行》"
+      },
+      {
+        passage: "周公吐哺，天下___心",
+        blankPos: "天下___心",
+        answer: "归",
+        options: ["归","服","顺","向"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "「归心」意为归顺之心",
+        explanation: "「天下归心」是判断句的变体。「归心」意为归附之心。全句意为「周公吐哺（急于接待贤才，以致吐出口中食物），天下人的心就归附他了」。此处用判断语气表达结果。「吐哺」用典出自《韩诗外传》，形容求贤若渴。译为「周公吐出嘴里食物（接待贤才），天下人心归附」。",
+        structure: "天下归心 → 归心（判断结果）",
+        translation: "周公吐出嘴里的食物（接待贤才），天下人的心就归向他。",
+        example: "周公吐哺，天下归心。——曹操《短歌行》"
+      }
+    ]
+  },
+  "琵琶行": {
+    source: "白居易《琵琶行》",
+    icon: "居",
+    desc: "同是天涯沦落人，相逢何必曾相识",
+    questions: [
+      {
+        passage: "感斯人言，是夕始觉有迁谪___",
+        blankPos: "有迁谪___",
+        answer: "意",
+        options: ["意","情","感","思"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「迁谪意」中省略了什么？",
+        explanation: "「迁谪意」中「迁谪」是动词作定语修饰「意」，省略了结构助词「之」。完整结构为「迁谪（之）意」，即「被贬谪的感觉」。「迁谪」指降职外调。译为「被这人的话感动，这天晚上才觉得有被贬谪的感觉」。此句为全诗转折点。",
+        structure: "迁谪[之]意 → 省略结构助词「之」",
+        translation: "被这人的话感动，这天晚上才觉得有被贬谪的感慨。",
+        example: "感斯人言，是夕始觉有迁谪意。——白居易《琵琶行》"
+      },
+      {
+        passage: "尝学琵琶___穆、曹二善才",
+        blankPos: "琵琶___穆",
+        answer: "于",
+        options: ["于","向","从","拜"],
+        type: "inverted",
+        typeName: "状语后置句",
+        hint: "介词结构「于穆、曹二善才」后置",
+        explanation: "「学琵琶于穆、曹二善才」是状语后置句。正常语序为「于穆、曹二善才学琵琶」。「于」引出学习的对象。「善才」是唐代对琵琶师的尊称。将介词结构后置以强调学习对象。译为「曾经向穆、曹两位琵琶名师学过琵琶」。",
+        structure: "学琵琶于穆、曹二善才 → 正常语序：于穆、曹二善才学琵琶",
+        translation: "曾经向穆、曹两位琵琶名师学过弹琵琶。",
+        example: "尝学琵琶于穆、曹二善才。——白居易《琵琶行》"
+      },
+      {
+        passage: "沉吟放拨插弦___",
+        blankPos: "插弦___",
+        answer: "中",
+        options: ["中","里","间","内"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「弦中」省略了什么介词？",
+        explanation: "「插弦中」省略了介词「于」。完整结构为「插（于）弦中」，即「插在弦中间」。「于」引出处所。文言文中常省略介词「于」。译为「沉吟着放下拨子，插在弦中间」。此句描写琵琶女弹奏结束后的动作。",
+        structure: "插[于]弦中 → 省略介词「于」",
+        translation: "沉吟着放下拨子，插在琵琶弦中间。",
+        example: "沉吟放拨插弦中，整顿衣裳起敛容。——白居易《琵琶行》"
+      },
+      {
+        passage: "同是天涯沦落___，相逢何必曾相识",
+        blankPos: "沦落___",
+        answer: "人",
+        options: ["人","者","客","身"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "「同是」表判断，「沦落人」是判断内容",
+        explanation: "「同是天涯沦落人」是判断句。「同是」相当于「都是」，表判断。「天涯沦落人」指流落异乡的人。译为「我们同样是流落天涯的人，相逢又何必曾经相识呢？」此句是千古名句，表达同病相怜之情。「天涯」指远方异乡。",
+        structure: "同是天涯沦落人 → 是（判断词）+ 天涯沦落人",
+        translation: "我们同样是流落天涯的人，相逢又何必曾经相识呢？",
+        example: "同是天涯沦落人，相逢何必曾相识！——白居易《琵琶行》"
+      },
+      {
+        passage: "座中泣下谁___多",
+        blankPos: "谁___多",
+        answer: "最",
+        options: ["最","更","极","甚"],
+        type: "inverted",
+        typeName: "宾语前置句",
+        hint: "疑问代词「谁」作主语，但语序有特殊之处",
+        explanation: "「座中泣下谁最多」中「谁」是疑问代词作主语。此句的特殊之处在于「座中泣下」是状语前置，正常语序为「谁于座中泣下最多」。译为「在座的人中谁流泪最多？」。答案隐含在下一句「江州司马青衫湿」中。此句用倒装和疑问句式增强表达效果。",
+        structure: "座中泣下谁最多 → 状语前置+疑问句",
+        translation: "在座的人中谁流泪最多？",
+        example: "座中泣下谁最多？江州司马青衫湿。——白居易《琵琶行》"
+      }
+    ]
+  },
+  "登泰山记": {
+    source: "姚鼐《登泰山记》",
+    icon: "鼐",
+    desc: "苍山负雪，明烛天南",
+    questions: [
+      {
+        passage: "泰山之阳，汶水西___",
+        blankPos: "汶水西___",
+        answer: "流",
+        options: ["流","去","行","逝"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「西」是什么词性？",
+        explanation: "「汶水西流」中「西」是名词作状语，意为「向西」。「流」是动词。名词作状语是文言文重要语法现象，表示动作的方向。译为「汶水向西流」。此处省略了主语「汶水」的修饰成分，直接用「西」修饰「流」。「阳」指山的南面。",
+        structure: "西流 → 西（名词作状语：向西）+ 流（动词）",
+        translation: "泰山的南面，汶水向西流。",
+        example: "泰山之阳，汶水西流；其阴，济水东流。——姚鼐《登泰山记》"
+      },
+      {
+        passage: "苍山负雪，明___天南",
+        blankPos: "明___天南",
+        answer: "烛",
+        options: ["烛","照","映","辉"],
+        type: "inverted",
+        typeName: "定语后置句",
+        hint: "「明」是形容词作动词，「烛」是什么意思？",
+        explanation: "「明烛天南」中「明」是形容词作动词（照亮），「烛」也是名词作动词（照耀）。此处「烛」通「瞩」，意为照耀。「天南」指天空的南面。全句译为「苍山背着积雪，雪光照亮了南面的天空」。名词作动词和形容词作动词是此句的语法特点。",
+        structure: "明烛天南 → 明（形容词作动词）+ 烛（名词作动词）",
+        translation: "苍山背负着积雪，雪光映照着南面的天空。",
+        example: "苍山负雪，明烛天南。——姚鼐《登泰山记》"
+      },
+      {
+        passage: "余以乾隆三十九年十二月，自京师乘风___",
+        blankPos: "乘风___",
+        answer: "雪",
+        options: ["雪","寒","霜","冰"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「乘风雪」省略了什么介词？",
+        explanation: "「乘风雪」省略了介词「于」。完整结构为「乘（于）风雪」，即「冒着风雪」。「乘」意为趁着、冒着。此处省略介词，直接用「风雪」作宾语。译为「我于乾隆三十九年十二月，从京城冒着风雪出发」。",
+        structure: "乘[于]风雪 → 省略介词「于」",
+        translation: "我在乾隆三十九年十二月，从京城冒着风雪出发。",
+        example: "余以乾隆三十九年十二月，自京师乘风雪，历齐河、长清。——姚鼐《登泰山记》"
+      },
+      {
+        passage: "及既上，苍山负___，明烛天南",
+        blankPos: "负___",
+        answer: "雪",
+        options: ["雪","冰","霜","寒"],
+        type: "judge",
+        typeName: "判断句",
+        hint: "「负雪」中「负」是什么用法？",
+        explanation: "「苍山负雪」中「负」是动词，意为「背负」。「雪」是宾语。此句用判断语气描绘景象：苍山背负着积雪。这是一种白描手法，用简练的语言勾勒出壮美的画面。译为「等到登上山顶，苍山背负着积雪，雪光照亮了南面的天空」。",
+        structure: "苍山负雪 → 负（动词：背负）+ 雪（宾语）",
+        translation: "等到登上山顶，苍山背负着积雪，雪光照亮了南面的天空。",
+        example: "及既上，苍山负雪，明烛天南。——姚鼐《登泰山记》"
+      },
+      {
+        passage: "日上，正赤如___",
+        blankPos: "正赤如___",
+        answer: "丹",
+        options: ["丹","朱","火","血"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「如丹」中「丹」是什么？",
+        explanation: "「正赤如丹」中「丹」是名词，指朱砂，一种红色的矿物颜料。「如丹」意为「像朱砂一样红」。全句省略了比喻词「若」，完整结构为「正赤（若）如丹」。译为「太阳升起，红得像朱砂一样」。此句描写日出的壮丽景象，用比喻手法。",
+        structure: "正赤如丹 → 如丹（比喻：像朱砂）",
+        translation: "太阳升起，红得像朱砂一样。",
+        example: "日上，正赤如丹，下有红光动摇承之。——姚鼐《登泰山记》"
+      }
+    ]
+  },
+  "子路侍坐": {
+    source: "《论语·侍坐》",
+    icon: "孔",
+    desc: "不吾知也，如或知尔，则何以哉",
+    questions: [
+      {
+        passage: "以吾一日长乎___，毋吾以也",
+        blankPos: "长乎___",
+        answer: "尔",
+        options: ["尔","汝","子","众"],
+        type: "inverted",
+        typeName: "状语后置句",
+        hint: "介词结构「乎尔」后置",
+        explanation: "「长乎尔」是状语后置句。「乎」同「于」，引出比较对象。「尔」指你们。正常语序为「乎尔长」（比你们年长）。译为「因为我比你们大一天，不要因为我年长就不说话了」。「毋吾以也」是宾语前置，正常语序为「毋以吾也」。",
+        structure: "长乎尔 → 正常语序：乎尔长",
+        translation: "因为我比你们年长一些，不要因为我年长就不说话了。",
+        example: "以吾一日长乎尔，毋吾以也。——《论语·侍坐》"
+      },
+      {
+        passage: "居则曰：不吾___也",
+        blankPos: "不吾___也",
+        answer: "知",
+        options: ["知","识","明","察"],
+        type: "inverted",
+        typeName: "宾语前置句",
+        hint: "否定句中代词宾语「吾」前置",
+        explanation: "「不吾知也」是宾语前置句。否定句中，代词作宾语需前置。正常语序为「不知吾也」（不了解我）。「不」是否定副词，「吾」是代词宾语前置到动词「知」之前。译为「平时你们就说：不了解我」。这是否定句宾语前置的典型例句。",
+        structure: "不吾知也 → 正常语序：不知吾也",
+        translation: "平时你们总是说：没有人了解我。",
+        example: "居则曰：不吾知也！——《论语·侍坐》"
+      },
+      {
+        passage: "如或知___，则何以哉",
+        blankPos: "知___",
+        answer: "尔",
+        options: ["尔","汝","子","人"],
+        type: "inverted",
+        typeName: "宾语前置句",
+        hint: "「如或知尔」中「尔」作宾语",
+        explanation: "此句「知尔」中「尔」（你们）作宾语，位于动词「知」之后，属于正常语序。但与前面的「不吾知也」形成对比：否定句宾语前置，肯定句宾语不前置。「如或」意为「如果有人」。「何以哉」是宾语前置（以何哉）。译为「如果有人了解你们，那你们怎么办呢？」。",
+        structure: "如或知尔 → 肯定句宾语不前置（对比不吾知）",
+        translation: "如果有人了解你们，那你们怎么办呢？",
+        example: "如或知尔，则何以哉？——《论语·侍坐》"
+      },
+      {
+        passage: "加之以师旅，因之以饥___",
+        blankPos: "饥___",
+        answer: "馑",
+        options: ["馑","荒","寒","灾"],
+        type: "inverted",
+        typeName: "状语后置句",
+        hint: "介词结构「以师旅」「以饥馑」后置",
+        explanation: "「加之以师旅」和「因之以饥馑」都是状语后置句。正常语序为「以师旅加之」「以饥馑因之」。「以」引出工具/原因状语后置。「师旅」指军队（战争），「饥馑」指饥荒。「因」意为继、加上。译为「再加上有军队来攻打，接着又有饥荒」。",
+        structure: "加之以师旅 → 正常语序：以师旅加之",
+        translation: "加上有军队来攻打，接着又有饥荒。",
+        example: "加之以师旅，因之以饥馑。——《论语·侍坐》"
+      },
+      {
+        passage: "为国以___，其言不让",
+        blankPos: "为国以___",
+        answer: "礼",
+        options: ["礼","德","仁","道"],
+        type: "omitted",
+        typeName: "省略句",
+        hint: "「以」后面省略了什么？",
+        explanation: "「为国以礼」是状语后置+省略。正常语序为「以礼为国」（用礼治国）。「以」后省略宾语「之」（代礼）。完整结构为「以（之）礼为国」。孔子批评子路「其言不让」（说话不谦让），因为治国本应用礼。译为「治国要用礼，可他说话不谦让」。",
+        structure: "以[礼]为国 → 以礼（状语后置）+ 为国",
+        translation: "治国要用礼，可是他说话不谦让。",
+        example: "为国以礼，其言不让。——《论语·侍坐》"
+      }
+    ]
+  }
+
+};
+
+/* ========== 句式类型配置 ========== */
+const TYPE_CONFIG = {
+  judge:    { color: "#6BB6D6", light: "#C5E4F0", dim: "rgba(107,182,214,0.12)",  name: "判断句", cls: "type-judge" },
+  passive:  { color: "#B89AD9", light: "#E0D4F0", dim: "rgba(184,154,217,0.12)",  name: "被动句", cls: "type-passive" },
+  inverted: { color: "#7DCE82", light: "#C8ECCB", dim: "rgba(125,206,130,0.12)", name: "倒装句", cls: "type-inverted" },
+  omitted:  { color: "#FF9F7A", light: "#FFD8C8", dim: "rgba(255,159,122,0.12)",  name: "省略句", cls: "type-omitted" }
+};
+
+/* ========== 游戏状态 ========== */
+let state = {
+  currentChapter: null,
+  currentQ: 0,
+  score: 0,
+  totalScore: 0,
+  chapterResults: {},      // {chapterName: {score, total, correct, types: {judge:{c,t},...}}}
+  hintUsed: false,
+  typeRevealed: false,
+  answered: false,
+  questionResults: [],
+  allTypes: { judge:{c:0,t:0}, passive:{c:0,t:0}, inverted:{c:0,t:0}, omitted:{c:0,t:0} }
+};
+
+/* ========== 屏幕切换 ========== */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ========== 章节选择 ========== */
+function showChapterSelect(){
+  renderChapters();
+  showScreen('screen-chapters');
+}
+
+function renderChapters(){
+  const grid = document.getElementById('chapterGrid');
+  grid.innerHTML = '';
+  const chapterNames = Object.keys(GAME_DATA);
+  chapterNames.forEach((name, idx) => {
+    const ch = GAME_DATA[name];
+    const result = state.chapterResults[name];
+    const isCompleted = !!result;
+    const allDone = chapterNames.every(n => state.chapterResults[n]);
+
+    const card = document.createElement('div');
+    card.className = `chapter-card${isCompleted ? ' completed' : ''}`;
+    const stars = isCompleted ? renderStars(result.score, result.total) : '⭐'.repeat(0) + '<span class="star-empty">☆☆☆☆☆</span>'.substring(0,0);
+    let starHtml = '';
+    if (isCompleted) {
+      const ratio = result.score / result.total;
+      const starCount = ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : 1;
+      for (let i=0;i<3;i++) starHtml += i<starCount ? '<span class="star">★</span>' : '<span class="star-empty">★</span>';
+    } else {
+      starHtml = '<span class="star-empty">★★★</span>';
+    }
+
+    card.innerHTML = `
+      <span class="ch-icon">📖</span>
+      <h3>${name}</h3>
+      <div class="ch-meta">${ch.source}</div>
+      <div class="ch-desc">${ch.desc}</div>
+      <div class="ch-stars">${starHtml}</div>
+      ${isCompleted ? '<div style="font-size:0.75rem;color:var(--green);margin-top:6px">✓ 已完成</div>' : ''}
+    `;
+    card.onclick = () => startChapter(name);
+    grid.appendChild(card);
+  });
+}
+
+function renderStars(score, total){
+  const ratio = score/total;
+  const n = ratio>=0.9?3:ratio>=0.6?2:1;
+  let s='';
+  for(let i=0;i<3;i++) s+= i<n?'<span class="star">★</span>':'<span class="star-empty">★</span>';
+  return s;
+}
+
+/* ========== 开始章节 ========== */
+function startChapter(name){
+  state.currentChapter = name;
+  state.currentQ = 0;
+  state.score = 0;
+  state.totalScore = 0;
+  state.hintUsed = false;
+  state.typeRevealed = false;
+  state.answered = false;
+  state.questionResults = [];
+
+  const ch = GAME_DATA[name];
+  state.totalScore = ch.questions.length * 100;
+
+  document.getElementById('hudChapter').textContent = name;
+  renderHUD();
+  loadQuestion();
+  showScreen('screen-game');
+}
+
+function renderHUD(){
+  const ch = GAME_DATA[state.currentChapter];
+  const total = ch.questions.length;
+  let html = '';
+  for(let i=0;i<total;i++){
+    let cls = 'hud-dot';
+    if(i < state.currentQ) cls += ' done';
+    else if(i === state.currentQ) cls += ' current';
+    html += `<span class="${cls}"></span>`;
+  }
+  document.getElementById('hudProgress').innerHTML = html;
+  document.getElementById('hudScore').textContent = state.score;
+}
+
+/* ========== 加载题目 ========== */
+function loadQuestion(){
+  const ch = GAME_DATA[state.currentChapter];
+  const q = ch.questions[state.currentQ];
+  state.hintUsed = false;
+  state.typeRevealed = false;
+  state.answered = false;
+
+  // 题号
+  document.getElementById('qNum').textContent = `第 ${state.currentQ+1} / ${ch.questions.length} 题`;
+
+  // 句式标签（默认隐藏）
+  const tc = TYPE_CONFIG[q.type];
+  const tagHtml = `<span class="q-type-tag ${tc.cls} hidden-mode" id="qTypeTagInner" onclick="toggleType()">
+    <span class="tag-dot"></span> ${tc.name}
+  </span>`;
+  document.getElementById('qTypeTag').innerHTML = tagHtml;
+
+  // 文言文段落
+  const passageHtml = q.passage.replace('___', `<span class="passage-blank" id="blank">　　</span>`);
+  document.getElementById('passageText').innerHTML = passageHtml;
+  document.getElementById('passageSource').textContent = `—— ${q.example.split('——')[1] || ch.source}`;
+
+  // 词库
+  const wb = document.getElementById('wordbank');
+  wb.innerHTML = '';
+  // 打乱选项
+  const shuffled = [...q.options].sort(()=>Math.random()-0.5);
+  shuffled.forEach(word => {
+    const chip = document.createElement('span');
+    chip.className = 'word-chip';
+    chip.textContent = word;
+    chip.onclick = () => selectWord(chip, word);
+    wb.appendChild(chip);
+  });
+
+  // 隐藏解析面板
+  document.getElementById('revealPanel').classList.remove('show');
+  document.getElementById('revealPanel').innerHTML = '';
+
+  // 重置提示
+  document.getElementById('hintText').classList.remove('show');
+  document.getElementById('hintText').innerHTML = '';
+  document.getElementById('hintBtn').disabled = false;
+  document.getElementById('hintBtn').textContent = '💡 提示（-5分）';
+  document.getElementById('typeBtn').textContent = '🏷 显示句式';
+
+  renderHUD();
+}
+
+/* ========== 选词 ========== */
+function selectWord(chip, word){
+  if(state.answered) return;
+  const q = GAME_DATA[state.currentChapter].questions[state.currentQ];
+  const blank = document.getElementById('blank');
+  const isCorrect = word === q.answer;
+
+  state.answered = true;
+  blank.textContent = word;
+
+  if(isCorrect){
+    blank.classList.add('filled');
+    chip.classList.add('correct');
+    // 标记其他词为已用
+    document.querySelectorAll('.word-chip').forEach(c=>{
+      if(c !== chip) c.classList.add('used');
+    });
+    // 计分
+    let pts = 100;
+    if(state.hintUsed) pts -= 5;
+    state.score += pts;
+    renderHUD();
+    // 显示解析
+    setTimeout(()=>showReveal(true, q), 600);
+  } else {
+    blank.classList.add('wrong');
+    chip.classList.add('wrong');
+    // 允许重新选
+    setTimeout(()=>{
+      blank.classList.remove('wrong');
+      blank.textContent = '　　';
+      chip.classList.remove('wrong');
+      chip.classList.add('used');
+      state.answered = false;
+    }, 800);
+  }
+}
+
+/* ========== 显示解析 ========== */
+function showReveal(correct, q){
+  const tc = TYPE_CONFIG[q.type];
+  const panel = document.getElementById('revealPanel');
+
+  const statusText = correct ? '✅ 回答正确！' : '📖 答案揭晓';
+  const statusClass = correct ? 'correct' : 'wrong';
+
+  panel.innerHTML = `
+    <div class="reveal-header">
+      <span class="reveal-status ${statusClass}">${statusText}</span>
+      <span class="reveal-type-tag ${tc.cls}">
+        <span class="tag-dot" style="background:${tc.color}"></span> ${q.typeName}
+      </span>
+    </div>
+    <div class="reveal-answer">正确答案：<span class="ans">${q.answer}</span></div>
+    <div class="reveal-section">
+      <h4><span class="icon">📐</span> 语法结构分析</h4>
+      <p>${q.explanation}</p>
+      <div class="example"><span class="mark">${q.structure}</span></div>
+    </div>
+    <div class="reveal-section">
+      <h4><span class="icon">📝</span> 原文例句</h4>
+      <div class="example">${q.example}</div>
+    </div>
+    <div class="reveal-section">
+      <h4><span class="icon">🔄</span> 现代汉语翻译</h4>
+      <div class="translation">${q.translation}</div>
+    </div>
+    <div class="reveal-nav">
+      <button class="btn-secondary" onclick="showChapterSelect()">📋 返回篇目</button>
+      <button class="btn-primary" style="font-size:1rem;padding:10px 28px" onclick="nextQuestion()">${getNextLabel()} →</button>
+    </div>
+  `;
+  panel.classList.add('show');
+  panel.scrollIntoView({behavior:'smooth',block:'center'});
+
+  // 记录句式掌握（全局）
+  state.allTypes[q.type].t++;
+  if(correct) state.allTypes[q.type].c++;
+
+  // 记录本题结果
+  state.questionResults[state.currentQ] = { correct: correct, type: q.type };
+}
+
+function getNextLabel(){
+  const ch = GAME_DATA[state.currentChapter];
+  const isLast = state.currentQ >= ch.questions.length - 1;
+  return isLast ? '完成篇目' : '下一题';
+}
+
+/* ========== 下一题 ========== */
+function nextQuestion(){
+  const ch = GAME_DATA[state.currentChapter];
+  if(state.currentQ >= ch.questions.length - 1){
+    // 章节完成
+    completeChapter();
+  } else {
+    state.currentQ++;
+    loadQuestion();
+  }
+}
+
+/* ========== 下一章节 ========== */
+function nextChapter(){
+  const names = Object.keys(GAME_DATA);
+  const idx = names.indexOf(state.currentChapter);
+  if(idx < names.length - 1){
+    startChapter(names[idx + 1]);
+  } else {
+    showFinal();
+  }
+}
+
+/* ========== 章节完成 ========== */
+function completeChapter(){
+  const ch = GAME_DATA[state.currentChapter];
+  const total = ch.questions.length * 100;
+  const score = state.score;
+  const ratio = score / total;
+
+  // 记录结果
+  const types = { judge:{c:0,t:0}, passive:{c:0,t:0}, inverted:{c:0,t:0}, omitted:{c:0,t:0} };
+  ch.questions.forEach((q, i) => {
+    types[q.type].t++;
+    if(state.questionResults[i] && state.questionResults[i].correct){
+      types[q.type].c++;
+    }
+  });
+
+  state.chapterResults[state.currentChapter] = {
+    score: score,
+    total: total,
+    correct: Math.round(score / 100),
+    types: types
+  };
+
+  // 显示完成画面
+  document.getElementById('chapterScore').textContent = score;
+  document.getElementById('chapterTotal').textContent = total;
+
+  const starCount = ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : 1;
+  let stars = '';
+  for(let i=0;i<3;i++) stars += i<starCount?'<span class="star">★</span>':'<span class="star-empty">★</span>';
+  document.getElementById('chapterStars').innerHTML = stars;
+
+  // 语法掌握度（本章）
+  const mastery = document.getElementById('chapterMastery');
+  const chapterTypes = { judge:{c:0,t:0}, passive:{c:0,t:0}, inverted:{c:0,t:0}, omitted:{c:0,t:0} };
+  ch.questions.forEach((q, i) => {
+    chapterTypes[q.type].t++;
+    if(state.questionResults[i] && state.questionResults[i].correct){
+      chapterTypes[q.type].c++;
+    }
+  });
+  let html = '';
+  Object.keys(TYPE_CONFIG).forEach(t => {
+    const tc = TYPE_CONFIG[t];
+    const data = chapterTypes[t];
+    if(data.t === 0) return;
+    const pct = Math.round(data.c / data.t * 100);
+    html += `<div class="mastery-cell" style="border-color:${tc.light}">
+      <div class="m-name" style="color:${tc.color}">${tc.name}</div>
+      <div class="m-bar"><div class="m-fill" style="width:${pct}%;background:${tc.color}"></div></div>
+      <div class="m-pct">${data.c}/${data.t} 正确 · ${pct}%</div>
+    </div>`;
+  });
+  mastery.innerHTML = html || '<p style="color:var(--ink-light)">暂无数据</p>';
+
+  // 完成图标和文案
+  const icon = ratio >= 0.9 ? '🏆' : ratio >= 0.6 ? '🎉' : '💪';
+  document.getElementById('completeIcon').textContent = icon;
+  document.getElementById('completeTitle').textContent = `${state.currentChapter} · 通关！`;
+
+  const comments = [
+    '语法结构掌握扎实，继续挑战！',
+    '不错！再多练几遍会更熟练',
+    '加油！重点复习解析中的句式'
+  ];
+  document.getElementById('completeSub').textContent = comments[Math.min(2, 3 - starCount)];
+
+  // 下一篇按钮
+  const names = Object.keys(GAME_DATA);
+  const idx = names.indexOf(state.currentChapter);
+  const nextBtn = document.getElementById('nextChapterBtn');
+  if(idx < names.length - 1){
+    nextBtn.textContent = `下一篇：${names[idx+1]} →`;
+    nextBtn.style.display = '';
+  } else {
+    nextBtn.textContent = '查看总成绩 🏆';
+    nextBtn.style.display = '';
+  }
+
+  showScreen('screen-complete');
+}
+
+/* ========== 最终结果 ========== */
+function showFinal(){
+  let totalScore = 0;
+  let totalMax = 0;
+  Object.values(state.chapterResults).forEach(r => {
+    totalScore += r.score;
+    totalMax += r.total;
+  });
+
+  document.getElementById('finalScore').textContent = totalScore;
+
+  const ratio = totalScore / totalMax;
+  const medal = ratio >= 0.9 ? '🏆' : ratio >= 0.7 ? '🥇' : ratio >= 0.5 ? '🥈' : '🥉';
+  document.getElementById('finalMedal').textContent = medal;
+
+  const comments = [
+    '文言语法大师！判断句、被动句、倒装句、省略句全部吃透！',
+    '表现优秀！再练几遍就能炉火纯青',
+    '不错的开始，重点复习薄弱句式',
+    '继续努力，多读多练是关键！'
+  ];
+  const ci = ratio >= 0.9 ? 0 : ratio >= 0.7 ? 1 : ratio >= 0.5 ? 2 : 3;
+  document.getElementById('finalComment').textContent = comments[ci];
+
+  // 语法掌握度（全局）
+  const fm = document.getElementById('finalMastery');
+  let html = '';
+  Object.keys(TYPE_CONFIG).forEach(t => {
+    const tc = TYPE_CONFIG[t];
+    const data = state.allTypes[t];
+    const pct = data.t > 0 ? Math.round(data.c / data.t * 100) : 0;
+    html += `<div class="mastery-cell" style="border-color:${tc.light}">
+      <div class="m-name" style="color:${tc.color}">${tc.name}</div>
+      <div class="m-bar"><div class="m-fill" style="width:${pct}%;background:${tc.color}"></div></div>
+      <div class="m-pct">${data.c}/${data.t} 正确 · ${pct}%</div>
+    </div>`;
+  });
+  fm.innerHTML = html;
+
+  showScreen('screen-final');
+}
+
+/* ========== 提示 ========== */
+function showHint(){
+  if(state.answered || state.hintUsed) return;
+  const q = GAME_DATA[state.currentChapter].questions[state.currentQ];
+  document.getElementById('hintText').innerHTML = `💡 ${q.hint}`;
+  document.getElementById('hintText').classList.add('show');
+  document.getElementById('hintBtn').disabled = true;
+  document.getElementById('hintBtn').textContent = '💡 已使用提示';
+  state.hintUsed = true;
+}
+
+/* ========== 显示/隐藏句式 ========== */
+function toggleType(){
+  const tag = document.getElementById('qTypeTagInner');
+  if(!tag) return;
+  if(tag.classList.contains('hidden-mode')){
+    tag.classList.remove('hidden-mode');
+    document.getElementById('typeBtn').textContent = '🏷 句式已显示';
+    state.typeRevealed = true;
+  } else {
+    tag.classList.add('hidden-mode');
+    document.getElementById('typeBtn').textContent = '🏷 显示句式';
+    state.typeRevealed = false;
+  }
+}
+
+/* ========== 重置游戏 ========== */
+function resetGame(){
+  state = {
+    currentChapter: null,
+    currentQ: 0,
+    score: 0,
+    totalScore: 0,
+    chapterResults: {},
+    hintUsed: false,
+    typeRevealed: false,
+    answered: false,
+    questionResults: [],
+    allTypes: { judge:{c:0,t:0}, passive:{c:0,t:0}, inverted:{c:0,t:0}, omitted:{c:0,t:0} }
+  };
+  showScreen('screen-intro');
+}
+</script>
+<script src="./_shared/anime-cartoon-tools.js"></script>
+</body>
+</html>
