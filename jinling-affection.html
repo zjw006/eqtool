@@ -59,10 +59,12 @@
 
   /* 立绘（单人出场，居中） */
   .sprite {
-    position:absolute; bottom:0; left:50%; margin-left:-270px; height:90%;
+    position:absolute; bottom:0; left:50%; margin-left:-270px; height:90%; width:auto;
+    z-index:2;
     transition:opacity .4s, transform .4s;
     opacity:0; transform:translateY(14px);
     filter:drop-shadow(0 6px 24px rgba(60,52,44,.35));
+    pointer-events:none;
   }
   .sprite.on { opacity:1; transform:translateY(0); }
   #spDaiyu { margin-left:-150px; } /* 黛玉出场位偏右 */
