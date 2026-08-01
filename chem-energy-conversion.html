@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>化学能转化为热能和动能</title>
+  <style>
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./_shared/fonts/Outfit-Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./_shared/fonts/Outfit-Bold.ttf') format('truetype');
+      font-weight: 700;
+    }
+    @font-face {
+      font-family: 'JetBrainsMono';
+      src: url('./_shared/fonts/JetBrainsMono-Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+  </style>
+  <style>
+    :root {
+      --bg: #FFF8F0; --bg2: #FFFDF7; --bg3: #FFF5EE;
+      --ink: #4A3B2E; --muted: #9B8B7A; --rule: rgba(180,160,140,0.25);
+      --accent: #e85d04; --accent2: #dc2f02; --accent3: #f48c06; --accent4: #ffba08;
+      --heat: #e85d04; --kinetic: #0077b6; --atp: #06a77d;
+      --font: 'Outfit', system-ui, sans-serif;
+      --font-mono: 'JetBrainsMono', monospace;
+      --max: 1200px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body { font-family: var(--font); color: var(--ink); background: var(--bg); line-height: 1.6; }
+    .container { max-width: var(--max); margin: 0 auto; padding: 0 1.5rem; }
+
+    header {
+      text-align: center; padding: 3rem 1rem 2rem;
+      background: linear-gradient(180deg, rgba(232,93,4,0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--rule);
+    }
+    header h1 {
+      font-size: 2.5rem; font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    header p { color: var(--muted); font-size: 1.1rem; }
+
+    .intro {
+      max-width: 800px; margin: 2rem auto; text-align: center;
+      color: var(--muted); font-size: 1rem; line-height: 1.8;
+    }
+
+    /* Tab 系统 */
+    .demo-tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; justify-content: center; }
+    .demo-tabs button {
+      background: var(--bg3); border: 1px solid var(--rule); color: var(--ink);
+      padding: 0.6rem 1.5rem; border-radius: 8px; cursor: pointer;
+      font-size: 0.9rem; font-weight: 700; transition: all 0.2s;
+    }
+    .demo-tabs button:hover { border-color: var(--accent); color: var(--accent); }
+    .demo-tabs button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    [data-panel] { display: none; }
+    [data-panel].active { display: block; }
+
+    section { margin: 2.5rem 0; }
+    section h2 {
+      font-size: 1.5rem; font-weight: 700; color: var(--ink);
+      margin-bottom: 1.25rem; padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--accent); display: inline-block;
+    }
+    section h3 {
+      font-size: 1.15rem; font-weight: 700; color: var(--accent);
+      margin-bottom: 0.75rem; margin-top: 1.5rem;
+    }
+
+    .card {
+      background: var(--bg2); border: 1px solid var(--rule);
+      border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .card-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .formula-display {
+      font-family: var(--font-mono); font-size: 1.05rem;
+      color: var(--accent2); background: var(--bg3);
+      padding: 0.75rem 1rem; border-radius: 8px;
+      text-align: center; margin-bottom: 1rem; letter-spacing: 0.5px;
+    }
+
+    .canvas-wrap {
+      width: 100%; background: var(--bg3);
+      border-radius: 12px; border: 1px solid var(--rule); overflow: hidden;
+      position: relative;
+    }
+    .canvas-wrap canvas { width: 100%; display: block; }
+
+    /* Controls */
+    .controls { display: flex; flex-wrap: wrap; gap: 1.2rem; align-items: flex-start; }
+    .control-group {
+      display: flex; flex-direction: column; gap: 0.35rem;
+      min-width: 180px; flex: 1;
+    }
+    .control-group label {
+      font-size: 0.85rem; color: var(--muted); font-weight: 600;
+      display: flex; justify-content: space-between;
+    }
+    .control-group label span.value { color: var(--accent); font-family: var(--font-mono); }
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 6px;
+      background: var(--bg3); border-radius: 3px; outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 18px; height: 18px; background: var(--accent); border-radius: 50%;
+      cursor: pointer; border: 2px solid var(--bg);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px; height: 18px; background: var(--accent); border-radius: 50%;
+      cursor: pointer; border: 2px solid var(--bg);
+    }
+
+    .btn-group { display: flex; gap: 0.4rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .btn-group button {
+      background: var(--bg3); border: 1px solid var(--rule); color: var(--ink);
+      padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer;
+      font-size: 0.82rem; font-weight: 600; transition: all 0.2s;
+    }
+    .btn-group button:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-group button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* Energy bar */
+    .energy-bars { display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem; }
+    .energy-bar-item { display: flex; align-items: center; gap: 0.8rem; }
+    .energy-bar-item .ebar-label { width: 100px; font-size: 0.85rem; font-weight: 600; color: var(--muted); text-align: right; }
+    .energy-bar-track {
+      flex: 1; height: 28px; background: var(--bg3); border-radius: 8px;
+      overflow: hidden; position: relative; border: 1px solid var(--rule);
+    }
+    .energy-bar-fill {
+      height: 100%; border-radius: 7px; transition: width 0.5s ease;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 700; color: #fff; font-family: var(--font-mono);
+    }
+    .energy-bar-fill.heat { background: linear-gradient(90deg, var(--accent3), var(--accent2)); }
+    .energy-bar-fill.kinetic { background: linear-gradient(90deg, var(--kinetic), #023e8a); }
+    .energy-bar-fill.atp { background: linear-gradient(90deg, var(--atp), #046307); }
+
+    /* Data display */
+    .data-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.6rem 1rem; background: var(--bg3); border-radius: 8px;
+      margin-bottom: 0.5rem; font-size: 0.9rem;
+    }
+    .data-row .dlabel { color: var(--muted); font-weight: 600; }
+    .data-row .dvalue { color: var(--accent); font-family: var(--font-mono); font-weight: 700; }
+
+    /* Info panel */
+    .info-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem; margin-top: 1rem;
+    }
+    .info-item {
+      background: var(--bg3); border: 1px solid var(--rule);
+      border-radius: 8px; padding: 0.8rem; text-align: center;
+    }
+    .info-item .iname { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.3rem; }
+    .info-item .ivalue { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; color: var(--accent2); }
+
+    /* Table */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .data-table th, .data-table td {
+      padding: 0.6rem 0.5rem; text-align: center; border: 1px solid var(--rule);
+    }
+    .data-table th { background: var(--bg3); color: var(--accent); font-weight: 700; }
+    .data-table td { color: var(--ink); }
+    .data-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+    .legend { display: flex; gap: 1.5rem; margin-top: 0.8rem; flex-wrap: wrap; justify-content: center; }
+    .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: var(--muted); }
+    .legend-dot { width: 14px; height: 14px; border-radius: 4px; }
+
+    .anim-controls { display: flex; gap: 0.5rem; margin-top: 0.8rem; justify-content: center; }
+    .anim-controls button {
+      background: var(--bg3); border: 1px solid var(--rule); color: var(--ink);
+      padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer;
+      font-size: 0.9rem; font-weight: 600; transition: all 0.2s;
+    }
+    .anim-controls button:hover { border-color: var(--accent2); color: var(--accent2); }
+    .anim-controls button.playing { border-color: var(--accent2); color: var(--accent2); }
+
+    .case-text { margin-bottom: 1.25rem; }
+    .case-text p { color: var(--muted); margin-bottom: 0.5rem; line-height: 1.7; }
+    .case-text .math { font-family: var(--font-mono); color: var(--accent2); font-weight: 600; }
+
+    /* Food selector */
+    .food-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem; margin-bottom: 1rem;
+    }
+    .food-card {
+      background: var(--bg3); border: 2px solid var(--rule); border-radius: 12px;
+      padding: 1rem; cursor: pointer; transition: all 0.2s; text-align: center;
+    }
+    .food-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .food-card.active { border-color: var(--accent); background: rgba(232,93,4,0.08); }
+    .food-card .femoji { font-size: 2rem; margin-bottom: 0.3rem; }
+    .food-card .fname { font-size: 0.9rem; font-weight: 700; color: var(--ink); }
+    .food-card .fkcal { font-size: 0.8rem; color: var(--accent2); font-family: var(--font-mono); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      header h1 { font-size: 1.8rem; }
+      .canvas-wrap canvas { height: 280px; }
+      .controls { flex-direction: column; align-items: stretch; }
+      .control-group { min-width: unset; }
+    }
+    footer {
+      text-align: center; padding: 2rem 1rem; color: var(--muted);
+      font-size: 0.85rem; border-top: 1px solid var(--rule); margin-top: 2rem;
+    }
+  </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./_shared/anime-cartoon-theme.css">
+<link rel="stylesheet" href="./_shared/cyber-theme.css">
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1><span data-i18n="h1">化学能转化为热能和动能</span></h1>
+    <p><span data-i18n="subtitle">从食物消化到火箭推进 — 化学能转化的交互式探索</span></p>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="intro">
+    <p>化学能储存在物质分子的化学键中。当化学反应发生时，键的断裂与形成释放或吸收能量。本页面通过交互动画展示化学能如何转化为我们日常生活中的热能与动能，用千卡（kcal）作为计量单位。</p>
+  </div>
+
+  <!-- Tab 切换 -->
+  <div class="demo-tabs" id="demoTabs">
+    <button data-tab="digestion" class="active">食物消化</button>
+    <button data-tab="combustion">燃烧反应</button>
+    <button data-tab="engine">内燃机</button>
+    <button data-tab="warmer">暖手宝</button>
+    <button data-tab="efficiency">效率对比</button>
+  </div>
+
+  <!-- ==================== 食物消化 ==================== -->
+  <div data-panel="digestion" class="active">
+
+    <section>
+      <h2>食物消化：化学能 → 热能 + 动能</h2>
+      <div class="case-text">
+        <p>食物中的碳氢键蕴藏化学能。在体内氧化过程中，化学能释放并分配为两条路径：<strong style="color:var(--accent2)">约50%以上直接转化为热能</strong>（维持体温），<strong style="color:var(--kinetic)">其余不足50%转化为ATP</strong>（驱动肌肉运动）。</p>
+        <p class="math">C₆H₁₂O₆ + 6O₂ → 6CO₂ + 6H₂O + 能量 (≈ 686 kcal/mol)</p>
+        <p>1分子葡萄糖通过细胞呼吸产生约30-32分子ATP。人体每天合成约等于自身体重的ATP。</p>
+      </div>
+
+      <!-- 食物选择 -->
+      <h3>选择食物类型（可多选）</h3>
+      <div class="food-grid" id="foodGrid">
+        <div class="food-card active" data-food="rice" data-kcal="1.3" data-type="carb" data-emoji="🍚">
+          <div class="femoji">🍚</div>
+          <div class="fname">米饭 (100g)</div>
+          <div class="fkcal">130 kcal</div>
+        </div>
+        <div class="food-card active" data-food="egg" data-kcal="1.4" data-type="protein" data-emoji="🥚">
+          <div class="femoji">🥚</div>
+          <div class="fname">鸡蛋 (100g)</div>
+          <div class="fkcal">140 kcal</div>
+        </div>
+        <div class="food-card" data-food="meat" data-kcal="2.5" data-type="protein" data-emoji="🥩">
+          <div class="femoji">🥩</div>
+          <div class="fname">牛肉 (100g)</div>
+          <div class="fkcal">250 kcal</div>
+        </div>
+        <div class="food-card" data-food="oil" data-kcal="9.0" data-type="fat" data-emoji="🫒">
+          <div class="femoji">🫒</div>
+          <div class="fname">食用油 (100g)</div>
+          <div class="fkcal">900 kcal</div>
+        </div>
+        <div class="food-card" data-food="bread" data-kcal="2.6" data-type="carb" data-emoji="🍞">
+          <div class="femoji">🍞</div>
+          <div class="fname">面包 (100g)</div>
+          <div class="fkcal">260 kcal</div>
+        </div>
+        <div class="food-card" data-food="choco" data-kcal="5.5" data-type="fat" data-emoji="🍫">
+          <div class="femoji">🍫</div>
+          <div class="fname">巧克力 (100g)</div>
+          <div class="fkcal">546 kcal</div>
+        </div>
+      </div>
+      <div class="selected-foods-summary" id="selectedFoodsSummary" style="margin-bottom:1rem;padding:0.8rem 1rem;background:rgba(232,93,4,0.06);border:1px solid var(--rule);border-radius:10px;font-size:0.85rem;color:var(--muted);">
+        已选 <strong id="selectedCount" style="color:var(--accent)">2</strong> 种食物 · 合计 <strong id="selectedTotalKcal" style="color:var(--accent2)">270</strong> kcal/100g
+      </div>
+
+      <div class="card-grid">
+        <div class="card">
+          <h3>消化过程动画</h3>
+          <div class="canvas-wrap">
+            <canvas id="digestCanvas" width="600" height="400"></canvas>
+          </div>
+          <div class="anim-controls">
+            <button id="digestPlay" class="playing">⏸ 暂停</button>
+            <button id="digestReset">↻ 重置</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>能量分配</h3>
+          <div class="controls">
+            <div class="control-group">
+              <label>食物量 <span class="value" id="digestAmount">100g</span></label>
+              <input type="range" id="digestSlider" min="10" max="500" value="100" step="10">
+            </div>
+          </div>
+          <div class="energy-bars" id="digestEnergyBars">
+            <div class="energy-bar-item">
+              <span class="ebar-label">总能量</span>
+              <div class="energy-bar-track"><div class="energy-bar-fill" style="background:linear-gradient(90deg,var(--accent),var(--accent2));width:100%">130 kcal</div></div>
+            </div>
+            <div class="energy-bar-item">
+              <span class="ebar-label" style="color:var(--accent2)">热能 (50%+)</span>
+              <div class="energy-bar-track"><div class="energy-bar-fill heat" style="width:55%">71.5 kcal</div></div>
+            </div>
+            <div class="energy-bar-item">
+              <span class="ebar-label" style="color:var(--kinetic)">ATP动能 (<50%)</span>
+              <div class="energy-bar-track"><div class="energy-bar-fill atp" style="width:45%">58.5 kcal</div></div>
+            </div>
+          </div>
+          <div class="info-grid">
+            <div class="info-item"><div class="iname">ATP产出</div><div class="ivalue" id="digestATP">14.4 mol</div></div>
+            <div class="info-item"><div class="iname">体温贡献</div><div class="ivalue" id="digestTemp">+0.12°C</div></div>
+            <div class="info-item"><div class="iname">可支撑慢跑</div><div class="ivalue" id="digestRun">16 min</div></div>
+            <div class="info-item"><div class="iname">基础代谢占比</div><div class="ivalue" id="digestBMR">1.9 hr</div></div>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--accent2)"></div>热能（维持体温）</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--atp)"></div>ATP（驱动运动）</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 营养素热值对比 -->
+    <section>
+      <h2>三大营养素的化学能含量</h2>
+      <div class="case-text">
+        <p>不同营养素所含化学能不同（Atwater系数），脂肪的化学能密度最高。</p>
+        <p class="math">1 kcal = 4.184 kJ</p>
+      </div>
+      <div class="card">
+        <div class="canvas-wrap">
+          <canvas id="nutrientCanvas" width="800" height="320"></canvas>
+        </div>
+        <div class="info-grid">
+          <div class="info-item"><div class="iname">碳水化合物</div><div class="ivalue">4.0 kcal/g</div></div>
+          <div class="info-item"><div class="iname">蛋白质</div><div class="ivalue">4.0 kcal/g</div></div>
+          <div class="info-item"><div class="iname">脂肪</div><div class="ivalue">9.0 kcal/g</div></div>
+          <div class="info-item"><div class="iname">酒精</div><div class="ivalue">7.0 kcal/g</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 活动能量消耗 -->
+    <section>
+      <h2>日常活动能量消耗</h2>
+      <div class="case-text">
+        <p>不同活动强度下，ATP中的化学能转化为动能的速率不同。MET（代谢当量）是衡量活动强度的单位。</p>
+        <p class="math">消耗(kcal) = MET × 体重(kg) × 时间(h)</p>
+      </div>
+      <div class="card">
+        <div class="controls" style="margin-bottom:1rem;">
+          <div class="control-group">
+            <label>体重 <span class="value" id="actWeight">60 kg</span></label>
+            <input type="range" id="actWeightSlider" min="40" max="100" value="60" step="5">
+          </div>
+          <div class="control-group">
+            <label>时长 <span class="value" id="actTime">30 min</span></label>
+            <input type="range" id="actTimeSlider" min="10" max="120" value="30" step="5">
+          </div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="activityCanvas" width="800" height="360"></canvas>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--accent3)"></div>轻度 (MET 1.5-3)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--accent2)"></div>中度 (MET 3-6)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--kinetic)"></div>高强度 (MET 6+)</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ==================== 燃烧反应 ==================== -->
+  <div data-panel="combustion">
+
+    <section>
+      <h2>燃烧反应：化学能 → 热能 + 光能</h2>
+      <div class="case-text">
+        <p>燃烧是最直接的化学能→热能转化方式。燃料与氧气反应生成CO₂和H₂O，释放大量热能。</p>
+        <p class="math">CH₄ + 2O₂ → CO₂ + 2H₂O + 890 kJ/mol (ΔH = -890 kJ/mol)</p>
+      </div>
+      <div class="card-grid">
+        <div class="card">
+          <h3>分子碰撞动画</h3>
+          <div class="canvas-wrap">
+            <canvas id="combustCanvas" width="600" height="400"></canvas>
+          </div>
+          <div class="anim-controls">
+            <button id="combustPlay" class="playing">⏸ 暂停</button>
+            <button id="combustReset">↻ 重置</button>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#52b788"></div>CH₄ (甲烷)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#48cae4"></div>O₂ (氧气)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#e63946"></div>CO₂ + H₂O + 热能</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>反应数据</h3>
+          <div class="data-row"><span class="dlabel">反应类型</span><span class="dvalue">放热反应</span></div>
+          <div class="data-row"><span class="dlabel">活化能</span><span class="dvalue">≈ 0.21 kcal/mol</span></div>
+          <div class="data-row"><span class="dlabel">释放热量</span><span class="dvalue">890 kJ/mol</span></div>
+          <div class="data-row"><span class="dlabel">折合千卡</span><span class="dvalue">212.7 kcal/mol</span></div>
+          <div class="data-row"><span class="dlabel">火焰温度</span><span class="dvalue">约 1950°C</span></div>
+          <div class="data-row"><span class="dlabel">能量转化效率</span><span class="dvalue">接近100% (→热)</span></div>
+          <div class="info-grid">
+            <div class="info-item"><div class="iname">1mol甲烷质量</div><div class="ivalue">16 g</div></div>
+            <div class="info-item"><div class="iname">每克释放</div><div class="ivalue">13.3 kcal/g</div></div>
+            <div class="info-item"><div class="iname">1m³天然气</div><div class="ivalue">~8600 kcal</div></div>
+            <div class="info-item"><div class="iname">燃烧1kg木材</div><div class="ivalue">~3500 kcal</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ==================== 内燃机 ==================== -->
+  <div data-panel="engine">
+
+    <section>
+      <h2>内燃机：化学能 → 热能 → 动能</h2>
+      <div class="case-text">
+        <p>汽油发动机通过燃烧引发气体膨胀产生运动。化学能先转化为热能（高温高压气体），再转化为机械动能驱动活塞。</p>
+        <p class="math">2 C₈H₁₈ + 25 O₂ → 16 CO₂ + 18 H₂O + 热能 → 活塞运动 → 车轮转动</p>
+      </div>
+      <div class="card-grid">
+        <div class="card">
+          <h3>四冲程循环动画</h3>
+          <div class="canvas-wrap">
+            <canvas id="engineCanvas" width="600" height="400"></canvas>
+          </div>
+          <div class="anim-controls">
+            <button id="enginePlay" class="playing">⏸ 暂停</button>
+            <button id="engineSpeed">⚡ 变速</button>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--accent3)"></div>进气</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--accent2)"></div>压缩</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#e63946"></div>做功（燃烧）</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#6c757d"></div>排气</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>能量流向</h3>
+          <div class="canvas-wrap" style="height:300px;">
+            <canvas id="engineEnergyCanvas" width="500" height="300"></canvas>
+          </div>
+          <div class="data-row"><span class="dlabel">汽油化学能</span><span class="dvalue">100%</span></div>
+          <div class="data-row"><span class="dlabel">→ 动能（车轮）</span><span class="dvalue" style="color:var(--kinetic)">~25%</span></div>
+          <div class="data-row"><span class="dlabel">→ 热能（散热）</span><span class="dvalue" style="color:var(--accent2)">~40%</span></div>
+          <div class="data-row"><span class="dlabel">→ 排气热损失</span><span class="dvalue" style="color:#6c757d">~35%</span></div>
+          <div class="data-row"><span class="dlabel">1L汽油化学能</span><span class="dvalue">~7720 kcal</span></div>
+          <div class="data-row"><span class="dlabel">实际驱动能量</span><span class="dvalue">~1930 kcal</span></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ==================== 暖手宝 ==================== -->
+  <div data-panel="warmer">
+
+    <section>
+      <h2>暖手宝：化学能 → 热能</h2>
+      <div class="case-text">
+        <p>一次性暖贴利用铁粉氧化反应持续放热。铁与空气中的氧气反应生成氧化铁，化学能缓慢释放为热能。</p>
+        <p class="math">4Fe + 3O₂ → 2Fe₂O₃ + 热能 (ΔH ≈ -824 kJ/mol)</p>
+      </div>
+      <div class="card-grid">
+        <div class="card">
+          <h3>氧化反应动画</h3>
+          <div class="canvas-wrap">
+            <canvas id="warmerCanvas" width="600" height="400"></canvas>
+          </div>
+          <div class="anim-controls">
+            <button id="warmerPlay" class="playing">⏸ 暂停</button>
+            <button id="warmerReset">↻ 重置</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>温度变化曲线</h3>
+          <div class="canvas-wrap">
+            <canvas id="warmerTempCanvas" width="500" height="300"></canvas>
+          </div>
+          <div class="data-row"><span class="dlabel">最高温度</span><span class="dvalue">约 57°C</span></div>
+          <div class="data-row"><span class="dlabel">总放热量</span><span class="dvalue">约 81 kJ</span></div>
+          <div class="data-row"><span class="dlabel">折合千卡</span><span class="dvalue">19.4 kcal</span></div>
+          <div class="data-row"><span class="dlabel">持续时间</span><span class="dvalue">5-10 小时</span></div>
+          <div class="data-row"><span class="dlabel">主要成分</span><span class="dvalue">铁粉·盐·水·活性炭</span></div>
+          <div class="info-grid">
+            <div class="info-item"><div class="iname">铁粉质量</div><div class="ivalue">~11 g</div></div>
+            <div class="info-item"><div class="iname">反应类型</div><div class="ivalue">缓慢氧化</div></div>
+            <div class="info-item"><div class="iname">催化剂</div><div class="ivalue">食盐 (NaCl)</div></div>
+            <div class="info-item"><div class="iname">能量来源</div><div class="ivalue">Fe化学键</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ==================== 效率对比 ==================== -->
+  <div data-panel="efficiency">
+
+    <section>
+      <h2>不同系统的化学能转化效率</h2>
+      <div class="case-text">
+        <p>不同系统将化学能转化为目标能量的效率差异巨大。人体、内燃机、电池、火箭各有优劣。</p>
+      </div>
+      <div class="card">
+        <div class="canvas-wrap">
+          <canvas id="efficiencyCanvas" width="800" height="400"></canvas>
+        </div>
+        <table class="data-table" style="margin-top:1.5rem;">
+          <thead>
+            <tr>
+              <th>系统</th>
+              <th>转化路径</th>
+              <th>效率</th>
+              <th>典型应用</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>锂电池</td><td>化学能→电能</td><td>~90%</td><td>手机·电动车</td></tr>
+            <tr><td>柴油机</td><td>化学能→动能</td><td>45-50%</td><td>卡车·船舶</td></tr>
+            <tr><td>火箭发动机</td><td>化学能→动能</td><td>~50-60%</td><td>航天发射</td></tr>
+            <tr><td>人体(ATP合成)</td><td>化学能→化学能</td><td>~40%</td><td>消化·代谢</td></tr>
+            <tr><td>汽油内燃机</td><td>化学能→动能</td><td>25-36%</td><td>汽车·摩托</td></tr>
+            <tr><td>人体(肌肉做功)</td><td>化学能→机械能</td><td>~25-30%</td><td>运动·劳动</td></tr>
+            <tr><td>暖手宝</td><td>化学能→热能</td><td>接近100%</td><td>取暖</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>千卡能量换算工具</h2>
+      <div class="card">
+        <div class="controls" style="margin-bottom:1rem;">
+          <div class="control-group">
+            <label>输入千卡 <span class="value" id="kcalInput">100 kcal</span></label>
+            <input type="range" id="kcalSlider" min="1" max="2000" value="100" step="1">
+          </div>
+        </div>
+        <div class="info-grid">
+          <div class="info-item"><div class="iname">千焦 (kJ)</div><div class="ivalue" id="kcalKJ">418.4</div></div>
+          <div class="info-item"><div class="iname">焦耳 (J)</div><div class="ivalue" id="kcalJ">418400</div></div>
+          <div class="info-item"><div class="iname">瓦时</div><div class="ivalue" id="kcalWh">116.3</div></div>
+          <div class="info-item"><div class="iname">米饭等效</div><div class="ivalue" id="kcalRice">77 g</div></div>
+          <div class="info-item"><div class="iname">脂肪等效</div><div class="ivalue" id="kcalFat">11 g</div></div>
+          <div class="info-item"><div class="iname">可支撑慢跑</div><div class="ivalue" id="kcalJog">12.5 min</div></div>
+          <div class="info-item"><div class="iname">可支撑BMR</div><div class="ivalue" id="kcalBMR">1.4 hr</div></div>
+          <div class="info-item"><div class="iname">汽油等效</div><div class="ivalue" id="kcalGas">13 mL</div></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+</main>
+
+<footer>
+  <div class="container">化学能转化为热能和动能 · 交互式教学演示 · 数据来源：FAO、NCBI、Science Insights 等</div>
+</footer>
+
+<script src="./_shared/anime-cartoon-tools.js"></script>
+<script src="./_shared/theme-manager.js"></script>
+<script src="./_shared/subpage-i18n.js"></script>
+<script>
+/* ========== 页面逻辑 ========== */
+(function() {
+  'use strict';
+
+  // Tab 切换
+  var tabs = document.querySelectorAll('.demo-tabs button');
+  var panels = document.querySelectorAll('[data-panel]');
+  tabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      tabs.forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      var target = tab.dataset.tab;
+      panels.forEach(function(p) {
+        p.classList.toggle('active', p.dataset.panel === target);
+      });
+      // 重绘当前面板的canvas
+      redrawAll();
+    });
+  });
+
+  // ===== 食物消化（多选模式）=====
+  // 食物数据表
+  var FOOD_DATA = {
+    rice:  { kcal: 1.3, type: 'carb',    name: '米饭',    emoji: '🍚' },
+    egg:   { kcal: 1.4, type: 'protein', name: '鸡蛋',    emoji: '🥚' },
+    meat:  { kcal: 2.5, type: 'protein', name: '牛肉',    emoji: '🥩' },
+    oil:   { kcal: 9.0, type: 'fat',     name: '食用油',  emoji: '🫒' },
+    bread: { kcal: 2.6, type: 'carb',    name: '面包',    emoji: '🍞' },
+    choco: { kcal: 5.5, type: 'fat',    name: '巧克力',  emoji: '🍫' }
+  };
+
+  // 当前选中的食物列表（初始选中米饭+鸡蛋）
+  var selectedFoods = ['rice', 'egg'];
+
+  var foodCards = document.querySelectorAll('.food-card');
+  foodCards.forEach(function(card) {
+    card.addEventListener('click', function() {
+      var foodKey = card.dataset.food;
+      var idx = selectedFoods.indexOf(foodKey);
+      if (idx >= 0) {
+        // 至少保留一种食物
+        if (selectedFoods.length > 1) {
+          selectedFoods.splice(idx, 1);
+          card.classList.remove('active');
+        }
+      } else {
+        selectedFoods.push(foodKey);
+        card.classList.add('active');
+      }
+      updateDigestion();
+      drawNutrients();
+      drawActivity();
+    });
+  });
+
+  var digestSlider = document.getElementById('digestSlider');
+  digestSlider.addEventListener('input', function() {
+    updateDigestion();
+    drawNutrients();
+    drawActivity();
+  });
+
+  // 获取选中食物的汇总数据
+  function getSelectedFoodStats() {
+    var totalKcalPerGram = 0;
+    var nutrientBreakdown = { carb: 0, protein: 0, fat: 0 };
+    var foodEmojis = [];
+    var foodNames = [];
+    selectedFoods.forEach(function(key) {
+      var f = FOOD_DATA[key];
+      if (!f) return;
+      totalKcalPerGram += f.kcal;
+      if (nutrientBreakdown[f.type] !== undefined) {
+        nutrientBreakdown[f.type] += f.kcal;
+      }
+      foodEmojis.push(f.emoji);
+      foodNames.push(f.name);
+    });
+    return {
+      totalKcalPerGram: totalKcalPerGram,
+      nutrientBreakdown: nutrientBreakdown,
+      foodEmojis: foodEmojis,
+      foodNames: foodNames,
+      count: selectedFoods.length
+    };
+  }
+
+  function updateDigestion() {
+    var stats = getSelectedFoodStats();
+    var grams = parseInt(digestSlider.value);
+    var totalKcal = (stats.totalKcalPerGram * grams).toFixed(1);
+    var heatKcal = (totalKcal * 0.55).toFixed(1);
+    var atpKcal = (totalKcal * 0.45).toFixed(1);
+    var atpMol = (atpKcal / 7.3).toFixed(1);
+    var tempRise = (heatKcal / 60).toFixed(2);
+    var runMin = (atpKcal / 8).toFixed(0);
+    var bmrHr = (totalKcal / 70).toFixed(1);
+
+    // 更新已选食物汇总
+    document.getElementById('selectedCount').textContent = stats.count;
+    document.getElementById('selectedTotalKcal').textContent = (stats.totalKcalPerGram * 100).toFixed(0);
+
+    document.getElementById('digestAmount').textContent = grams + 'g';
+    var fills = document.querySelectorAll('#digestEnergyBars .energy-bar-fill');
+    if (fills[0]) { fills[0].style.width = '100%'; fills[0].textContent = totalKcal + ' kcal'; }
+    if (fills[1]) { fills[1].style.width = '55%'; fills[1].textContent = heatKcal + ' kcal'; }
+    if (fills[2]) { fills[2].style.width = '45%'; fills[2].textContent = atpKcal + ' kcal'; }
+    document.getElementById('digestATP').textContent = atpMol + ' mol';
+    document.getElementById('digestTemp').textContent = '+' + tempRise + '°C';
+    document.getElementById('digestRun').textContent = runMin + ' min';
+    document.getElementById('digestBMR').textContent = bmrHr + ' hr';
+  }
+
+  // 消化动画
+  var digestCanvas = document.getElementById('digestCanvas');
+  var digestCtx = digestCanvas.getContext('2d');
+  var digestPlaying = true;
+  var digestT = 0;
+
+  function drawDigest() {
+    var w = digestCanvas.width, h = digestCanvas.height;
+    digestCtx.clearRect(0, 0, w, h);
+    // 背景
+    digestCtx.fillStyle = '#FFF5EE';
+    digestCtx.fillRect(0, 0, w, h);
+
+    // 人体轮廓
+    digestCtx.strokeStyle = '#9B8B7A';
+    digestCtx.lineWidth = 2;
+    digestCtx.beginPath();
+    digestCtx.ellipse(w/2, h/2, 80, 120, 0, 0, Math.PI*2);
+    digestCtx.stroke();
+
+    // 食物 → 胃（显示选中食物的emoji）
+    var stats = getSelectedFoodStats();
+    var emojis = stats.foodEmojis;
+    digestCtx.font = '22px sans-serif';
+    digestCtx.textAlign = 'center';
+    // 多个食物交替下落
+    for (var fi = 0; fi < emojis.length; fi++) {
+      var foodY = 60 + ((digestT + fi * 35) % 120);
+      var foodX = w/2 - 120 + (fi % 2 === 0 ? 0 : 20);
+      digestCtx.fillText(emojis[fi], foodX, foodY);
+    }
+
+    // 箭头到胃
+    digestCtx.strokeStyle = '#e85d04';
+    digestCtx.lineWidth = 2;
+    digestCtx.beginPath();
+    digestCtx.moveTo(w/2 - 100, h/2);
+    digestCtx.lineTo(w/2 - 30, h/2);
+    digestCtx.stroke();
+    digestCtx.fillStyle = '#e85d04';
+    digestCtx.beginPath();
+    digestCtx.moveTo(w/2 - 30, h/2);
+    digestCtx.lineTo(w/2 - 40, h/2 - 5);
+    digestCtx.lineTo(w/2 - 40, h/2 + 5);
+    digestCtx.fill();
+
+    // 胃（中间）
+    digestCtx.fillStyle = 'rgba(232,93,4,0.15)';
+    digestCtx.beginPath();
+    digestCtx.arc(w/2, h/2, 40, 0, Math.PI*2);
+    digestCtx.fill();
+    digestCtx.strokeStyle = '#e85d04';
+    digestCtx.stroke();
+    digestCtx.fillStyle = '#4A3B2E';
+    digestCtx.font = 'bold 12px sans-serif';
+    digestCtx.fillText('胃', w/2, h/2 + 4);
+
+    // ATP 路径（右上）
+    digestCtx.strokeStyle = '#06a77d';
+    digestCtx.lineWidth = 3;
+    digestCtx.beginPath();
+    digestCtx.moveTo(w/2 + 40, h/2 - 20);
+    digestCtx.lineTo(w/2 + 150, h/2 - 60);
+    digestCtx.stroke();
+    // ATP粒子
+    for (var i = 0; i < 5; i++) {
+      var p = (digestT + i*20) % 100;
+      var px = w/2 + 40 + (p/100) * 110;
+      var py = h/2 - 20 - (p/100) * 40;
+      digestCtx.fillStyle = 'rgba(6,167,125,' + (0.3 + p/200) + ')';
+      digestCtx.beginPath();
+      digestCtx.arc(px, py, 6, 0, Math.PI*2);
+      digestCtx.fill();
+    }
+    digestCtx.fillStyle = '#06a77d';
+    digestCtx.font = 'bold 14px sans-serif';
+    digestCtx.fillText('ATP → 肌肉动能', w/2 + 120, h/2 - 70);
+    digestCtx.font = '12px sans-serif';
+    digestCtx.fillText('💪🏃', w/2 + 150, h/2 - 30);
+
+    // 热能路径（右下）
+    digestCtx.strokeStyle = '#dc2f02';
+    digestCtx.lineWidth = 3;
+    digestCtx.beginPath();
+    digestCtx.moveTo(w/2 + 40, h/2 + 20);
+    digestCtx.lineTo(w/2 + 150, h/2 + 60);
+    digestCtx.stroke();
+    // 热波纹
+    for (var j = 0; j < 4; j++) {
+      var wp = (digestT + j*25) % 100;
+      var wx = w/2 + 40 + (wp/100) * 110;
+      var wy = h/2 + 20 + (wp/100) * 40;
+      digestCtx.strokeStyle = 'rgba(220,47,2,' + (1 - wp/120) + ')';
+      digestCtx.beginPath();
+      for (var s = 0; s < 20; s++) {
+        var sx = wx + s;
+        var sy = wy + Math.sin(s * 0.5 + digestT * 0.1) * 4;
+        if (s === 0) digestCtx.moveTo(sx, sy);
+        else digestCtx.lineTo(sx, sy);
+      }
+      digestCtx.stroke();
+    }
+    digestCtx.fillStyle = '#dc2f02';
+    digestCtx.font = 'bold 14px sans-serif';
+    digestCtx.fillText('热能 → 体温', w/2 + 120, h/2 + 80);
+    digestCtx.font = '16px sans-serif';
+    digestCtx.fillText('🔥🌡️', w/2 + 160, h/2 + 50);
+
+    // 标注比例
+    digestCtx.fillStyle = '#06a77d';
+    digestCtx.font = 'bold 11px sans-serif';
+    digestCtx.fillText('≈45%', w/2 + 60, h/2 - 35);
+    digestCtx.fillStyle = '#dc2f02';
+    digestCtx.fillText('≈55%', w/2 + 60, h/2 + 50);
+
+    if (digestPlaying) digestT++;
+  }
+
+  document.getElementById('digestPlay').addEventListener('click', function() {
+    digestPlaying = !digestPlaying;
+    this.textContent = digestPlaying ? '⏸ 暂停' : '▶ 播放';
+    this.classList.toggle('playing', digestPlaying);
+  });
+  document.getElementById('digestReset').addEventListener('click', function() {
+    digestT = 0;
+  });
+
+  // 营养素柱状图
+  var nutrientCanvas = document.getElementById('nutrientCanvas');
+  var nutrientCtx = nutrientCanvas.getContext('2d');
+
+  function drawNutrients() {
+    var w = nutrientCanvas.width, h = nutrientCanvas.height;
+    nutrientCtx.clearRect(0, 0, w, h);
+    nutrientCtx.fillStyle = '#FFF5EE';
+    nutrientCtx.fillRect(0, 0, w, h);
+
+    // 获取选中食物的营养分解
+    var stats = getSelectedFoodStats();
+    var grams = parseInt(digestSlider.value);
+    var breakdown = stats.nutrientBreakdown;
+
+    // 上半部分：选中食物的营养分解（按实际选择的量）
+    var selData = [
+      { name: '碳水化合物', kcal: (breakdown.carb * grams).toFixed(1), perGram: breakdown.carb, color: '#52b788', emoji: '🍚🍞' },
+      { name: '蛋白质',     kcal: (breakdown.protein * grams).toFixed(1), perGram: breakdown.protein, color: '#48cae4', emoji: '🥚🥩' },
+      { name: '脂肪',       kcal: (breakdown.fat * grams).toFixed(1), perGram: breakdown.fat, color: '#e63946', emoji: '🫒🍫' }
+    ];
+
+    // 下半部分：标准 Atwater 系数参考
+    var refData = [
+      { name: '碳水化合物', kcal: 4.0, color: '#52b788' },
+      { name: '蛋白质',     kcal: 4.0, color: '#48cae4' },
+      { name: '脂肪',       kcal: 9.0, color: '#e63946' },
+      { name: '酒精',       kcal: 7.0, color: '#f4a261' },
+      { name: '膳食纤维',   kcal: 2.0, color: '#a5a58d' }
+    ];
+
+    var maxKcal = Math.max(selData[0].perGram, selData[1].perGram, selData[2].perGram, 9.0);
+    var baseY = h - 50;
+
+    // 标题：选中食物分解
+    nutrientCtx.fillStyle = '#4A3B2E';
+    nutrientCtx.font = 'bold 13px sans-serif';
+    nutrientCtx.textAlign = 'left';
+    nutrientCtx.fillText('选中食物营养分解（' + grams + 'g）', 60, 18);
+
+    // 左侧柱状图：选中食物的营养素热值
+    var selBarW = 70;
+    var selMaxKcal = maxKcal * grams;
+    nutrientCtx.strokeStyle = '#9B8B7A';
+    nutrientCtx.lineWidth = 1;
+    nutrientCtx.beginPath();
+    nutrientCtx.moveTo(60, 30);
+    nutrientCtx.lineTo(60, baseY);
+    nutrientCtx.lineTo(330, baseY);
+    nutrientCtx.stroke();
+
+    selData.forEach(function(d, i) {
+      var x = 80 + i * 85;
+      var barH = (parseFloat(d.kcal) / selMaxKcal) * (baseY - 40);
+      var grad = nutrientCtx.createLinearGradient(0, baseY - barH, 0, baseY);
+      grad.addColorStop(0, d.color);
+      grad.addColorStop(1, d.color + '88');
+      nutrientCtx.fillStyle = grad;
+      nutrientCtx.fillRect(x, baseY - barH, selBarW, barH);
+      // 数值
+      nutrientCtx.fillStyle = d.color;
+      nutrientCtx.font = 'bold 13px monospace';
+      nutrientCtx.textAlign = 'center';
+      nutrientCtx.fillText(d.kcal, x + selBarW/2, baseY - barH - 8);
+      // 名称
+      nutrientCtx.fillStyle = '#4A3B2E';
+      nutrientCtx.font = '11px sans-serif';
+      nutrientCtx.fillText(d.name, x + selBarW/2, baseY + 18);
+      // 单位
+      nutrientCtx.fillStyle = '#9B8B7A';
+      nutrientCtx.font = '9px sans-serif';
+      nutrientCtx.fillText('kcal', x + selBarW/2, baseY + 32);
+    });
+
+    // 分隔线
+    nutrientCtx.strokeStyle = 'rgba(180,160,140,0.2)';
+    nutrientCtx.setLineDash([5, 5]);
+    nutrientCtx.beginPath();
+    nutrientCtx.moveTo(360, 25);
+    nutrientCtx.lineTo(360, baseY);
+    nutrientCtx.stroke();
+    nutrientCtx.setLineDash([]);
+
+    // 标题：标准参考
+    nutrientCtx.fillStyle = '#4A3B2E';
+    nutrientCtx.font = 'bold 13px sans-serif';
+    nutrientCtx.textAlign = 'left';
+    nutrientCtx.fillText('Atwater 标准热值系数', 380, 18);
+
+    // 右侧柱状图：标准 Atwater 系数
+    var refBarW = 60;
+    var refStart = 400;
+    var refMaxKcal = 10;
+
+    nutrientCtx.strokeStyle = '#9B8B7A';
+    nutrientCtx.lineWidth = 1;
+    nutrientCtx.beginPath();
+    nutrientCtx.moveTo(380, 30);
+    nutrientCtx.lineTo(380, baseY);
+    nutrientCtx.lineTo(w - 20, baseY);
+    nutrientCtx.stroke();
+
+    // Y轴刻度
+    nutrientCtx.fillStyle = '#9B8B7A';
+    nutrientCtx.font = '9px monospace';
+    nutrientCtx.textAlign = 'right';
+    for (var s = 0; s <= 10; s += 2) {
+      var y = baseY - (s / refMaxKcal) * (baseY - 40);
+      nutrientCtx.fillText(s, 375, y + 3);
+      nutrientCtx.strokeStyle = 'rgba(180,160,140,0.1)';
+      nutrientCtx.beginPath();
+      nutrientCtx.moveTo(380, y);
+      nutrientCtx.lineTo(w - 20, y);
+      nutrientCtx.stroke();
+    }
+
+    refData.forEach(function(d, i) {
+      var x = refStart + i * (refBarW + 12);
+      var barH = (d.kcal / refMaxKcal) * (baseY - 40);
+      var grad = nutrientCtx.createLinearGradient(0, baseY - barH, 0, baseY);
+      grad.addColorStop(0, d.color);
+      grad.addColorStop(1, d.color + '88');
+      nutrientCtx.fillStyle = grad;
+      nutrientCtx.fillRect(x, baseY - barH, refBarW, barH);
+      // 数值
+      nutrientCtx.fillStyle = d.color;
+      nutrientCtx.font = 'bold 12px monospace';
+      nutrientCtx.textAlign = 'center';
+      nutrientCtx.fillText(d.kcal.toFixed(1), x + refBarW/2, baseY - barH - 6);
+      // 名称
+      nutrientCtx.fillStyle = '#4A3B2E';
+      nutrientCtx.font = '10px sans-serif';
+      nutrientCtx.fillText(d.name, x + refBarW/2, baseY + 16);
+      // 单位
+      nutrientCtx.fillStyle = '#9B8B7A';
+      nutrientCtx.font = '8px sans-serif';
+      nutrientCtx.fillText('kcal/g', x + refBarW/2, baseY + 28);
+    });
+
+    // Y轴标签
+    nutrientCtx.save();
+    nutrientCtx.translate(20, h/2);
+    nutrientCtx.rotate(-Math.PI/2);
+    nutrientCtx.textAlign = 'center';
+    nutrientCtx.fillStyle = '#9B8B7A';
+    nutrientCtx.font = '11px sans-serif';
+    nutrientCtx.fillText('热值', 0, 0);
+    nutrientCtx.restore();
+  }
+
+  // 活动消耗图
+  var activityCanvas = document.getElementById('activityCanvas');
+  var activityCtx = activityCanvas.getContext('2d');
+  var actWeightSlider = document.getElementById('actWeightSlider');
+  var actTimeSlider = document.getElementById('actTimeSlider');
+
+  actWeightSlider.addEventListener('input', drawActivity);
+  actTimeSlider.addEventListener('input', drawActivity);
+
+  function drawActivity() {
+    var weight = parseInt(actWeightSlider.value);
+    var timeMin = parseInt(actTimeSlider.value);
+    var timeH = timeMin / 60;
+    document.getElementById('actWeight').textContent = weight + ' kg';
+    document.getElementById('actTime').textContent = timeMin + ' min';
+
+    var w = activityCanvas.width, h = activityCanvas.height;
+    activityCtx.clearRect(0, 0, w, h);
+    activityCtx.fillStyle = '#FFF5EE';
+    activityCtx.fillRect(0, 0, w, h);
+
+    var activities = [
+      { name: '静坐', met: 1.5, cat: 'light', emoji: '🪑' },
+      { name: '慢走', met: 2.5, cat: 'light', emoji: '🚶' },
+      { name: '快走', met: 4.0, cat: 'moderate', emoji: '🚶‍♂️' },
+      { name: '骑车', met: 5.9, cat: 'moderate', emoji: '🚴' },
+      { name: '慢跑', met: 8.0, cat: 'high', emoji: '🏃' },
+      { name: '跑步', met: 11.0, cat: 'high', emoji: '🏃‍♂️' },
+      { name: '游泳', met: 11.0, cat: 'high', emoji: '🏊' },
+      { name: '足球', met: 10.0, cat: 'high', emoji: '⚽' }
+    ];
+
+    var colors = { light: '#f48c06', moderate: '#dc2f02', high: '#0077b6' };
+    var maxKcal = activities[activities.length-1].met * weight * timeH;
+    var barH = 28;
+    var gap = 8;
+    var startY = 20;
+
+    activities.forEach(function(a, i) {
+      var kcal = a.met * weight * timeH;
+      var y = startY + i * (barH + gap);
+      var maxW = w - 200;
+      var barW = (kcal / maxKcal) * maxW;
+
+      // 背景
+      activityCtx.fillStyle = 'rgba(180,160,140,0.1)';
+      activityCtx.fillRect(100, y, maxW, barH);
+
+      // 柱子
+      var color = colors[a.cat];
+      var grad = activityCtx.createLinearGradient(100, 0, 100 + barW, 0);
+      grad.addColorStop(0, color);
+      grad.addColorStop(1, color + 'aa');
+      activityCtx.fillStyle = grad;
+      activityCtx.fillRect(100, y, barW, barH);
+
+      // emoji
+      activityCtx.font = '18px sans-serif';
+      activityCtx.textAlign = 'right';
+      activityCtx.fillText(a.emoji, 90, y + 22);
+
+      // 名称
+      activityCtx.fillStyle = '#4A3B2E';
+      activityCtx.font = '11px sans-serif';
+      activityCtx.textAlign = 'left';
+      activityCtx.fillText(a.name, 100, y + 19);
+
+      // 数值
+      activityCtx.fillStyle = color;
+      activityCtx.font = 'bold 12px monospace';
+      activityCtx.textAlign = 'right';
+      activityCtx.fillText(kcal.toFixed(0) + ' kcal', w - 20, y + 19);
+
+      // MET
+      activityCtx.fillStyle = '#9B8B7A';
+      activityCtx.font = '9px monospace';
+      activityCtx.textAlign = 'left';
+      activityCtx.fillText('MET ' + a.met, 100 + barW + 5, y + 19);
+    });
+
+    // 食物能量对比线
+    var stats = getSelectedFoodStats();
+    var grams = parseInt(digestSlider.value);
+    var foodKcal = stats.totalKcalPerGram * grams;
+    var foodLineX = 100 + (foodKcal / maxKcal) * (w - 200);
+    if (foodLineX > w - 20) foodLineX = w - 20;
+
+    activityCtx.strokeStyle = '#e85d04';
+    activityCtx.lineWidth = 2;
+    activityCtx.setLineDash([6, 4]);
+    activityCtx.beginPath();
+    activityCtx.moveTo(foodLineX, startY - 5);
+    activityCtx.lineTo(foodLineX, startY + activities.length * (barH + gap) + 5);
+    activityCtx.stroke();
+    activityCtx.setLineDash([]);
+
+    // 标签
+    activityCtx.fillStyle = '#e85d04';
+    activityCtx.font = 'bold 11px sans-serif';
+    activityCtx.textAlign = 'center';
+    var label = '摄入 ' + foodKcal.toFixed(0) + ' kcal';
+    var labelW = activityCtx.measureText(label).width + 16;
+    var labelX = Math.min(foodLineX, w - labelW/2 - 10);
+    activityCtx.fillStyle = 'rgba(232,93,4,0.12)';
+    activityCtx.fillRect(labelX - labelW/2, startY - 18, labelW, 16);
+    activityCtx.fillStyle = '#e85d04';
+    activityCtx.fillText(label, labelX, startY - 6);
+
+    // 说明
+    activityCtx.fillStyle = '#9B8B7A';
+    activityCtx.font = '10px sans-serif';
+    activityCtx.textAlign = 'left';
+    activityCtx.fillText('虚线 = 当前摄入总能量', 100, h - 8);
+  }
+
+  // ===== 燃烧反应动画 =====
+  var combustCanvas = document.getElementById('combustCanvas');
+  var combustCtx = combustCanvas.getContext('2d');
+  var combustPlaying = true;
+  var combustT = 0;
+  var combustParticles = [];
+
+  function initCombustParticles() {
+    combustParticles = [];
+    for (var i = 0; i < 30; i++) {
+      combustParticles.push({
+        x: Math.random() * combustCanvas.width,
+        y: Math.random() * combustCanvas.height,
+        vx: (Math.random() - 0.5) * 2,
+        vy: (Math.random() - 0.5) * 2,
+        type: Math.random() > 0.5 ? 'ch4' : 'o2',
+        size: 8 + Math.random() * 4,
+        reacted: false
+      });
+    }
+  }
+  initCombustParticles();
+
+  function drawCombust() {
+    var w = combustCanvas.width, h = combustCanvas.height;
+    combustCtx.clearRect(0, 0, w, h);
+    combustCtx.fillStyle = '#FFF5EE';
+    combustCtx.fillRect(0, 0, w, h);
+
+    // 更新粒子
+    combustParticles.forEach(function(p) {
+      if (combustPlaying) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0 || p.x > w) p.vx *= -1;
+        if (p.y < 0 || p.y > h) p.vy *= -1;
+      }
+      // 检测碰撞
+      combustParticles.forEach(function(q) {
+        if (p === q || p.reacted || q.reacted) return;
+        var dx = p.x - q.x, dy = p.y - q.y;
+        var dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 20 && p.type !== q.type) {
+          p.reacted = true;
+          q.reacted = true;
+          // 生成产物粒子
+          combustParticles.push({
+            x: (p.x + q.x) / 2, y: (p.y + q.y) / 2,
+            vx: (Math.random()-0.5)*3, vy: (Math.random()-0.5)*3 - 1,
+            type: 'product', size: 10, reacted: false, life: 60
+          });
+        }
+      });
+    });
+
+    // 移除过期产物
+    combustParticles = combustParticles.filter(function(p) {
+      if (p.type === 'product') {
+        if (combustPlaying) p.life--;
+        return p.life > 0;
+      }
+      return !p.reacted;
+    });
+    // 补充粒子
+    while (combustParticles.filter(function(p){return p.type!=='product';}).length < 20) {
+      combustParticles.push({
+        x: Math.random() * w, y: Math.random() * h,
+        vx: (Math.random()-0.5)*2, vy: (Math.random()-0.5)*2,
+        type: Math.random() > 0.5 ? 'ch4' : 'o2',
+        size: 8 + Math.random()*4, reacted: false
+      });
+    }
+
+    // 绘制粒子
+    combustParticles.forEach(function(p) {
+      var color, label;
+      if (p.type === 'ch4') { color = '#52b788'; label = 'CH₄'; }
+      else if (p.type === 'o2') { color = '#48cae4'; label = 'O₂'; }
+      else { color = '#e63946'; label = 'CO₂+H₂O'; }
+
+      if (p.type === 'product') {
+        // 爆发效果
+        var alpha = p.life / 60;
+        combustCtx.fillStyle = 'rgba(230,57,70,' + alpha + ')';
+        combustCtx.beginPath();
+        combustCtx.arc(p.x, p.y, p.size * (1 + (60-p.life)/30), 0, Math.PI*2);
+        combustCtx.fill();
+        // 热量波纹
+        combustCtx.strokeStyle = 'rgba(255,165,0,' + (alpha*0.5) + ')';
+        combustCtx.lineWidth = 1;
+        combustCtx.beginPath();
+        combustCtx.arc(p.x, p.y, p.size * 2 * (1 + (60-p.life)/20), 0, Math.PI*2);
+        combustCtx.stroke();
+      } else {
+        combustCtx.fillStyle = color + '33';
+        combustCtx.beginPath();
+        combustCtx.arc(p.x, p.y, p.size + 4, 0, Math.PI*2);
+        combustCtx.fill();
+        combustCtx.fillStyle = color;
+        combustCtx.beginPath();
+        combustCtx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+        combustCtx.fill();
+      }
+      combustCtx.fillStyle = '#fff';
+      combustCtx.font = 'bold 8px monospace';
+      combustCtx.textAlign = 'center';
+      combustCtx.fillText(label, p.x, p.y + 3);
+    });
+
+    // 说明文字
+    combustCtx.fillStyle = '#4A3B2E';
+    combustCtx.font = 'bold 13px sans-serif';
+    combustCtx.textAlign = 'center';
+    combustCtx.fillText('CH₄ + 2O₂ → CO₂ + 2H₂O + 890 kJ 热能', w/2, h - 15);
+
+    if (combustPlaying) combustT++;
+  }
+
+  document.getElementById('combustPlay').addEventListener('click', function() {
+    combustPlaying = !combustPlaying;
+    this.textContent = combustPlaying ? '⏸ 暂停' : '▶ 播放';
+    this.classList.toggle('playing', combustPlaying);
+  });
+  document.getElementById('combustReset').addEventListener('click', function() {
+    initCombustParticles();
+    combustT = 0;
+  });
+
+  // ===== 内燃机动画 =====
+  var engineCanvas = document.getElementById('engineCanvas');
+  var engineCtx = engineCanvas.getContext('2d');
+  var enginePlaying = true;
+  var engineT = 0;
+  var engineSpeed = 1;
+
+  function drawEngine() {
+    var w = engineCanvas.width, h = engineCanvas.height;
+    engineCtx.clearRect(0, 0, w, h);
+    engineCtx.fillStyle = '#FFF5EE';
+    engineCtx.fillRect(0, 0, w, h);
+
+    var cyclePos = (engineT * engineSpeed * 0.02) % 4;
+    var phase = Math.floor(cyclePos);
+    var phaseT = cyclePos - phase;
+    var phaseNames = ['进气', '压缩', '做功（燃烧）', '排气'];
+    var phaseColors = ['#f48c06', '#dc2f02', '#e63946', '#6c757d'];
+
+    // 气缸
+    var cylX = w/2 - 80, cylY = 60, cylW = 160, cylH = 200;
+    engineCtx.strokeStyle = '#9B8B7A';
+    engineCtx.lineWidth = 3;
+    engineCtx.strokeRect(cylX, cylY, cylW, cylH);
+
+    // 活塞位置
+    var pistonY;
+    if (phase === 0) pistonY = cylY + cylH - 50 - phaseT * 120; // 下→上
+    else if (phase === 1) pistonY = cylY + 30 + phaseT * 120; // 上→下... 压缩是上→下不对
+    // 修正：进气(0):活塞下移, 压缩(1):活塞上移, 做功(2):活塞下移, 排气(3):活塞上移
+    if (phase === 0) pistonY = cylY + cylH - 50 - phaseT * 100;
+    else if (phase === 1) pistonY = cylY + cylH - 150 + phaseT * 100;
+    else if (phase === 2) pistonY = cylY + cylH - 50 - phaseT * 100;
+    else pistonY = cylY + cylH - 150 + phaseT * 100;
+
+    // 气缸内填充
+    var fillColor;
+    if (phase === 0) fillColor = 'rgba(84,163,255,' + (0.1 + phaseT*0.2) + ')'; // 进气蓝
+    else if (phase === 1) fillColor = 'rgba(255,165,0,' + (0.2 + phaseT*0.4) + ')'; // 压缩橙
+    else if (phase === 2) fillColor = 'rgba(230,57,70,' + (0.3 + phaseT*0.3) + ')'; // 燃烧红
+    else fillColor = 'rgba(108,117,125,' + (0.2 + phaseT*0.1) + ')'; // 排气灰
+
+    engineCtx.fillStyle = fillColor;
+    engineCtx.fillRect(cylX + 2, pistonY, cylW - 4, cylY + cylH - pistonY - 2);
+
+    // 活塞
+    engineCtx.fillStyle = '#adb5bd';
+    engineCtx.fillRect(cylX + 2, pistonY, cylW - 4, 20);
+    engineCtx.strokeStyle = '#495057';
+    engineCtx.strokeRect(cylX + 2, pistonY, cylW - 4, 20);
+
+    // 连杆
+    var crankY = cylY + cylH + 60;
+    var crankAngle = cyclePos * Math.PI * 2;
+    var crankX = w/2 + Math.sin(crankAngle) * 40;
+    var crankCY = crankY + Math.cos(crankAngle) * 40;
+
+    engineCtx.strokeStyle = '#495057';
+    engineCtx.lineWidth = 4;
+    engineCtx.beginPath();
+    engineCtx.moveTo(w/2, pistonY + 20);
+    engineCtx.lineTo(crankX, crankCY);
+    engineCtx.stroke();
+
+    // 曲轴
+    engineCtx.fillStyle = '#495057';
+    engineCtx.beginPath();
+    engineCtx.arc(w/2, crankY, 8, 0, Math.PI*2);
+    engineCtx.fill();
+    engineCtx.beginPath();
+    engineCtx.arc(crankX, crankCY, 6, 0, Math.PI*2);
+    engineCtx.fill();
+    engineCtx.beginPath();
+    engineCtx.moveTo(w/2, crankY);
+    engineCtx.lineTo(crankX, crankCY);
+    engineCtx.stroke();
+
+    // 车轮
+    engineCtx.save();
+    engineCtx.translate(w/2 + 100, crankY);
+    engineCtx.rotate(crankAngle);
+    engineCtx.strokeStyle = '#495057';
+    engineCtx.lineWidth = 2;
+    engineCtx.beginPath();
+    engineCtx.arc(0, 0, 25, 0, Math.PI*2);
+    engineCtx.stroke();
+    for (var s = 0; s < 4; s++) {
+      engineCtx.beginPath();
+      engineCtx.moveTo(0, 0);
+      engineCtx.lineTo(Math.cos(s * Math.PI/2) * 25, Math.sin(s * Math.PI/2) * 25);
+      engineCtx.stroke();
+    }
+    engineCtx.restore();
+
+    // 火花塞
+    if (phase === 2 && phaseT < 0.3) {
+      engineCtx.strokeStyle = '#ffba08';
+      engineCtx.lineWidth = 2;
+      for (var sp = 0; sp < 3; sp++) {
+        engineCtx.beginPath();
+        engineCtx.moveTo(cylX + cylW/2 - 5 + sp*5, cylY);
+        engineCtx.lineTo(cylX + cylW/2 - 3 + sp*5, cylY + 15);
+        engineCtx.stroke();
+      }
+      // 爆炸效果
+      engineCtx.fillStyle = 'rgba(255,186,8,0.5)';
+      engineCtx.beginPath();
+      engineCtx.arc(cylX + cylW/2, pistonY - 10, 15 + phaseT * 30, 0, Math.PI*2);
+      engineCtx.fill();
+    }
+
+    // 阀门
+    var valveOpen = (phase === 0) ? 'left' : (phase === 3) ? 'right' : null;
+    engineCtx.fillStyle = valveOpen === 'left' ? '#48cae4' : '#adb5bd';
+    engineCtx.fillRect(cylX - 15, cylY - 5, 12, 10);
+    engineCtx.fillStyle = valveOpen === 'right' ? '#6c757d' : '#adb5bd';
+    engineCtx.fillRect(cylX + cylW + 3, cylY - 5, 12, 10);
+
+    // 进气/排气箭头
+    if (phase === 0) {
+      engineCtx.strokeStyle = '#48cae4';
+      engineCtx.lineWidth = 2;
+      for (var a = 0; a < 3; a++) {
+        var ay = cylY + 20 + a * 15;
+        engineCtx.beginPath();
+        engineCtx.moveTo(cylX - 30, ay);
+        engineCtx.lineTo(cylX - 5, ay);
+        engineCtx.stroke();
+      }
+    }
+    if (phase === 3) {
+      engineCtx.strokeStyle = '#6c757d';
+      engineCtx.lineWidth = 2;
+      for (var a = 0; a < 3; a++) {
+        var ay = cylY + 20 + a * 15;
+        engineCtx.beginPath();
+        engineCtx.moveTo(cylX + cylW + 5, ay);
+        engineCtx.lineTo(cylX + cylW + 30, ay);
+        engineCtx.stroke();
+      }
+    }
+
+    // 阶段指示器
+    phaseNames.forEach(function(name, i) {
+      var x = 60 + i * 130;
+      var y = h - 20;
+      engineCtx.fillStyle = i === phase ? phaseColors[i] : '#adb5bd';
+      engineCtx.font = i === phase ? 'bold 13px sans-serif' : '11px sans-serif';
+      engineCtx.textAlign = 'center';
+      engineCtx.fillText(name, x, y);
+      if (i === phase) {
+        engineCtx.fillStyle = phaseColors[i];
+        engineCtx.fillRect(x - 40, y - 18, 80, 3);
+      }
+    });
+
+    if (enginePlaying) engineT++;
+  }
+
+  document.getElementById('enginePlay').addEventListener('click', function() {
+    enginePlaying = !enginePlaying;
+    this.textContent = enginePlaying ? '⏸ 暂停' : '▶ 播放';
+    this.classList.toggle('playing', enginePlaying);
+  });
+  document.getElementById('engineSpeed').addEventListener('click', function() {
+    engineSpeed = engineSpeed === 1 ? 2 : (engineSpeed === 2 ? 0.5 : 1);
+    this.textContent = '⚡ ' + engineSpeed + 'x';
+  });
+
+  // 内燃机能量流向图
+  var engineEnergyCanvas = document.getElementById('engineEnergyCanvas');
+  var engineEnergyCtx = engineEnergyCanvas.getContext('2d');
+
+  function drawEngineEnergy() {
+    var w = engineEnergyCanvas.width, h = engineEnergyCanvas.height;
+    engineEnergyCtx.clearRect(0, 0, w, h);
+    engineEnergyCtx.fillStyle = '#FFF5EE';
+    engineEnergyCtx.fillRect(0, 0, w, h);
+
+    // 源头
+    engineEnergyCtx.fillStyle = '#e85d04';
+    engineEnergyCtx.fillRect(20, h/2 - 30, 80, 60);
+    engineEnergyCtx.fillStyle = '#fff';
+    engineEnergyCtx.font = 'bold 11px sans-serif';
+    engineEnergyCtx.textAlign = 'center';
+    engineEnergyCtx.fillText('汽油', 60, h/2 - 5);
+    engineEnergyCtx.fillText('化学能', 60, h/2 + 10);
+    engineEnergyCtx.fillText('100%', 60, h/2 + 25);
+
+    // 三条路径
+    var paths = [
+      { y: h * 0.2, w: 0.25, color: '#0077b6', label: '动能 25%', target: '车轮' },
+      { y: h * 0.5, w: 0.40, color: '#dc2f02', label: '热能 40%', target: '散热' },
+      { y: h * 0.8, w: 0.35, color: '#6c757d', label: '排气 35%', target: '尾气' }
+    ];
+
+    paths.forEach(function(p) {
+      // 箭头
+      engineEnergyCtx.strokeStyle = p.color;
+      engineEnergyCtx.lineWidth = 3 + p.w * 10;
+      engineEnergyCtx.beginPath();
+      engineEnergyCtx.moveTo(100, h/2);
+      engineEnergyCtx.lineTo(250, p.y);
+      engineEnergyCtx.lineTo(350, p.y);
+      engineEnergyCtx.stroke();
+
+      // 目标框
+      engineEnergyCtx.fillStyle = p.color;
+      engineEnergyCtx.fillRect(350, p.y - 20, 100, 40);
+      engineEnergyCtx.fillStyle = '#fff';
+      engineEnergyCtx.font = 'bold 10px sans-serif';
+      engineEnergyCtx.fillText(p.label, 400, p.y - 3);
+      engineEnergyCtx.fillText(p.target, 400, p.y + 12);
+    });
+  }
+
+  // ===== 暖手宝动画 =====
+  var warmerCanvas = document.getElementById('warmerCanvas');
+  var warmerCtx = warmerCanvas.getContext('2d');
+  var warmerPlaying = true;
+  var warmerT = 0;
+  var warmerParticles = [];
+
+  function initWarmerParticles() {
+    warmerParticles = [];
+    for (var i = 0; i < 60; i++) {
+      warmerParticles.push({
+        x: 50 + Math.random() * 500,
+        y: 50 + Math.random() * 300,
+        r: 3 + Math.random() * 3,
+        heat: Math.random(),
+        vx: (Math.random()-0.5) * 0.5,
+        vy: -Math.random() * 0.8 - 0.3
+      });
+    }
+  }
+  initWarmerParticles();
+
+  function drawWarmer() {
+    var w = warmerCanvas.width, h = warmerCanvas.height;
+    warmerCtx.clearRect(0, 0, w, h);
+    warmerCtx.fillStyle = '#FFF5EE';
+    warmerCtx.fillRect(0, 0, w, h);
+
+    // 暖贴轮廓
+    warmerCtx.fillStyle = 'rgba(232,93,4,0.08)';
+    warmerCtx.fillRect(100, h/2 - 60, 200, 120);
+    warmerCtx.strokeStyle = '#e85d04';
+    warmerCtx.lineWidth = 2;
+    warmerCtx.strokeRect(100, h/2 - 60, 200, 120);
+    warmerCtx.fillStyle = '#e85d04';
+    warmerCtx.font = 'bold 14px sans-serif';
+    warmerCtx.textAlign = 'center';
+    warmerCtx.fillText('暖贴', 200, h/2 - 30);
+    warmerCtx.font = '11px sans-serif';
+    warmerCtx.fillStyle = '#9B8B7A';
+    warmerCtx.fillText('Fe + O₂ → Fe₂O₃', 200, h/2 - 12);
+    warmerCtx.fillText('盐·水·活性炭', 200, h/2 + 5);
+
+    // 粒子（铁粉氧化）
+    warmerParticles.forEach(function(p) {
+      if (warmerPlaying) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.heat += 0.005;
+        if (p.heat > 1) p.heat = 0;
+        if (p.y < 0) { p.y = h/2 + 50; p.x = 100 + Math.random()*200; }
+      }
+      // 根据heat值改变颜色
+      var r = Math.floor(233 - p.heat * 50);
+      var g = Math.floor(93 - p.heat * 80);
+      var b = Math.floor(4 + p.heat * 100);
+      warmerCtx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + (0.4 + p.heat * 0.6) + ')';
+      warmerCtx.beginPath();
+      warmerCtx.arc(p.x, p.y, p.r + p.heat * 2, 0, Math.PI*2);
+      warmerCtx.fill();
+
+      // 热波纹
+      if (p.heat > 0.5) {
+        warmerCtx.strokeStyle = 'rgba(255,140,0,' + ((1 - p.heat) * 0.3) + ')';
+        warmerCtx.lineWidth = 1;
+        warmerCtx.beginPath();
+        warmerCtx.arc(p.x, p.y, p.r + (1 - p.heat) * 15, 0, Math.PI*2);
+        warmerCtx.stroke();
+      }
+    });
+
+    // 热能箭头
+    warmerCtx.strokeStyle = '#dc2f02';
+    warmerCtx.lineWidth = 3;
+    for (var a = 0; a < 5; a++) {
+      var ax = 350 + a * 40;
+      var wave = Math.sin(warmerT * 0.05 + a) * 10;
+      warmerCtx.beginPath();
+      warmerCtx.moveTo(ax, h/2);
+      warmerCtx.quadraticCurveTo(ax + 20, h/2 + wave, ax + 40, h/2);
+      warmerCtx.stroke();
+    }
+    warmerCtx.fillStyle = '#dc2f02';
+    warmerCtx.font = 'bold 14px sans-serif';
+    warmerCtx.fillText('热能释放 →', 400, h/2 - 30);
+    warmerCtx.font = '12px sans-serif';
+    warmerCtx.fillStyle = '#9B8B7A';
+    warmerCtx.fillText('≈ 19.4 kcal', 400, h/2 + 50);
+
+    // 温度显示
+    var temp = 25 + Math.min(warmerT / 100, 1) * 32;
+    warmerCtx.fillStyle = '#dc2f02';
+    warmerCtx.font = 'bold 20px monospace';
+    warmerCtx.textAlign = 'left';
+    warmerCtx.fillText(temp.toFixed(0) + '°C', 50, 30);
+
+    // O₂ 入口箭头
+    warmerCtx.strokeStyle = '#48cae4';
+    warmerCtx.lineWidth = 2;
+    warmerCtx.beginPath();
+    warmerCtx.moveTo(50, h/2);
+    warmerCtx.lineTo(95, h/2);
+    warmerCtx.stroke();
+    warmerCtx.fillStyle = '#48cae4';
+    warmerCtx.font = '11px sans-serif';
+    warmerCtx.textAlign = 'center';
+    warmerCtx.fillText('O₂', 50, h/2 - 10);
+
+    if (warmerPlaying) warmerT++;
+  }
+
+  document.getElementById('warmerPlay').addEventListener('click', function() {
+    warmerPlaying = !warmerPlaying;
+    this.textContent = warmerPlaying ? '⏸ 暂停' : '▶ 播放';
+    this.classList.toggle('playing', warmerPlaying);
+  });
+  document.getElementById('warmerReset').addEventListener('click', function() {
+    initWarmerParticles();
+    warmerT = 0;
+  });
+
+  // 暖手宝温度曲线
+  var warmerTempCanvas = document.getElementById('warmerTempCanvas');
+  var warmerTempCtx = warmerTempCanvas.getContext('2d');
+
+  function drawWarmerTemp() {
+    var w = warmerTempCanvas.width, h = warmerTempCanvas.height;
+    warmerTempCtx.clearRect(0, 0, w, h);
+    warmerTempCtx.fillStyle = '#FFF5EE';
+    warmerTempCtx.fillRect(0, 0, w, h);
+
+    var maxTemp = 60, maxHours = 10;
+    var baseY = h - 30;
+
+    // 轴
+    warmerTempCtx.strokeStyle = '#9B8B7A';
+    warmerTempCtx.lineWidth = 1;
+    warmerTempCtx.beginPath();
+    warmerTempCtx.moveTo(40, 10);
+    warmerTempCtx.lineTo(40, baseY);
+    warmerTempCtx.lineTo(w - 10, baseY);
+    warmerTempCtx.stroke();
+
+    // Y刻度
+    warmerTempCtx.fillStyle = '#9B8B7A';
+    warmerTempCtx.font = '9px monospace';
+    warmerTempCtx.textAlign = 'right';
+    for (var t = 0; t <= 60; t += 20) {
+      var y = baseY - (t / maxTemp) * (baseY - 15);
+      warmerTempCtx.fillText(t + '°', 35, y + 3);
+    }
+    // X刻度
+    warmerTempCtx.textAlign = 'center';
+    for (var hr = 0; hr <= 10; hr += 2) {
+      var x = 40 + (hr / maxHours) * (w - 50);
+      warmerTempCtx.fillText(hr + 'h', x, baseY + 15);
+    }
+
+    // 温度曲线
+    warmerTempCtx.strokeStyle = '#dc2f02';
+    warmerTempCtx.lineWidth = 2.5;
+    warmerTempCtx.beginPath();
+    for (var i = 0; i <= 100; i++) {
+      var hour = (i / 100) * maxHours;
+      var temp;
+      if (hour < 0.5) temp = 25 + (hour / 0.5) * 32;
+      else if (hour < 2) temp = 57;
+      else temp = 57 - (hour - 2) / (maxHours - 2) * 32;
+      var px = 40 + (i / 100) * (w - 50);
+      var py = baseY - (temp / maxTemp) * (baseY - 15);
+      if (i === 0) warmerTempCtx.moveTo(px, py);
+      else warmerTempCtx.lineTo(px, py);
+    }
+    warmerTempCtx.stroke();
+
+    // 填充
+    warmerTempCtx.lineTo(w - 10, baseY);
+    warmerTempCtx.lineTo(40, baseY);
+    warmerTempCtx.closePath();
+    warmerTempCtx.fillStyle = 'rgba(220,47,2,0.1)';
+    warmerTempCtx.fill();
+
+    // 标注
+    warmerTempCtx.fillStyle = '#dc2f02';
+    warmerTempCtx.font = 'bold 10px sans-serif';
+    warmerTempCtx.textAlign = 'center';
+    warmerTempCtx.fillText('峰值 57°C', 40 + (1.5/10)*(w-50), baseY - (57/maxTemp)*(baseY-15) - 8);
+  }
+
+  // ===== 效率对比图 =====
+  var efficiencyCanvas = document.getElementById('efficiencyCanvas');
+  var efficiencyCtx = efficiencyCanvas.getContext('2d');
+
+  function drawEfficiency() {
+    var w = efficiencyCanvas.width, h = efficiencyCanvas.height;
+    efficiencyCtx.clearRect(0, 0, w, h);
+    efficiencyCtx.fillStyle = '#FFF5EE';
+    efficiencyCtx.fillRect(0, 0, w, h);
+
+    var data = [
+      { name: '锂电池', eff: 90, color: '#52b788', path: '化学→电能' },
+      { name: '柴油机', eff: 48, color: '#48cae4', path: '化学→动能' },
+      { name: '火箭', eff: 55, color: '#7209b7', path: '化学→动能' },
+      { name: '人体ATP', eff: 40, color: '#06a77d', path: '化学→化学' },
+      { name: '汽油机', eff: 30, color: '#dc2f02', path: '化学→动能' },
+      { name: '肌肉做功', eff: 28, color: '#e85d04', path: '化学→机械' },
+      { name: '暖手宝', eff: 99, color: '#f4a261', path: '化学→热' }
+    ];
+    data.sort(function(a, b) { return b.eff - a.eff; });
+
+    var barH = 32, gap = 10, startY = 20;
+    var maxW = w - 250;
+
+    // 背景网格
+    efficiencyCtx.strokeStyle = 'rgba(180,160,140,0.1)';
+    efficiencyCtx.lineWidth = 1;
+    for (var g = 0; g <= 100; g += 20) {
+      var gx = 150 + (g/100) * maxW;
+      efficiencyCtx.beginPath();
+      efficiencyCtx.moveTo(gx, 10);
+      efficiencyCtx.lineTo(gx, h - 30);
+      efficiencyCtx.stroke();
+      efficiencyCtx.fillStyle = '#9B8B7A';
+      efficiencyCtx.font = '9px monospace';
+      efficiencyCtx.textAlign = 'center';
+      efficiencyCtx.fillText(g + '%', gx, h - 15);
+    }
+
+    data.forEach(function(d, i) {
+      var y = startY + i * (barH + gap);
+      var barW = (d.eff / 100) * maxW;
+
+      // 背景
+      efficiencyCtx.fillStyle = 'rgba(180,160,140,0.08)';
+      efficiencyCtx.fillRect(150, y, maxW, barH);
+
+      // 柱子
+      var grad = efficiencyCtx.createLinearGradient(150, 0, 150 + barW, 0);
+      grad.addColorStop(0, d.color);
+      grad.addColorStop(1, d.color + 'aa');
+      efficiencyCtx.fillStyle = grad;
+      efficiencyCtx.fillRect(150, y, barW, barH);
+
+      // 名称
+      efficiencyCtx.fillStyle = '#4A3B2E';
+      efficiencyCtx.font = 'bold 12px sans-serif';
+      efficiencyCtx.textAlign = 'right';
+      efficiencyCtx.fillText(d.name, 140, y + 21);
+
+      // 数值
+      efficiencyCtx.fillStyle = d.color;
+      efficiencyCtx.font = 'bold 13px monospace';
+      efficiencyCtx.textAlign = 'left';
+      efficiencyCtx.fillText(d.eff + '%', 150 + barW + 8, y + 21);
+
+      // 路径标注
+      efficiencyCtx.fillStyle = '#9B8B7A';
+      efficiencyCtx.font = '9px sans-serif';
+      efficiencyCtx.fillText(d.path, 150 + barW + 50, y + 21);
+    });
+  }
+
+  // ===== 千卡换算工具 =====
+  var kcalSlider = document.getElementById('kcalSlider');
+  kcalSlider.addEventListener('input', updateKcalTool);
+
+  function updateKcalTool() {
+    var kcal = parseInt(kcalSlider.value);
+    document.getElementById('kcalInput').textContent = kcal + ' kcal';
+    document.getElementById('kcalKJ').textContent = (kcal * 4.184).toFixed(1);
+    document.getElementById('kcalJ').textContent = (kcal * 4184).toLocaleString();
+    document.getElementById('kcalWh').textContent = (kcal * 1.162).toFixed(1);
+    document.getElementById('kcalRice').textContent = (kcal / 1.3).toFixed(0) + ' g';
+    document.getElementById('kcalFat').textContent = (kcal / 9.0).toFixed(1) + ' g';
+    document.getElementById('kcalJog').textContent = (kcal / 8).toFixed(1) + ' min';
+    document.getElementById('kcalBMR').textContent = (kcal / 70).toFixed(1) + ' hr';
+    document.getElementById('kcalGas').textContent = (kcal / 7.72).toFixed(0) + ' mL';
+  }
+
+  // ===== 主循环 =====
+  function animate() {
+    drawDigest();
+    drawCombust();
+    drawEngine();
+    drawWarmer();
+    requestAnimationFrame(animate);
+  }
+
+  function redrawAll() {
+    drawNutrients();
+    drawActivity();
+    drawEngineEnergy();
+    drawWarmerTemp();
+    drawEfficiency();
+    updateKcalTool();
+    updateDigestion();
+  }
+
+  // 初始化
+  redrawAll();
+  animate();
+
+  // 响应式 canvas
+  function resizeCanvases() {
+    document.querySelectorAll('canvas').forEach(function(c) {
+      var parent = c.parentElement;
+      if (parent) {
+        var w = parent.clientWidth;
+        if (w > 0 && c.width !== w) {
+          c.width = w;
+        }
+      }
+    });
+    redrawAll();
+  }
+  window.addEventListener('resize', resizeCanvases);
+  setTimeout(resizeCanvases, 100);
+})();
+</script>
+</body>
+</html>

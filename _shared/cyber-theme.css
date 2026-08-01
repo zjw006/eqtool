@@ -1,0 +1,912 @@
+/* ========== 科技风格主题 (Tech Theme Enhanced) ========== */
+/* 当 html[data-theme="cyber"] 时生效，覆盖 anime-cartoon-theme.css 的浅色风格 */
+/* 设计原则：深色底+网格背景+青蓝辉光+扫描线效果 */
+
+html[data-theme="cyber"] {
+  /* 主背景与容器 */
+  --bg: #0a0e14 !important;
+  --bg2: #0f1620 !important;
+  --bg3: #141b26 !important;
+  --bg-card: #0f1620 !important;
+  --bg-panel: #141b26 !important;
+
+  /* 文字色 */
+  --ink: #c9d1d9 !important;
+  --f1f5f9: #c9d1d9 !important;
+  --muted: #6e7681 !important;
+  --text: #c9d1d9 !important;
+  --text-main: #c9d1d9 !important;
+  --text-light: #6e7681 !important;
+
+  /* 边框 */
+  --rule: #1e2530 !important;
+  --border: #1e2530 !important;
+
+  /* 主色 - 蓝 */
+  --accent: #00d4ff !important;
+  --pink: #58a6ff !important;
+  --pink-light: rgba(88,166,255,0.25) !important;
+  --pink-dark: #388bfd !important;
+
+  /* 蓝 */
+  --accent4: #00d4ff !important;
+  --blue: #00d4ff !important;
+  --blue-light: rgba(0,212,255,0.2) !important;
+
+  /* 绿 */
+  --green: #00ffa3 !important;
+  --green-light: rgba(0,255,163,0.2) !important;
+
+  /* 紫 */
+  --purple: #a371f7 !important;
+  --purple-light: rgba(163,113,247,0.2) !important;
+
+  /* 黄/金 */
+  --accent2: #ffb454 !important;
+  --yellow: #ffb454 !important;
+  --yellow-light: rgba(255,180,84,0.2) !important;
+  --gold: #ffb454 !important;
+  --gold-light: rgba(255,180,84,0.2) !important;
+
+  /* 橙/珊瑚 */
+  --accent3: #ff7b72 !important;
+  --coral: #ff7b72 !important;
+  --coral-light: rgba(255,123,114,0.2) !important;
+  --orange: #ff7b72 !important;
+
+  /* 青 */
+  --teal: #2ee6c6 !important;
+
+  /* 阴影 - 带辉光 */
+  --shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+  --shadow-deep: 0 8px 30px rgba(0,0,0,0.6) !important;
+  --shadow-hover: 0 8px 30px rgba(0,212,255,0.15) !important;
+
+  /* 特殊色覆盖 */
+  --bg-cream: #0a0e14 !important;
+  --cream: #0a0e14 !important;
+  --paper: #0f1620 !important;
+}
+
+/* === Body 背景 - 网格+辉光 === */
+html[data-theme="cyber"] body {
+  background-color: #0a0e14 !important;
+  background-image:
+    linear-gradient(rgba(88,166,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(88,166,255,0.04) 1px, transparent 1px),
+    radial-gradient(ellipse at 20% 0%, rgba(0,212,255,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(163,113,247,0.05) 0%, transparent 50%) !important;
+  background-size: 50px 50px, 50px 50px, 100% 100%, 100% 100% !important;
+  color: #c9d1d9 !important;
+}
+html[data-theme="cyber"] body::before {
+  content: '' !important; position: fixed !important; inset: 0 !important; z-index: -2 !important; pointer-events: none !important;
+  background-image:
+    linear-gradient(rgba(88,166,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(88,166,255,0.03) 1px, transparent 1px) !important;
+  background-size: 50px 50px !important;
+  display: block !important;
+}
+/* Scanline overlay */
+html[data-theme="cyber"] body::after {
+  content: '' !important; position: fixed !important; inset: 0 !important; z-index: 9998 !important; pointer-events: none !important;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,212,255,0.015) 2px, rgba(0,212,255,0.015) 4px) !important;
+  display: block !important;
+}
+
+/* === Header === */
+html[data-theme="cyber"] header {
+  background: transparent !important;
+  border-bottom: 1px solid #1e2530 !important;
+}
+html[data-theme="cyber"] header h1 {
+  -webkit-text-fill-color: #c9d1d9 !important;
+  background: none !important;
+  color: #c9d1d9 !important;
+  text-shadow: none !important;
+}
+
+/* === Section === */
+html[data-theme="cyber"] section h2 {
+  color: #58a6ff !important;
+  border-bottom: 1px solid #1e2530 !important;
+}
+
+/* === Card 通用 === */
+html[data-theme="cyber"] .card,
+html[data-theme="cyber"] .card-grid > *,
+html[data-theme="cyber"] .prop-box,
+html[data-theme="cyber"] .law-card,
+html[data-theme="cyber"] .quantifier-card,
+html[data-theme="cyber"] .problem-box,
+html[data-theme="cyber"] .story-panel,
+html[data-theme="cyber"] .mod,
+html[data-theme="cyber"] .trend-card,
+html[data-theme="cyber"] .diag-item,
+html[data-theme="cyber"] .tl-card,
+html[data-theme="cyber"] .rung,
+html[data-theme="cyber"] .tip,
+html[data-theme="cyber"] .result-card {
+  background: #0f1620 !important;
+  border: 1px solid #1e2530 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+}
+html[data-theme="cyber"] .card:hover,
+html[data-theme="cyber"] .prop-box:hover,
+html[data-theme="cyber"] .law-card:hover,
+html[data-theme="cyber"] .quantifier-card:hover {
+  border-color: #58a6ff !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+}
+
+/* === 按钮 === */
+html[data-theme="cyber"] button,
+html[data-theme="cyber"] .btn-sm,
+html[data-theme="cyber"] .fn-selector button,
+html[data-theme="cyber"] .btn-group button {
+  background: #141b26 !important;
+  border: 1px solid #1e2530 !important;
+  color: #c9d1d9 !important;
+  border-radius: 8px !important;
+}
+html[data-theme="cyber"] button:hover,
+html[data-theme="cyber"] .btn-sm:hover,
+html[data-theme="cyber"] .fn-selector button:hover,
+html[data-theme="cyber"] .btn-group button:hover {
+  border-color: #58a6ff !important;
+  color: #58a6ff !important;
+  background: #141b26 !important;
+}
+html[data-theme="cyber"] button.active,
+html[data-theme="cyber"] .btn-sm.active,
+html[data-theme="cyber"] .fn-selector button.active,
+html[data-theme="cyber"] .btn-group button.active {
+  background: #1f6feb !important;
+  border-color: #1f6feb !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+/* === 输入框 === */
+html[data-theme="cyber"] input[type="text"],
+html[data-theme="cyber"] input[type="number"],
+html[data-theme="cyber"] select,
+html[data-theme="cyber"] textarea {
+  background: #0a0e14 !important;
+  border: 1px solid #1e2530 !important;
+  color: #c9d1d9 !important;
+  border-radius: 8px !important;
+}
+html[data-theme="cyber"] input[type="text"]:focus,
+html[data-theme="cyber"] input[type="number"]:focus,
+html[data-theme="cyber"] select:focus,
+html[data-theme="cyber"] textarea:focus {
+  border-color: #58a6ff !important;
+  box-shadow: 0 0 0 3px rgba(88,166,255,0.15) !important;
+}
+html[data-theme="cyber"] input[type="range"] {
+  background: #1e2530 !important;
+}
+html[data-theme="cyber"] input[type="range"]::-webkit-slider-thumb {
+  background: #58a6ff !important;
+  border: 2px solid #0a0e14 !important;
+  box-shadow: none !important;
+}
+html[data-theme="cyber"] input[type="range"]::-moz-range-thumb {
+  background: #58a6ff !important;
+  border: 2px solid #0a0e14 !important;
+  box-shadow: none !important;
+}
+
+/* === 表格 === */
+html[data-theme="cyber"] table,
+html[data-theme="cyber"] .truth-table,
+html[data-theme="cyber"] .data-table {
+  border: 1px solid #1e2530 !important;
+  box-shadow: none !important;
+}
+html[data-theme="cyber"] table th,
+html[data-theme="cyber"] .truth-table th,
+html[data-theme="cyber"] .data-table th {
+  background: #141b26 !important;
+  color: #c9d1d9 !important;
+  border: 1px solid #1e2530 !important;
+}
+html[data-theme="cyber"] table td,
+html[data-theme="cyber"] .truth-table td,
+html[data-theme="cyber"] .data-table td {
+  background: #0f1620 !important;
+  color: #c9d1d9 !important;
+  border: 1px solid #1e2530 !important;
+}
+html[data-theme="cyber"] table tr:nth-child(even) td,
+html[data-theme="cyber"] .truth-table tr:nth-child(even) td {
+  background: #141b26 !important;
+}
+
+/* === 公式显示 === */
+html[data-theme="cyber"] .formula-display {
+  background: #0f1620 !important;
+  border: 1px solid #1e2530 !important;
+  color: #e3b341 !important;
+}
+
+/* === 标签/徽章 === */
+html[data-theme="cyber"] .tag,
+html[data-theme="cyber"] .result-badge,
+html[data-theme="cyber"] .elem-tag,
+html[data-theme="cyber"] .game-tag {
+  border-radius: 8px !important;
+}
+html[data-theme="cyber"] .tag.purple,
+html[data-theme="cyber"] .result-badge.purple {
+  background: rgba(188,140,255,0.15) !important;
+  color: #bc8cff !important;
+  border: 1px solid rgba(188,140,255,0.3) !important;
+}
+html[data-theme="cyber"] .tag.amber,
+html[data-theme="cyber"] .result-badge.amber {
+  background: rgba(227,179,65,0.12) !important;
+  color: #e3b341 !important;
+  border: 1px solid rgba(227,179,65,0.3) !important;
+}
+html[data-theme="cyber"] .tag.rose,
+html[data-theme="cyber"] .result-badge.red {
+  background: rgba(248,81,150,0.12) !important;
+  color: #f85196 !important;
+  border: 1px solid rgba(248,81,150,0.3) !important;
+}
+html[data-theme="cyber"] .tag.cyan,
+html[data-theme="cyber"] .result-badge.cyan {
+  background: rgba(88,166,255,0.12) !important;
+  color: #58a6ff !important;
+  border: 1px solid rgba(88,166,255,0.3) !important;
+}
+html[data-theme="cyber"] .tag.green,
+html[data-theme="cyber"] .result-badge.green {
+  background: rgba(63,185,80,0.12) !important;
+  color: #3fb950 !important;
+  border: 1px solid rgba(63,185,80,0.3) !important;
+}
+
+/* === Footer === */
+html[data-theme="cyber"] footer {
+  border-top: 1px solid #1e2530 !important;
+  color: #6e7681 !important;
+}
+
+/* === 返回按钮 === */
+html[data-theme="cyber"] .back-btn,
+html[data-theme="cyber"] .anime-back-btn {
+  background: rgba(22,27,34,0.9) !important;
+  border: 1px solid #1e2530 !important;
+  color: #c9d1d9 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+}
+html[data-theme="cyber"] .back-btn:hover,
+html[data-theme="cyber"] .anime-back-btn:hover {
+  border-color: #58a6ff !important;
+  color: #58a6ff !important;
+  background: #141b26 !important;
+  transform: none !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+}
+
+/* === 浮动装饰 - 隐藏 === */
+html[data-theme="cyber"] .anime-deco-layer {
+  display: none !important;
+}
+
+/* === Canvas === */
+html[data-theme="cyber"] canvas {
+  border-radius: 12px !important;
+}
+
+/* === SVG === */
+html[data-theme="cyber"] svg text {
+  fill: #c9d1d9 !important;
+}
+
+/* === 滚动条 === */
+html[data-theme="cyber"] ::-webkit-scrollbar-track {
+  background: #0a0e14;
+}
+html[data-theme="cyber"] ::-webkit-scrollbar-thumb {
+  background: #1e2530;
+}
+html[data-theme="cyber"] ::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+/* === 选项卡/导航高亮 === */
+html[data-theme="cyber"] .tab.active,
+html[data-theme="cyber"] nav a.active {
+  background: #1f6feb !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+}
+
+/* === 控件组标签 === */
+html[data-theme="cyber"] .control-group label,
+html[data-theme="cyber"] .slider-row label {
+  color: #6e7681 !important;
+}
+html[data-theme="cyber"] .control-group label span.value,
+html[data-theme="cyber"] .slider-row .slider-val {
+  color: #e3b341 !important;
+}
+
+/* === 解决步骤 === */
+html[data-theme="cyber"] .solution-step {
+  border-bottom: 1px solid #1e2530 !important;
+}
+html[data-theme="cyber"] .solution-step .step-num {
+  background: #1f6feb !important;
+  color: #fff !important;
+}
+
+/* === 题目框 === */
+html[data-theme="cyber"] .problem-box {
+  background: #0f1620 !important;
+  border: 1px solid #1e2530 !important;
+}
+
+/* === 确保浅色文字在暗背景上可见 === */
+html[data-theme="cyber"] *[style*="color: #f1f5f9"],
+html[data-theme="cyber"] *[style*="color:#f1f5f9"],
+html[data-theme="cyber"] *[style*="color: var(--ink)"] {
+  color: #c9d1d9 !important;
+}
+
+/* === 确保暗色文字在暗背景上变为浅色 === */
+html[data-theme="cyber"] *[style*="color: #4A3B2E"],
+html[data-theme="cyber"] *[style*="color:#4A3B2E"],
+html[data-theme="cyber"] *[style*="color: #2b2b2b"],
+html[data-theme="cyber"] *[style*="color:#2b2b2b"] {
+  color: #c9d1d9 !important;
+}
+
+/* === ECharts 容器背景 === */
+html[data-theme="cyber"] .chart-container,
+html[data-theme="cyber"] .chart-box,
+html[data-theme="cyber"] .chart-area {
+  background: #0f1620 !important;
+  border: 1px solid #1e2530 !important;
+}
+
+/* === 通用容器/面板 === */
+html[data-theme="cyber"] .panel,
+html[data-theme="cyber"] .info-panel,
+html[data-theme="cyber"] .control-panel,
+html[data-theme="cyber"] .sidebar,
+html[data-theme="cyber"] .main-content,
+html[data-theme="cyber"] .content-box,
+html[data-theme="cyber"] .info-box,
+html[data-theme="cyber"] .demo-area,
+html[data-theme="cyber"] .visual-area {
+  background: #0f1620 !important;
+  border: 1px solid #1e2530 !important;
+  color: #c9d1d9 !important;
+}
+
+/* === 链接 === */
+html[data-theme="cyber"] a {
+  color: #58a6ff !important;
+}
+html[data-theme="cyber"] a:hover {
+  color: #79c0ff !important;
+}
+
+/* === 标题 === */
+html[data-theme="cyber"] h1,
+html[data-theme="cyber"] h2,
+html[data-theme="cyber"] h3,
+html[data-theme="cyber"] h4,
+html[data-theme="cyber"] h5,
+html[data-theme="cyber"] h6 {
+  color: #c9d1d9 !important;
+}
+
+/* === 段落和列表 === */
+html[data-theme="cyber"] p,
+html[data-theme="cyber"] li,
+html[data-theme="cyber"] span,
+html[data-theme="cyber"] div {
+  color: inherit;
+}
+
+/* === 强调文字 === */
+html[data-theme="cyber"] strong,
+html[data-theme="cyber"] b {
+  color: #c9d1d9 !important;
+}
+
+/* === 代码块 === */
+html[data-theme="cyber"] pre,
+html[data-theme="cyber"] code {
+  background: #0a0e14 !important;
+  color: #c9d1d9 !important;
+  border: 1px solid #1e2530 !important;
+}
+
+/* ========== 漫画/特殊页面覆盖 (calculus-comic-history 等) ========== */
+/* 覆盖硬编码颜色的页面 */
+
+/* 封面区域 - 移除渐变 */
+html[data-theme="cyber"] .cover {
+  background: #0a0e14 !important;
+}
+html[data-theme="cyber"] .cover h1 {
+  text-shadow: none !important;
+  color: #c9d1d9 !important;
+}
+html[data-theme="cyber"] .cover .sub {
+  color: #6e7681 !important;
+}
+
+/* 漫画格 - 暗色卡片 */
+html[data-theme="cyber"] .panel {
+  background: #0f1620 !important;
+  border-color: #1e2530 !important;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.3) !important;
+  color: #c9d1d9 !important;
+}
+html[data-theme="cyber"] .panel .scene {
+  color: #c9d1d9 !important;
+}
+
+/* 对话气泡 */
+html[data-theme="cyber"] .bubble {
+  background: #141b26 !important;
+  border-color: #1e2530 !important;
+  color: #c9d1d9 !important;
+}
+html[data-theme="cyber"] .bubble::after {
+  border-top-color: #1e2530 !important;
+}
+html[data-theme="cyber"] .bubble.think {
+  background: #1a1e24 !important;
+  border-color: #484f58 !important;
+}
+html[data-theme="cyber"] .bubble.shout {
+  background: rgba(248,81,150,0.15) !important;
+  border-color: #f85196 !important;
+  color: #f85196 !important;
+}
+html[data-theme="cyber"] .speaker {
+  color: #6e7681 !important;
+}
+
+/* 标签 */
+html[data-theme="cyber"] .tag {
+  background: rgba(31,111,235,0.15) !important;
+  border-color: #1e2530 !important;
+  color: #58a6ff !important;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.3) !important;
+}
+
+/* 章节标题 */
+html[data-theme="cyber"] .chapter {
+  border-bottom-color: #1e2530 !important;
+}
+html[data-theme="cyber"] .chapter-num {
+  color: #f85196 !important;
+}
+html[data-theme="cyber"] .chapter-title {
+  color: #c9d1d9 !important;
+}
+html[data-theme="cyber"] .chapter-sub {
+  color: #6e7681 !important;
+}
+
+/* 问题块 */
+html[data-theme="cyber"] .problem {
+  background: #0f1620 !important;
+  color: #e3b341 !important;
+  border: 1px solid #1e2530 !important;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.4) !important;
+}
+html[data-theme="cyber"] .problem h3 {
+  color: #e3b341 !important;
+}
+html[data-theme="cyber"] .problem p {
+  color: #c9d1d9 !important;
+}
+
+/* 思考块 */
+html[data-theme="cyber"] .think-block {
+  background: rgba(88,166,255,0.08) !important;
+  border-left-color: #58a6ff !important;
+  color: #c9d1d9 !important;
+}
+html[data-theme="cyber"] .think-block b {
+  color: #58a6ff !important;
+}
+
+/* 动画舞台 */
+html[data-theme="cyber"] .stage {
+  background: #0f1620 !important;
+  border-color: #1e2530 !important;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.3) !important;
+}
+html[data-theme="cyber"] .stage canvas {
+  background: #0a0e14 !important;
+}
+html[data-theme="cyber"] .stage .cap {
+  color: #6e7681 !important;
+}
+
+/* 按钮 */
+html[data-theme="cyber"] .btn {
+  background: #141b26 !important;
+  border-color: #1e2530 !important;
+  color: #c9d1d9 !important;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.3) !important;
+}
+html[data-theme="cyber"] .btn:hover {
+  border-color: #58a6ff !important;
+  color: #58a6ff !important;
+}
+html[data-theme="cyber"] .btn.blue {
+  background: #1f6feb !important;
+  color: #fff !important;
+}
+html[data-theme="cyber"] .btn.red {
+  background: #da3633 !important;
+  color: #fff !important;
+}
+
+/* 结论 */
+html[data-theme="cyber"] .result {
+  background: rgba(63,185,80,0.1) !important;
+  border-color: #3fb950 !important;
+  color: #c9d1d9 !important;
+}
+html[data-theme="cyber"] .result b {
+  color: #3fb950 !important;
+}
+
+/* 时间轴 */
+html[data-theme="cyber"] .timeline {
+  border-left-color: #1e2530 !important;
+}
+html[data-theme="cyber"] .tl-item::before {
+  background: #58a6ff !important;
+  border-color: #1e2530 !important;
+}
+html[data-theme="cyber"] .tl-item .yr {
+  color: #f85196 !important;
+}
+html[data-theme="cyber"] .tl-item .txt {
+  color: #c9d1d9 !important;
+}
+
+/* 结尾 */
+html[data-theme="cyber"] .finale {
+  color: #c9d1d9 !important;
+}
+html[data-theme="cyber"] .finale h2 {
+  text-shadow: none !important;
+  color: #c9d1d9 !important;
+}
+html[data-theme="cyber"] .finale p {
+  color: #6e7681 !important;
+}
+
+/* 顶部进度条 */
+html[data-theme="cyber"] #progress {
+  background: #58a6ff !important;
+}
+
+/* 返回按钮 */
+html[data-theme="cyber"] .back-btn {
+  background: rgba(22,27,34,0.9) !important;
+  color: #c9d1d9 !important;
+  border-color: #1e2530 !important;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.3) !important;
+}
+html[data-theme="cyber"] .back-btn:hover {
+  background: #141b26 !important;
+  border-color: #58a6ff !important;
+  color: #58a6ff !important;
+}
+
+/* footer 文字 */
+html[data-theme="cyber"] footer {
+  color: #6e7681 !important;
+}
+
+/* 通用文本颜色覆盖 - 漫画页面 */
+html[data-theme="cyber"] .wrap,
+html[data-theme="cyber"] .wrap * {
+  color: inherit;
+}
+html[data-theme="cyber"] .wrap {
+  color: #c9d1d9;
+}
+
+/* 覆盖硬编码的深色文字 */
+html[data-theme="cyber"] *[style*="color: #2b2b2b"],
+html[data-theme="cyber"] *[style*="color:#2b2b2b"],
+html[data-theme="cyber"] *[style*="color: #5c5236"],
+html[data-theme="cyber"] *[style*="color:#5c5236"],
+html[data-theme="cyber"] *[style*="color: #8a7a55"],
+html[data-theme="cyber"] *[style*="color:#8a7a55"],
+html[data-theme="cyber"] *[style*="color: #b0a077"],
+html[data-theme="cyber"] *[style*="color:#b0a077"],
+html[data-theme="cyber"] *[style*="color: #999"],
+html[data-theme="cyber"] *[style*="color:#999"] {
+  color: #6e7681 !important;
+}
+
+/* ========== fields-medal-lab 覆盖 ========== */
+/* 该页面使用自定义变量名，需额外覆盖 */
+html[data-theme="cyber"] :root {
+  --bg: #0a0e14 !important;
+  --card: #0f1620 !important;
+  --gold: #e3b341 !important;
+  --gold2: #f0c750 !important;
+  --txt: #c9d1d9 !important;
+  --sub: #6e7681 !important;
+  --line: #1e2530 !important;
+  --accent: #58a6ff !important;
+}
+/* 导航栏 */
+html[data-theme="cyber"] nav {
+  background: rgba(13,17,23,0.85) !important;
+  border-bottom-color: #1e2530 !important;
+}
+html[data-theme="cyber"] nav a {
+  color: #6e7681 !important;
+}
+html[data-theme="cyber"] nav a:hover,
+html[data-theme="cyber"] nav a.active {
+  color: #e3b341 !important;
+  background: rgba(227,179,65,0.1) !important;
+}
+/* 进度条 */
+html[data-theme="cyber"] #progress {
+  background: #58a6ff !important;
+}
+/* 标题渐变改为纯色 */
+html[data-theme="cyber"] h1 {
+  background: none !important;
+  -webkit-text-fill-color: #c9d1d9 !important;
+  color: #c9d1d9 !important;
+  animation: none !important;
+}
+/* 卡片 */
+html[data-theme="cyber"] .demo {
+  background: #0f1620 !important;
+  border-color: #1e2530 !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important;
+}
+html[data-theme="cyber"] .demo:hover {
+  border-color: #58a6ff !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
+}
+/* 演示标题 */
+html[data-theme="cyber"] .d-head {
+  background: rgba(88,166,255,0.08) !important;
+  border-color: #1e2530 !important;
+}
+html[data-theme="cyber"] .d-title .who {
+  color: #6e7681 !important;
+}
+html[data-theme="cyber"] .d-title h2 {
+  color: #e3b341 !important;
+}
+html[data-theme="cyber"] .d-title .app-tag {
+  color: #58a6ff !important;
+  background: rgba(88,166,255,0.1) !important;
+  border-color: rgba(88,166,255,0.3) !important;
+}
+/* 舞台 */
+html[data-theme="cyber"] .stage canvas {
+  background: #0a0e14 !important;
+  border-color: #1e2530 !important;
+}
+html[data-theme="cyber"] .ctrl {
+  color: #6e7681 !important;
+}
+html[data-theme="cyber"] .ctrl .val {
+  color: #e3b341 !important;
+}
+html[data-theme="cyber"] .ctrl button {
+  background: rgba(88,166,255,0.1) !important;
+  color: #58a6ff !important;
+  border-color: #1e2530 !important;
+}
+html[data-theme="cyber"] .ctrl button:hover {
+  background: rgba(88,166,255,0.2) !important;
+}
+/* 侧栏 */
+html[data-theme="cyber"] .d-side h4 {
+  color: #58a6ff !important;
+}
+html[data-theme="cyber"] .d-side .explain {
+  color: #c9d1d9 !important;
+}
+html[data-theme="cyber"] .d-side .explain b {
+  color: #e3b341 !important;
+}
+html[data-theme="cyber"] .d-side .real {
+  color: #6e7681 !important;
+  background: rgba(255,255,255,0.04) !important;
+  border-color: #1e2530 !important;
+}
+html[data-theme="cyber"] .d-side .real b {
+  color: #e3b341 !important;
+}
+/* 奖牌装饰 */
+html[data-theme="cyber"] .medal .orbit::before {
+  background: #e3b341 !important;
+  box-shadow: 0 0 12px rgba(227,179,65,0.5) !important;
+}
+html[data-theme="cyber"] .scroll-hint {
+  color: #6e7681 !important;
+}
+html[data-theme="cyber"] .scroll-hint::after {
+  background: linear-gradient(#e3b341, transparent) !important;
+}
+html[data-theme="cyber"] .tagline {
+  color: #6e7681 !important;
+}
+html[data-theme="cyber"] .tagline b {
+  color: #e3b341 !important;
+}
+/* 底部 */
+html[data-theme="cyber"] footer {
+  color: #6e7681 !important;
+  border-top-color: #1e2530 !important;
+}
+
+/* ========== random-variable-adventure 覆盖 ========== */
+/* 该页面有硬编码的浅色背景 */
+html[data-theme="cyber"] .story-panel {
+  background: #0f1620 !important;
+  border-left-color: #f85196 !important;
+}
+html[data-theme="cyber"] .story-panel .speech-bubble {
+  background: #141b26 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+  color: #c9d1d9 !important;
+}
+html[data-theme="cyber"] .story-panel .speech-bubble::after {
+  background: #141b26 !important;
+}
+html[data-theme="cyber"] .canvas-section {
+  background: #0f1620 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+}
+html[data-theme="cyber"] .canvas-section h3 {
+  color: #bc8cff !important;
+}
+html[data-theme="cyber"] .canvas-wrap {
+  background: #0a0e14 !important;
+  border-color: #1e2530 !important;
+}
+html[data-theme="cyber"] .btn-primary {
+  background: #1f6feb !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+html[data-theme="cyber"] .btn-primary:hover {
+  background: #388bfd !important;
+}
+/* 覆盖硬编码白色背景 */
+html[data-theme="cyber"] .story-panel .speech-bubble,
+html[data-theme="cyber"] .canvas-section,
+html[data-theme="cyber"] .canvas-wrap {
+  color: #c9d1d9;
+}
+/* 章节卡片 */
+html[data-theme="cyber"] .chapter-card {
+  background: #0f1620 !important;
+  border-color: #1e2530 !important;
+  color: #c9d1d9 !important;
+}
+/* 覆盖 white 硬编码 */
+html[data-theme="cyber"] *[style*="background: white"],
+html[data-theme="cyber"] *[style*="background:white"],
+html[data-theme="cyber"] *[style*="background: #FAFAFE"],
+html[data-theme="cyber"] *[style*="background:#FAFAFE"],
+html[data-theme="cyber"] *[style*="background: #FFF5F9"],
+html[data-theme="cyber"] *[style*="background:#FFF5F9"] {
+  background: #0f1620 !important;
+}
+
+/* ========== quantum-educator 覆盖 ========== */
+/* React 应用使用 HSL 格式变量，需额外覆盖 */
+html[data-theme="cyber"] {
+  --background: 215 28% 7% !important;
+  --foreground: 213 12% 84% !important;
+  --card: 213 16% 14% !important;
+  --card-foreground: 213 12% 84% !important;
+  --border: 215 14% 21% !important;
+  --muted: 215 14% 21% !important;
+  --muted-foreground: 215 16% 65% !important;
+  --primary: 212 92% 60% !important;
+  --primary-foreground: 0 0% 100% !important;
+  --secondary: 38 60% 55% !important;
+  --accent: 333 90% 60% !important;
+  --accent-foreground: 0 0% 100% !important;
+  --input: 215 14% 21% !important;
+  --popover: 213 16% 14% !important;
+  --popover-foreground: 213 12% 84% !important;
+  --destructive: 0 60% 50% !important;
+  --destructive-foreground: 0 0% 98% !important;
+  --ring: 212 92% 60% !important;
+  --color-bg: #0a0e14 !important;
+  --color-ink: #c9d1d9 !important;
+  --color-panel: #0f1620 !important;
+  --color-text: #c9d1d9 !important;
+  --color-text-secondary: #6e7681 !important;
+  --color-primary: #58a6ff !important;
+  --color-accent: #f85196 !important;
+  --color-success: #3fb950 !important;
+  --color-warm: #e3b341 !important;
+}
+/* 覆盖硬编码白色背景 */
+html[data-theme="cyber"] #root {
+  background: #0a0e14 !important;
+  color: #c9d1d9 !important;
+}
+/* 强制所有子元素使用暗色背景 */
+html[data-theme="cyber"] #root * {
+  background-color: #0a0e14 !important;
+  border-color: #1e2530 !important;
+  color: #c9d1d9 !important;
+}
+/* 卡片/面板使用稍亮的暗色 */
+html[data-theme="cyber"] #root [class*="card"],
+html[data-theme="cyber"] #root [class*="Card"],
+html[data-theme="cyber"] #root [class*="panel"],
+html[data-theme="cyber"] #root [class*="Panel"],
+html[data-theme="cyber"] #root [class*="bg-card"],
+html[data-theme="cyber"] #root [class*="bg-popover"],
+html[data-theme="cyber"] #root [class*="bg-muted"],
+html[data-theme="cyber"] #root [class*="bg-white"],
+html[data-theme="cyber"] #root [class*="bg-secondary"] {
+  background-color: #0f1620 !important;
+}
+/* 保持按钮/交互元素的颜色 */
+html[data-theme="cyber"] #root button,
+html[data-theme="cyber"] #root [class*="btn"],
+html[data-theme="cyber"] #root [class*="Btn"],
+html[data-theme="cyber"] #root [class*="button"] {
+  background-color: #141b26 !important;
+  color: #c9d1d9 !important;
+  border-color: #1e2530 !important;
+}
+html[data-theme="cyber"] #root button:hover,
+html[data-theme="cyber"] #root [class*="btn"]:hover {
+  border-color: #58a6ff !important;
+  color: #58a6ff !important;
+}
+/* 主色按钮 */
+html[data-theme="cyber"] #root [class*="primary"],
+html[data-theme="cyber"] #root [class*="Primary"] {
+  background-color: #1f6feb !important;
+  color: #fff !important;
+}
+/* 渐变背景移除 */
+html[data-theme="cyber"] #root [style*="radial-gradient"],
+html[data-theme="cyber"] #root [style*="linear-gradient"],
+html[data-theme="cyber"] #root [style*="gradient"] {
+  background: none !important;
+  background-color: #0f1620 !important;
+}
+/* 返回按钮 */
+html[data-theme="cyber"] .back-btn {
+  background: rgba(22,27,34,0.9) !important;
+  color: #c9d1d9 !important;
+  border-color: #1e2530 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+}
+html[data-theme="cyber"] .back-btn:hover {
+  background: #141b26 !important;
+  border-color: #58a6ff !important;
+  color: #58a6ff !important;
+}

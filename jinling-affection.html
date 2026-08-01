@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>红楼梦 · 金陵好感度</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { height:100%; overflow:hidden; }
+  body {
+    font-family:"STKaiti","KaiTi","Noto Serif SC",serif;
+    background:#e9e4d8; color:#2b2b2b;
+  }
+  .screen { position:fixed; inset:0; display:none; }
+  .screen.show { display:block; }
+
+  /* ---------- 标题界面 ---------- */
+  #title {
+    background:url("assets-jinling/bg_taixu_ink.png") center/cover no-repeat;
+  }
+  #title .veil {
+    position:absolute; inset:0;
+    background:radial-gradient(ellipse at center, rgba(243,238,227,.1), rgba(233,228,216,.5));
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  #title h1 {
+    font-size:64px; letter-spacing:14px; color:#2b2b2b;
+    text-shadow:0 2px 18px rgba(243,238,227,.9), 0 0 40px rgba(243,238,227,.8);
+  }
+  #title h1::after {
+    content:""; display:block; width:120px; height:3px; margin:18px auto 0;
+    background:linear-gradient(90deg, transparent, #9e2b25, transparent);
+  }
+  #title h2 {
+    font-size:19px; letter-spacing:8px; color:#6a5c4e; margin:16px 0 48px;
+    text-shadow:0 1px 10px rgba(243,238,227,.9);
+  }
+  .tbtn {
+    display:block; width:280px; margin:10px; padding:14px;
+    background:rgba(250,247,238,.88); color:#2b2b2b; border:1.5px solid #2b2b2b;
+    border-radius:4px; font-family:inherit; font-size:19px; letter-spacing:6px;
+    cursor:pointer; text-align:center; transition:all .2s; backdrop-filter:blur(3px);
+    box-shadow:3px 3px 0 rgba(43,43,43,.18);
+  }
+  .tbtn:hover { background:#9e2b25; color:#f5f0e6; border-color:#9e2b25; transform:translateY(-2px); }
+  .tbtn.sub { background:rgba(233,228,216,.75); font-size:16px; border-color:#8a7f6e; color:#5a5044; }
+  .tbtn.sub:hover { background:#2b2b2b; color:#f5f0e6; border-color:#2b2b2b; }
+  #title .tip { position:absolute; bottom:22px; width:100%; text-align:center; color:rgba(60,52,44,.75); font-size:13px; letter-spacing:2px; }
+
+  /* ---------- 游戏主界面 ---------- */
+  #game { background:#e9e4d8; }
+  #bgLayer {
+    position:absolute; inset:0; background:center/cover no-repeat;
+    transition:background-image .8s, filter .8s;
+  }
+  #bgLayer.dim { filter:brightness(.7) saturate(.85); }
+  .vignette { position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(ellipse at center, transparent 60%, rgba(60,52,44,.28)); }
+
+  /* 立绘（单人出场，居中） */
+  .sprite {
+    position:absolute; bottom:0; left:50%; margin-left:-270px; height:90%;
+    transition:opacity .4s, transform .4s;
+    opacity:0; transform:translateY(14px);
+    filter:drop-shadow(0 6px 24px rgba(60,52,44,.35));
+  }
+  .sprite.on { opacity:1; transform:translateY(0); }
+  #spDaiyu { margin-left:-150px; } /* 黛玉出场位偏右 */
+  #spBaochai { transform:translateY(14px) scaleX(-1); } /* 宝钗立绘水平镜像 */
+  #spBaochai.on { transform:translateY(0) scaleX(-1); }
+
+  /* 顶栏 */
+  #hud {
+    position:absolute; top:0; left:0; right:0; padding:12px 20px;
+    display:flex; align-items:center; gap:16px; z-index:5;
+    background:linear-gradient(rgba(243,238,227,.85), transparent);
+  }
+  #chapterTag {
+    color:#2b2b2b; font-size:15px; letter-spacing:3px;
+    background:rgba(250,247,238,.85); border:1px solid #2b2b2b; border-radius:3px;
+    padding:6px 14px; box-shadow:2px 2px 0 rgba(43,43,43,.15);
+  }
+  #favorBox { margin-left:auto; color:#2b2b2b; font-size:15px; letter-spacing:2px;
+    background:rgba(250,247,238,.85); border:1px solid #2b2b2b; border-radius:3px; padding:6px 16px;
+    box-shadow:2px 2px 0 rgba(43,43,43,.15); }
+  #favorBar { display:inline-block; width:120px; height:8px; background:rgba(43,43,43,.15);
+    border-radius:4px; margin-left:10px; margin-right:8px; vertical-align:middle; overflow:hidden; }
+  #favorFill { display:block; height:100%; width:0%; background:linear-gradient(90deg,#9e2b25,#d4675e); transition:width .6s; }
+  #favorNum { color:#9e2b25; font-size:14px; font-weight:bold; }
+
+  /* 章节卡（宣纸 + 朱砂印章） */
+  #chapterCard {
+    position:absolute; inset:0; z-index:8; display:none;
+    align-items:center; justify-content:center; flex-direction:column;
+    background:rgba(243,238,227,.96);
+    background-image:radial-gradient(#ddd5c2 1px, transparent 1px);
+    background-size:20px 20px;
+  }
+  #chapterCard.show { display:flex; animation:fadein .8s; }
+  #chapterCard h3 {
+    color:#f5f0e6; font-size:16px; letter-spacing:6px; margin-bottom:20px;
+    background:#9e2b25; padding:8px 18px 8px 22px; border-radius:3px;
+    box-shadow:2px 2px 6px rgba(158,43,37,.4); transform:rotate(-2deg);
+  }
+  #chapterCard h2 { color:#2b2b2b; font-size:46px; letter-spacing:14px; }
+  #chapterCard p { color:rgba(60,52,44,.6); margin-top:30px; font-size:14px; letter-spacing:2px; }
+  @keyframes fadein { from{opacity:0} to{opacity:1} }
+
+  /* 对话框（宣纸墨框） */
+  #dlg {
+    position:absolute; left:50%; transform:translateX(-50%);
+    bottom:26px; width:min(880px, 92%); z-index:6;
+  }
+  #dlgName {
+    display:inline-block; background:#9e2b25;
+    color:#f5f0e6; padding:7px 26px; border-radius:3px;
+    font-size:17px; letter-spacing:4px;
+    margin-left:14px; margin-bottom:-2px; min-width:110px; text-align:center;
+    box-shadow:2px 2px 6px rgba(158,43,37,.35); position:relative; z-index:2;
+  }
+  #dlgBox {
+    background:rgba(250,247,238,.95); border:1.5px solid #2b2b2b; border-radius:6px;
+    padding:20px 26px 26px; min-height:110px; backdrop-filter:blur(3px);
+    color:#2b2b2b; font-size:18px; line-height:1.9; cursor:pointer; position:relative;
+    box-shadow:4px 4px 0 rgba(43,43,43,.12);
+  }
+  #dlgBox.narr { color:#6a5c4e; }
+  #nextMark {
+    position:absolute; right:22px; bottom:12px; color:#9e2b25; font-size:14px;
+    animation:blink 1s infinite;
+  }
+  @keyframes blink { 50%{opacity:.15} }
+
+  /* 选项（黛墨青色系，与宣纸对话框区分） */
+  #choices {
+    position:absolute; left:50%; top:64px; bottom:26px; transform:translateX(-50%);
+    z-index:9; width:min(640px,92%); display:none; flex-direction:column; gap:12px;
+    justify-content:center; overflow-y:auto; padding:6px;
+  }
+  #choices.show { display:flex; }
+  #choicePrompt {
+    text-align:center; color:#22332e; font-size:19px; letter-spacing:2px; margin-bottom:8px;
+    background:rgba(250,247,238,.96); border:1.5px solid #4a7a6e; border-radius:6px;
+    padding:14px 20px; line-height:1.7;
+    box-shadow:4px 4px 0 rgba(43,43,43,.18);
+  }
+  #choicePrompt::before { content:"✦ "; color:#9e2b25; }
+  #choicePrompt::after { content:" ✦"; color:#9e2b25; }
+  .cbtn {
+    background:rgba(228,236,230,.94); border:1.5px solid #4a7a6e; border-radius:3px;
+    border-left:8px solid #4a7a6e;
+    color:#22332e; font-family:inherit; font-size:17px; line-height:1.6;
+    padding:13px 22px; cursor:pointer; text-align:left; transition:all .15s;
+    backdrop-filter:blur(3px); box-shadow:3px 3px 0 rgba(74,122,110,.2);
+  }
+  .cbtn::before { content:"◇ "; color:#4a7a6e; }
+  .cbtn:hover:not(:disabled) { background:#4a7a6e; color:#eef5f1; transform:translateX(6px); }
+  .cbtn:hover:not(:disabled)::before { color:#eef5f1; }
+  .cbtn:disabled { cursor:default; }
+  .cbtn.best { border-color:#9e2b25; border-left-color:#9e2b25; background:rgba(246,236,228,.96); box-shadow:0 0 14px rgba(158,43,37,.3); }
+
+  /* 考点解析 */
+  #analysis {
+    position:absolute; right:20px; top:70px; z-index:9; width:min(380px, 86%);
+    background:rgba(250,247,238,.97); border:1.5px solid #2b2b2b; border-radius:6px;
+    padding:18px 20px; display:none; box-shadow:5px 5px 0 rgba(43,43,43,.15);
+  }
+  #analysis.show { display:block; animation:pop .25s ease; }
+  @keyframes pop { from{transform:scale(.9);opacity:0} to{transform:scale(1);opacity:1} }
+  #analysis h4 { color:#9e2b25; letter-spacing:3px; margin-bottom:8px; font-size:16px; }
+  #analysis .favor-delta { font-size:15px; margin-bottom:8px; }
+  #analysis p { font-size:14.5px; line-height:1.8; }
+  #analysis button {
+    margin-top:12px; width:100%; padding:9px; background:#2b2b2b; color:#f5f0e6;
+    border:none; border-radius:3px; font-family:inherit; font-size:15px; letter-spacing:3px; cursor:pointer;
+  }
+  #analysis button:hover { background:#9e2b25; }
+
+  /* ---------- 名场面 CG ---------- */
+  #cgLayer {
+    position:absolute; inset:0; z-index:20; display:none;
+    background:#000; cursor:pointer;
+  }
+  #cgLayer.show { display:block; animation:cgfade 1s ease; }
+  @keyframes cgfade { from{opacity:0} to{opacity:1} }
+  #cgLayer img {
+    position:absolute; inset:0; width:100%; height:100%; object-fit:contain;
+    background:#000;
+  }
+  #cgCaption {
+    position:absolute; bottom:8%; left:50%; transform:translateX(-50%);
+    color:#f5e9d0; font-size:26px; letter-spacing:10px; white-space:nowrap;
+    text-shadow:0 0 20px rgba(0,0,0,.9), 0 2px 8px rgba(0,0,0,.9);
+  }
+  #cgHint {
+    position:absolute; bottom:4%; left:50%; transform:translateX(-50%);
+    color:rgba(245,233,208,.55); font-size:13px; letter-spacing:3px;
+    animation:blink 1.4s infinite;
+  }
+
+  /* ---------- 结局界面 ---------- */
+  #ending {
+    background:url("assets-jinling/bg_night_ink.png") center/cover no-repeat;
+  }
+  #ending .veil {
+    position:absolute; inset:0; background:rgba(233,228,216,.45);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px;
+  }
+  #endCard {
+    width:min(620px,92%); background:rgba(250,247,238,.96); border:1.5px solid #2b2b2b;
+    border-radius:6px; padding:34px 38px; color:#2b2b2b; text-align:center;
+    max-height:88vh; overflow-y:auto; box-shadow:6px 6px 0 rgba(43,43,43,.2);
+  }
+  #endCard .be { color:#9e2b25; letter-spacing:6px; font-size:15px; }
+  #endCard h2 { font-size:40px; letter-spacing:10px; margin:10px 0 4px; color:#2b2b2b; }
+  #endCard .judge { color:#6a5c4e; font-size:17px; line-height:2; margin:14px 0; letter-spacing:2px; }
+  #endCard .sum {
+    text-align:left; background:rgba(158,43,37,.06); border-left:4px solid #9e2b25;
+    padding:14px 18px; font-size:14.5px; line-height:1.9; margin-top:14px; border-radius:0 6px 6px 0;
+  }
+  #endCard .sum b { color:#9e2b25; }
+
+  /* ---------- 图鉴 ---------- */
+  #album {
+    background:url("assets-jinling/bg_taixu_ink.png") center/cover no-repeat;
+  }
+  #album .veil {
+    position:absolute; inset:0; background:rgba(233,228,216,.6); padding:5vh 16px; overflow-y:auto;
+  }
+  #album h2 { text-align:center; color:#2b2b2b; letter-spacing:8px; margin-bottom:24px; text-shadow:0 1px 10px rgba(243,238,227,.9); }
+  .endGrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:16px; max-width:900px; margin:0 auto; }
+  .endItem {
+    background:rgba(250,247,238,.94); border:1.5px solid #2b2b2b; border-radius:6px;
+    padding:20px; text-align:center; color:#2b2b2b; box-shadow:4px 4px 0 rgba(43,43,43,.12);
+  }
+  .endItem.locked { opacity:.4; filter:grayscale(1); }
+  .endItem .be { font-size:12px; color:#9e2b25; letter-spacing:3px; }
+  .endItem h3 { font-size:22px; letter-spacing:4px; margin:8px 0; }
+  .endItem p { font-size:13px; line-height:1.7; color:#6a5c4e; }
+
+  /* ---------- 返回按钮 ---------- */
+  .back-to-home {
+    position:fixed; top:16px; left:20px; z-index:999;
+    background:rgba(250,247,238,.88); color:#2b2b2b;
+    border:1.5px solid #2b2b2b; border-radius:4px;
+    padding:8px 20px; font-family:inherit; font-size:15px; letter-spacing:4px;
+    cursor:pointer; text-decoration:none; transition:all .2s;
+    backdrop-filter:blur(3px); box-shadow:3px 3px 0 rgba(43,43,43,.18);
+  }
+  .back-to-home:hover { background:#9e2b25; color:#f5f0e6; border-color:#9e2b25; transform:translateY(-2px); }
+</style>
+</head>
+<body>
+
+<a href="javascript:void(0)" class="back-to-home" onclick="goBack()">← 返回绘本馆</a>
+
+<!-- ================= 标题 ================= -->
+<div class="screen show" id="title">
+  <div class="veil">
+    <h1>金陵好感度</h1>
+    <h2>红楼梦 · 乙女向考点攻略 · 黛玉线</h2>
+    <button class="tbtn" onclick="startGame('daiyu')">黛玉线 · 泪尽还恩</button>
+    <button class="tbtn" onclick="startGame('baochai')">宝钗线 · 停机之德</button>
+    <button class="tbtn sub" onclick="showScreen('album')">结局图鉴</button>
+    <div class="tip">对话选择即考点 · 好感度即理解度 · 所有结局早已写在太虚幻境</div>
+  </div>
+</div>
+
+<!-- ================= 游戏 ================= -->
+<div class="screen" id="game">
+  <div id="bgLayer"></div>
+  <div class="vignette"></div>
+  <img class="sprite" id="spBaoyu" src="assets-jinling/baoyu_ink.png" alt="贾宝玉">
+  <img class="sprite" id="spDaiyu" src="assets-jinling/daiyu_ink.png" alt="林黛玉">
+  <img class="sprite" id="spBaochai" src="assets-jinling/baochai_ink.png" alt="薛宝钗">
+  <div id="hud">
+    <span id="chapterTag"></span>
+    <span id="favorBox">💗 <span id="favorLabel">黛玉</span>好感度<span id="favorBar"><span id="favorFill"></span></span><span id="favorNum">0</span></span>
+  </div>
+  <div id="chapterCard"><h3 id="ccNo"></h3><h2 id="ccTitle"></h2><p>轻触任意处继续</p></div>
+  <div id="dlg">
+    <div id="dlgName"></div>
+    <div id="dlgBox" onclick="advance()"><span id="dlgText"></span><span id="nextMark">▼</span></div>
+  </div>
+  <div id="choices">
+    <div id="choicePrompt"></div>
+  </div>
+  <div id="cgLayer" onclick="dismissCG()">
+    <img id="cgImg" src="" alt="名场面">
+    <div id="cgCaption"></div>
+    <div id="cgHint">轻触继续</div>
+  </div>
+  <div id="analysis">
+    <h4>📌 高考考点解析</h4>
+    <div class="favor-delta" id="anaFavor"></div>
+    <p id="anaText"></p>
+    <button onclick="closeAnalysis()">继续剧情</button>
+  </div>
+</div>
+
+<!-- ================= 结局 ================= -->
+<div class="screen" id="ending">
+  <div class="veil">
+    <div id="endCard">
+      <div class="be">— BAD END · 判词已定 —</div>
+      <h2 id="endTitle"></h2>
+      <div class="judge" id="endJudge"></div>
+      <div class="sum" id="endSum"></div>
+      <div style="margin-top:22px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <button class="tbtn" style="display:inline-block;width:auto;padding:10px 26px;margin:0;font-size:16px;" onclick="restart()">再入此梦</button>
+        <button class="tbtn sub" style="display:inline-block;width:auto;padding:10px 26px;margin:0;" onclick="showScreen('album')">结局图鉴</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 图鉴 ================= -->
+<div class="screen" id="album">
+  <div class="veil">
+    <h2>太虚幻境 · 薄命司</h2>
+    <div class="endGrid" id="endGrid"></div>
+    <div style="text-align:center;margin-top:26px;">
+      <button class="tbtn sub" style="width:auto;display:inline-block;padding:10px 30px;" onclick="showScreen('title')">返回封面</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* 返回绘本馆 */
+function goBack(){
+  const from=localStorage.getItem('fromTab');
+  const scrollY=localStorage.getItem('fromScroll');
+  if(from){
+    localStorage.setItem('returnToTab',from);
+    localStorage.setItem('returnScroll',scrollY||'0');
+  }
+  window.location.href='./index.html';
+}
+
+/* ============================================================
+   剧情数据：黛玉线 · 五章
+   who: "旁白" | "宝玉" | "黛玉"
+   choice.options: favor 好感增减, best=是否最合人物心境
+   ============================================================ */
+const STORY_DAIYU = [
+{
+  no:"第一回", title:"初入贾府", bg:"assets-jinling/bg_xiaoxiang_ink.png",
+  steps:[
+    {who:"旁白", text:"扬州城外的船行了月余，黛玉终于站在了荣国府门前。母亲新丧，父亲年迈，从此她便是这深宅里“寄人篱下”的客。"},
+    {who:"旁白", text:"她想起母亲生前的话：外祖母家与别家不同。于是她步步留心，时时在意，不肯轻易多说一句话，多行一步路。"},
+    {who:"宝玉", text:"这个妹妹我曾见过的！"},
+    {who:"旁白", text:"宝黛初见，宝玉脱口而出的这句话，让满屋子的人都笑了。可黛玉心头一惊——这人，分明在哪里见过。"},
+    {who:"宝玉", text:"妹妹可也有玉没有？"},
+    {who:"黛玉", text:"（满屋的目光都落在我身上……这话，该怎么答？）"},
+    {choice:{
+      prompt:"【抉择】面对宝玉“可也有玉”之问，黛玉最合其性格的反应是？",
+      options:[
+        { text:"“我没有。想来那玉是一件罕物，岂能人人有的。”——答完便垂下眼去", favor:15, best:true,
+          analysis:"考点：人物语言与性格。黛玉答得克制谨慎——入府第一原则是“不肯多说一句话”。但宝玉听后当场摔玉：“什么罕物！家里姐姐妹妹都没有，单我有，我说没趣。”摔玉象征对“金玉良缘”天定命运的反抗，是宝黛爱情与全书主题的第一处伏笔。"},
+        { text:"“宝哥哥的玉稀罕，我的玉更稀罕，只是不示人罢了”——笑着顶回去", favor:-5, best:false,
+          analysis:"此答机锋外露、锋芒太盛，不符合黛玉初入贾府“步步留心，时时在意”的处境。她此时是客居孤女，语言风格是克制而非张扬。高考人物形象题的第一原则：人物言行必须与其身份处境吻合。"},
+        { text:"转身向贾母撒娇：“外祖母，哥哥欺负我！”", favor:-10, best:false,
+          analysis:"这是史湘云式的娇憨，不是林黛玉。黛玉的自尊与敏感不允许她在外人面前示弱撒娇。注意区分十二钗各自的“语言指纹”：黛玉含蓄多思、湘云豪爽娇憨、宝钗圆融得体。"}
+      ]}},
+    {who:"旁白", text:"当夜，黛玉在碧纱橱里垂泪——不是因为想家，而是因为那个为她摔玉的疯癫表哥。鹦哥（紫鹃）劝不住她。"},
+    {who:"黛玉", text:"（我第一天来，就惹得他摔了命根子……往后这日子，要怎么过？）"}
+  ]
+},
+{
+  no:"第二回", title:"黛玉葬花", bg:"assets-jinling/bg_xiaoxiang_ink.png",
+  steps:[
+    {who:"旁白", text:"芒种节，满园的女眷都在祭饯花神，独不见黛玉。宝玉寻到山坡下，听见一阵呜咽——"},
+    {who:"黛玉", text:"花谢花飞飞满天，红消香断有谁怜？……一年三百六十日，风刀霜剑严相逼。"},
+    {cg:"assets-jinling/cg_zanghua_ink.png", caption:"黛 玉 葬 花"},
+    {who:"旁白", text:"她肩担花锄，锄上挂着花囊，手把花帚，将满地落花一一收进锦囊，埋进香冢。"},
+    {who:"宝玉", text:"（听得痴倒）……妹妹！这花埋在土里，虽干净，到底随水流出去了，依然糟蹋。不如撂在这水里罢？"},
+    {who:"黛玉", text:"（他又来了。方才晴雯不给我开门的事，他还不知道呢……）"},
+    {choice:{
+      prompt:"【抉择】宝玉提议“落花随水”，黛玉的葬花与反驳，核心指向什么？",
+      options:[
+        { text:"“撂在水里不好。你看这里的水干净，只一流出去，有人家的地方脏的臭的混倒，仍旧把花糟蹋了。”——质本洁来还洁去", favor:20, best:true,
+          analysis:"考点：《葬花吟》的人物印证。葬花不是闲情，是黛玉的人格宣言——“未若锦囊收艳骨，一抔净土掩风流”。花落污泥=女儿落于污浊尘世，葬花=以死守住洁净。高考常考“质本洁来还洁去，强于污淖陷渠沟”所体现的高洁孤傲、宁折不弯。"},
+        { text:"葬花只是因为黛玉体弱多病、多愁善感，看见落花联想到自己要死了", favor:5, best:false,
+          analysis:"只答对了一半。葬花确有自伤身世，但其深层是“以花喻人”——花是所有红楼女儿的共同隐喻。黛玉葬的不只是自己的青春，更是大观园女儿们“千红一哭，万艳同悲”的集体命运。答题时只写“多愁善感”会失分。"},
+        { text:"黛玉是故意葬花给宝玉看，好叫他心疼自己", favor:-10, best:false,
+          analysis:"这是对黛玉最常见的误读。她的孤高正在于“不屑于做给谁看”——葬花时她根本不知道宝玉在听。把黛玉理解为“作”和“心机”，等于把她降格成了庸常女子。人物分析题的大忌：用世俗动机消解人物的超越性。"}
+      ]}},
+    {who:"宝玉", text:"（望着花冢出神）既有今日，何必当初……"},
+    {who:"旁白", text:"宝玉不觉恸倒在山坡上——他听见“侬今葬花人笑痴，他年葬侬知是谁”，忽然想到：黛玉的花容月貌，将来亦有无可寻觅之时。"}
+  ]
+},
+{
+  no:"第三回", title:"共读西厢", bg:"assets-jinling/bg_taohua_ink.png",
+  steps:[
+    {who:"旁白", text:"三月桃花开时，宝玉揣着一套《西厢记》，躲到沁芳闸桥边的桃花底下偷看。偏生叫黛玉撞见了。"},
+    {who:"黛玉", text:"看的什么书？"},
+    {who:"宝玉", text:"（慌忙藏书）……是《大学》《中庸》。"},
+    {who:"黛玉", text:"你又在我跟前弄鬼。趁早儿给我瞧，好多着呢。"},
+    {who:"旁白", text:"黛玉接过去，从头看去，越看越爱看，不到一顿饭工夫，将十六出俱已看完。自觉词藻警人，余香满口。"},
+    {cg:"assets-jinling/cg_xixiang_ink.png", caption:"共 读 西 厢"},
+    {choice:{
+      prompt:"【抉择】宝黛共读《西厢》，这一情节在高考中的核心意义是？",
+      options:[
+        { text:"《西厢记》是当时禁书——共读禁书意味着宝黛在精神上结成了反抗礼教的同盟，爱情建立在共同的价值追求上", favor:20, best:true,
+          analysis:"考点：经典情节的主题意义。贾府允许的读书是《四书》举业，《西厢》《牡丹亭》是“移了性情”的邪书。宝黛共读西厢=叛逆者的精神结盟：他们的爱情不是儿女私情，而是两个不愿就范于仕途经济之人的相知。这是“木石前盟”区别于“金玉良缘”的根本。"},
+        { text:"说明宝玉不爱读书、贪玩，黛玉也跟着学坏了", favor:-10, best:false,
+          analysis:"因果倒置。宝玉不是“不爱读书”，而是拒绝读功名之书，独爱“杂书”——这恰恰是他叛逆性的证明。黛玉“越看越爱看”，说明她与宝玉本性相投。评价人物要透过行为看价值取向，不能套用世俗标准。"},
+        { text:"这是全书的闲笔，主要是为了描写春天的园林美景", favor:-5, best:false,
+          analysis:"红楼无闲笔。共读西厢后，黛玉随口以“良辰美景奈何天”行酒令，被宝钗“审”出一番劝导——此情节直接牵出钗黛关系的转折。每一处“闲笔”都在伏线千里，这是高考考查红楼叙事艺术的要点。"}
+      ]}},
+    {who:"宝玉", text:"妹妹，你说这书好不好？"},
+    {who:"黛玉", text:"（红了脸）……果然有趣。"},
+    {who:"旁白", text:"桃花落了他们满身。谁也没有再说话。有些心事，从此两个人都知道了，却一辈子也没有说破。"}
+  ]
+},
+{
+  no:"第四回", title:"题帕三绝", bg:"assets-jinling/bg_xiaoxiang_ink.png",
+  steps:[
+    {who:"旁白", text:"宝玉挨了打。阖府上下络绎不绝地来探望，唯独黛玉是悄悄的——她两个眼睛肿得桃儿一般，满面泪光。"},
+    {who:"黛玉", text:"你从此可都改了罢！"},
+    {who:"宝玉", text:"你放心，别说这样话。就便为这些人死了，也是情愿的！"},
+    {who:"旁白", text:"夜里，宝玉支开袭人，遣晴雯给黛玉送去两条旧手帕。晴雯不解：送新的不好么？宝玉说：你放心，她自然知道。"},
+    {who:"黛玉", text:"（捧着旧帕出神……这旧帕子，是他贴身用过的，他这是把他的心，交到我手里了。）"},
+    {choice:{
+      prompt:"【抉择】宝玉挨打后送“旧帕”而非新帕，黛玉读出的深意是？",
+      options:[
+        { text:"旧帕贴身、情意已熟——“不写情词不写诗，一方素帕寄心知”，这是两人无需言说的定情信物", favor:20, best:true,
+          analysis:"考点：细节物象的寓意。送帕一回是全书写“知己”最含蓄的一笔：新帕是礼，旧帕是心。黛玉题帕三绝“眼空蓄泪泪空垂，暗洒闲抛却为谁”，是她爱情诗的高峰。高考常借此类细节考查“红楼以物传情”的含蓄笔法。"},
+        { text:"宝玉被打糊涂了，随手拿了两条帕子，并无深意", favor:-10, best:false,
+          analysis:"红楼无一笔是闲笔。若只是随手，何必特意支开袭人、派“勇晴雯”夜送？袭人代表礼教秩序，晴雯代表真性情——绕开袭人，本身就是一次无声的表态。读红楼要读出“避人”背后的文章。"},
+        { text:"黛玉认为宝玉在试探她，因此题诗三首以自证清白", favor:-5, best:false,
+          analysis:"题帕三绝不是自证，是倾泻。三首诗层层递进：一写泪为谁流，二写帕上泪痕，三写“窗前亦有千竿竹，不识香痕渍也无”——以潇湘竹上泪斑（湘妃竹典故）自比娥皇女英，是黛玉对生死相许的无声应答。"}
+      ]}},
+    {who:"黛玉", text:"（研墨提笔，在帕上写道——）眼空蓄泪泪空垂，暗洒闲抛却为谁？尺幅鲛绡劳解赠，叫人焉得不伤悲！"},
+    {who:"旁白", text:"她还要往下写时，觉得浑身火热，面上作烧。走至镜台揭起锦袱一照，只见腮上通红，自羡压倒桃花——却不知病由此萌。"}
+  ]
+},
+{
+  no:"终 回", title:"焚稿断痴情", bg:"assets-jinling/bg_night_ink.png",
+  steps:[
+    {who:"旁白", text:"后来，老太太和太太们定了“金玉良缘”。成婚那夜，潇湘馆外隐隐约约传来一阵音乐声，除了雪雁紫鹃，竟没有一个人来问一问。"},
+    {who:"黛玉", text:"紫鹃……笼上火盆。"},
+    {who:"紫鹃", text:"姑娘，这大冷的天，笼火盆做什么？"},
+    {who:"黛玉", text:"（把题诗的旧帕、诗稿，一样一样，投进火里）……我的身子是干净的，这些东西，叫它们随我去罢。"},
+    {cg:"assets-jinling/cg_fengao_ink.png", caption:"焚 稿 断 痴 情"},
+    {choice:{
+      prompt:"【抉择】“焚稿断痴情”是黛玉之死的高潮，这一笔的悲剧力量在于？",
+      options:[
+        { text:"烧掉的是诗稿与旧帕——她亲手烧掉了自己一生仅存的东西：诗（自我）与情（知己）。质本洁来，还洁去", favor:20, best:true,
+          analysis:"考点：高潮情节与主题收束。诗稿是黛玉“自我”的载体，旧帕是“知己”的信物——焚稿即焚尽此生。对照宝玉成亲的鼓乐声，一焚一娶、一死一生，封建家族以“爱”的名义完成了对叛逆者的绞杀。这正是“金玉良缘”战胜“木石前盟”的终极控诉。"},
+        { text:"黛玉性格太悲观偏激，如果她豁达一些就不会病死", favor:-10, best:false,
+          analysis:"这是用结果苛责人物。黛玉之死不是性格悲剧，而是社会悲剧——“风刀霜剑”自始至终来自她无法选择的处境：父母双亡、寄人篱下、婚姻不由自主。高考悲剧分析的要诀：把个人命运还原到社会结构中去看。"},
+        { text:"焚稿说明黛玉到死都不明白宝玉的心意，是个误会造成的悲剧", favor:-5, best:false,
+          analysis:"恰恰相反，黛玉比谁都明白——她明白宝玉的心，更明白这心意敌不过整个家族的算计。她不是死于误会，是死于“看清”。临终那句“宝玉，宝玉，你好……”的留白，正是留给读者去填的千古之问。"}
+      ]}},
+    {who:"旁白", text:"火光熄了。竹梢风动，月影移墙。潇湘馆里，只剩下一缕幽香，散在这茫茫的夜色里。"},
+    {who:"旁白", text:"可叹停机德，堪怜咏絮才。玉带林中挂，金簪雪里埋。"}
+  ]
+}
+];
+
+/* 好感度四档结局 + 隐藏结局（黛玉线） */
+const ENDINGS_DAIYU = [
+{
+  min:0, id:"误读绛珠", be:"BAD END · 判词已碎", title:"误读绛珠",
+  judge:"你陪她走完了这一生，却始终没有读懂她。她焚稿那夜，你以为她只是赌气；她泪尽之时，你只道她身子弱。太虚幻境的册子上，她的名字墨迹未干，而你连一半都没能翻开。",
+  sum:`<b>📖 判词残页（只窥见一半）</b><br>
+① 身世定调：父母双亡、寄人篱下 → 敏感自尊、孤高自许的底色<br>
+② 诗词印证：葬花吟“质本洁来还洁去” → 高洁孤傲、宁折不弯<br>
+<span style="color:#8a7f6e;">③④⑤ ……墨渍晕染，不可复辨。</span><br><br>
+<b>💡 再入此梦，答对更多抉择，可读全判词。</b>`
+},
+{
+  min:50, id:"泪尽而逝", be:"BAD END · 判词已定", title:"泪尽而逝",
+  judge:"“玉带林中挂”——她本是西方灵河岸上三生石畔的绛珠仙草，为报神瑛侍者灌溉之恩，下世为人，把一生的眼泪还他。泪尽之日，便是归去之时。你读懂了她的大半，却仍有几处心事，没能陪她走到底。",
+  sum:`<b>📖 通关奖励 · 黛玉形象答题模板（上半部）</b><br>
+① 身世定调：父母双亡、寄人篱下 → 敏感自尊、孤高自许的底色<br>
+② 诗词印证：葬花吟“质本洁来还洁去” → 高洁孤傲、宁折不弯<br>
+③ 细节佐证：共读西厢、题帕三绝 → 叛逆知己、以诗为命<br>
+<span style="color:#8a7f6e;">④⑤ 好感度 80 以上可解锁完整模板。</span>`
+},
+{
+  min:80, id:"泪尽而逝", be:"BAD END · 判词已定", title:"泪尽而逝",
+  judge:"“玉带林中挂”——她本是西方灵河岸上三生石畔的绛珠仙草，为报神瑛侍者灌溉之恩，下世为人，把一生的眼泪还他。泪尽之日，便是归去之时。你几乎读懂了她的全部心事。",
+  sum:`<b>📖 通关奖励 · 黛玉形象答题模板（完整）</b><br>
+① 身世定调：父母双亡、寄人篱下 → 敏感自尊、孤高自许的底色<br>
+② 诗词印证：葬花吟“质本洁来还洁去” → 高洁孤傲、宁折不弯<br>
+③ 细节佐证：共读西厢、题帕三绝 → 叛逆知己、以诗为命<br>
+④ 悲剧归因：个人性情的“真”与封建家族的“伪”不可调和 → 社会悲剧而非性格悲剧<br>
+⑤ 答题金句：黛玉之死，是“风刀霜剑”下千红一哭的缩影<br><br>
+<b>🌸 好感度 100 可开启隐藏结局「太虚幻境」。</b>`
+},
+{
+  min:100, id:"太虚幻境", be:"HIDDEN END · 木石前盟", title:"太虚幻境",
+  bg:"assets-jinling/bg_taixu_ink.png",
+  judge:"警幻仙子亲启册页：“你既读懂了绛珠一生，这薄命司的册子，便许你翻阅。”——原来木石前盟从不是一段爱情那么简单：神瑛侍者以甘露溉草，是无心之恩；绛珠以一生眼泪相还，是以情报情。这一“还”字，写尽了红楼女儿的宿命。",
+  sum:`<b>📖 隐藏奖励 · 十二钗判词体系总考点</b><br>
+① 判词结构：正册十二钗 + 副册（香菱）+ 又副册（晴雯、袭人）→ 等级即身份<br>
+② 一判双人：黛玉宝钗共用一判（玉带林中挂 / 金簪雪里埋）→ 钗黛合一的对比结构<br>
+③ 谐音密码：千红一窟（哭）、万艳同杯（悲）、原应叹息、娇杏（侥幸）、霍启（祸起）<br>
+④ 图谶判词：《飞鸟各投林》总收全书 →“落了片白茫茫大地真干净”<br>
+⑤ 答题金句：判词是曹公预埋的叙事暗线——读判词，即读命运。<br><br>
+<b>💗 满分知心：绛珠有你，不负此梦。</b>`
+}
+];
+function pickEnding(f){
+  let e = ENDINGS[0];
+  for(const t of ENDINGS){ if(f >= t.min) e = t; }
+  return e;
+}
+
+/* ============================================================
+   宝钗线 · 五回
+   ============================================================ */
+const STORY_BAOCHAI = [
+{
+  no:"第一回", title:"金锁初现", bg:"assets-jinling/bg_hengwu_ink.png",
+  steps:[
+    {who:"旁白", text:"薛家入京，住进了贾府东北角上的梨香院。宝钗年纪虽不大，却品格端方、容貌丰美，人多谓黛玉所不及。"},
+    {who:"旁白", text:"这一日宝玉来探望病中的宝钗。宝钗笑道：“成日家说你的这玉，究竟未曾细细的赏鉴，我今儿倒要瞧瞧。”"},
+    {who:"旁白", text:"她看那玉上刻着“莫失莫忘，仙寿恒昌”，莺儿在旁嘻嘻地笑：“我听这两句话，倒像和姑娘的项圈上的两句话是一对儿。”"},
+    {who:"宝玉", text:"原来姐姐那项圈上也有八个字，我也赏鉴赏鉴！"},
+    {who:"宝钗", text:"（她解了排扣，从里面大红袄上把那珠宝晶莹、黄金灿烂的璎珞掏了出来——）不离不弃，芳龄永继。"},
+    {choice:{
+      prompt:"【抉择】金锁八字与通灵宝玉“是一对儿”，“金玉良缘”之说的本质是？",
+      options:[
+        { text:"僧道给的金锁、要配有玉的——“天命”背后，是薛家寄居贾府、谋求联姻的舆论经营", favor:15, best:true,
+          analysis:"考点：情节的深层动机。金锁来历处处含糊（“和尚给的吉谶”由薛家自己人反复说出），与黛玉“木石前盟”的天成相对，“金玉良缘”是人为建构的“天命”。高考常以此考查：同一情节的双重读法——表层是宿命，深层是家族利益。"},
+        { text:"说明宝钗和宝玉是天生一对，黛玉才是第三者", favor:-10, best:false,
+          analysis:"这正是薛家希望贾府上下相信的叙事。但要注意文本细节：宝玉梦中都喊骂“和尚道士的话如何信得？什么是金玉姻缘，我偏说是木石姻缘！”——宝玉本人从未认这“天命”。评价情节要看当事人的真实态度，不能只看旁人的说辞。"},
+        { text:"只是小孩子戴的饰物巧合相同，没有任何深意", favor:-5, best:false,
+          analysis:"红楼无闲笔，更无闲物。金锁在全书出现十余次，每一次都在推进“金玉”舆论：莺儿提、薛姨妈说、元妃赐礼独宝钗与宝玉相同——层层加码，这是曹公精心布置的叙事线索，绝非巧合。"}
+      ]}},
+    {who:"旁白", text:"宝玉闻着宝钗身上一阵阵凉森森甜丝丝的幽香，问是什么香。宝钗说是冷香丸的香气。这一问，又牵出了一桩旧事。"}
+  ]
+},
+{
+  no:"第二回", title:"滴翠亭扑蝶", bg:"assets-jinling/bg_hengwu_ink.png",
+  steps:[
+    {who:"旁白", text:"芒种饯花会，众姐妹都在，独不见黛玉。宝钗说：“我去叫她。”走到半路，却见宝玉进了潇湘馆——宝钗站住了：此刻跟进去，黛玉岂不嫌疑？她抽身便回。"},
+    {who:"旁白", text:"忽见前面一双玉色蝴蝶，大如团扇，一上一下迎风翩跹，十分有趣。宝钗意欲扑了来玩耍，遂向袖中取出扇子，蹑手蹑脚地跟了去。"},
+    {cg:"assets-jinling/cg_pudie_ink.png", caption:"宝 钗 扑 蝶"},
+    {who:"旁白", text:"一直跟到池中滴翠亭上，香汗淋漓，娇喘细细。亭子里忽然传出人语——是小红和坠儿，正说着手帕子的私情。宝钗在外听得清楚。"},
+    {who:"旁白", text:"亭中人要推开窗棂查看。宝钗料定躲不及了，心念一闪，故意放重了脚步，笑着叫道：“颦儿！我看你往那里藏！”"},
+    {choice:{
+      prompt:"【抉择】滴翠亭“金蝉脱壳”借黛玉脱身，这一笔写出了宝钗什么？",
+      options:[
+        { text:"电光石火间的机变自保——扑蝶的天真与脱身的城府同在一人身上，这正是宝钗的复杂性", favor:20, best:true,
+          analysis:"考点：人物的多面立体。前一刻还是扑蝶逐蝶的烂漫少女，下一刻已冷静完成危机转嫁——曹公在同一回里并置“艳”与“险”。高考人物分析的高分答法：拒绝扁平化，写出宝钗“随分从时”表象下的机心与城府，同时承认其情有可原（人在屋檐下，自保是本能）。"},
+        { text:"宝钗阴险狠毒，故意陷害黛玉，是全书最虚伪的人", favor:-5, best:false,
+          analysis:"“故意陷害”不成立——此事是瞬间应急而非预谋，且宝钗未必预见后果。但把宝钗读成单纯的“坏人”，和把她读成完美的“好人”一样是扁平化。记住高考原则：立体人物要写“美丑并举”，切忌标签化。"},
+        { text:"她只是随口喊了黛玉的名字，谈不上什么机心", favor:-10, best:false,
+          analysis:"文本写得分明：“如今便赶着躲了，料也躲不及”——她有清晰的利害计算：小红“素习眼空心大，是个头等刁钻古怪东西”，得罪她后患无穷，而黛玉是她的“安全挡箭牌”。随口之说，抹掉了曹公刻画城府的苦心。"}
+      ]}},
+    {who:"旁白", text:"小红开窗四望，只看见宝钗笑吟吟的背影。她哪里知道，这笑意盈盈里，已经有人替她把祸水引到了潇湘馆去。"}
+  ]
+},
+{
+  no:"第三回", title:"兰言解疑癖", bg:"assets-jinling/bg_hengwu_ink.png",
+  steps:[
+    {who:"旁白", text:"刘姥姥游大观园那日宴席上行酒令，黛玉脱口说出“良辰美景奈何天”“纱窗也没有红娘报”——满座无人留意，只有宝钗回头看了一眼。"},
+    {who:"旁白", text:"次日，宝钗把黛玉叫到蘅芜院，笑问：“你跪下，我要审你。”黛玉不解。宝钗道：“好个千金小姐！好个不出闺门的女孩儿！满嘴说的是什么？”"},
+    {who:"黛玉", text:"（红了脸）……好姐姐，原是我不知道，随口说的。你教给我，再不说了。"},
+    {who:"宝钗", text:"你当我是谁？我也是个淘气的，从小七八岁上也够个人缠的。这些书，我们家也算是读书人家，弟兄们也有爱诗的……男人读书不明理，尚且不如不读的好……见了杂书，移了性情，就不可救了。"},
+    {choice:{
+      prompt:"【抉择】“蘅芜君兰言解疑癖”——宝钗私下劝诫黛玉，是真情还是收服？",
+      options:[
+        { text:"两者兼有：她以过来人的身份真心护惜黛玉的声名，同时也把黛玉引向封建淑女的正轨——关怀与规训是同一枚硬币", favor:20, best:true,
+          analysis:"考点：钗黛关系的转折点。若只写“收买人心”，便读浅了——宝钗大可在众人面前发难置黛玉于死地，她却选择私下规劝、还自曝“我也淘气过”；若只写“姐妹情深”，又读漏了她规劝的内核仍是“女子无才便是德”。自此钗黛释嫌、金兰契互剖金兰语，黛玉叹：“从前日你说看杂书不好，我竟感激你。”"},
+        { text:"纯粹是猫哭耗子，宝钗借机打压情敌", favor:-10, best:false,
+          analysis:"若是打压，当众揭发才是杀招——她偏偏选私室、赠燕窝、剖心迹。之后黛玉对她推心置腹（“你素日待人，固然是极好的”），黛玉的聪慧岂会看不穿假意？用“宅斗逻辑”读红楼，是把《红楼梦》读小了。"},
+        { text:"宝钗只是随口说教，两人关系从此并无变化", favor:-5, best:false,
+          analysis:"此回是钗黛关系的分水岭：此前黛玉处处讥讽宝钗（“宝姐姐”三个字常带酸意），此后黛玉真心感念，二人结成“金兰契”。情节的因果链条是高考情节梳理题的常考内容。"}
+      ]}},
+    {who:"旁白", text:"那日之后，黛玉待宝钗竟与从前大不相同。一个孤高，一个端方，两个最不像的人，倒成了知己。"}
+  ]
+},
+{
+  no:"第四回", title:"冷香之丸", bg:"assets-jinling/bg_hengwu_ink.png",
+  steps:[
+    {who:"旁白", text:"周瑞家的问宝钗吃什么药。宝钗说了一个方子，满屋子的人都听呆了——"},
+    {who:"宝钗", text:"要春天开的白牡丹花蕊十二两，夏天开的白荷花蕊十二两，秋天的白芙蓉蕊十二两，冬天的白梅花蕊十二两。将这四样花蕊，于次年春分这日晒干……"},
+    {who:"旁白", text:"还要雨水这日的雨、白露这日的露、霜降这日的霜、小雪这日的雪各十二钱，调和蜂蜜，制成丸药，盛在旧瓷坛内，埋在花根底下。"},
+    {who:"宝钗", text:"我这是从胎里带来的一股热毒，幸而是个秃头和尚给了这方子，叫作“冷香丸”。发作了吃一丸就好。"},
+    {choice:{
+      prompt:"【抉择】“冷香丸”这一奇方，在人物塑造上象征什么？",
+      options:[
+        { text:"以天地之“冷”制胎里之“热”——宝钗用礼教理性时时压制本真性情，她既是规训的执行者，也是被规训的牺牲者", favor:20, best:true,
+          analysis:"考点：物象的象征体系（高考深层考点）。“热毒”是与生俱来的性情、欲望、生命力；“冷香丸”集四季白花之蕊、四时之水，是礼教秩序的完美结晶。宝钗不是天生的“冷”，而是日日服药、时时克制的“冷”——这比“天生冷漠”的读法深得多，也悲悯得多。"},
+        { text:"说明薛家有钱，吃得起这种费时费力的名贵药", favor:-10, best:false,
+          analysis:"若只是炫富，何必强调“从胎里带来的热毒”？何必让药方巧到近乎不可能（“可巧”二字周瑞家的都听笑了）？曹公借不可能之方，写不可能之人——读红楼要看“荒唐言”背后的“辛酸泪”。"},
+        { text:"宝钗身体确实有病，这只是一段医药描写", favor:-5, best:false,
+          analysis:"“热毒”若只是实症，全书再无一处写她发作的痛苦，反而处处写她“罕言寡语，人谓藏愚；安分随时，自云守拙”——药治的不是身，是性情。文学阅读题要区分“实写之病”与“虚写之象”。"}
+      ]}},
+    {who:"旁白", text:"人人都道宝姐姐好涵养、好脾气。却没有人问过她：那一年四季的花蕊，那一日不差的雨露霜雪，究竟压住了些什么。"}
+  ]
+},
+{
+  no:"终 回", title:"金簪雪埋", bg:"assets-jinling/bg_night_ink.png",
+  steps:[
+    {who:"旁白", text:"后来，金玉良缘终成。成婚那夜，宝玉疯傻，以为娶的是林妹妹。盖头掀开的刹那，烛花爆了一声。"},
+    {who:"旁白", text:"再后来，贾府败了。宝玉悬崖撒手，出家去了。留给宝钗的，是一纸“宝二奶奶”的空名，和漫天的雪。"},
+    {cg:"assets-jinling/cg_xuechai_ink.png", caption:"金 簪 雪 里 埋"},
+    {who:"宝钗", text:"（她坐在窗前，把那枚金锁摘下来，放在掌心看了很久。雪光映着烛光，金锁上的字一个一个冷下去——）不离不弃……芳龄永继。"},
+    {choice:{
+      prompt:"【抉择】宝钗得到了“金玉良缘”的全部形式，为何仍是薄命司中人？她悲剧的根源是？",
+      options:[
+        { text:"她做对了封建淑女标准下的一切——贤、顺、稳、忍，却只得到一个空壳婚姻。根源不在她做错了什么，而在那个衡量女子价值的体系本身", favor:20, best:true,
+          analysis:"考点：悲剧归因（高考核心）。宝钗悲剧与黛玉悲剧互为镜像：黛玉因“不合作”而被碾碎，宝钗因“完全合作”而被架空——两条路都是死路，这才是“千红一哭，万艳同悲”的总纲。“可叹停机德”：乐羊子妻停机劝夫之德，她全有；可她的丈夫，连家都不要了。满分答案要写：批判的矛头指向制度，而非人物。"},
+        { text:"她咎由自取——若不是她和薛家苦心经营金玉良缘，不会落得这个下场", favor:-10, best:false,
+          analysis:"宝钗从未“争取”过这桩婚事——定下婚事时她“始则低头不语，后来便自垂泪”。她也是被安排的人。把悲剧归咎于受害者本人，是高考悲剧分析最典型的失分点：只见个人、不见结构。"},
+        { text:"她其实并不难过——她本来就不爱宝玉，守寡也无妨", favor:-10, best:false,
+          analysis:"“不爱”之说无据。她替宝玉绣鸳鸯、送棒疮药时“眼圈微红”，关切之情屡见于文。即便不论情爱，青春守寡、家族败落、腹中之子生于末世——任何一条都足以压垮一个人。读人物忌“想当然”。"}
+      ]}},
+    {who:"旁白", text:"雪落了一夜。天明时，案上的金锁凝了一层霜。有人看见宝二奶奶独坐窗前，像一尊玉雕——可叹停机德，金簪雪里埋。"}
+  ]
+}
+];
+
+/* 宝钗线结局 */
+const ENDINGS_BAOCHAI = [
+{
+  min:0, id:"误读蘅芜", be:"BAD END · 判词已碎", title:"误读蘅芜",
+  judge:"你陪她走完了这一生，却始终只看见一个“好人”的空壳。你以为她的圆融是天性，她的沉默是无思。太虚幻境的册子上，她的判词与另一个人并在一页——你连那一页都没能读懂。",
+  sum:`<b>📖 判词残页（只窥见一半）</b><br>
+① 形象定调：品格端方、随分从时 →“行为豁达”的封建淑女范式<br>
+② 城府对照：滴翠亭金蝉脱壳 → 圆融表象下的机变与自保<br>
+<span style="color:#8a7f6e;">③④⑤ ……墨渍晕染，不可复辨。</span><br><br>
+<b>💡 再入此梦，答对更多抉择，可读全判词。</b>`
+},
+{
+  min:50, id:"金簪雪埋", be:"BAD END · 判词已定", title:"金簪雪埋",
+  judge:"“金簪雪里埋”——宝钗，金簪也；雪，薛也。一支金簪埋在雪里，是她一生的判词：得了金玉良缘的形式，空守了余生。你读懂了她的大半，却仍有几层心事，没能陪她看透。",
+  sum:`<b>📖 通关奖励 · 宝钗形象答题模板（上半部）</b><br>
+① 形象定调：品格端方、随分从时 →“行为豁达”的封建淑女范式<br>
+② 城府对照：滴翠亭金蝉脱壳 → 圆融表象下的机变与自保<br>
+③ 物象解读：冷香丸以“冷”制“热” → 理性压抑天性的象征<br>
+<span style="color:#8a7f6e;">④⑤ 好感度 80 以上可解锁完整模板。</span>`
+},
+{
+  min:80, id:"金簪雪埋", be:"BAD END · 判词已定", title:"金簪雪埋",
+  judge:"“金簪雪里埋”——宝钗，金簪也；雪，薛也。一支金簪埋在雪里，是她一生的判词：得了金玉良缘的形式，空守了余生。你几乎读懂了她的全部心事。",
+  sum:`<b>📖 通关奖励 · 宝钗形象答题模板（完整）</b><br>
+① 形象定调：品格端方、随分从时 →“行为豁达”的封建淑女范式<br>
+② 城府对照：滴翠亭金蝉脱壳 → 圆融表象下的机变与自保<br>
+③ 物象解读：冷香丸以“冷”制“热” → 理性压抑天性的象征<br>
+④ 悲剧归因：她做对了体系要求的一切，仍被体系所弃 → 批判指向制度而非个人<br>
+⑤ 答题金句：宝钗之悲，是“合作者”的悲——停机之德，无人可劝。<br><br>
+<b>🌸 好感度 100 可开启隐藏结局「钗黛合一」。</b>`
+},
+{
+  min:100, id:"钗黛合一", be:"HIDDEN END · 钗黛合一", title:"钗黛合一",
+  bg:"assets-jinling/bg_taixu_ink.png",
+  judge:"警幻仙子将册页并到你面前：“世人读此书，多扬黛抑钗，或扬钗抑黛，皆门外汉也。”——原来玉带林中挂、金簪雪里埋，从来写在同一页上：一个是反抗而死的“真”，一个是顺从而空的“德”，互为镜像，同归薄命。",
+  sum:`<b>📖 隐藏奖励 · 钗黛对比答题总纲</b><br>
+① 判词结构：钗黛共用一判 → 曹公从不让二人分离，对比即整体<br>
+② 性情对比：黛玉“真”（情之所至，不计利害） vs 宝钗“德”（礼之所范，克己复礼）<br>
+③ 处世对比：潇湘馆“孤标傲世” vs 蘅芜苑“随分从时” → 两种生存策略<br>
+④ 诗词对比：葬花吟“质本洁来还洁去” vs 临江仙“好风凭借力，送我上青云”<br>
+⑤ 命运对比：反抗者死（木石前盟碎） vs 顺从者空（金玉良缘虚） → 双路皆绝，万艳同悲<br>
+⑥ 答题金句：钗黛是曹公笔下的一体两面——写尽封建时代女儿“进退皆亡”的绝境。<br><br>
+<b>💗 满分知心：蘅芜有君，不掩其芳。</b>`
+}
+];
+
+let STORY = STORY_DAIYU, ENDINGS = ENDINGS_DAIYU;
+
+/* ============================================================ 引擎 ============================================================ */
+let favor = 50, chIdx = 0, stepIdx = 0, typing = null, fullText = "", waitingChoice = false;
+const unlocked = new Set(JSON.parse(localStorage.getItem("hlm_endings")||"[]"));
+
+const $ = id => document.getElementById(id);
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("show"));
+  $(id).classList.add("show");
+  if(id==="album") renderAlbum();
+}
+function setFavor(v){
+  favor = Math.max(0, Math.min(100, favor+v));
+  $("favorFill").style.width = favor + "%";
+  $("favorNum").textContent = favor;
+}
+
+let curLine = "daiyu";
+function startGame(line){
+  curLine = line;
+  if(line === "baochai"){
+    STORY = STORY_BAOCHAI; ENDINGS = ENDINGS_BAOCHAI;
+    $("favorLabel").textContent = "宝钗";
+  } else {
+    STORY = STORY_DAIYU; ENDINGS = ENDINGS_DAIYU;
+    $("favorLabel").textContent = "黛玉";
+  }
+  favor = 50; chIdx = 0;
+  setFavor(0);
+  showScreen("game");
+  playChapter();
+}
+function restart(){ startGame(); }
+
+function playChapter(){
+  stepIdx = 0;
+  const ch = STORY[chIdx];
+  $("chapterTag").textContent = ch.no + " · " + ch.title;
+  $("bgLayer").style.backgroundImage = `url("${ch.bg}")`;
+  $("bgLayer").classList.remove("dim");
+  $("ccNo").textContent = ch.no;
+  $("ccTitle").textContent = ch.title;
+  $("chapterCard").classList.add("show");
+  $("dlg").style.display = "none";
+  $("chapterCard").onclick = ()=>{
+    $("chapterCard").classList.remove("show");
+    $("dlg").style.display = "block";
+    nextStep();
+  };
+}
+
+function nextStep(){
+  const ch = STORY[chIdx];
+  if(stepIdx >= ch.steps.length){
+    chIdx++;
+    if(chIdx >= STORY.length){ showEnding(); }
+    else playChapter();
+    return;
+  }
+  const step = ch.steps[stepIdx++];
+  if(step.choice){ showChoice(step.choice); return; }
+  if(step.cg){ showCG(step); return; }
+  showLine(step.who, step.text);
+}
+
+/* 名场面 CG */
+function showCG(step){
+  $("cgImg").src = step.cg;
+  $("cgCaption").textContent = step.caption || "";
+  $("cgLayer").classList.add("show");
+}
+function dismissCG(){
+  $("cgLayer").classList.remove("show");
+  nextStep();
+}
+
+function showLine(who, text){
+  waitingChoice = false;
+  $("dlgName").textContent = who;
+  $("dlgBox").classList.toggle("narr", who==="旁白");
+  // 单人出场：谁说话谁上场，旁白时全部退场
+  const SPR = {"宝玉":"spBaoyu","黛玉":"spDaiyu","宝钗":"spBaochai"};
+  ["spBaoyu","spDaiyu","spBaochai"].forEach(id=> $(id).classList.toggle("on", SPR[who]===id));
+  // 打字机（带音效）
+  clearInterval(typing);
+  fullText = text; $("dlgText").textContent = "";
+  let i=0;
+  typing = setInterval(()=>{
+    i++;
+    $("dlgText").textContent = fullText.slice(0,i);
+    if(i % 2 === 0) playTick();
+    if(i>=fullText.length) clearInterval(typing);
+  }, 40);
+}
+
+/* 打字音效（WebAudio 合成，无需素材文件） */
+let audioCtx = null;
+function playTick(){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state === "suspended") audioCtx.resume();
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = "triangle";
+    osc.frequency.value = 1400 + Math.random()*500;
+    gain.gain.setValueAtTime(0.035, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(t); osc.stop(t + 0.05);
+  }catch(e){}
+}
+
+function advance(){
+  if(waitingChoice) return;
+  // 打字未完则直接显示全文
+  if($("dlgText").textContent.length < fullText.length){
+    clearInterval(typing);
+    $("dlgText").textContent = fullText;
+    return;
+  }
+  nextStep();
+}
+
+function showChoice(choice){
+  waitingChoice = true;
+  $("dlg").style.display = "none";
+  $("bgLayer").classList.add("dim");
+  const box = $("choices");
+  box.innerHTML = `<div id="choicePrompt">${choice.prompt}</div>`;
+  choice.options.forEach((opt,i)=>{
+    const b = document.createElement("button");
+    b.className = "cbtn";
+    b.textContent = opt.text;
+    b.onclick = ()=>pickOption(b, opt);
+    box.appendChild(b);
+  });
+  box.classList.add("show");
+}
+
+function pickOption(btn, opt){
+  document.querySelectorAll("#choices .cbtn").forEach(b=>b.disabled=true);
+  if(opt.best) btn.classList.add("best");
+  setFavor(opt.favor);
+  $("anaFavor").innerHTML = (opt.favor>=0? "💗 好感度 +"+opt.favor : "💔 好感度 "+opt.favor)
+    + (opt.best ? "　<span style='color:#4d7c4d;'>✔ 最合黛玉心境</span>" : "　<span style='color:#b03a3a;'>✘ 与人物理解有偏差</span>");
+  $("anaText").textContent = opt.analysis;
+  $("analysis").classList.add("show");
+}
+
+function closeAnalysis(){
+  $("analysis").classList.remove("show");
+  $("choices").classList.remove("show");
+  $("bgLayer").classList.remove("dim");
+  $("dlg").style.display = "block";
+  waitingChoice = false;
+  nextStep();
+}
+
+function showEnding(){
+  const e = pickEnding(favor);
+  unlocked.add(e.id);
+  localStorage.setItem("hlm_endings", JSON.stringify([...unlocked]));
+  $("ending").style.backgroundImage = `url("${e.bg || "assets-jinling/bg_night_ink.png"}")`;
+  document.querySelector("#endCard .be").textContent = "— " + e.be + " —";
+  $("endTitle").textContent = e.title;
+  $("endJudge").textContent = e.judge;
+  const praise = curLine==="baochai"
+    ? (favor>=100?"（金兰契阔，蘅芜可托）":favor>=80?"（知冷知热，宝卿可慰）":favor>=50?"（知音半解，尚有遗憾）":"（判词虽定，理解未深——再入此梦罢）")
+    : (favor>=100?"（木石同心，仙草垂泪相谢）":favor>=80?"（此心昭昭，绛珠可慰）":favor>=50?"（知音半解，尚有遗憾）":"（判词虽定，理解未深——再入此梦罢）");
+  $("endSum").innerHTML = e.sum + `<br><br><b>💗 本局最终好感度：${favor} / 100</b>　${praise}`;
+  showScreen("ending");
+}
+
+function renderAlbum(){
+  const ALL = [
+    { id:"误读绛珠", be:"BAD END", title:"误读绛珠", desc:"好感度 50 以下 · 判词已碎。只窥见答题模板的一半。" },
+    { id:"泪尽而逝", be:"BAD END", title:"泪尽而逝", desc:"好感度 50~99 · 玉带林中挂。按好感度解锁模板完整度。" },
+    { id:"太虚幻境", be:"HIDDEN END", title:"太虚幻境", desc:"好感度 100 隐藏结局 · 警幻亲启薄命司，赠十二钗判词体系总考点。" },
+    { id:"误读蘅芜", be:"BAD END", title:"误读蘅芜", desc:"宝钗线 · 好感度 50 以下。只窥见答题模板的一半。" },
+    { id:"金簪雪埋", be:"BAD END", title:"金簪雪埋", desc:"宝钗线 · 好感度 50~99。按好感度解锁模板完整度。" },
+    { id:"钗黛合一", be:"HIDDEN END", title:"钗黛合一", desc:"宝钗线 · 好感度 100 隐藏结局。解锁钗黛对比答题总纲。" },
+    { be:"BAD END", title:"千里东风", desc:"探春线 · 尚未开放。清明涕送江边望，千里东风一梦遥。" },
+    { be:"BAD END", title:"勘破三春", desc:"惜春线 · 尚未开放。缁衣顿改昔年妆。" }
+  ];
+  const g = $("endGrid"); g.innerHTML = "";
+  ALL.forEach(e=>{
+    const got = e.id && unlocked.has(e.id);
+    const div = document.createElement("div");
+    div.className = "endItem" + (got ? "" : " locked");
+    div.innerHTML = `<div class="be">${got?e.be:"？？？"}</div><h3>${got?e.title:"？？？"}</h3><p>${got?e.desc:"命运未启。"}</p>`;
+    g.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>

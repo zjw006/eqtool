@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>微积分发展漫画史</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: "Zhi Mang Xing","Ma Shan Zheng","Kaiti SC","STKaiti","KaiTi",serif;
+  background:#fdfaf3;
+  color:#2b2b2b;
+  overflow-x:hidden;
+}
+/* ---------- 通用 ---------- */
+.wrap { max-width:960px; margin:0 auto; padding:0 20px; }
+.tag {
+  display:inline-block; padding:4px 14px; border:2.5px solid #2b2b2b; border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
+  background:#ffd23f; font-size:15px; font-weight:bold; letter-spacing:2px;
+  box-shadow:3px 3px 0 #2b2b2b;
+}
+.chapter {
+  min-height:100vh; padding:80px 0 60px; position:relative;
+  border-bottom:3px dashed #c9b98f;
+}
+.chapter-head { text-align:center; margin-bottom:36px; }
+.chapter-num { font-size:18px; color:#e4572e; letter-spacing:4px; }
+.chapter-title {
+  font-size:40px; font-weight:bold; margin:8px 0 6px;
+}
+.chapter-sub { color:#8a7a55; font-size:17px; }
+/* 漫画格 */
+.panels { display:grid; gap:22px; margin:30px 0; }
+.panels.p2 { grid-template-columns:1fr 1fr; }
+.panels.p3 { grid-template-columns:1fr 1fr 1fr; }
+@media(max-width:720px){ .panels.p2,.panels.p3{grid-template-columns:1fr;} }
+.panel {
+  background:#fff; border:3px solid #2b2b2b; border-radius:18px 4px 20px 6px;
+  padding:22px 20px 18px; position:relative;
+  box-shadow:6px 6px 0 rgba(43,43,43,.12);
+  opacity:0; transform:translateY(40px) rotate(-1deg);
+  transition:opacity .6s ease, transform .6s ease;
+}
+.panel.show { opacity:1; transform:translateY(0) rotate(0); }
+.panel:nth-child(even).show { transform:rotate(.6deg); }
+.panel .scene { font-size:52px; text-align:center; line-height:1.4; margin:6px 0 12px; }
+.bubble {
+  position:relative; background:#fff; border:2.5px solid #2b2b2b; border-radius:16px;
+  padding:12px 14px; font-size:17px; line-height:1.6; margin-bottom:8px;
+}
+.bubble::after {
+  content:""; position:absolute; bottom:-14px; left:34px;
+  border:8px solid transparent; border-top:12px solid #2b2b2b;
+}
+.bubble.think { border-style:dashed; background:#fffbe9; }
+.bubble.shout { background:#ffe1d6; border-color:#e4572e; }
+.speaker { font-size:13px; color:#999; letter-spacing:2px; }
+/* 问题来了 */
+.problem {
+  background:#2b2b2b; color:#ffd23f; border-radius:20px;
+  padding:26px 30px; margin:34px 0; position:relative;
+  box-shadow:6px 6px 0 #e4572e;
+  opacity:0; transform:scale(.92); transition:all .6s ease;
+}
+.problem.show { opacity:1; transform:scale(1); }
+.problem h3 { font-size:22px; letter-spacing:3px; margin-bottom:8px; }
+.problem p { font-size:19px; line-height:1.7; color:#f5f0e0; }
+/* 思考 */
+.think-block {
+  border-left:6px solid #4d96ff; background:#eef4ff;
+  padding:20px 26px; border-radius:0 16px 16px 0; margin:30px 0;
+  font-size:18px; line-height:1.8;
+  opacity:0; transform:translateX(-30px); transition:all .6s ease;
+}
+.think-block.show { opacity:1; transform:translateX(0); }
+.think-block b { color:#2f6fd6; }
+/* 动画舞台 */
+.stage {
+  background:#fff; border:3px solid #2b2b2b; border-radius:22px;
+  padding:18px; margin:26px 0; box-shadow:6px 6px 0 rgba(43,43,43,.12);
+  opacity:0; transform:translateY(30px); transition:all .6s ease;
+}
+.stage.show { opacity:1; transform:translateY(0); }
+.stage canvas { width:100%; display:block; border-radius:14px; background:#fdfaf3; }
+.stage .cap { text-align:center; font-size:16px; color:#8a7a55; margin-top:10px; }
+.btn {
+  display:inline-block; margin:10px 6px 0; padding:8px 22px; cursor:pointer;
+  border:2.5px solid #2b2b2b; border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
+  background:#ffd23f; font-size:16px; font-weight:bold; font-family:inherit;
+  box-shadow:3px 3px 0 #2b2b2b; transition:transform .1s;
+}
+.btn:active { transform:translate(2px,2px); box-shadow:1px 1px 0 #2b2b2b; }
+.btn.blue { background:#4d96ff; color:#fff; }
+.btn.red { background:#e4572e; color:#fff; }
+.stage-btns { text-align:center; }
+/* 结论 */
+.result {
+  text-align:center; font-size:20px; line-height:1.9;
+  background:#fff3c4; border:3px dashed #d4a017; border-radius:20px;
+  padding:24px 30px; margin:30px 0;
+  opacity:0; transform:translateY(30px); transition:all .6s ease;
+}
+.result.show { opacity:1; transform:translateY(0); }
+.result b { color:#e4572e; }
+/* 封面 */
+.cover {
+  min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;
+  background:
+    radial-gradient(circle at 15% 20%, #ffe9a8 0, transparent 30%),
+    radial-gradient(circle at 85% 75%, #cfe4ff 0, transparent 30%),
+    #fdfaf3;
+  text-align:center; padding:40px 20px;
+}
+.cover h1 {
+  font-size:64px; letter-spacing:8px; margin:16px 0 10px;
+  text-shadow:4px 4px 0 #ffd23f;
+}
+.cover .sub { font-size:22px; color:#8a7a55; letter-spacing:4px; }
+.cover .doodle { font-size:60px; margin-top:20px; animation:bob 2.4s ease-in-out infinite; }
+@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+.scroll-hint { position:absolute; bottom:30px; font-size:16px; color:#b0a077; animation:bob 1.6s infinite; }
+/* 时间轴 */
+.timeline {
+  margin:40px 0; position:relative; padding-left:34px;
+  border-left:4px solid #2b2b2b;
+}
+.tl-item { margin-bottom:26px; position:relative; opacity:0; transform:translateX(30px); transition:all .5s ease; }
+.tl-item.show { opacity:1; transform:translateX(0); }
+.tl-item::before {
+  content:""; position:absolute; left:-43px; top:6px; width:16px; height:16px;
+  background:#ffd23f; border:3px solid #2b2b2b; border-radius:50%;
+}
+.tl-item .yr { font-weight:bold; color:#e4572e; font-size:18px; }
+.tl-item .txt { font-size:17px; line-height:1.6; }
+/* 结尾 */
+.finale { text-align:center; padding:90px 20px; }
+.finale h2 { font-size:38px; margin-bottom:18px; text-shadow:3px 3px 0 #ffd23f; }
+.finale p { font-size:20px; line-height:2; color:#5c5236; max-width:760px; margin:0 auto; }
+footer { text-align:center; padding:30px; color:#b0a077; font-size:14px; letter-spacing:3px; }
+/* 顶部进度 */
+#progress { position:fixed; top:0; left:0; height:5px; background:#e4572e; width:0; z-index:99; }
+/* 返回按钮 */
+.back-btn {
+  position:fixed; top:16px; left:20px; z-index:200;
+  background:rgba(253,250,243,.9); color:#2b2b2b;
+  border:2.5px solid #2b2b2b; border-radius:255px 15px 225px 15px/15px 225px 15px 255px;
+  padding:8px 20px; font-family:inherit; font-size:15px; font-weight:bold; letter-spacing:2px;
+  text-decoration:none; cursor:pointer; transition:transform .1s;
+  box-shadow:3px 3px 0 #2b2b2b; backdrop-filter:blur(4px);
+}
+.back-btn:hover { background:#ffd23f; transform:translateY(-2px); }
+.back-btn:active { transform:translate(2px,2px); box-shadow:1px 1px 0 #2b2b2b; }
+</style>
+  <link rel="stylesheet" href="./_shared/cyber-theme.css">
+</head>
+<body>
+<div id="progress"></div>
+
+<a href="javascript:void(0)" class="back-btn" onclick="goBack()">← 返回绘本馆</a>
+
+<!-- ============ 封面 ============ -->
+<section class="cover">
+  <span class="tag">一场人类与“无穷”的千年博弈</span>
+  <h1>微积分发展漫画史</h1>
+  <p class="sub">—— 先有问题，再有数学 ——</p>
+  <div class="doodle">🏃🐢 📐 🍎 ∫ 🪐</div>
+  <p class="scroll-hint">▼ 往下滚动，故事开始 ▼</p>
+</section>
+
+<!-- ============ 第一章 ============ -->
+<section class="chapter">
+  <div class="wrap">
+    <div class="chapter-head">
+      <div class="chapter-num">第一章 · 公元前 5 世纪</div>
+      <h2 class="chapter-title">古希腊：杠精芝诺与追不上的乌龟</h2>
+      <div class="chapter-sub">关键词：无穷悖论 · 穷竭法</div>
+    </div>
+
+    <div class="panels p2">
+      <div class="panel">
+        <div class="speaker">芝诺（叉腰）</div>
+        <div class="scene">🧔🐢</div>
+        <div class="bubble">听好了！飞毛腿阿喀琉斯去追乌龟。他每跑到乌龟刚才的位置，乌龟又往前挪了一点……</div>
+        <div class="bubble shout">所以——他永！远！追！不！上！</div>
+      </div>
+      <div class="panel">
+        <div class="speaker">围观的古希腊人</div>
+        <div class="scene">😨😰😱</div>
+        <div class="bubble think">这……明明荒谬，可谁也驳不倒他。因为“无穷”这个概念，我们根本不敢碰！</div>
+        <div class="bubble">无穷是“恶无限”，是逻辑的死胡同！</div>
+      </div>
+    </div>
+
+    <div class="problem">
+      <h3>⚡ 问题来了</h3>
+      <p>一段路程可以被切成无穷多小段，那么“无穷多个小段加起来”，到底能不能等于一个有限的长度？如果不敢面对“无穷”，就连“人追上乌龟”这种日常小事都解释不了。</p>
+    </div>
+
+    <div class="panels p2">
+      <div class="panel">
+        <div class="speaker">阿基米德（蹲在沙地上画图）</div>
+        <div class="scene">👴📐⭕</div>
+        <div class="bubble">既然直接算圆的面积太难，那我就往圆里塞多边形——边数越多，越接近圆！</div>
+        <div class="bubble think">这叫“穷竭法”：用无限逼近，去够那个精确值。</div>
+      </div>
+      <div class="panel">
+        <div class="speaker">阿基米德的战果</div>
+        <div class="scene">🎯 π</div>
+        <div class="bubble">我算出来了：223/71 &lt; π &lt; 22/7！</div>
+        <div class="bubble think">（他不知道自己手里攥着的，正是微积分的种子。）</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <canvas id="cv1" width="880" height="320"></canvas>
+      <div class="stage-btns">
+        <button class="btn" onclick="anim1.more()">多边形边数 +4</button>
+        <button class="btn blue" onclick="anim1.auto()">自动逼近圆</button>
+      </div>
+      <p class="cap">▲ 动手试试：边数越多，内接多边形越逼近圆——这就是“穷竭法”</p>
+    </div>
+
+    <div class="result">
+      <b>本章启示：</b>问题（无穷小段的求和）先出现了两千多年，答案却迟迟没来。但“用无限逼近求精确值”的思考方式，已经悄悄萌芽。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第二章 ============ -->
+<section class="chapter">
+  <div class="wrap">
+    <div class="chapter-head">
+      <div class="chapter-num">第二章 · 14～16 世纪</div>
+      <h2 class="chapter-title">漫长的中场：暗流涌动的一千年</h2>
+      <div class="chapter-sub">关键词：变化率 · 函数图像 · 积分雏形</div>
+    </div>
+
+    <div class="panels p3">
+      <div class="panel">
+        <div class="speaker">中世纪的欧洲</div>
+        <div class="scene">🕯️📜😴</div>
+        <div class="bubble">数学几乎停滞。好在阿拉伯学者把古希腊的火种传了下来……</div>
+      </div>
+      <div class="panel">
+        <div class="speaker">14 世纪的奥雷姆</div>
+        <div class="scene">📈🤔</div>
+        <div class="bubble">速度怎么变？温度怎么变？我画条线来表示“变化”——虽然还没有坐标系这个概念。</div>
+      </div>
+      <div class="panel">
+        <div class="speaker">开普勒（抱着酒桶）</div>
+        <div class="scene">🍷🪵</div>
+        <div class="bubble">这酒桶容积怎么算？切成无数个薄圆盘，再全加起来不就行了！</div>
+        <div class="bubble think">（这就是积分的雏形。）</div>
+      </div>
+    </div>
+
+    <div class="problem">
+      <h3>⚡ 问题在悄悄积累</h3>
+      <p>天文学家要算行星轨道，商人要算酒桶容积，水手要靠星星导航——“变化”和“累积”这两类问题越来越多，可手里的数学工具还是几何和算术。新工具的诞生，只差一阵东风。</p>
+    </div>
+
+    <div class="result">
+      <b>本章启示：</b>需求是最好的老师。当现实世界里“变化”与“累积”的问题堆积如山时，一门新数学的诞生就只是时间问题。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第三章 ============ -->
+<section class="chapter">
+  <div class="wrap">
+    <div class="chapter-head">
+      <div class="chapter-num">第三章 · 17 世纪</div>
+      <h2 class="chapter-title">大爆炸：牛顿与莱布尼茨双雄并起</h2>
+      <div class="chapter-sub">关键词：流数 · 瞬时速度 · dy/dx · ∫</div>
+    </div>
+
+    <div class="panels p2">
+      <div class="panel">
+        <div class="speaker">牛顿（盯着下落的苹果）</div>
+        <div class="scene">🍎🧑‍🔬</div>
+        <div class="bubble">苹果下落，每一瞬间都在加速。可“某一瞬间的速度”是多少？瞬间没有长度，这怎么算？</div>
+        <div class="bubble think">把时间切成“无穷小”的一段，位移也是无穷小，两者一比——就是瞬时速度！我叫它“流数”。</div>
+      </div>
+      <div class="panel">
+        <div class="speaker">牛顿的野心</div>
+        <div class="scene">🪐🌕</div>
+        <div class="bubble">用这套方法，我不但算出了行星轨道，还推出了万有引力定律！</div>
+        <div class="bubble shout">微积分，是我解释宇宙的工具。</div>
+      </div>
+    </div>
+
+    <div class="problem">
+      <h3>⚡ 问题来了</h3>
+      <p>“平均速度”谁都会算：路程÷时间。但“瞬 时 速 度”要求时间为零——除以零？这在旧数学里是死罪。运动的世界，逼着人类发明一种能谈论“瞬间”的数学。</p>
+    </div>
+
+    <div class="panels p2">
+      <div class="panel">
+        <div class="speaker">莱布尼茨（在书房里设计符号）</div>
+        <div class="scene">✒️🧐</div>
+        <div class="bubble">牛顿的方法很物理、很直觉，但符号太乱了。让我设计一套谁都能学的符号：</div>
+        <div class="bubble shout">dy/dx 表示导数，∫（拉长的 S，Sum 的首字母）表示积分！</div>
+      </div>
+      <div class="panel">
+        <div class="speaker">悲剧：优先权之争</div>
+        <div class="scene">⚔️🇬🇧</div>
+        <div class="bubble">两人各自独立发明了微积分，却为“谁先发明”吵了几十年。英国力挺牛顿，欧洲大陆支持莱布尼茨。</div>
+        <div class="bubble think">英国赌气不用莱布尼茨的符号，结果 18 世纪数学严重落后……</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <canvas id="cv3" width="880" height="320"></canvas>
+      <div class="stage-btns">
+        <button class="btn" onclick="anim3.play()">▶ 播放：割线变切线</button>
+      </div>
+      <p class="cap">▲ 瞬时速度的几何意义：让两点无限靠近，割线的极限就是切线——这就是导数</p>
+    </div>
+
+    <div class="result">
+      <b>本章启示：</b>先有“瞬时速度怎么算”这个物理问题，才有导数；先有“面积体积怎么累积”，才有积分。微积分是被问题“逼”出来的。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第四章 ============ -->
+<section class="chapter">
+  <div class="wrap">
+    <div class="chapter-head">
+      <div class="chapter-num">第四章 · 18 世纪</div>
+      <h2 class="chapter-title">欧拉时代：魔法师与他的“幽灵”地基</h2>
+      <div class="chapter-sub">关键词：微积分大爆发 · e^(iπ)+1=0 · 幽灵批评</div>
+    </div>
+
+    <div class="panels p2">
+      <div class="panel">
+        <div class="speaker">欧拉（写了 800 多篇论文的男人）</div>
+        <div class="scene">🧙‍♂️📚</div>
+        <div class="bubble">力学、光学、天文、数论……微积分用到哪儿哪儿灵！我还定义了 e、π、i，写出了最美公式：</div>
+        <div class="bubble shout">e<sup>iπ</sup> + 1 = 0</div>
+      </div>
+      <div class="panel">
+        <div class="speaker">贝克莱主教（冷笑）</div>
+        <div class="scene">⛪😏</div>
+        <div class="bubble">你们说的“无穷小”到底是什么？是零？不是零怎么敢当除数？是零又怎么能当分子？</div>
+        <div class="bubble shout">依我看，那就是“已死量的幽灵”！</div>
+      </div>
+    </div>
+
+    <div class="problem">
+      <h3>⚡ 问题来了</h3>
+      <p>微积分太好用了，好用到大家宁愿假装没看见它的逻辑漏洞。但一个建立在“幽灵”之上的大厦，能撑多久？好用 ≠ 正确，这个矛盾迟早要爆发。</p>
+    </div>
+
+    <div class="think-block">
+      <b>当时的数学家心态：</b>“地基是松的我知道，但楼实在太好用了，先住着再说！”——这种“管用就行”的态度，推动应用爆发了一百年，也为下一章的严格化埋下了伏笔。
+    </div>
+
+    <div class="result">
+      <b>本章启示：</b>一门学科可以“先上车后补票”——先解决问题、赢得信任，再回头修补基础。微积分的地基问题，被留给了 19 世纪。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第五章 ============ -->
+<section class="chapter">
+  <div class="wrap">
+    <div class="chapter-head">
+      <div class="chapter-num">第五章 · 19 世纪</div>
+      <h2 class="chapter-title">良心发现：给大厦打地基</h2>
+      <div class="chapter-sub">关键词：极限 · ε-δ 语言 · 黎曼积分</div>
+    </div>
+
+    <div class="panels p3">
+      <div class="panel">
+        <div class="speaker">柯西</div>
+        <div class="scene">🧱📏</div>
+        <div class="bubble">别再提“无穷小”这种模糊词了！我们只需要说：“当 x 越来越接近某值时，f(x) 越来越接近某结果。”</div>
+        <div class="bubble think">这，就是“极限”。</div>
+      </div>
+      <div class="panel">
+        <div class="speaker">黎曼</div>
+        <div class="scene">📊✂️</div>
+        <div class="bubble">积分就是：把区间切成有限份、求和、再让分割无限变细。每步都严格，不用任何“幽灵”。</div>
+      </div>
+      <div class="panel">
+        <div class="speaker">魏尔斯特拉斯</div>
+        <div class="scene">👨‍🏫 δ ε</div>
+        <div class="bubble">我用 ε-δ 语言给极限下了铁律般的定义。从此微积分不再是“直觉的艺术”，而是严格的数学！</div>
+      </div>
+    </div>
+
+    <div class="problem">
+      <h3>⚡ 问题来了</h3>
+      <p>“无限接近”到底多近才算近？“无穷小”究竟是不是数？19 世纪的数学家要回答的，不再是“怎么算”，而是“凭什么这么算是对的”。</p>
+    </div>
+
+    <div class="stage">
+      <canvas id="cv5" width="880" height="320"></canvas>
+      <div class="stage-btns">
+        <button class="btn" onclick="anim5.halve()">把长方形切细一倍</button>
+        <button class="btn blue" onclick="anim5.reset()">重置</button>
+      </div>
+      <p class="cap">▲ 黎曼积分：小长方形越切越细，面积之和的极限就是曲边形的精确面积</p>
+    </div>
+
+    <div class="result">
+      <b>本章启示：</b>代价是微积分变得更抽象了——你在大学课本里学到的 ε-δ，正是 19 世纪补打的地基。觉得枯燥？那是因为你没见过它要守护的这座大厦。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第六章 ============ -->
+<section class="chapter">
+  <div class="wrap">
+    <div class="chapter-head">
+      <div class="chapter-num">第六章 · 20 世纪至今</div>
+      <h2 class="chapter-title">更上一层楼：幽灵平反记</h2>
+      <div class="chapter-sub">关键词：勒贝格积分 · 非标准分析</div>
+    </div>
+
+    <div class="panels p2">
+      <div class="panel">
+        <div class="speaker">勒贝格（1902）</div>
+        <div class="scene">🇫🇷🧩</div>
+        <div class="bubble">黎曼积分搞不定那些太“病态”的函数。我换个思路：不按横轴切，按纵轴的取值分堆——用“测度”重新包装积分！</div>
+      </div>
+      <div class="panel">
+        <div class="speaker">鲁滨逊（1961）</div>
+        <div class="scene">👻✅</div>
+        <div class="bubble">我用数理逻辑证明：“无穷小”可以严格存在！贝克莱，你说的幽灵，是合法的！</div>
+        <div class="bubble think">牛顿的直觉，终于被平反了。</div>
+      </div>
+    </div>
+
+    <div class="think-block">
+      <b>一个圆满的轮回：</b>17 世纪牛顿靠“无穷小”的直觉发明微积分 → 18 世纪被批为“幽灵” → 19 世纪被 ε-δ 驱逐 → 20 世纪又被逻辑学家请了回来。历史绕了一圈，证明直觉和严格并不矛盾。
+    </div>
+
+    <div class="result">
+      <b>本章启示：</b>数学的发展不是“推翻”，而是“升级”——每一代人都站在上一代的肩膀上，把大厦建得更高。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第七章：时间轴 ============ -->
+<section class="chapter">
+  <div class="wrap">
+    <div class="chapter-head">
+      <div class="chapter-num">终章 · 一条主线</div>
+      <h2 class="chapter-title">两千三百年，一场接力赛</h2>
+    </div>
+    <div class="timeline">
+      <div class="tl-item"><div class="yr">古希腊</div><div class="txt">问题：怎么对付“无穷”？—— 芝诺、阿基米德</div></div>
+      <div class="tl-item"><div class="yr">17 世纪</div><div class="txt">问题：瞬时速度和面积怎么算？—— 牛顿、莱布尼茨</div></div>
+      <div class="tl-item"><div class="yr">18 世纪</div><div class="txt">问题：怎么用它解决实际问题？—— 欧拉、伯努利家族</div></div>
+      <div class="tl-item"><div class="yr">19 世纪</div><div class="txt">问题：它的逻辑基础是什么？—— 柯西、黎曼、魏尔斯特拉斯</div></div>
+      <div class="tl-item"><div class="yr">20 世纪</div><div class="txt">问题：还能不能更一般化？—— 勒贝格、鲁滨逊</div></div>
+    </div>
+
+    <div class="stage">
+      <canvas id="cv7" width="880" height="300"></canvas>
+      <p class="cap">▲ 接力赛：每一棒都不是终点，而是下一棒的起点</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 尾声 ============ -->
+<section class="finale">
+  <h2>微积分史 = 人类与“无穷”的和解史</h2>
+  <p>从芝诺的困惑，到阿基米德的逼近，到牛顿的直觉，再到魏尔斯特拉斯的严格——每一步都不是某个人的灵光一闪，而是一代代数学家的接力赛跑。<br><br>
+  微积分不是一个人的发明，它是整个人类智慧的结晶。<br>
+  而让你头疼的那些 ε-δ 证明，其实是 19 世纪才补上的地基。<br>
+  它们不冰冷——它们是为了守护一座伟大的建筑，而不得不打的桩。</p>
+</section>
+
+<footer>微积分发展漫画史 · 完</footer>
+
+<script>
+/* 返回绘本馆 */
+function goBack(){
+  const from=localStorage.getItem('fromTab');
+  const scrollY=localStorage.getItem('fromScroll');
+  if(from){
+    localStorage.setItem('returnToTab',from);
+    localStorage.setItem('returnScroll',scrollY||'0');
+  }
+  window.location.href='./index.html';
+}
+
+/* ============ 滚动显现 & 进度条 ============ */
+const io = new IntersectionObserver(es=>{
+  es.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('show'); });
+},{threshold:.15});
+document.querySelectorAll('.panel,.problem,.think-block,.stage,.result,.tl-item').forEach(el=>io.observe(el));
+addEventListener('scroll',()=>{
+  const h=document.documentElement;
+  document.getElementById('progress').style.width =
+    (h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';
+});
+
+/* ============ 画布工具 ============ */
+function ctx2d(id){ const c=document.getElementById(id); return {c, g:c.getContext('2d'), W:c.width, H:c.height}; }
+
+/* ---- 第一章：穷竭法 ---- */
+const anim1=(()=>{
+  const {g,W,H}=ctx2d('cv1'); let n=6, timer=null;
+  function draw(){
+    g.clearRect(0,0,W,H);
+    const cx=W/2, cy=H/2, R=130;
+    // 圆
+    g.beginPath(); g.arc(cx,cy,R,0,Math.PI*2);
+    g.strokeStyle='#e4572e'; g.lineWidth=3; g.setLineDash([6,5]); g.stroke(); g.setLineDash([]);
+    // 多边形
+    g.beginPath();
+    for(let i=0;i<=n;i++){ const a=-Math.PI/2+i*2*Math.PI/n;
+      const x=cx+R*Math.cos(a), y=cy+R*Math.sin(a);
+      i?g.lineTo(x,y):g.moveTo(x,y); }
+    g.closePath(); g.fillStyle='rgba(77,150,255,.25)'; g.fill();
+    g.strokeStyle='#2f6fd6'; g.lineWidth=3; g.stroke();
+    const ratio=(n/2*Math.sin(2*Math.PI/n))/Math.PI*100;
+    g.font='bold 22px KaiTi,serif'; g.fillStyle='#2b2b2b';
+    g.fillText(`边数 n = ${n}`, 40, 50);
+    g.fillStyle='#e4572e';
+    g.fillText(`多边形面积 / 圆面积 ≈ ${ratio.toFixed(2)}%`, 40, 85);
+    g.font='18px KaiTi,serif'; g.fillStyle='#8a7a55';
+    g.fillText('边数越多 → 越逼近圆的真实面积', 40, 115);
+  }
+  function stopAuto(){ if(timer){clearInterval(timer);timer=null;} }
+  return { draw,
+    more(){ stopAuto(); n=Math.min(n+4,200); draw(); },
+    auto(){ stopAuto(); n=4; timer=setInterval(()=>{ n+=1; if(n>160){stopAuto();} draw(); },60); }
+  };
+})();
+anim1.draw();
+
+/* ---- 第三章：割线变切线 ---- */
+const anim3=(()=>{
+  const {g,W,H}=ctx2d('cv3'); let t=0, playing=false;
+  const f=x=>0.004*(x-440)**2/10+60; // 抛物线
+  function toPx(x,y){ return [x, H-y]; }
+  function draw(){
+    g.clearRect(0,0,W,H);
+    // 坐标轴
+    g.strokeStyle='#bbb'; g.lineWidth=1.5;
+    g.beginPath(); g.moveTo(40,10); g.lineTo(40,H-30); g.lineTo(W-20,H-30); g.stroke();
+    // 曲线
+    g.beginPath(); g.strokeStyle='#2b2b2b'; g.lineWidth=3;
+    for(let x=60;x<=W-40;x+=4){ const [px,py]=toPx(x,f(x)); x===60?g.moveTo(px,py):g.lineTo(px,py); }
+    g.stroke();
+    const x0=440, y0=f(x0);
+    const h=Math.max(220*(1-t),2); // 间隔趋近0
+    const x1=x0+h, y1=f(x1);
+    const slope=(y1-y0)/h; // 斜率（函数值方向）
+    // 割线/切线 延长
+    const ext=140;
+    const [ax,ay]=toPx(x0-ext,y0-slope*ext), [bx,by]=toPx(x1+ext,y1+slope*ext);
+    g.beginPath(); g.moveTo(ax,ay); g.lineTo(bx,by);
+    g.strokeStyle='#e4572e'; g.lineWidth=3; g.setLineDash(t<1?[8,6]:[]); g.stroke(); g.setLineDash([]);
+    // 点
+    [[x0,y0,'#2f6fd6'],[x1,y1,'#e4572e']].forEach(([x,y,c])=>{
+      const [px,py]=toPx(x,y); g.beginPath(); g.arc(px,py,7,0,Math.PI*2);
+      g.fillStyle=c; g.fill(); g.strokeStyle='#fff'; g.lineWidth=2; g.stroke();
+    });
+    g.font='bold 20px KaiTi,serif'; g.fillStyle='#2b2b2b';
+    g.fillText(t>=1?'两点重合 → 割线变成切线！这就是“导数”':`让第二点慢慢靠近…… 间隔 h = ${h.toFixed(0)}`, 60, 42);
+  }
+  function step(){ t+=0.02; if(t>=1){t=1;playing=false;} draw(); if(playing)requestAnimationFrame(step); }
+  draw();
+  return { play(){ if(playing)return; t=0; playing=true; step(); } };
+})();
+
+/* ---- 第五章：黎曼和 ---- */
+const anim5=(()=>{
+  const {g,W,H}=ctx2d('cv5'); let n=4;
+  const f=x=>90+70*Math.sin((x-60)/180)+40*Math.sin((x-60)/70);
+  const x0=60, x1=W-60;
+  function draw(){
+    g.clearRect(0,0,W,H);
+    // 曲线 + 填充
+    g.beginPath(); g.moveTo(x0,H-30);
+    for(let x=x0;x<=x1;x+=3) g.lineTo(x,H-30-f(x));
+    g.lineTo(x1,H-30); g.closePath();
+    g.fillStyle='rgba(228,87,46,.12)'; g.fill();
+    g.beginPath();
+    for(let x=x0;x<=x1;x+=3){ const y=H-30-f(x); x===x0?g.moveTo(x,y):g.lineTo(x,y); }
+    g.strokeStyle='#2b2b2b'; g.lineWidth=3; g.stroke();
+    // 矩形
+    const dx=(x1-x0)/n; let sum=0, exact=0;
+    for(let i=0;i<n;i++){
+      const xa=x0+i*dx, h=f(xa+dx/2); sum+=h*dx;
+      g.fillStyle='rgba(77,150,255,.3)'; g.fillRect(xa,H-30-h,dx-1,h);
+      g.strokeStyle='#2f6fd6'; g.lineWidth=1.5; g.strokeRect(xa,H-30-h,dx-1,h);
+    }
+    for(let x=x0;x<x1;x+=2) exact+=f(x)*2;
+    g.font='bold 20px KaiTi,serif'; g.fillStyle='#2b2b2b';
+    g.fillText(`长方形个数 n = ${n}`, 40, 40);
+    g.fillStyle='#e4572e';
+    g.fillText(`估算误差 ≈ ${(Math.abs(sum-exact)/exact*100).toFixed(2)}%`, 40, 72);
+    g.font='18px KaiTi,serif'; g.fillStyle='#8a7a55';
+    g.fillText('切得越细，误差越小 → 误差的极限是 0', 40, 100);
+  }
+  draw();
+  return { halve(){ n=Math.min(n*2,256); draw(); }, reset(){ n=4; draw(); } };
+})();
+
+/* ---- 终章：接力棒动画 ---- */
+const anim7=(()=>{
+  const {g,W,H}=ctx2d('cv7');
+  const runners=[
+    {name:'芝诺',yr:'前5世纪',c:'#8a7a55'},
+    {name:'阿基米德',yr:'前3世纪',c:'#d4a017'},
+    {name:'牛顿',yr:'1660s',c:'#e4572e'},
+    {name:'莱布尼茨',yr:'1680s',c:'#4d96ff'},
+    {name:'欧拉',yr:'1700s',c:'#7b2d8b'},
+    {name:'柯西/黎曼',yr:'1800s',c:'#2f9e6e'},
+    {name:'勒贝格/鲁滨逊',yr:'1900s',c:'#2b2b2b'},
+  ];
+  let t=0;
+  function draw(){
+    g.clearRect(0,0,W,H);
+    const n=runners.length, gap=W/(n+0.5);
+    // 跑道
+    g.strokeStyle='#d9cdaa'; g.lineWidth=4;
+    g.beginPath(); g.moveTo(30,H-40); g.lineTo(W-30,H-40); g.stroke();
+    runners.forEach((r,i)=>{
+      const x=gap*(i+0.6), y=H-70;
+      // 传棒弧线
+      if(i<n-1){
+        const nx=gap*(i+1.6);
+        const prog=Math.max(0,Math.min(1,(t-i*0.6)/1.5));
+        if(prog>0){
+          g.beginPath();
+          g.setLineDash([6,6]); g.strokeStyle='#e4572e'; g.lineWidth=2.5;
+          g.moveTo(x,y-30);
+          const mx=(x+nx)/2;
+          g.quadraticCurveTo(mx,y-90, x+(nx-x)*prog, y-30-40*Math.sin(prog*Math.PI));
+          g.stroke(); g.setLineDash([]);
+          g.beginPath(); g.arc(x+(nx-x)*prog, y-30-40*Math.sin(prog*Math.PI),5,0,Math.PI*2);
+          g.fillStyle='#ffd23f'; g.fill(); g.strokeStyle='#2b2b2b'; g.lineWidth=2; g.stroke();
+        }
+      }
+      // 小人：圆头+身体
+      g.beginPath(); g.arc(x,y-38,13,0,Math.PI*2);
+      g.fillStyle=r.c; g.fill(); g.strokeStyle='#2b2b2b'; g.lineWidth=2.5; g.stroke();
+      g.beginPath(); g.moveTo(x,y-25); g.lineTo(x,y); g.moveTo(x,y-18); g.lineTo(x-12,y-8);
+      g.moveTo(x,y-18); g.lineTo(x+12,y-8); g.moveTo(x,y); g.lineTo(x-10,y+24); g.moveTo(x,y); g.lineTo(x+10,y+24);
+      g.strokeStyle=r.c; g.lineWidth=4; g.lineCap='round'; g.stroke();
+      g.font='bold 16px KaiTi,serif'; g.fillStyle='#2b2b2b'; g.textAlign='center';
+      g.fillText(r.name,x,y+44);
+      g.font='14px KaiTi,serif'; g.fillStyle='#8a7a55';
+      g.fillText(r.yr,x,y+62);
+      g.textAlign='start';
+    });
+  }
+  function loop(){ t+=0.02; if(t>runners.length*0.6+2) t=0; draw(); requestAnimationFrame(loop); }
+  loop();
+  return {};
+})();
+
+/* 启动第一章自动演示一次 */
+setTimeout(()=>anim1.auto(), 1200);
+</script>
+  <script src="./_shared/theme-manager.js"></script>
+</body>
+</html>

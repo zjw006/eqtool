@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>高考语文130+提分攻略 — 高中全学科绘本馆</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* 保留原有的中国风配色，与绘本馆风格兼容 */
+  --cream:#FFF9F0;
+  --paper:#FFFDF7;
+  --peach:#FF9E7D;
+  --peach-soft:#FFD9C7;
+  --sky:#8FC9E8;
+  --sky-soft:#D8EEF9;
+  --gold:#E8A93E;
+  --gold-soft:#FBE8C4;
+  --leaf:#8FC98F;
+  --leaf-soft:#DFF0D9;
+  --ink:#4A3A2E;
+  --ink-light:#8A7663;
+  --pink:#F7A8B8;
+  --pink-soft:#FDE3EA;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei','Hiragino Sans GB',sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+  line-height:1.8;
+  overflow-x:hidden;
+  position:relative;
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background-image:
+    radial-gradient(ellipse at 20% 10%,rgba(255,158,125,0.08) 0%,transparent 40%),
+    radial-gradient(ellipse at 80% 80%,rgba(143,201,232,0.08) 0%,transparent 40%),
+    radial-gradient(ellipse at 50% 50%,rgba(232,169,62,0.05) 0%,transparent 50%);
+}
+h1,h2,h3,.brush{
+  font-family:'ZCOOL KuaiLe','Noto Sans SC','STKaiti','KaiTi',serif;
+  letter-spacing:.05em;
+}
+/* ===== 返回主页按钮 ===== */
+.back-btn{
+  position:fixed;top:16px;left:20px;z-index:200;
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,253,247,0.9);
+  border:2px solid var(--ink);border-radius:50px;
+  padding:8px 20px;text-decoration:none;color:var(--ink);
+  font-family:'Noto Sans SC',sans-serif;font-size:.85rem;font-weight:600;
+  box-shadow:3px 4px 0 rgba(74,58,46,.2);
+  backdrop-filter:blur(8px);transition:all .2s;
+}
+.back-btn:hover{background:var(--gold-soft);transform:translate(-2px,-2px);box-shadow:5px 6px 0 rgba(74,58,46,.2);}
+.back-btn:active{transform:translate(2px,3px);box-shadow:1px 1px 0 rgba(74,58,46,.2);}
+/* ===== 通用 ===== */
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px;}
+section{padding:70px 0;}
+.tag{
+  display:inline-block;background:var(--gold-soft);color:var(--ink);
+  border:2px solid var(--ink);border-radius:999px;
+  padding:2px 16px;font-size:.85rem;font-weight:bold;margin-bottom:12px;
+  box-shadow:2px 3px 0 rgba(74,58,46,.25);
+}
+.sec-title{
+  font-size:2.1rem;text-align:center;margin-bottom:8px;position:relative;display:block;
+}
+.sec-sub{text-align:center;color:var(--ink-light);margin-bottom:40px;}
+.card{
+  background:var(--paper);
+  border:2.5px solid var(--ink);
+  border-radius:22px;
+  box-shadow:5px 6px 0 rgba(74,58,46,.18);
+  padding:26px;
+  transition:transform .25s ease, box-shadow .25s ease;
+}
+.card:hover{transform:translateY(-4px);box-shadow:7px 10px 0 rgba(74,58,46,.18);}
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease;}
+.reveal.show{opacity:1;transform:translateY(0);}
+/* ===== 导航 ===== */
+nav{
+  position:sticky;top:0;z-index:99;
+  background:rgba(255,249,240,.92);backdrop-filter:blur(8px);
+  border-bottom:2px dashed var(--ink-light);
+}
+nav .wrap{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding-top:10px;padding-bottom:10px;}
+nav .logo{font-family:'ZCOOL KuaiLe','STKaiti','KaiTi',serif;font-size:1.4rem;margin-right:auto;}
+nav a{
+  color:var(--ink);text-decoration:none;font-size:.9rem;font-weight:bold;
+  padding:4px 12px;border-radius:999px;border:2px solid transparent;transition:.2s;
+}
+nav a:hover{border-color:var(--ink);background:var(--gold-soft);}
+/* ===== HERO ===== */
+.hero{padding:40px 0 60px;position:relative;}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:36px;align-items:center;}
+.hero h1{font-size:3rem;line-height:1.3;margin:14px 0 18px;}
+.hero h1 .hl{
+  color:var(--peach);
+  text-shadow:2px 2px 0 var(--peach-soft);
+}
+.hero p.lead{color:var(--ink-light);font-size:1.05rem;margin-bottom:22px;}
+.score-jump{
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:26px;
+}
+.score-box{
+  border:2.5px solid var(--ink);border-radius:16px;background:var(--paper);
+  padding:10px 22px;text-align:center;box-shadow:3px 4px 0 rgba(74,58,46,.2);
+}
+.score-box .num{font-size:2.2rem;font-weight:900;font-family:'ZCOOL KuaiLe','STKaiti','KaiTi',serif;}
+.score-box .lab{font-size:.75rem;color:var(--ink-light);}
+.score-box.to{background:var(--gold-soft);}
+.score-box.to .num{color:var(--gold);}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap;}
+.btn{
+  display:inline-block;text-decoration:none;font-weight:bold;
+  border:2.5px solid var(--ink);border-radius:999px;padding:11px 28px;
+  box-shadow:3px 4px 0 rgba(74,58,46,.3);transition:.15s;cursor:pointer;font-size:1rem;
+}
+.btn:active{transform:translate(2px,3px);box-shadow:1px 1px 0 rgba(74,58,46,.3);}
+.btn-primary{background:var(--peach);color:#fff;}
+.btn-ghost{background:var(--paper);color:var(--ink);}
+.hero-img{
+  border:3px solid var(--ink);border-radius:26px;overflow:hidden;
+  box-shadow:8px 10px 0 rgba(74,58,46,.2);transform:rotate(1.5deg);
+}
+.hero-img img{width:100%;display:block;}
+.tape{
+  position:absolute;width:90px;height:26px;background:rgba(232,169,62,.5);
+  transform:rotate(-6deg);top:-14px;left:36%;border-radius:3px;
+}
+/* ===== 定位 ===== */
+.diag-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.diag-item{display:flex;gap:14px;align-items:flex-start;margin-bottom:14px;}
+.diag-item .ico{
+  flex:none;width:42px;height:42px;border-radius:12px;border:2px solid var(--ink);
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem;background:var(--pink-soft);
+}
+.goodnews{
+  background:var(--leaf-soft);border:2.5px dashed var(--leaf);
+  border-radius:18px;padding:18px 22px;margin-top:8px;font-weight:bold;
+}
+/* ===== 趋势 ===== */
+.trend-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;}
+.trend-card{text-align:center;padding:24px 16px;}
+.trend-card .emoji{font-size:2.4rem;display:block;margin-bottom:10px;}
+.trend-card h3{font-size:1.25rem;margin-bottom:8px;}
+.trend-card p{font-size:.88rem;color:var(--ink-light);}
+.big-quote{
+  margin:44px auto 0;max-width:760px;text-align:center;
+  font-family:'ZCOOL KuaiLe','STKaiti','KaiTi',serif;font-size:1.6rem;
+  background:var(--gold-soft);border:2.5px solid var(--ink);border-radius:20px;
+  padding:24px 30px;box-shadow:5px 6px 0 rgba(74,58,46,.18);position:relative;
+}
+/* ===== 模块 ===== */
+.mod-list{display:flex;flex-direction:column;gap:22px;}
+.mod{
+  background:var(--paper);border:2.5px solid var(--ink);border-radius:24px;
+  box-shadow:5px 6px 0 rgba(74,58,46,.18);overflow:hidden;
+}
+.mod-head{
+  display:flex;align-items:center;gap:18px;padding:20px 26px;cursor:pointer;user-select:none;
+}
+.mod-head:hover{background:rgba(232,169,62,.08);}
+.mod-badge{
+  flex:none;width:58px;height:58px;border-radius:16px;border:2.5px solid var(--ink);
+  display:flex;align-items:center;justify-content:center;font-size:1.8rem;
+}
+.mod:nth-child(1) .mod-badge{background:var(--peach-soft);}
+.mod:nth-child(2) .mod-badge{background:var(--sky-soft);}
+.mod:nth-child(3) .mod-badge{background:var(--pink-soft);}
+.mod:nth-child(4) .mod-badge{background:var(--leaf-soft);}
+.mod-head h3{font-size:1.4rem;}
+.mod-head .mod-why{font-size:.85rem;color:var(--ink-light);}
+.mod-target{
+  margin-left:auto;flex:none;text-align:center;
+  background:var(--gold-soft);border:2px solid var(--ink);border-radius:12px;padding:6px 14px;
+  font-size:.8rem;font-weight:bold;
+}
+.mod-target b{display:block;font-size:1.15rem;color:var(--gold);}
+.mod-toggle{flex:none;font-size:1.4rem;transition:transform .3s;color:var(--ink-light);}
+.mod.open .mod-toggle{transform:rotate(180deg);}
+.mod-body{max-height:0;overflow:hidden;transition:max-height .45s ease;}
+.mod.open .mod-body{max-height:2000px;}
+.mod-body-inner{padding:0 26px 26px;border-top:2px dashed var(--ink-light);}
+.mod-body-inner h4{
+  margin:20px 0 10px;font-size:1.05rem;
+  padding-left:12px;border-left:5px solid var(--peach);
+}
+.mod-body ul{list-style:none;}
+.mod-body li{padding:5px 0 5px 26px;position:relative;font-size:.95rem;}
+.mod-body li::before{
+  content:"✿";position:absolute;left:0;color:var(--peach);font-size:.85rem;
+}
+.mod-body li b{color:var(--gold);}
+.problem{
+  background:var(--pink-soft);border-radius:14px;padding:12px 18px;margin-top:16px;
+  font-size:.9rem;border:2px dashed var(--pink);
+}
+.problem b{color:#D6687E;}
+/* ===== 路径图 ===== */
+.path-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:36px;align-items:center;}
+.path-img{
+  border:3px solid var(--ink);border-radius:26px;overflow:hidden;
+  box-shadow:8px 10px 0 rgba(74,58,46,.2);transform:rotate(-1.2deg);position:relative;
+}
+.path-img img{width:100%;display:block;}
+.step{display:flex;gap:16px;margin-bottom:20px;align-items:flex-start;}
+.step .dot{
+  flex:none;width:46px;height:46px;border-radius:50%;border:2.5px solid var(--ink);
+  background:var(--peach);color:#fff;font-weight:900;font-size:1.15rem;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:2px 3px 0 rgba(74,58,46,.25);font-family:'ZCOOL KuaiLe','KaiTi',serif;
+}
+.step:nth-child(2) .dot{background:var(--sky);}
+.step:nth-child(3) .dot{background:var(--pink);}
+.step:nth-child(4) .dot{background:var(--leaf);}
+.step .txt b{font-size:1.08rem;}
+.step .txt span{display:block;font-size:.88rem;color:var(--ink-light);}
+/* ===== 时间轴 ===== */
+.timeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;}
+.tl-card{position:relative;padding-top:34px;}
+.tl-card .season{
+  position:absolute;top:-16px;left:20px;
+  border:2.5px solid var(--ink);border-radius:999px;padding:3px 18px;font-weight:bold;font-size:.9rem;
+  box-shadow:2px 3px 0 rgba(74,58,46,.2);
+}
+.tl-card:nth-child(1) .season{background:var(--leaf-soft);}
+.tl-card:nth-child(2) .season{background:var(--sky-soft);}
+.tl-card:nth-child(3) .season{background:var(--pink-soft);}
+.tl-card:nth-child(4) .season{background:var(--gold-soft);}
+.tl-card h3{font-size:1.2rem;margin-bottom:4px;}
+.tl-card .time{font-size:.8rem;color:var(--ink-light);margin-bottom:12px;}
+.tl-card ul{list-style:none;font-size:.88rem;}
+.tl-card li{padding:4px 0 4px 20px;position:relative;}
+.tl-card li::before{content:"❀";position:absolute;left:0;color:var(--gold);font-size:.8rem;}
+/* ===== 自我修炼 ===== */
+.parent-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.parent-grid h3{font-size:1.15rem;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.parent-grid .card p{font-size:.92rem;color:var(--ink);}
+.parent-grid .card p+p{margin-top:6px;}
+.tips-strip{
+  margin-top:26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;
+}
+.tip{
+  border:2px dashed var(--ink-light);border-radius:16px;padding:14px 16px;text-align:center;
+  background:var(--paper);font-size:.88rem;
+}
+.tip b{display:block;font-size:1rem;margin-bottom:2px;}
+/* ===== 目标阶梯 ===== */
+.ladder{display:flex;flex-direction:column;gap:14px;max-width:820px;margin:0 auto;}
+.rung{
+  display:grid;grid-template-columns:180px 1fr 150px;gap:16px;align-items:center;
+  background:var(--paper);border:2.5px solid var(--ink);border-radius:16px;padding:14px 20px;
+  box-shadow:4px 5px 0 rgba(74,58,46,.15);
+}
+.rung .stage{font-weight:bold;}
+.rung .stage small{display:block;font-weight:normal;color:var(--ink-light);font-size:.78rem;}
+.bar{height:22px;background:#F1E7D8;border-radius:999px;border:2px solid var(--ink);overflow:hidden;}
+.bar i{display:block;height:100%;border-radius:999px;width:0;transition:width 1.2s ease;}
+.rung:nth-child(1) .bar i{background:var(--sky);}
+.rung:nth-child(2) .bar i{background:var(--leaf);}
+.rung:nth-child(3) .bar i{background:var(--pink);}
+.rung:nth-child(4) .bar i{background:var(--gold);}
+.rung .goal{text-align:right;font-weight:900;font-size:1.1rem;font-family:'ZCOOL KuaiLe','KaiTi',serif;}
+.rung .goal small{display:block;font-weight:normal;font-size:.75rem;color:var(--ink-light);font-family:sans-serif;}
+.final-note{
+  text-align:center;margin-top:36px;font-size:1.05rem;color:var(--ink-light);
+}
+.final-note b{color:var(--peach);}
+/* ===== footer ===== */
+footer{
+  border-top:2px dashed var(--ink-light);padding:34px 0 44px;text-align:center;color:var(--ink-light);font-size:.85rem;
+}
+footer .brush{font-size:1.5rem;color:var(--ink);margin-bottom:8px;display:block;}
+@media(max-width:860px){
+  .hero-grid,.diag-grid,.path-grid,.parent-grid{grid-template-columns:1fr;}
+  .hero h1{font-size:2.2rem;}
+  .rung{grid-template-columns:1fr;gap:8px;}
+  .rung .goal{text-align:left;}
+  .mod-target{margin-left:0;}
+  .mod-head{flex-wrap:wrap;}
+  .back-btn{top:10px;left:10px;padding:6px 14px;font-size:.8rem;}
+}
+</style>
+<link rel="stylesheet" href="./_shared/anime-cartoon-theme.css">
+</head>
+<body>
+
+<!-- 返回主页 -->
+<a class="back-btn" href="./index.html">← 返回绘本馆</a>
+
+<nav>
+  <div class="wrap">
+    <span class="logo">📖 语文逆袭手账</span>
+    <a href="#diag">起点定位</a>
+    <a href="#trend">考情趋势</a>
+    <a href="#module">四大模块</a>
+    <a href="#path">提分路径</a>
+    <a href="#timeline">全年规划</a>
+    <a href="#self">自我修炼</a>
+    <a href="#goal">目标阶梯</a>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div class="reveal show">
+      <span class="tag">2028 高考 · 语文提分作战书</span>
+      <h1>高二这一年，<br>把语文提到 <span class="hl">130+</span></h1>
+      <p class="lead">语文是"慢功夫"，高二是提分的黄金窗口期——规划明确、方法有效，完全来得及。</p>
+      <div class="score-jump">
+        <div class="score-box to"><div class="num">🎯 130+</div><div class="lab">2028 高考语文目标</div></div>
+      </div>
+      <div class="hero-btns">
+        <a class="btn btn-primary" href="#module">查看提分模块</a>
+        <a class="btn btn-ghost" href="#path">直达提分路径</a>
+      </div>
+    </div>
+    <div class="hero-img reveal show">
+      <span class="tape"></span>
+      <img src="chinese130-assets/hero.png" alt="窗边读诗的女孩">
+    </div>
+  </div>
+</header>
+
+<!-- ============ 起点定位 ============ -->
+<section id="diag" style="background:var(--sky-soft);">
+  <div class="wrap">
+    <span class="tag">STEP 0 · 先看清自己</span>
+    <h2 class="sec-title">先自测：你的短板在哪里？</h2>
+    <p class="sec-sub">先诊断，再开方。知道短板在哪，才知道力气往哪使。</p>
+    <div class="diag-grid">
+      <div class="card reveal">
+        <h3 style="margin-bottom:16px;">🔍 短板自测（对号入座）</h3>
+        <div class="diag-item"><div class="ico">📜</div><div><b>文言文像看天书？</b>多半是实词虚词不过关、特殊句式看不懂</div></div>
+        <div class="diag-item"><div class="ico">📄</div><div><b>阅读答满不得分？</b>不是理解力不够，是答题不规范</div></div>
+        <div class="diag-item"><div class="ico">✍️</div><div><b>作文总在一个分段徘徊？</b>素材老、审题偏、结构乱</div></div>
+        <div class="diag-item"><div class="ico">🧩</div><div><b>小题总丢冤枉分？</b>成语、病句靠感觉，没有错题积累</div></div>
+      </div>
+      <div class="card reveal">
+        <h3 style="margin-bottom:16px;">🌱 好消息是</h3>
+        <p style="font-size:.95rem;">语文不像数学那样依赖天赋，它需要的是<b>积累 + 方法 + 坚持</b>。高二整整一年，加上寒暑假，是高中三年里唯一一段"可以从容打基础"的时间。</p>
+        <div class="goodnews">✅ 提分慢，但退步也慢 —— 高二的每一分努力，都会存进高考的成绩单里。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 考情趋势 ============ -->
+<section id="trend">
+  <div class="wrap">
+    <span class="tag">知己知彼</span>
+    <h2 class="sec-title">2028 高考语文 · 五大趋势</h2>
+    <p class="sec-sub">根据近年高考命题的官方导向，未来考的不是"背了多少"，而是"会不会用"。</p>
+    <div class="trend-grid">
+      <div class="card trend-card reveal"><span class="emoji">📚</span><h3>教考衔接</h3><p>考题知识点都能在统编教材中找到依据 —— 教材不能丢，课内文言文必须吃透</p></div>
+      <div class="card trend-card reveal"><span class="emoji">🎭</span><h3>情境化命题</h3><p>题目设在真实情境里，死记硬背失效，要学会"在情境中运用知识"</p></div>
+      <div class="card trend-card reveal"><span class="emoji">🧠</span><h3>思维考查</h3><p>强调分析、比较、评价、创造等高阶思维，刷题模板不再管用</p></div>
+      <div class="card trend-card reveal"><span class="emoji">🔗</span><h3>跨文本比较</h3><p>文言文双篇关联、现代文多文本比较，考查宏观把控与逻辑思维</p></div>
+      <div class="card trend-card reveal"><span class="emoji">✍️</span><h3>作文深度化</h3><p>反套路、重思辨、关照现实 —— 背范文没出路，要练审题和立意</p></div>
+    </div>
+    <div class="big-quote reveal">" 2028 年的语文卷，奖励会思考的人，<br>而不是会背诵的机器。 "</div>
+  </div>
+</section>
+
+<!-- ============ 四大模块 ============ -->
+<section id="module" style="background:var(--pink-soft);">
+  <div class="wrap">
+    <span class="tag">核心作战区</span>
+    <h2 class="sec-title">四大提分模块 · 逐个击破</h2>
+    <p class="sec-sub">点击每个模块展开详细打法（目标分按 150 分制高考试卷估算）</p>
+    <div class="mod-list">
+
+      <!-- 模块一 -->
+      <div class="mod reveal">
+        <div class="mod-head" onclick="this.parentElement.classList.toggle('open')">
+          <div class="mod-badge">📜</div>
+          <div>
+            <h3>古诗文阅读</h3>
+            <div class="mod-why">最容易提分的板块 · 文言文 + 古诗词鉴赏</div>
+          </div>
+          <div class="mod-target">目标<b>28-30 / 35</b></div>
+          <div class="mod-toggle">▼</div>
+        </div>
+        <div class="mod-body"><div class="mod-body-inner">
+          <div class="problem"><b>问题诊断：</b>如果读文言文像看"天书"，多半是文言基础薄弱 —— 实词虚词不过关、特殊句式看不懂。</div>
+          <h4>① 实词虚词系统过关</h4>
+          <ul>
+            <li>高考要求掌握 <b>120 个常见文言实词 + 18 个文言虚词</b></li>
+            <li>每天背 5 个实词，用"一词多义"方式记忆（如"兵"：兵器、士兵、战争、军事）</li>
+            <li>准备小本子，随时记录试卷与练习中遇到的生词</li>
+          </ul>
+          <h4>② 课内文言文精读</h4>
+          <ul>
+            <li>《劝学》《师说》《赤壁赋》等课内篇目<b>逐字逐句翻译</b></li>
+            <li>不只背翻译，要吃透语法结构：判断句、被动句、倒装句、省略句</li>
+            <li>"教考衔接"趋势下，课内知识直接关联考题</li>
+          </ul>
+          <h4>③ 古诗词鉴赏建立"答题模型"</h4>
+          <ul>
+            <li>常考题型：意象分析、情感把握、手法鉴赏、炼字题</li>
+            <li>每周精析 2 首古诗词，对照参考答案找自己的遗漏点</li>
+            <li>有答题角度，但避免生搬硬套</li>
+          </ul>
+        </div></div>
+      </div>
+
+      <!-- 模块二 -->
+      <div class="mod reveal">
+        <div class="mod-head" onclick="this.parentElement.classList.toggle('open')">
+          <div class="mod-badge">📄</div>
+          <div>
+            <h3>现代文阅读</h3>
+            <div class="mod-why">最需要方法论的板块 · 论述类 + 文学类 + 实用类</div>
+          </div>
+          <div class="mod-target">目标<b>28-32 / 36</b></div>
+          <div class="mod-toggle">▼</div>
+        </div>
+        <div class="mod-body"><div class="mod-body-inner">
+          <div class="problem"><b>核心问题：</b>读得懂但答不全，或者答了很多却不得分 —— 缺的不是理解力，是答题规范。</div>
+          <h4>① 掌握"三步阅读法"</h4>
+          <ul>
+            <li><b>速读定位：</b>快速浏览，标记段落主旨句</li>
+            <li><b>精读提取：</b>带着问题回原文找依据</li>
+            <li><b>结构化答题：</b>按"内容 + 结构 + 情感/主旨"维度组织答案</li>
+          </ul>
+          <h4>② 研究标准答案的语言组织</h4>
+          <ul>
+            <li>做完题后逐字对比自己的答案与标准答案，而非只看对错</li>
+            <li>总结"套路"：如作用题通常从内容、结构、情感、读者效果四个角度作答</li>
+            <li>准备"答题模板本"，分类记录各类题型的标准答法</li>
+          </ul>
+          <h4>③ 每周限时训练</h4>
+          <ul>
+            <li>每周 1-2 篇，严格计时：<b>文学类 15 分钟，论述类 10 分钟</b></li>
+            <li>考场上最忌"慢慢读"，速度就是分数</li>
+          </ul>
+        </div></div>
+      </div>
+
+      <!-- 模块三 -->
+      <div class="mod reveal">
+        <div class="mod-head" onclick="this.parentElement.classList.toggle('open')">
+          <div class="mod-badge">✍️</div>
+          <div>
+            <h3>作文</h3>
+            <div class="mod-why">60 分大头 · 决定语文能否上 120 的关键</div>
+          </div>
+          <div class="mod-target">目标<b>48-52 / 60</b></div>
+          <div class="mod-toggle">▼</div>
+        </div>
+        <div class="mod-body"><div class="mod-body-inner">
+          <div class="problem"><b>典型问题：</b>审题不准易跑题；素材陈旧（只会爱迪生、司马迁）；语言平淡；结构混乱。</div>
+          <h4>① 每周一篇 + 老师面批（最有效，没有之一）</h4>
+          <ul>
+            <li>不求速度求质量，写出自己当下最好水平</li>
+            <li>重点不是写得多，而是<b>每次都有具体改进</b></li>
+          </ul>
+          <h4>② 建立"主题素材库"</h4>
+          <ul>
+            <li><b>时代精神：</b>AI、航天、乡村振兴</li>
+            <li><b>传统文化：</b>非遗、古籍、工匠精神</li>
+            <li><b>青年成长：</b>理想、奋斗、选择</li>
+            <li><b>社会现象：</b>内卷、躺平、信息茧房</li>
+            <li>每个主题备 2-3 个<b>近 1-2 年的新鲜时事素材</b>，拒绝万能素材</li>
+          </ul>
+          <h4>③ 训练审题立意</h4>
+          <ul>
+            <li>拿到材料先画"逻辑思维导图"：关键词 → 关系 → 逻辑链条</li>
+            <li>从材料出发提炼自己的独特观点，坚决避免套作</li>
+          </ul>
+          <h4>④ 积累并化用"亮句"</h4>
+          <ul>
+            <li>早读背经典名句，关键是<b>会化用</b>而非堆砌</li>
+            <li>每天写 200-300 字短评，用上新积累的名句</li>
+          </ul>
+        </div></div>
+      </div>
+
+      <!-- 模块四 -->
+      <div class="mod reveal">
+        <div class="mod-head" onclick="this.parentElement.classList.toggle('open')">
+          <div class="mod-badge">🧩</div>
+          <div>
+            <h3>语言文字运用</h3>
+            <div class="mod-why">最容易满分的基础板块 · 背了就能拿分</div>
+          </div>
+          <div class="mod-target">目标<b>18-20 / 20</b></div>
+          <div class="mod-toggle">▼</div>
+        </div>
+        <div class="mod-body"><div class="mod-body-inner">
+          <h4>考查范围</h4>
+          <ul>
+            <li>成语、病句、标点、修辞、补写句子、图文转换</li>
+          </ul>
+          <h4>打法：积累 + 刷题，保持手感</h4>
+          <ul>
+            <li>准备错题本，按错误类型分类：近义词混淆、成分残缺、搭配不当……</li>
+            <li><b>每天 10-15 分钟专项练习</b>，不间断</li>
+            <li>这是性价比最高的板块，目标是满分或接近满分</li>
+          </ul>
+        </div></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ 提分路径 ============ -->
+<section id="path">
+  <div class="wrap">
+    <span class="tag">重点提分路径</span>
+    <h2 class="sec-title">通往 130+，先攻哪里？</h2>
+    <p class="sec-sub">提分顺序有讲究 —— 先拿确定性最高的分，再啃硬骨头。</p>
+    <div class="path-grid">
+      <div class="path-img reveal">
+        <span class="tape"></span>
+        <img src="chinese130-assets/path.png" alt="书本阶梯通向更高处">
+      </div>
+      <div class="reveal">
+        <div class="step">
+          <div class="dot">1</div>
+          <div class="txt"><b>先攻 · 语言文字运用（+8~10分）</b><span>纯积累型板块，每天 15 分钟，一个学期见效最快 —— 先建立"我能提分"的信心。</span></div>
+        </div>
+        <div class="step">
+          <div class="dot">2</div>
+          <div class="txt"><b>再攻 · 古诗文阅读（+10~12分）</b><span>实词虚词是"背了就有分"的确定性收益，课内精读直接对接"教考衔接"命题。</span></div>
+        </div>
+        <div class="step">
+          <div class="dot">3</div>
+          <div class="txt"><b>规范 · 现代文阅读（+8~10分）</b><span>不靠多读，靠"答题模板本"把会做的题变成拿满分的题 —— 规范就是分数。</span></div>
+        </div>
+        <div class="step">
+          <div class="dot">4</div>
+          <div class="txt"><b>决胜 · 作文（+10~14分）</b><span>每周一篇 + 面批 + 素材库，从二类文爬到一类文下限 —— 这是 120 与 130 的分水岭。</span></div>
+        </div>
+        <div class="goodnews" style="margin-top:22px;">✅ 四条线并行推进：语用、古诗文先行打底，阅读规范与作文长线持续 —— 累计提分空间 35+ 分。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 全年规划 ============ -->
+<section id="timeline" style="background:var(--gold-soft);">
+  <div class="wrap">
+    <span class="tag">全年作战日历</span>
+    <h2 class="sec-title">高二全年 · 四阶段规划</h2>
+    <p class="sec-sub">每个阶段只聚焦一个主任务，不贪多、不散力。</p>
+    <div class="timeline">
+      <div class="card tl-card reveal">
+        <span class="season">🍂 高二上</span>
+        <h3>夯实基础</h3>
+        <div class="time">9月 — 1月</div>
+        <ul>
+          <li>系统过一遍 120 个文言实词</li>
+          <li>课内文言文逐篇精读翻译</li>
+          <li>每周 1 篇作文 + 面批</li>
+          <li>建立错题本</li>
+        </ul>
+      </div>
+      <div class="card tl-card reveal">
+        <span class="season">❄️ 寒假</span>
+        <h3>查漏补缺</h3>
+        <div class="time">1月 — 2月</div>
+        <ul>
+          <li>整理上学期错题，针对补弱</li>
+          <li>精读 5-10 篇高考满分作文</li>
+          <li>开始积累时事素材</li>
+        </ul>
+      </div>
+      <div class="card tl-card reveal">
+        <span class="season">🌸 高二下</span>
+        <h3>专项突破</h3>
+        <div class="time">3月 — 7月</div>
+        <ul>
+          <li>现代文阅读限时训练</li>
+          <li>古诗词鉴赏题型专练</li>
+          <li>作文审题立意专项训练</li>
+          <li>语用每日保持手感</li>
+        </ul>
+      </div>
+      <div class="card tl-card reveal">
+        <span class="season">☀️ 暑假</span>
+        <h3>综合提升</h3>
+        <div class="time">7月 — 8月</div>
+        <ul>
+          <li>完整做 3-5 套高考真题</li>
+          <li>总结各板块答题规律</li>
+          <li>为高三一轮复习做准备</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 自我修炼 ============ -->
+<section id="self">
+  <div class="wrap">
+    <span class="tag">自我修炼手册</span>
+    <h2 class="sec-title">写给自己的四条约定</h2>
+    <p class="sec-sub">语文提分是马拉松，每天的自己，决定了两年后的成绩。</p>
+    <div class="parent-grid">
+      <div class="card reveal">
+        <h3>🎯 盯能力，别只盯分数</h3>
+        <p>语文提分慢、退步也慢。高二重点是构建知识体系，而不是纠结某次月考的高低。</p>
+        <p>成绩波动别焦虑 —— 多问自己：答题是不是更规范了？思考是不是更有深度了？</p>
+      </div>
+      <div class="card reveal">
+        <h3>🏡 给自己营造语文环境</h3>
+        <p>每月认真读完一本书，别只刷短视频。</p>
+        <p>主动关注时事新闻，对社会现象有自己的看法 —— 这是作文最好的素材源头。</p>
+        <p>坚持写日记或短评，哪怕每天 200 字。</p>
+      </div>
+      <div class="card reveal">
+        <h3>⏰ 抓住碎片时间</h3>
+        <p><b>晨起 5 分钟：</b>过一遍易错字、成语</p>
+        <p><b>课间 10 分钟：</b>看一篇优秀作文开头</p>
+        <p><b>睡前 15 分钟：</b>背一首古诗词或一段文言文</p>
+      </div>
+      <div class="card reveal">
+        <h3>🤝 学会借力</h3>
+        <p>跟紧学校老师的节奏，比盲目报班更重要。</p>
+        <p>作文写完主动找老师面批 —— 这是提分最快的一条路。</p>
+        <p>确有短板要补，就选针对性补弱（如专补文言文或作文），别随大流上大班课。</p>
+      </div>
+    </div>
+    <div class="tips-strip reveal">
+      <div class="tip"><b>📖 错题本</b>语用 + 阅读规范，分类记录</div>
+      <div class="tip"><b>🗂 素材库</b>四大主题 × 新鲜时事</div>
+      <div class="tip"><b>📝 模板本</b>现代文答题标准语言</div>
+      <div class="tip"><b>📒 生词本</b>文言实词虚词随手记</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 目标阶梯 ============ -->
+<section id="goal" style="background:var(--sky-soft);">
+  <div class="wrap">
+    <span class="tag">看得见的进步</span>
+    <h2 class="sec-title">目标阶梯 · 每一步都算数</h2>
+    <p class="sec-sub">执行到位后的合理预期（150 分制）：</p>
+    <div class="ladder">
+      <div class="rung reveal">
+        <div class="stage">高二上学期末<small>基础重建完成</small></div>
+        <div class="bar"><i data-w="70%"></i></div>
+        <div class="goal">100-110<small>百分制 75-80</small></div>
+      </div>
+      <div class="rung reveal">
+        <div class="stage">高二下学期末<small>专项突破见效</small></div>
+        <div class="bar"><i data-w="77%"></i></div>
+        <div class="goal">110-120<small>百分制 80-85</small></div>
+      </div>
+      <div class="rung reveal">
+        <div class="stage">高三一轮复习后<small>体系成型</small></div>
+        <div class="bar"><i data-w="85%"></i></div>
+        <div class="goal">120-130<small>百分制 85-90</small></div>
+      </div>
+      <div class="rung reveal">
+        <div class="stage">2028 年高考<small>最终冲刺</small></div>
+        <div class="bar"><i data-w="90%"></i></div>
+        <div class="goal">125-130+<small>冲击 90+ 百分制</small></div>
+      </div>
+    </div>
+    <p class="final-note reveal">语文不靠天赋，靠的是 <b>积累 + 方法 + 坚持</b>。<br>现在开始，每天进步一点点，2028 年的夏天会给出答案。</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span class="brush">「 日拱一卒，功不唐捐 」</span>
+    高二语文逆袭计划 · 为 2028 高考而作<br>
+    <a href="./index.html" style="color:var(--ink-light);text-decoration:underline;margin-top:8px;display:inline-block;">← 返回高中全学科绘本馆</a>
+  </div>
+</footer>
+
+<script>
+// 滚动显现动画
+var io = new IntersectionObserver(function(entries){
+  entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('show'); io.unobserve(e.target);} });
+},{threshold:.12});
+document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+// 目标阶梯进度条动画
+var barIO = new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting){
+      var bar = e.target.querySelector('i');
+      if(bar) bar.style.width = bar.dataset.w;
+      barIO.unobserve(e.target);
+    }
+  });
+},{threshold:.4});
+document.querySelectorAll('.rung').forEach(function(el){ barIO.observe(el); });
+
+// 默认展开第一个模块
+document.querySelector('.mod').classList.add('open');
+</script>
+<script src="./_shared/anime-cartoon-tools.js"></script>
+</body>
+</html>

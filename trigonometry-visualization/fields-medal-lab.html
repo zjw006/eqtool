@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>菲尔兹奖理论 · 动画实验室</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --bg:#0b1020; --card:#141d38; --gold:#e8c468; --gold2:#f5d98a;
+    --txt:#eef1f8; --sub:#93a0c2; --line:rgba(232,196,104,.28);
+    --accent:#5cc8ff;
+  }
+  html{scroll-behavior:smooth;}
+  body{font-family:'ZCOOL KuaiLe','Noto Sans SC','Quicksand','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--txt);overflow-x:hidden;}
+  #stars{position:fixed;inset:0;z-index:0;pointer-events:none;}
+  main{position:relative;z-index:1;}
+  #progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:200;background:linear-gradient(90deg,var(--gold),var(--accent));}
+
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(11,16,32,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);display:flex;justify-content:center;gap:2px;padding:9px 6px;flex-wrap:wrap;}
+  nav a{color:var(--sub);text-decoration:none;font-size:12.5px;padding:6px 11px;border-radius:18px;transition:all .3s;white-space:nowrap;}
+  nav a:hover,nav a.active{color:var(--gold);background:rgba(232,196,104,.1);}
+
+  header{min-height:92vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:110px 20px 60px;position:relative;}
+  .medal{width:120px;height:120px;border-radius:50%;border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:30px;animation:medalGlow 3s ease-in-out infinite;}
+  @keyframes medalGlow{0%,100%{box-shadow:0 0 40px rgba(232,196,104,.25);}50%{box-shadow:0 0 80px rgba(232,196,104,.55);}}
+  .medal .orbit{position:absolute;inset:-15px;border-radius:50%;border:1px dashed rgba(232,196,104,.4);animation:spin 12s linear infinite;}
+  .medal .orbit::before{content:"";position:absolute;top:-4px;left:50%;width:8px;height:8px;background:var(--gold);border-radius:50%;box-shadow:0 0 12px var(--gold);}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .medal span{font-size:42px;}
+  h1{font-size:clamp(28px,5vw,50px);font-weight:800;letter-spacing:2px;background:linear-gradient(120deg,#fff 20%,var(--gold2) 50%,#fff 80%);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite;}
+  @keyframes shine{to{background-position:200% center;}}
+  .tagline{margin-top:16px;color:var(--sub);font-size:clamp(14px,2vw,18px);max-width:640px;line-height:1.9;}
+  .tagline b{color:var(--gold);}
+  .scroll-hint{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);color:var(--sub);font-size:12px;letter-spacing:3px;}
+  .scroll-hint::after{content:"";display:block;width:1px;height:42px;margin:10px auto 0;background:linear-gradient(var(--gold),transparent);animation:drip 1.6s ease-in-out infinite;}
+  @keyframes drip{0%{transform:scaleY(0);transform-origin:top;}50%{transform:scaleY(1);transform-origin:top;}51%{transform-origin:bottom;}100%{transform:scaleY(0);transform-origin:bottom;}}
+
+  section{max-width:1080px;margin:0 auto;padding:80px 20px 30px;}
+  .demo{
+    background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:0 4px 20px rgba(0,0,0,.25);
+    overflow:hidden;opacity:0;transform:translateY(40px);
+    transition:opacity .8s ease,transform .8s ease,border-color .4s,box-shadow .4s;
+  }
+  .demo.show{opacity:1;transform:translateY(0);}
+  .demo:hover{border-color:var(--gold);box-shadow:0 8px 30px rgba(232,196,104,.2);}
+  .d-head{padding:28px 30px 8px;display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;}
+  .d-num{
+    flex:0 0 auto;width:52px;height:52px;border-radius:14px;font-size:22px;
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(145deg,rgba(232,196,104,.2),rgba(232,196,104,.05));border:1px solid var(--line);
+  }
+  .d-title{flex:1;min-width:220px;}
+  .d-title .who{font-size:12.5px;color:var(--sub);letter-spacing:1px;margin-bottom:4px;}
+  .d-title h2{font-size:clamp(20px,3vw,26px);color:var(--gold2);font-weight:700;}
+  .d-title .app-tag{display:inline-block;margin-top:8px;font-size:12.5px;color:var(--accent);background:rgba(92,200,255,.1);border:1px solid rgba(92,200,255,.3);padding:4px 12px;border-radius:14px;}
+  .d-body{display:grid;grid-template-columns:1fr 300px;gap:0;}
+  @media(max-width:860px){.d-body{grid-template-columns:1fr;}}
+  .stage{position:relative;padding:18px 22px 24px;}
+  .stage canvas{width:100%;display:block;border-radius:14px;background:#0a0f22;border:1px solid rgba(255,255,255,.06);}
+  .ctrl{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap;font-size:13px;color:var(--sub);}
+  .ctrl input[type=range]{flex:1;min-width:140px;accent-color:var(--gold);}
+  .ctrl .val{color:var(--gold2);min-width:70px;font-variant-numeric:tabular-nums;}
+  .ctrl button{
+    background:rgba(232,196,104,.12);color:var(--gold);border:1px solid var(--line);
+    border-radius:10px;padding:6px 16px;font-size:13px;cursor:pointer;transition:all .3s;
+  }
+  .ctrl button:hover{background:rgba(232,196,104,.25);}
+  .d-side{padding:24px 26px 26px;border-left:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:14px;}
+  @media(max-width:860px){.d-side{border-left:none;border-top:1px solid rgba(255,255,255,.06);}}
+
+  .d-side h4{font-size:14px;color:var(--accent);letter-spacing:2px;}
+  .d-side .explain{font-size:14.5px;line-height:1.95;color:#cdd6ec;}
+  .d-side .explain b{color:var(--gold2);}
+  .d-side .real{font-size:13px;line-height:1.9;color:var(--sub);background:rgba(255,255,255,.04);border-radius:12px;padding:14px 16px;border:1px dashed rgba(255,255,255,.1);}
+  .d-side .real b{color:var(--gold);}
+
+  footer{text-align:center;color:#5a6684;font-size:12px;padding:40px 20px;border-top:1px solid rgba(255,255,255,.05);margin-top:60px;line-height:2;}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+<body>
+<canvas id="stars"></canvas>
+<div id="progress"></div>
+
+<nav id="nav">
+  <a href="#d1">🌌 物理宇宙</a>
+  <a href="#d2">✈️ 流体与交通</a>
+  <a href="#d3">🔐 密码学</a>
+  <a href="#d4">🧲 材料相变</a>
+  <a href="#d5">🤖 AI与影像</a>
+  <a href="#d6">🦾 机器人与经济</a>
+</nav>
+
+<main>
+<header>
+  <div class="medal"><div class="orbit"></div><span>🏅</span></div>
+  <h1><span data-i18n="h1">菲尔兹奖理论 · 动画实验室</span></h1>
+  <p class="tagline"><span data-i18n="subtitle">每项获奖理论，只挑一个最直观的应用，做成可以动手玩的动画。二十个可以动手玩的动画，亲眼看看抽象数学在干什么。</span></p>
+  <div class="scroll-hint">SCROLL</div>
+</header>
+
+<!-- ============ 1. 拓扑绝缘体 ============ -->
+<section id="d1">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">🌌</div>
+    <div class="d-title">
+      <div class="who">迈克尔·阿蒂亚 · 1966年菲尔兹奖 · 阿蒂亚-辛格指标定理</div>
+      <h2>拓扑绝缘体：里面不导电，边缘疯狂导电</h2>
+      <span class="app-tag">应用：下一代量子计算机的"抗干扰导线"</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv1" width="900" height="420"></canvas>
+      <div class="ctrl">
+        <button id="btn1">切换：普通绝缘体 / 拓扑绝缘体</button>
+        <span id="lbl1" class="val">拓扑绝缘体</span>
+      </div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">黄色箭头是电子。<b>拓扑绝缘体</b>内部是绝缘的（电子不动），但边缘上的电子只能<b>单向狂奔</b>，遇到杂质也绝不回头——这就是指标定理保证的"拓扑保护"。切换成普通材料，边缘电子立刻被杂质撞得四散反弹。</p>
+      <div class="real"><b>现实对应：</b>手机芯片发热、量子比特怕干扰，都因为电子会被杂质"撞回去"。拓扑边缘态不发热、抗干扰，是拓扑量子计算机的数学根基。</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section id="d7">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">🍩</div>
+    <div class="d-title">
+      <div class="who">丘成桐 · 1982年菲尔兹奖 · 卡拉比-丘流形</div>
+      <h2>被藏起来的六个维度：弦理论的"折叠空间"</h2>
+      <span class="app-tag">应用：超弦理论 / 粒子物理标准模型</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv7" width="900" height="420"></canvas>
+      <div class="ctrl"><span>蜷缩褶皱数</span><input type="range" id="k7" min="1" max="9" value="5"><span class="val" id="lbl7">5 重褶皱</span></div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">弦理论说：我们的宇宙除了长宽高山时间，还有<b>六个维度</b>——但它们没有消失，而是被"揉"成了这种极度褶皱的微小形状，尺度比原子还小亿亿倍。丘成桐证明了这种形状<b>确实存在</b>，弦理论才有了立足之地。拖动滑杆，改变它的褶皱方式。</p>
+      <div class="real"><b>现实对应：</b>粒子的种类、质量、相互作用强度，都由这个"隐藏形状"的几何决定——我们观测到的四维物理定律，是它的投影。</div>
+    </div>
+  </div>
+</div>
+</section>
+<section id="d8">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">🕳️</div>
+    <div class="d-title">
+      <div class="who">丘成桐 · 1982年菲尔兹奖 · 正质量猜想</div>
+      <h2>引力弹弓：质量如何弯曲时空</h2>
+      <span class="app-tag">应用：引力波探测 / 航天器轨道设计</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv8" width="900" height="420"></canvas>
+      <div class="ctrl"><span>天体质量</span><input type="range" id="m8" min="10" max="100" value="45"><span class="val">拖动金色天体试试</span></div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">网格是时空本身，金色天体把它"压"出了凹陷——<b>引力的本质就是时空的弯曲</b>。小球不是被"吸"过去，而是沿着弯曲时空里的直线滚落。正质量猜想证明了：这个凹陷永远朝下，<b>宇宙不会凭空塌出负能量</b>。用鼠标拖动天体，看小球轨道如何变化。</p>
+      <div class="real"><b>现实对应：</b>航天器借助行星引力"弹弓"加速（旅行者号、嫦娥工程），以及LIGO探测引力波的数据分析，都以这套几何理论为地基。</div>
+    </div>
+  </div>
+</div>
+</section>
+<section id="d9">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">🎈</div>
+    <div class="d-title">
+      <div class="who">佩雷尔曼（2006年拒领）· 庞加莱猜想 / 里奇流</div>
+      <h2>把任何形状的气球"熨"成标准球面</h2>
+      <span class="app-tag">应用：宇宙空间形状分类</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv9" width="900" height="420"></canvas>
+      <div class="ctrl"><button id="btn9">▶ 启动"里奇流"熨平</button><button id="rst9">🎲 捏个新形状</button><span class="val" id="lbl9">圆度偏差: —</span></div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">左图是一个奇形怪状的闭合曲面（的截面）。里奇流像一台数学熨斗：<b>凹的地方填平，凸的地方压回去</b>，任何"简单连通"的形状最终都会被熨成一个完美的圆。佩雷尔曼用这个思想证明了：三维中所有这样的空间，本质上都是球面。</p>
+      <div class="real"><b>现实对应：</b>宇宙学家据此分类宇宙大尺度结构的可能形状；同样的"曲率流"算法也被用于医学影像的器官表面重建。</div>
+    </div>
+  </div>
+</div>
+</section>
+<section id="d10">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">🧵</div>
+    <div class="d-title">
+      <div class="who">爱德华·威滕 · 1990年菲尔兹奖 · 拓扑量子场论</div>
+      <h2>把信息编成"辫子"：剪不断的量子记忆</h2>
+      <span class="app-tag">应用：拓扑量子计算机（微软Majorana路线）</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv10" width="900" height="420"></canvas>
+      <div class="ctrl"><button id="btn10">⇄ 交换两个任意子</button><span class="val" id="lbl10">已编织 0 次</span></div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">两个"任意子"（准粒子）每交换一次位置，它们的运动轨迹就在时空中打一个交叉。多点几次——下方的<b>辫子图样</b>就是存储的信息。关键在：信息不在粒子上，而在<b>结的拓扑花样</b>里，局部干扰碰不到它，除非你亲手把辫子解开。</p>
+      <div class="real"><b>现实对应：</b>这就是拓扑量子计算：普通量子比特怕一丁点噪声，而"辫子比特"天生抗干扰——威滕的场论为它提供了数学框架。</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ============ 2. 机翼气流 CFD ============ -->
+<section id="d2">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">✈️</div>
+    <div class="d-title">
+      <div class="who">拉尔斯·赫尔曼德尔 · 1962年菲尔兹奖 · 偏微分方程一般理论</div>
+      <h2>飞机为什么能飞：气流绕过机翼</h2>
+      <span class="app-tag">应用：计算流体力学（CFD）设计飞机与天气预报</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv2" width="900" height="420"></canvas>
+      <div class="ctrl">
+        <span>风速</span><input type="range" id="spd2" min="1" max="10" value="4">
+        <span>机翼迎角</span><input type="range" id="ang2" min="0" max="30" value="10">
+        <span class="val" id="lbl2">升力 ↑</span>
+      </div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">每条流线都是偏微分方程的<b>数值解</b>。拖动"迎角"滑杆，你会看到机翼上方的流线被压缩变密（流速快、压强低），下方流速慢——<b>压强差就是升力</b>。迎角过大，流线分离（乱流），升力骤降，这就是"失速"。</p>
+      <div class="real"><b>现实对应：</b>每一架飞机上天前，都要在计算机里用这套方程"试飞"几万次；你手机里的天气预报App，解的也是同一族方程。</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section id="d11">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">🚗</div>
+    <div class="d-title">
+      <div class="who">皮埃尔-路易·利翁 · 1994年菲尔兹奖 · 粘性解理论</div>
+      <h2>没有事故，为什么也会堵车？—— 幽灵堵车</h2>
+      <span class="app-tag">应用：交通流模型 / 高超声速流体</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv11" width="900" height="420"></canvas>
+      <div class="ctrl"><span>车辆密度</span><input type="range" id="n11" min="15" max="130" value="55"><span class="val" id="lbl11">55 辆车</span></div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">环形公路上的每辆车只遵守三条简单规则：能快则快、前车近了刹车、偶尔犯迷糊。密度一大，你会看到<b>红黄色的"堵车冲击波"自发形成，并且向后传播</b>——明明没有任何事故。这种"激波"的数学严格解，正是利翁的粘性解理论给出的。</p>
+      <div class="real"><b>现实对应：</b>高速交警用这套模型预测幽灵堵车；同一类方程描述战斗机激波、火箭尾焰——从五环堵车到马赫数10，是同一套数学。</div>
+    </div>
+  </div>
+</div>
+</section>
+<section id="d12">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">🎱</div>
+    <div class="d-title">
+      <div class="who">维拉尼（2010）· 玻尔兹曼方程严格解 ｜ 邓煜等（2025）· 希尔伯特第六问题</div>
+      <h2>从杂乱无章到钟形曲线：气体如何"自发有序"</h2>
+      <span class="app-tag">应用：核聚变等离子体 / 航天器再入大气</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv12" width="900" height="420"></canvas>
+      <div class="ctrl"><button id="btn12">↺ 重新集中到左半边</button><span class="val" id="lbl12">混乱度 ↓</span></div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">所有小球起初挤在左半边、速度整齐划一。碰撞、碰撞、再碰撞……右图的速度分布直方图会<b>自动长成一条光滑的钟形曲线</b>（麦克斯韦分布）。维拉尼严格证明了这个过程必然发生；邓煜等人则打通了"牛顿力学→流体方程"的最后一环。</p>
+      <div class="real"><b>现实对应：</b>核聚变装置里上亿度的等离子体怎么控制、返回舱再入大气时有多热，都靠这套动理学理论计算。</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ============ 3. 椭圆曲线密码 ============ -->
+<section id="d3">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">🔐</div>
+    <div class="d-title">
+      <div class="who">皮埃尔·德利涅 · 1978年菲尔兹奖 · 韦伊猜想</div>
+      <h2>椭圆曲线上的"加法"：保护你网银的数学体操</h2>
+      <span class="app-tag">应用：椭圆曲线密码（ECC）— HTTPS / 手机银行 / 区块链</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv3" width="900" height="420"></canvas>
+      <div class="ctrl">
+        <button id="btn3">▶ 演示一次 P + Q = R</button>
+        <span>连续跳点</span><input type="range" id="hop3" min="2" max="60" value="12">
+        <span class="val" id="lbl3">已跳 0 步</span>
+      </div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">曲线上的两个点 P、Q 连成一条直线，与曲线交出第三个点，<b>翻转到对称位置就是 R = P+Q</b>。从P出发反复"加自己"，点会在曲线上毫无规律地乱跳。正向跳12步只要一瞬间；<b>但给你终点，反推跳了几步，超级计算机也算不出来</b>——这就是你账户安全的来源。</p>
+      <div class="real"><b>现实对应：</b>你浏览器地址栏的小锁🔒、微信支付的密钥、比特币签名，背后都是这条曲线上"好算难猜"的加法。</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section id="d13">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">🔢</div>
+    <div class="d-title">
+      <div class="who">安德鲁·怀尔斯 · 1998年特别奖 · 费马大定理</div>
+      <h2>xⁿ+yⁿ=zⁿ：一个358年无人破解的"禁区"</h2>
+      <span class="app-tag">应用：代数几何工具 → 现代密码协议</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv13" width="900" height="420"></canvas>
+      <div class="ctrl"><span>指数 n</span><input type="range" id="n13" min="1" max="8" value="2" step="1"><span class="val" id="lbl13">n = 2</span></div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">曲线 xⁿ+yⁿ=13ⁿ 穿过整数格点（白点）时，就对应一组整数解。<b>n=2 时绿点扎堆</b>——勾股数 5²+12²=13²；把滑杆推到 n=3 以上，曲线上<b>一个整数点都找不到</b>。怀尔斯用椭圆曲线和模形式证明了：n≥3 永远没有解。</p>
+      <div class="real"><b>现实对应：</b>证明过程中诞生的代数几何工具，如今是椭圆曲线密码协议的设计语言——保护着你的每一次支付。</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ============ 4. 磁性相变 伊辛模型 ============ -->
+<section id="d4">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">🧲</div>
+    <div class="d-title">
+      <div class="who">雨果·迪米尼-科潘 · 2022年菲尔兹奖 · 相变概率理论</div>
+      <h2>磁铁为什么突然"失磁"：亲眼见证相变</h2>
+      <span class="app-tag">应用：合金、液晶、超导材料的临界温度预测</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv4" width="900" height="420"></canvas>
+      <div class="ctrl">
+        <span>🧊 温度</span><input type="range" id="tmp4" min="5" max="50" value="15">
+        <span class="val" id="lbl4">T = 1.5</span>
+        <span id="mag4" class="val">磁化强度: —</span>
+      </div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">每个小方块是一个微型磁针（<b>金=朝上，蓝=朝下</b>），它总想和邻居保持一致，但温度会捣乱。<b>慢慢拖动温度滑杆</b>：低温时全体颜色统一（铁磁体）；温度升到 <b>T≈2.27</b> 附近，秩序突然崩溃、变成花屏（顺磁体）——这个突变点就是"相变"，和水在100°C突然沸腾一模一样。</p>
+      <div class="real"><b>现实对应：</b>磁铁加热到770°C突然失磁、超导材料降温到某点突然零电阻——材料学家用这套理论精确计算每种新材料的"突变温度"。</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section id="d14">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">🧽</div>
+    <div class="d-title">
+      <div class="who">斯坦尼斯拉夫·斯米尔诺夫 · 2010年菲尔兹奖 · 共形不变性</div>
+      <h2>渗流：水什么时候能渗透整块海绵？</h2>
+      <span class="app-tag">应用：多孔材料 / 复合材料 / 电网可靠性</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv14" width="900" height="420"></canvas>
+      <div class="ctrl"><span>孔隙连通概率 p</span><input type="range" id="p14" min="30" max="80" value="50"><span class="val" id="lbl14">p = 0.50</span></div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">每个小格以概率 p "打通"。慢慢拖大 p：在 <b>p≈0.59</b> 附近，金色区域会<b>突然</b>从左岸贯通到右岸——又是一个相变点！斯米尔诺夫严格证明了此时渗流曲线具有"共形不变性"：无论怎么拉伸旋转，统计规律不变。</p>
+      <div class="real"><b>现实对应：</b>石油在多孔岩层里的开采、咖啡萃取、锂电池隔膜设计、疫情在网络上的传播阈值，都是渗流问题。</div>
+    </div>
+  </div>
+</div>
+</section>
+<section id="d15">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">🧊</div>
+    <div class="d-title">
+      <div class="who">西蒙·唐纳森 · 1986年菲尔兹奖 · 四维流形拓扑</div>
+      <h2>亲手"转动"一个四维超立方体</h2>
+      <span class="app-tag">应用：四维空间几何 / 量子材料分类</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv15" width="900" height="420"></canvas>
+      <div class="ctrl"><span>XW 面旋转</span><input type="range" id="a15" min="0" max="628" value="0"><span>ZW 面旋转</span><input type="range" id="b15" min="0" max="628" value="0"><span class="val">自动旋转中</span></div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">三维生物永远看不到四维物体，只能看它的"影子"——就像球在纸上的影子是圆。屏幕上是四维超立方体（16个顶点、32条棱）在三维中的投影。<b>拖动滑杆，亲手在第四个维度里转动它</b>：看它"里外翻转"，那是投影穿过了自身。唐纳森发现：四维空间藏着其他维度没有的"怪异"结构。</p>
+      <div class="real"><b>现实对应：</b>拓扑物态的分类高度依赖空间维度的几何性质；四维拓扑的怪异发现，持续启发新型量子材料研究。</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ============ 5. 最优运输 ============ -->
+<section id="d5">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">🤖</div>
+    <div class="d-title">
+      <div class="who">阿莱西奥·菲加利 · 2018年菲尔兹奖 · 最优运输理论</div>
+      <h2>把一堆沙子变成一张笑脸：AI生图的数学心脏</h2>
+      <span class="app-tag">应用：生成式AI（GAN / 扩散模型）、图像风格迁移</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv5" width="900" height="420"></canvas>
+      <div class="ctrl">
+        <span>运输进度</span><input type="range" id="t5" min="0" max="100" value="0">
+        <span class="val" id="lbl5">0%</span>
+        <button id="btn5">▶ 自动播放</button>
+      </div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">左边是一堆<b>随机乱点的噪声</b>，目标是一张<b>笑脸</b>。每个点都找到了"花最少力气走到目标位置"的路径——这就是最优运输。AI生成图片做的事一模一样：<b>从噪声出发，一步步"搬运"成一张逼真的人脸</b>。</p>
+      <div class="real"><b>现实对应：</b>Wasserstein GAN 让AI画图不再崩坏；医学影像配准（把两次CT扫描对齐）用的也是同一套"搬运"理论。</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section id="d16">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">🎡</div>
+    <div class="d-title">
+      <div class="who">洛朗·施瓦茨 · 1950年菲尔兹奖 · 分布理论</div>
+      <h2>一堆圆转出方波：傅里叶的魔法齿轮</h2>
+      <span class="app-tag">应用：信号处理 / 图像压缩 / 医学影像</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv16" width="900" height="420"></canvas>
+      <div class="ctrl"><span>圆的数量（谐波数）</span><input type="range" id="n16" min="1" max="25" value="3"><span class="val" id="lbl16">3 个谐波</span></div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">每个圆都在匀速转动，首尾相接像一串齿轮。最末端那个点画出的轨迹（右侧）——<b>圆加得越多，越接近一个方方正正的方波</b>！这就是傅里叶级数：任何信号都能拆成一堆简单圆周运动。施瓦茨的分布理论，让这套拆解在数学上彻底严格。</p>
+      <div class="real"><b>现实对应：</b>MP3压缩、JPEG图片、手机信号、CT图像重建——全都是"拆成圆再拼回去"的傅里叶思想。</div>
+    </div>
+  </div>
+</div>
+</section>
+<section id="d17">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">🏥</div>
+    <div class="d-title">
+      <div class="who">王虹等（2025）· 挂谷猜想 ｜ 射线变换理论</div>
+      <h2>CT是怎么"看穿"你的？—— 从投影反推内部</h2>
+      <span class="app-tag">应用：CT / MRI / 雷达图像重建</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv17" width="900" height="420"></canvas>
+      <div class="ctrl"><button id="btn17">▶ 开始扫描</button><span class="val" id="lbl17">扫描角度: 0°</span></div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">左边是"患者"（骨头+一个病灶）。X光从各个角度穿过，只记录<b>每条射线的总衰减</b>（中间的投影图）。神奇的是：把足够多角度的一维投影"反抹"回去，右边的内部结构就<b>从无到有地浮现</b>了。能从多稀疏的数据中重建多清晰的图像，正是挂谷猜想这类理论回答的精度极限。</p>
+      <div class="real"><b>现实对应：</b>医院CT、安检机、相控阵雷达、射电望远镜，全部建立在"射线变换"的数学反演之上。</div>
+    </div>
+  </div>
+</div>
+</section>
+<section id="d18">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">📈</div>
+    <div class="d-title">
+      <div class="who">马丁·海尔 · 2014年菲尔兹奖 · 正则性结构</div>
+      <h2>乱中生长的界面：火焰、细菌与股价</h2>
+      <span class="app-tag">应用：随机生长 / 湍流 / 金融波动建模</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv18" width="900" height="420"></canvas>
+      <div class="ctrl"><button id="btn18">⏸ 暂停 / 继续</button><span class="val" id="lbl18">粗糙度 w = —</span></div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">金色"天际线"在随机生长——每一列随机增高，又会被邻居拉平一点。既随机又有规则，这就是<b>KPZ方程</b>描述的世界：它的解"粗糙到连微积分都失灵"，海尔发明的正则性结构第一次让它有了严格意义。下方的粗糙度 w 会稳定按幂律增长。</p>
+      <div class="real"><b>现实对应：</b>火焰前沿、细菌菌落边缘、肿瘤边界、材料镀层生长，甚至股价波动，都被证明属于同一个"KPZ普适类"。</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ============ 6. 混沌 ============ -->
+<section id="d6">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">🦋</div>
+    <div class="d-title">
+      <div class="who">斯蒂芬·斯梅尔 · 1966年菲尔兹奖 · 动力系统（"马蹄"模型）</div>
+      <h2>蝴蝶效应：差之毫厘，谬以千里</h2>
+      <span class="app-tag">应用：天气预报的极限、电路设计、轨道稳定性</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv6" width="900" height="420"></canvas>
+      <div class="ctrl">
+        <span>初始角度差（度）</span><input type="range" id="diff6" min="0" max="100" value="1">
+        <span class="val" id="lbl6">0.01°</span>
+        <button id="btn6">↺ 重新开始</button>
+      </div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">两个<b>几乎一模一样</b>的双摆同时释放——初始角度只差 0.01°。前几秒它们完全重合（看起来只有一个）；几秒后轨迹突然分道扬镳。这就是混沌：<b>初始条件的微小差别被指数级放大</b>。把滑杆调到0，它们会永远同步。</p>
+      <div class="real"><b>现实对应：</b>这就是为什么天气预报超过两周必然不准；也是航天器轨道计算、神经元放电、心律分析必须面对的数学现实。</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section id="d19">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">🦾</div>
+    <div class="d-title">
+      <div class="who">米尔诺 / 托姆 · 菲尔兹奖 · 微分拓扑与配边理论</div>
+      <h2>机械臂的"姿势空间"：动鼠标指挥它</h2>
+      <span class="app-tag">应用：机器人运动规划 / 逆运动学</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv19" width="900" height="420"></canvas>
+      <div class="ctrl"><span class="val">🖱 把鼠标移进画面，机械臂会来够你</span></div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">移动鼠标，两节机械臂会实时解算两个关节角去"够"你的指尖。注意灰色圆环——那是它<b>能够到的所有位置</b>（工作空间）。所有可能的"姿势"本身构成一个甜甜圈形状的曲面（环面 T²）：机器人在里面规划路径，用的就是微分拓扑的语言。</p>
+      <div class="real"><b>现实对应：</b>工厂机械臂避障、手术机器人达芬奇、火星车的机械臂，路径规划都在各自的"构型空间"里做拓扑计算。</div>
+    </div>
+  </div>
+</div>
+</section>
+<section id="d20">
+<div class="demo">
+  <div class="d-head">
+    <div class="d-num">⚖️</div>
+    <div class="d-title">
+      <div class="who">斯蒂芬·斯梅尔 · 1966年菲尔兹奖 · 数理经济学</div>
+      <h2>菜市场的价格是怎么"自动"找到的？</h2>
+      <span class="app-tag">应用：市场均衡理论 / 机制设计</span>
+    </div>
+  </div>
+  <div class="d-body">
+    <div class="stage">
+      <canvas id="cv20" width="900" height="420"></canvas>
+      <div class="ctrl"><button id="btn20">💥 突发：需求暴增！</button><span class="val" id="lbl20">价格收敛中…</span></div>
+    </div>
+    <div class="d-side">
+      <h4>动画在演示什么？</h4>
+      <p class="explain">蓝线是需求（越贵买的人越少），金线是供给（越贵卖的人越多）。白点是当前价格：贵了→卖不动→降价；便宜了→抢光→涨价。<b>不需要任何人指挥，价格自己找到交点</b>。点按钮制造一次需求冲击，看市场如何震荡后重新找到新均衡。</p>
+      <div class="real"><b>现实对应：</b>斯梅尔用动力系统严格证明了均衡价格的存在与稳定——从股票撮合、网约车动态定价到碳交易市场，都建立在这类均衡理论上。</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<footer>
+  二十项理论 · 二十个可以动手玩的动画<br>
+  抽象数学并不遥远——它就是芯片、飞机、网银、磁铁、AI和天气预报的"语法规则"。
+</footer>
+</main>
+<script>
+/* ================= 星空背景 ================= */
+const sc=document.getElementById('stars'),sx=sc.getContext('2d');
+let SW,SH,sps=[];
+function sres(){SW=sc.width=innerWidth;SH=sc.height=innerHeight;
+  sps=Array.from({length:Math.min(80,SW/16)},()=>({x:Math.random()*SW,y:Math.random()*SH,r:Math.random()*1.5+.4,vx:(Math.random()-.5)*.15,vy:(Math.random()-.5)*.15,a:Math.random()*.5+.15}));}
+sres();addEventListener('resize',sres);
+(function sdraw(){sx.clearRect(0,0,SW,SH);
+  for(const p of sps){p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=SW;if(p.x>SW)p.x=0;if(p.y<0)p.y=SH;if(p.y>SH)p.y=0;
+    sx.beginPath();sx.arc(p.x,p.y,p.r,0,7);sx.fillStyle=`rgba(232,196,104,${p.a})`;sx.fill();}
+  requestAnimationFrame(sdraw);})();
+
+/* ================= 滚动显现 & 进度条 ================= */
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('show');io.unobserve(e.target);}});},{threshold:.1});
+document.querySelectorAll('.demo').forEach(el=>io.observe(el));
+const bar=document.getElementById('progress');
+const secs=[...document.querySelectorAll('section')],links=[...document.querySelectorAll('nav a')];
+addEventListener('scroll',()=>{const h=document.documentElement;
+  bar.style.width=(h.scrollTop/(h.scrollHeight-h.clientHeight)*100)+'%';
+  let cur='';for(const s of secs){if(scrollY>=s.offsetTop-200)cur=s.id;}
+  links.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur));},{passive:true});
+
+/* ============================================================
+   1. 拓扑绝缘体：边缘态导电
+============================================================ */
+(()=>{
+const cv=document.getElementById('cv1'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+// 材料区域
+const M={x:110,y:70,w:680,h:280};
+// 杂质点
+const scatters=[];
+for(let i=0;i<26;i++)scatters.push({x:M.x+40+Math.random()*(M.w-80),y:M.y+40+Math.random()*(M.h-80)});
+// 边缘杂质（放在边缘通道上）
+const edgeScat=[{x:M.x+220,y:M.y+6},{x:M.x+460,y:M.y+M.h-6},{x:M.x+330,y:M.y+6}];
+let topo=true;
+// 边缘电子：top行向右，bottom行向左
+function mkEdge(){const a=[];for(let i=0;i<14;i++){a.push({t:Math.random(),top:true});a.push({t:Math.random(),top:false});}return a;}
+let electrons=mkEdge();
+// 普通模式下电子的随机速度
+let freeE=[];
+function mkFree(){freeE=[];for(let i=0;i<28;i++){const top=Math.random()<.5;
+  freeE.push({x:M.x+Math.random()*M.w,y:top?M.y+6:M.y+M.h-6,vx:(Math.random()-.5)*2,vy:(Math.random()-.5)*2});}}
+mkFree();
+document.getElementById('btn1').onclick=()=>{topo=!topo;
+  document.getElementById('lbl1').textContent=topo?'拓扑绝缘体':'普通绝缘体';
+  electrons=mkEdge();mkFree();};
+function draw(){
+  c.clearRect(0,0,W,H);
+  // 标题
+  c.fillStyle='#8fa0c8';c.font='14px sans-serif';c.textAlign='center';
+  c.fillText(topo?'拓扑绝缘体：电子沿边缘单向流动，穿过杂质不回头':'普通绝缘体：边缘电子被杂质撞得四散反弹',W/2,30);
+  // 材料体
+  c.fillStyle='rgba(92,140,255,.07)';c.fillRect(M.x,M.y,M.w,M.h);
+  c.strokeStyle='rgba(232,196,104,.6)';c.lineWidth=2;c.strokeRect(M.x,M.y,M.w,M.h);
+  // 内部晶格原子
+  c.fillStyle='rgba(140,160,220,.35)';
+  for(let gx=M.x+30;gx<M.x+M.w-10;gx+=44)for(let gy=M.y+34;gy<M.y+M.h-14;gy+=44){
+    c.beginPath();c.arc(gx,gy,4,0,7);c.fill();}
+  // 内部杂质
+  for(const s of scatters){c.fillStyle='rgba(255,110,110,.5)';c.beginPath();c.arc(s.x,s.y,5,0,7);c.fill();}
+  // 边缘杂质
+  for(const s of edgeScat){c.fillStyle='#ff6e6e';c.beginPath();c.arc(s.x,s.y,6,0,7);c.fill();}
+  c.fillStyle='#8fa0c8';c.font='12px sans-serif';
+  c.fillText('红点 = 杂质',W/2,H-14);
+  if(topo){
+    for(const e of electrons){
+      e.t+=0.006;if(e.t>1)e.t-=1;
+      const x=M.x+8+e.t*(M.w-16),y=e.top?M.y+6:M.y+M.h-6;
+      c.fillStyle='#f5d98a';c.beginPath();c.arc(x,y,4.5,0,7);c.fill();
+      // 方向箭头
+      c.strokeStyle='rgba(245,217,138,.7)';c.lineWidth=1.6;c.beginPath();
+      const d=e.top?1:-1;c.moveTo(x-10*d,y);c.lineTo(x-16*d,y);
+      c.moveTo(x-13*d,y-3);c.lineTo(x-10*d,y);c.lineTo(x-13*d,y+3);c.stroke();
+    }
+    c.fillStyle='#9aa7c7';c.font='12.5px sans-serif';
+    c.fillText('上边缘 → 单向',M.x+M.w+64,M.y+10);
+    c.fillText('← 下边缘 单向',M.x+M.w+64,M.y+M.h+4);
+    c.fillText('内部：绝缘（电子静止）',M.x+M.w/2,M.y+M.h/2);
+  }else{
+    for(const e of freeE){
+      e.x+=e.vx;e.y+=e.vy;
+      // 边界反弹
+      if(e.x<M.x+4){e.x=M.x+4;e.vx*=-1;} if(e.x>M.x+M.w-4){e.x=M.x+M.w-4;e.vx*=-1;}
+      if(e.y<M.y+4){e.y=M.y+4;e.vy*=-1;} if(e.y>M.y+M.h-4){e.y=M.y+M.h-4;e.vy*=-1;}
+      // 杂质碰撞反弹
+      for(const s of scatters.concat(edgeScat)){
+        const dx=e.x-s.x,dy=e.y-s.y;if(dx*dx+dy*dy<90){e.vx*=-1;e.vy*=-1;e.x+=e.vx*2;e.y+=e.vy*2;}}
+      c.fillStyle='#7fc4ff';c.beginPath();c.arc(e.x,e.y,4,0,7);c.fill();
+    }
+    c.fillStyle='#9aa7c7';c.font='12.5px sans-serif';
+    c.fillText('电子乱跑、被杂质反弹 → 发热、损耗、信号受干扰',M.x+M.w/2,M.y+M.h/2);
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+})();
+
+/* ============================================================
+   2. 机翼气流（CFD 流线）
+============================================================ */
+(()=>{
+const cv=document.getElementById('cv2'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const CX=W/2,CY=H/2+10,A=120,B=34; // 机翼椭圆
+let parts=[];
+for(let i=0;i<340;i++)parts.push({x:Math.random()*W,y:Math.random()*H});
+function field(x,y,ang){
+  // 绕旋转椭圆的简化流场：靠近机翼处流线偏转
+  const ca=Math.cos(-ang*Math.PI/180),sa=Math.sin(-ang*Math.PI/180);
+  const dx=x-CX,dy=y-CY;
+  const rx=dx*ca-dy*sa, ry=dx*sa+dy*ca;
+  const e=(rx*rx)/(A*A)+(ry*ry)/(B*B); // <1 在机翼内
+  let vx=1,vy=0;
+  const infl=Math.exp(-Math.max(0,e-1)*1.4);
+  // 椭圆法向推开
+  const nx=rx/(A*A),ny=ry/(B*B);
+  const nl=Math.hypot(nx,ny)+1e-6;
+  vx+= (nx/nl)*infl*1.2;
+  vy+= (ny/nl)*infl*1.2;
+  // 上表面加速（伯努利效果）：上方流速更快
+  if(ry<0&&Math.abs(rx)<A){vx+=infl*0.8*(1-Math.abs(rx)/A);}
+  // 失速：迎角大时机翼后方乱流
+  return {vx,vy,inside:e<1};
+}
+function draw(){
+  const spd=+document.getElementById('spd2').value;
+  const ang=+document.getElementById('ang2').value;
+  const stall=ang>20;
+  document.getElementById('lbl2').textContent=stall?'⚠ 失速！升力骤降':'升力 '+(ang<5?'↑ 小':ang<15?'↑↑ 大':'↑ 减弱');
+  c.fillStyle='rgba(10,15,34,.28)';c.fillRect(0,0,W,H);
+  for(const p of parts){
+    const f=field(p.x,p.y,ang);
+    if(f.inside){p.x=Math.random()*-20;p.y=Math.random()*H;continue;}
+    let vx=f.vx,vy=f.vy;
+    if(stall&&p.x>CX){vx+= (Math.random()-.5)*1.4;vy+=(Math.random()-.5)*1.8;}
+    p.x+=vx*spd*0.9;p.y+=vy*spd*0.9;
+    if(p.x>W+10){p.x=-10;p.y=Math.random()*H;}
+    if(p.y<-10)p.y=H+10;if(p.y>H+10)p.y=-10;
+    c.fillStyle=f.vy>0?'rgba(92,200,255,.8)':'rgba(245,217,138,.8)';
+    c.fillRect(p.x,p.y,2.4,2.4);
+  }
+  // 画机翼
+  c.save();c.translate(CX,CY);c.rotate(-ang*Math.PI/180);
+  const g=c.createLinearGradient(0,-B,0,B);
+  g.addColorStop(0,'#e8c468');g.addColorStop(1,'#8a6c2a');
+  c.fillStyle=g;c.beginPath();c.ellipse(0,0,A,B,0,0,7);c.fill();
+  c.strokeStyle='#fff8';c.lineWidth=1.5;c.stroke();c.restore();
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='left';
+  c.fillText('蓝点：向下偏转的气流　黄点：上方加速气流（流速快→压强低→产生升力）',18,H-16);
+  requestAnimationFrame(draw);
+}
+c.fillStyle='#0a0f22';c.fillRect(0,0,W,H);
+draw();
+})();
+
+/* ============================================================
+   3. 椭圆曲线密码：P + Q = R
+============================================================ */
+(()=>{
+const cv=document.getElementById('cv3'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+// 曲线 y^2 = x^3 - 3x + 3
+const f=x=>x*x*x-3*x+3;
+const XMIN=-1.9,XMAX=3.2,YMIN=-3.6,YMAX=3.6;
+const px=x=>(x-XMIN)/(XMAX-XMIN)*(W-80)+40;
+const py=y=>H-((y-YMIN)/(YMAX-YMIN))*(H-70)-30;
+let anim=null,hopCount=0,hopTimer=null;
+let P={x:-1.6},Q={x:0.6};
+P.y=Math.sqrt(f(P.x));Q.y=Math.sqrt(f(Q.x));
+function add(P,Q){
+  let m;
+  if(Math.abs(P.x-Q.x)<1e-9){m=(3*P.x*P.x-3)/(2*P.y);}
+  else m=(Q.y-P.y)/(Q.x-P.x);
+  const x3=m*m-P.x-Q.x, y3=m*(P.x-x3)-P.y;
+  return {x:x3,y:y3,m};
+}
+document.getElementById('btn3').onclick=()=>{
+  if(anim)return;
+  const R=add(P,Q);
+  anim={t:0,R};
+};
+function drawCurve(){
+  c.strokeStyle='rgba(92,200,255,.85)';c.lineWidth=2;
+  c.beginPath();let started=false;
+  for(let x=XMIN;x<=XMAX;x+=0.01){const v=f(x);if(v<0){started=false;continue;}
+    const X=px(x),Y=py(Math.sqrt(v));if(!started){c.moveTo(X,Y);started=true;}else c.lineTo(X,Y);}
+  c.stroke();
+  c.beginPath();started=false;
+  for(let x=XMIN;x<=XMAX;x+=0.01){const v=f(x);if(v<0){started=false;continue;}
+    const X=px(x),Y=py(-Math.sqrt(v));if(!started){c.moveTo(X,Y);started=true;}else c.lineTo(X,Y);}
+  c.stroke();
+}
+function dot(p,col,r,label){
+  c.fillStyle=col;c.beginPath();c.arc(px(p.x),py(p.y),r,0,7);c.fill();
+  c.fillStyle=col;c.font='bold 14px sans-serif';c.textAlign='left';
+  c.fillText(label,px(p.x)+10,py(p.y)-8);
+}
+function draw(){
+  c.clearRect(0,0,W,H);
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='center';
+  c.fillText('曲线 y² = x³ − 3x + 3 上的"加法"：连直线 → 找第三交点 → 翻转得 R',W/2,24);
+  drawCurve();
+  dot(P,'#f5d98a',7,'P');
+  dot(Q,'#7fc4ff',7,'Q');
+  if(anim){
+    anim.t+=0.012;
+    const {R}=anim;
+    if(anim.t<0.5){
+      // 阶段1：画连线（延伸到第三交点）
+      const k=anim.t/0.5;
+      c.strokeStyle='rgba(255,255,255,.7)';c.setLineDash([6,5]);c.lineWidth=1.5;
+      const xe=P.x+(R.x-P.x)*k, ye=P.y+R.m*(xe-P.x)*1;
+      // 延长线
+      c.beginPath();c.moveTo(px(P.x),py(P.y));
+      c.lineTo(px(P.x+(R.x-P.x)*k*1.3),py(P.y+R.m*((P.x+(R.x-P.x)*k*1.3)-P.x)));
+      c.stroke();c.setLineDash([]);
+      // 第三交点
+      if(k>0.8)dot({x:R.x,y:R.y},'#ff9e9e',6,'第三交点');
+    }else{
+      // 阶段2：连线完整 + 翻转到 R'
+      const k=(anim.t-0.5)/0.5;
+      c.strokeStyle='rgba(255,255,255,.7)';c.setLineDash([6,5]);c.lineWidth=1.5;
+      c.beginPath();c.moveTo(px(P.x),py(P.y));
+      c.lineTo(px(P.x+(R.x-P.x)*1.3),py(P.y+R.m*((P.x+(R.x-P.x)*1.3)-P.x)));
+      c.stroke();c.setLineDash([]);
+      dot({x:R.x,y:R.y},'#ff9e9e',6,'第三交点');
+      // 翻转动画
+      const yNow=R.y+(-2*R.y)*Math.min(1,k);
+      c.strokeStyle='rgba(232,196,104,.6)';c.setLineDash([3,4]);
+      c.beginPath();c.moveTo(px(R.x),py(R.y));c.lineTo(px(R.x),py(yNow));c.stroke();c.setLineDash([]);
+      dot({x:R.x,y:yNow},'#9dff9d',7,'R = P+Q');
+      if(k>=1){
+        anim=null;hopCount++;
+        document.getElementById('lbl3').textContent='已跳 '+hopCount+' 步';
+        // 链式跳点：新P = R
+        P={x:R.x,y:-R.y};
+        if(hopCount<+document.getElementById('hop3').value){
+          hopTimer=setTimeout(()=>{const R2=add(P,Q);anim={t:0,R:R2};},350);
+        }
+      }
+    }
+  }
+  c.fillStyle='#9aa7c7';c.font='12.5px sans-serif';c.textAlign='left';
+  c.fillText('👉 点"演示"看一次加法；它会自动链式跳点。正向容易，反推"跳了几步"几乎不可能。',18,H-14);
+  requestAnimationFrame(draw);
+}
+document.getElementById('hop3').addEventListener('input',()=>{hopCount=0;P={x:-1.6};P.y=Math.sqrt(f(P.x));anim=null;clearTimeout(hopTimer);document.getElementById('lbl3').textContent='已跳 0 步';});
+draw();
+})();
+
+/* ============================================================
+   4. 伊辛模型：磁性相变
+============================================================ */
+(()=>{
+const cv=document.getElementById('cv4'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const COLS=90,ROWS=42;
+const CW=(W-60)/COLS,CH=(H-70)/ROWS,OX=30,OY=40;
+let grid=new Int8Array(COLS*ROWS);
+for(let i=0;i<grid.length;i++)grid[i]=Math.random()<.5?1:-1;
+function step(T){
+  const n=COLS*ROWS;
+  for(let k=0;k<n*6;k++){
+    const i=(Math.random()*n)|0;
+    const x=i%COLS,y=(i/COLS)|0;
+    const s=grid[i];
+    const up=grid[((y-1+ROWS)%ROWS)*COLS+x],dn=grid[((y+1)%ROWS)*COLS+x];
+    const lf=grid[y*COLS+(x-1+COLS)%COLS],rt=grid[y*COLS+(x+1)%COLS];
+    const dE=2*s*(up+dn+lf+rt);
+    if(dE<=0||Math.random()<Math.exp(-dE/T))grid[i]=-s;
+  }
+}
+const img=c.createImageData(COLS,ROWS);
+function draw(){
+  const T=+document.getElementById('tmp4').value/10;
+  document.getElementById('lbl4').textContent='T = '+T.toFixed(1)+(Math.abs(T-2.27)<0.15?' ← 临界点附近！':'');
+  step(T);
+  let mag=0;
+  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){
+    const s=grid[y*COLS+x];mag+=s;
+    const o=(y*COLS+x)*4;
+    if(s>0){img.data[o]=232;img.data[o+1]=196;img.data[o+2]=104;}
+    else{img.data[o]=60;img.data[o+1]=110;img.data[o+2]=220;}
+    img.data[o+3]=255;
+  }
+  // 放大绘制
+  const tmp=document.createElement('canvas');tmp.width=COLS;tmp.height=ROWS;
+  tmp.getContext('2d').putImageData(img,0,0);
+  c.imageSmoothingEnabled=false;
+  c.clearRect(0,0,W,H);
+  c.drawImage(tmp,OX,OY,COLS*CW,ROWS*CH);
+  const m=Math.abs(mag)/grid.length;
+  document.getElementById('mag4').textContent='磁化强度: '+(m*100).toFixed(0)+'%'+(m>0.7?'（有磁性）':m<0.25?'（失磁）':'');
+  // 临界温度标记
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='center';
+  c.fillText('金色=磁针朝上　蓝色=朝下　｜　把温度拖过 T≈2.27，观察秩序"突然崩溃"',W/2,22);
+  // 磁化条
+  c.fillStyle='rgba(255,255,255,.1)';c.fillRect(OX,H-20,W-60,8);
+  c.fillStyle=m>0.7?'#e8c468':'#5cc8ff';c.fillRect(OX,H-20,(W-60)*m,8);
+  requestAnimationFrame(draw);
+}
+draw();
+})();
+
+/* ============================================================
+   5. 最优运输：噪声 → 笑脸
+============================================================ */
+(()=>{
+const cv=document.getElementById('cv5'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const N=260;
+// 目标：笑脸
+const target=[];
+const cx0=W/2,cy0=H/2,R0=120;
+for(let i=0;i<150;i++){const a=i/150*Math.PI*2;target.push({x:cx0+Math.cos(a)*R0,y:cy0+Math.sin(a)*R0});}
+for(let i=0;i<26;i++){const a=i/26*Math.PI*2;target.push({x:cx0-45+Math.cos(a)*15,y:cy0-35+Math.sin(a)*15});}
+for(let i=0;i<26;i++){const a=i/26*Math.PI*2;target.push({x:cx0+45+Math.cos(a)*15,y:cy0-35+Math.sin(a)*15});}
+for(let i=0;i<58;i++){const a=Math.PI*0.15+i/58*Math.PI*0.7;target.push({x:cx0+Math.cos(a)*70,y:cy0-10+Math.sin(a)*70});}
+// 源：随机噪声（左下云团）
+const src=[];
+for(let i=0;i<target.length;i++){
+  src.push({x:W*0.5+(Math.random()-.5)*W*0.9,y:H*0.5+(Math.random()-.5)*H*0.85});
+}
+// 运输配对：按相对各自质心的角度排序（近似最优分配）
+function angSort(arr,cx,cy){return arr.map(p=>({p,a:Math.atan2(p.y-cy,p.x-cx)})).sort((u,v)=>u.a-v.a).map(o=>o.p);}
+const S=angSort(src,W/2,H/2),T=angSort(target,cx0,cy0);
+const pairs=S.map((s,i)=>({sx:s.x,sy:s.y,tx:T[i].x,ty:T[i].y}));
+let auto=false,tt=0;
+document.getElementById('btn5').onclick=()=>{auto=!auto;document.getElementById('btn5').textContent=auto?'⏸ 暂停':'▶ 自动播放';};
+function draw(){
+  const slider=document.getElementById('t5');
+  if(auto){tt+=0.004;if(tt>1.3){tt=0;}slider.value=Math.min(100,tt/1*100|0);}
+  const t=+slider.value/100;
+  document.getElementById('lbl5').textContent=(t*100|0)+'%';
+  const e=t*t*(3-2*t); // 平滑插值
+  c.fillStyle='rgba(10,15,34,.35)';c.fillRect(0,0,W,H);
+  // 运输路径
+  if(t>0.02&&t<0.98){
+    c.strokeStyle='rgba(92,200,255,.12)';c.lineWidth=1;c.beginPath();
+    for(const p of pairs){c.moveTo(p.sx,p.sy);c.lineTo(p.tx,p.ty);}
+    c.stroke();
+  }
+  for(const p of pairs){
+    const x=p.sx+(p.tx-p.sx)*e,y=p.sy+(p.ty-p.sy)*e;
+    const r=e*0.85+0.15;
+    c.fillStyle=`rgba(${232+(92-232)*e|0},${196+(200-196)*e|0},${104+(255-104)*e|0},.9)`;
+    c.beginPath();c.arc(x,y,3*r,0,7);c.fill();
+  }
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='center';
+  c.fillText(t<0.3?'随机噪声（AI的起点）':t<0.8?'沿"最省力路径"运输中…':'笑脸成形（AI的生成结果）',W/2,24);
+  requestAnimationFrame(draw);
+}
+c.fillStyle='#0a0f22';c.fillRect(0,0,W,H);
+draw();
+})();
+
+/* ============================================================
+   6. 双摆混沌：蝴蝶效应
+============================================================ */
+(()=>{
+const cv=document.getElementById('cv6'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const g=9.8,L1=110,L2=110,m1=10,m2=10;
+let p1,p2,trail1,trail2,running=true;
+function reset(){
+  const diff=+document.getElementById('diff6').value*0.01*Math.PI/180; // 每格 = 0.01°
+  const a1=Math.PI/2+0.6;
+  p1={a1,a2:a1+0.4,w1:0,w2:0};
+  p2={a1:a1+diff,a2:a1+0.4,w1:0,w2:0};
+  trail1=[];trail2=[];
+  c.fillStyle='#0a0f22';c.fillRect(0,0,W,H);
+}
+document.getElementById('btn6').onclick=reset;
+document.getElementById('diff6').addEventListener('input',()=>{
+  const d=+document.getElementById('diff6').value;
+  document.getElementById('lbl6').textContent=(d*0.01).toFixed(2)+'°';
+  reset();
+});
+function step(p,dt){
+  const {a1,a2,w1,w2}=p;
+  const num1=-g*(2*m1+m2)*Math.sin(a1)-m2*g*Math.sin(a1-2*a2)-2*Math.sin(a1-a2)*m2*(w2*w2*L2+w1*w1*L1*Math.cos(a1-a2));
+  const den1=L1*(2*m1+m2-m2*Math.cos(2*a1-2*a2));
+  const num2=2*Math.sin(a1-a2)*(w1*w1*L1*(m1+m2)+g*(m1+m2)*Math.cos(a1)+w2*w2*L2*m2*Math.cos(a1-a2));
+  const den2=L2*(2*m1+m2-m2*Math.cos(2*a1-2*a2));
+  p.w1+=num1/den1*dt;p.w2+=num2/den2*dt;
+  p.a1+=p.w1*dt;p.a2+=p.w2*dt;
+}
+function pos(p,cx,cy){
+  const x1=cx+L1*Math.sin(p.a1),y1=cy+L1*Math.cos(p.a1);
+  const x2=x1+L2*Math.sin(p.a2),y2=y1+L2*Math.cos(p.a2);
+  return {x1,y1,x2,y2};
+}
+const CX=W/2,CY=130;
+function draw(){
+  for(let i=0;i<3;i++){step(p1,0.016);step(p2,0.016);}
+  const a=pos(p1,CX,CY),b=pos(p2,CX,CY);
+  trail1.push({x:a.x2,y:a.y2});trail2.push({x:b.x2,y:b.y2});
+  if(trail1.length>260){trail1.shift();trail2.shift();}
+  c.fillStyle='rgba(10,15,34,.25)';c.fillRect(0,0,W,H);
+  // 轨迹
+  c.lineWidth=1.6;
+  c.strokeStyle='rgba(245,217,138,.75)';c.beginPath();
+  trail1.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.stroke();
+  c.strokeStyle='rgba(92,200,255,.75)';c.beginPath();
+  trail2.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.stroke();
+  // 摆杆
+  function pend(q,col){
+    c.strokeStyle=col;c.lineWidth=3;c.beginPath();
+    c.moveTo(CX,CY);c.lineTo(q.x1,q.y1);c.lineTo(q.x2,q.y2);c.stroke();
+    c.fillStyle=col;c.beginPath();c.arc(q.x1,q.y1,7,0,7);c.fill();
+    c.beginPath();c.arc(q.x2,q.y2,8,0,7);c.fill();
+  }
+  pend(a,'#f5d98a');pend(b,'#5cc8ff');
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='center';
+  const sep=Math.hypot(a.x2-b.x2,a.y2-b.y2);
+  c.fillText(sep<15?'两个摆目前几乎重合——混沌还没显形':sep<80?'偏差开始放大……':'完全分道扬镳！初始只差 '+(+document.getElementById('diff6').value*0.01).toFixed(2)+'°',W/2,24);
+  c.fillStyle='#9aa7c7';c.font='12.5px sans-serif';
+  c.fillText('黄摆 与 蓝摆：初始角度差 '+(+document.getElementById('diff6').value*0.01).toFixed(2)+'°（试试调到 0）',W/2,H-14);
+  requestAnimationFrame(draw);
+}
+reset();draw();
+})();
+</script>
+<script>
+/* ========== 7. 卡拉比-丘流形 ========== */
+(()=>{
+const cv=document.getElementById('cv7'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+function pt(u,v,k){
+  const r=1+0.38*Math.sin(k*u)*Math.sin(k*v);
+  return [r*Math.sin(v)*Math.cos(u), r*Math.cos(v), r*Math.sin(v)*Math.sin(u)];
+}
+let t=0;
+function proj(p,rotY,rotX){
+  let[x,y,z]=p;
+  let x1=x*Math.cos(rotY)+z*Math.sin(rotY), z1=-x*Math.sin(rotY)+z*Math.cos(rotY);
+  let y1=y*Math.cos(rotX)-z1*Math.sin(rotX), z2=y*Math.sin(rotX)+z1*Math.cos(rotX);
+  const s=2.6/(2.6-z2)*130;
+  return [W/2+x1*s, H/2+y1*s, z2];
+}
+function draw(){
+  t+=0.008;
+  const k=+document.getElementById('k7').value;
+  document.getElementById('lbl7').textContent=k+' 重褶皱';
+  c.clearRect(0,0,W,H);
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='center';
+  c.fillText('卡拉比-丘流形的三维投影（六个维度蜷缩成的形状）',W/2,26);
+  const NU=30,NV=20;
+  c.lineWidth=1;
+  for(let i=0;i<NU;i++){
+    c.beginPath();
+    for(let j=0;j<=NV;j++){
+      const p=proj(pt(i/NU*Math.PI*2, j/NV*Math.PI, k),t,t*0.6);
+      j?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]);
+    }
+    c.strokeStyle=`rgba(92,200,255,${.25+.35*Math.sin(i)})`;c.stroke();
+  }
+  for(let j=0;j<=NV;j+=2){
+    c.beginPath();
+    for(let i=0;i<=NU;i++){
+      const p=proj(pt(i/NU*Math.PI*2, j/NV*Math.PI, k),t,t*0.6);
+      i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]);
+    }
+    c.strokeStyle='rgba(232,196,104,.3)';c.stroke();
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+})();
+
+/* ========== 8. 引力阱 ========== */
+(()=>{
+const cv=document.getElementById('cv8'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+let mass={x:W/2,y:H/2},drag=false;
+const orbs=[];
+for(let i=0;i<3;i++){
+  const r=90+i*60;
+  orbs.push({x:mass.x+r,y:mass.y,vx:0,vy:0,trail:[],col:['#f5d98a','#7fc4ff','#ff9e9e'][i],r});
+}
+function speedFor(o){
+  const M=+document.getElementById('m8').value*3;
+  const dx=o.x-mass.x,dy=o.y-mass.y,r=Math.hypot(dx,dy);
+  const v=Math.sqrt(M/r);
+  o.vx=-dy/r*v; o.vy=dx/r*v;
+}
+orbs.forEach(speedFor);
+cv.addEventListener('mousemove',e=>{
+  const b=cv.getBoundingClientRect();
+  const x=(e.clientX-b.left)*(cv.width/b.width), y=(e.clientY-b.top)*(cv.height/b.height);
+  if(drag){mass.x=x;mass.y=y;}
+  else drag=Math.hypot(x-mass.x,y-mass.y)<24;
+});
+cv.addEventListener('mouseleave',()=>drag=false);
+function draw(){
+  const M=+document.getElementById('m8').value*3;
+  c.clearRect(0,0,W,H);
+  // 弯曲网格
+  c.lineWidth=1;
+  for(let gx=0;gx<=W;gx+=45){
+    c.beginPath();
+    for(let gy=0;gy<=H;gy+=15){
+      const dx=gx-mass.x,dy=gy-mass.y,r=Math.hypot(dx,dy)+1;
+      const pull=M*2.2/(r+40);
+      const X=gx-dx/r*pull*Math.min(r,60)/60*30, Y=gy-dy/r*pull*Math.min(r,60)/60*30;
+      gy?c.lineTo(X,Y):c.moveTo(X,Y);
+    }
+    c.strokeStyle='rgba(92,140,255,.18)';c.stroke();
+  }
+  for(let gy=0;gy<=H;gy+=45){
+    c.beginPath();
+    for(let gx=0;gx<=W;gx+=15){
+      const dx=gx-mass.x,dy=gy-mass.y,r=Math.hypot(dx,dy)+1;
+      const pull=M*2.2/(r+40);
+      const X=gx-dx/r*pull*Math.min(r,60)/60*30, Y=gy-dy/r*pull*Math.min(r,60)/60*30;
+      gx?c.lineTo(X,Y):c.moveTo(X,Y);
+    }
+    c.strokeStyle='rgba(92,140,255,.18)';c.stroke();
+  }
+  // 天体
+  const g=c.createRadialGradient(mass.x,mass.y,2,mass.x,mass.y,26);
+  g.addColorStop(0,'#fff3d0');g.addColorStop(1,'#c99b2f');
+  c.fillStyle=g;c.beginPath();c.arc(mass.x,mass.y,18,0,7);c.fill();
+  c.strokeStyle='rgba(232,196,104,.5)';c.stroke();
+  // 轨道小球
+  for(const o of orbs){
+    const dx=o.x-mass.x,dy=o.y-mass.y,r2=dx*dx+dy*dy+100;
+    const a=M/r2, r=Math.sqrt(r2);
+    o.vx+=-dx/r*a*0.9; o.vy+=-dy/r*a*0.9;
+    o.x+=o.vx; o.y+=o.vy;
+    if(o.x<-60||o.x>W+60||o.y<-60||o.y>H+60){o.x=mass.x+o.r;o.y=mass.y;speedFor(o);o.trail=[];}
+    o.trail.push({x:o.x,y:o.y}); if(o.trail.length>180)o.trail.shift();
+    c.strokeStyle=o.col+'88';c.lineWidth=1.4;c.beginPath();
+    o.trail.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.stroke();
+    c.fillStyle=o.col;c.beginPath();c.arc(o.x,o.y,5,0,7);c.fill();
+  }
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='center';
+  c.fillText('网格 = 被质量压弯的时空　｜　小球沿弯曲时空的"直线"滚动（引力弹弓）',W/2,H-14);
+  requestAnimationFrame(draw);
+}
+draw();
+})();
+
+/* ========== 9. 里奇流熨平 ========== */
+(()=>{
+const cv=document.getElementById('cv9'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height,N=90;
+let r=[],running=false;
+function newShape(){
+  r=[];
+  const h=[];for(let i=0;i<4;i++)h.push({k:2+i, a:Math.random()*.45+.15, p:Math.random()*7});
+  for(let i=0;i<N;i++){
+    const t=i/N*Math.PI*2;
+    let v=1; for(const x of h)v+=x.a*Math.sin(x.k*t+x.p);
+    r.push(v);
+  }
+}
+newShape();
+document.getElementById('rst9').onclick=()=>{newShape();running=false;document.getElementById('btn9').textContent='▶ 启动"里奇流"熨平';};
+document.getElementById('btn9').onclick=()=>{running=!running;document.getElementById('btn9').textContent=running?'⏸ 暂停':'▶ 启动"里奇流"熨平';};
+function draw(){
+  if(running){
+    for(let k=0;k<3;k++){
+      const nr=r.slice();
+      for(let i=0;i<N;i++){
+        const l=r[(i-1+N)%N],rt=r[(i+1)%N];
+        nr[i]=r[i]+0.35*(l+rt-2*r[i]);
+      }
+      r=nr;
+    }
+  }
+  const mean=r.reduce((a,b)=>a+b)/N;
+  const dev=Math.sqrt(r.reduce((a,b)=>a+(b-mean)**2,0)/N)/mean;
+  document.getElementById('lbl9').textContent='圆度偏差: '+(dev*100).toFixed(1)+'%'+(dev<0.01?' → 已经是球面！✓':'');
+  c.clearRect(0,0,W,H);
+  const cx=W/2,cy=H/2,sc=110;
+  // 参考圆
+  c.strokeStyle='rgba(255,255,255,.15)';c.setLineDash([4,6]);
+  c.beginPath();c.arc(cx,cy,mean*sc,0,7);c.stroke();c.setLineDash([]);
+  // 形状
+  c.beginPath();
+  for(let i=0;i<=N;i++){
+    const t=i/N*Math.PI*2, rr=r[i%N]*sc;
+    const x=cx+Math.cos(t)*rr, y=cy+Math.sin(t)*rr;
+    i?c.lineTo(x,y):c.moveTo(x,y);
+  }
+  c.closePath();
+  const g=c.createRadialGradient(cx,cy,10,cx,cy,mean*sc*1.3);
+  g.addColorStop(0,'rgba(232,196,104,.35)');g.addColorStop(1,'rgba(92,200,255,.12)');
+  c.fillStyle=g;c.fill();
+  c.strokeStyle='#f5d98a';c.lineWidth=2.5;c.stroke();
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='center';
+  c.fillText('虚线 = 同周长的标准圆　｜　里奇流：曲率大的地方收缩快，最终必然变成圆',W/2,H-16);
+  requestAnimationFrame(draw);
+}
+draw();
+})();
+
+/* ========== 10. 任意子编织 ========== */
+(()=>{
+const cv=document.getElementById('cv10'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const X1=340,X2=560,Y0=96;
+let swaps=[],swapping=null,count=0;
+document.getElementById('btn10').onclick=()=>{
+  if(swapping)return;
+  swapping={t:0};
+};
+function draw(){
+  c.clearRect(0,0,W,H);
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='center';
+  c.fillText('上：两个任意子交换位置　｜　下：它们的时空轨迹编成"辫子"（= 存储的量子信息）',W/2,24);
+  // 顶部粒子
+  let ax=X1,bx=X2;
+  if(swapping){
+    swapping.t+=0.016;
+    const t=Math.min(1,swapping.t);
+    const e=t*t*(3-2*t);
+    ax=X1+(X2-X1)*e; bx=X2+(X1-X2)*e;
+    if(t>=1){swaps.push(1);count++;document.getElementById('lbl10').textContent='已编织 '+count+' 次';swapping=null;}
+  }
+  // 交换弧线动画
+  if(swapping){
+    const t=Math.min(1,swapping.t);
+    c.strokeStyle='#f5d98a';c.lineWidth=2.5;c.beginPath();
+    c.arc((X1+X2)/2,Y0-4,(X2-X1)/2,Math.PI,Math.PI+Math.PI*t);c.stroke();
+    c.strokeStyle='#7fc4ff';c.beginPath();
+    c.arc((X1+X2)/2,Y0+4,(X2-X1)/2,0,Math.PI*t);c.stroke();
+  }
+  c.fillStyle='#f5d98a';c.beginPath();c.arc(ax,Y0-4+Math.sin(Date.now()/300)*2,13,0,7);c.fill();
+  c.fillStyle='#7fc4ff';c.beginPath();c.arc(bx,Y0+4,13,0,7);c.fill();
+  c.fillStyle='#0b1020';c.font='bold 12px sans-serif';
+  c.fillText('A',ax,Y0);c.fillText('B',bx,Y0+8);
+  // 辫子图
+  const BY=160,BH=H-BY-30,n=swaps.length;
+  c.strokeStyle='rgba(255,255,255,.12)';c.setLineDash([3,5]);
+  c.beginPath();c.moveTo(80,BY);c.lineTo(W-80,BY);c.stroke();c.setLineDash([]);
+  c.fillStyle='#5a6684';c.font='11px sans-serif';c.textAlign='left';
+  c.fillText('时间 →',W-110,BY-6);
+  const maxShow=Math.min(n,10);
+  const step=Math.min(60,(W-220)/Math.max(1,maxShow));
+  for(let i=0;i<maxShow;i++){
+    const x0=110+i*step;
+    // A 股（金）：交叉跨过
+    c.strokeStyle='#f5d98a';c.lineWidth=3;c.beginPath();
+    c.moveTo(x0,BY+14);
+    c.bezierCurveTo(x0+step*.4,BY+14, x0+step*.6,BY+BH-14, x0+step,BY+BH-14);
+    c.stroke();
+    // B 股（蓝）：被压在下面（断开后画）
+    c.strokeStyle='#7fc4ff';c.lineWidth=3;
+    c.beginPath();c.moveTo(x0+step,BY+14);
+    c.bezierCurveTo(x0+step-step*.35,BY+14, x0+step-step*.62,BY+BH*.5, x0+step-step*.62,BY+BH*.5);
+    c.stroke();
+    c.beginPath();c.moveTo(x0+step*.38,BY+BH*.56);
+    c.bezierCurveTo(x0+step*.38,BY+BH*.56, x0+step*.12,BY+BH-14, x0,BY+BH-14);
+    c.stroke();
+  }
+  if(n===0){c.fillStyle='#5a6684';c.font='13px sans-serif';c.textAlign='center';c.fillText('（点上面的按钮开始编织）',W/2,BY+BH/2);}
+  requestAnimationFrame(draw);
+}
+draw();
+})();
+
+/* ========== 11. 幽灵堵车 ========== */
+(()=>{
+const cv=document.getElementById('cv11'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const CELLS=220,VMAX=5,P=0.28;
+let road=new Array(CELLS).fill(-1);
+function placeCars(n){
+  road.fill(-1);
+  const pos=[];while(pos.length<n){const p=(Math.random()*CELLS)|0;if(!pos.includes(p))pos.push(p);}
+  pos.sort((a,b)=>a-b);
+  for(const p of pos)road[p]=0;
+}
+placeCars(55);
+document.getElementById('n11').addEventListener('input',e=>{
+  placeCars(+e.target.value);
+  document.getElementById('lbl11').textContent=e.target.value+' 辆车';
+});
+const CX=W/2,CY=H/2+6,R=150;
+let tick=0;
+function step(){
+  const nr=new Array(CELLS).fill(-1);
+  for(let i=0;i<CELLS;i++){
+    if(road[i]<0)continue;
+    let v=Math.min(road[i]+1,VMAX);
+    let gap=0;while(gap<v&&road[(i+gap+1)%CELLS]<0)gap++;
+    v=Math.min(v,gap);
+    if(v>0&&Math.random()<P)v--;
+    nr[(i+v)%CELLS]=v;
+  }
+  road=nr;
+}
+function draw(){
+  tick++;
+  if(tick%4===0)step();
+  c.clearRect(0,0,W,H);
+  // 环形路
+  c.strokeStyle='rgba(255,255,255,.15)';c.lineWidth=26;
+  c.beginPath();c.arc(CX,CY,R,0,7);c.stroke();
+  c.strokeStyle='rgba(232,196,104,.35)';c.lineWidth=1;c.setLineDash([8,10]);
+  c.beginPath();c.arc(CX,CY,R,0,7);c.stroke();c.setLineDash([]);
+  for(let i=0;i<CELLS;i++){
+    if(road[i]<0)continue;
+    const a=i/CELLS*Math.PI*2-Math.PI/2;
+    const x=CX+Math.cos(a)*R, y=CY+Math.sin(a)*R;
+    const v=road[i]/VMAX;
+    c.fillStyle=`rgb(${255-v*180|0},${80+v*150|0},80)`;
+    c.save();c.translate(x,y);c.rotate(a+Math.PI/2);
+    c.fillRect(-4,-8,8,16);c.restore();
+  }
+  const n=road.filter(x=>x>=0).length;
+  const avg=road.filter(x=>x>=0).reduce((a,b)=>a+b,0)/Math.max(1,n);
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='center';
+  c.fillText('车颜色越红 = 速度越慢　｜　平均车速 '+(avg).toFixed(1)+' 格/步',W/2,26);
+  c.fillText(n>70?'密度过高：幽灵堵车波出现！看它逆着车流向后传播':'密度适中：车流顺畅',W/2,H-16);
+  requestAnimationFrame(draw);
+}
+draw();
+})();
+
+/* ========== 12. 气体趋向平衡 ========== */
+(()=>{
+const cv=document.getElementById('cv12'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const BX=30,BY=46,BW=560,BH=330,N=110,PSPEED=2.2;
+let ps=[];
+function init(){
+  ps=[];
+  for(let i=0;i<N;i++){
+    ps.push({x:BX+10+Math.random()*(BW/2-20), y:BY+10+Math.random()*(BH-20),
+             vx:PSPEED, vy:0});
+  }
+}
+init();
+document.getElementById('btn12').onclick=init;
+function step(){
+  for(const p of ps){
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<BX+4){p.x=BX+4;p.vx*=-1;} if(p.x>BX+BW-4){p.x=BX+BW-4;p.vx*=-1;}
+    if(p.y<BY+4){p.y=BY+4;p.vy*=-1;} if(p.y>BY+BH-4){p.y=BY+BH-4;p.vy*=-1;}
+  }
+  // 弹性碰撞（交换法向速度）
+  for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){
+    const a=ps[i],b=ps[j];
+    const dx=b.x-a.x,dy=b.y-a.y,d2=dx*dx+dy*dy;
+    if(d2<64&&d2>0){
+      const d=Math.sqrt(d2),nx=dx/d,ny=dy/d;
+      const p1=a.vx*nx+a.vy*ny, p2=b.vx*nx+b.vy*ny;
+      a.vx+=(p2-p1)*nx; a.vy+=(p2-p1)*ny;
+      b.vx+=(p1-p2)*nx; b.vy+=(p1-p2)*ny;
+      const ov=(8-d)/2;
+      a.x-=nx*ov;a.y-=ny*ov;b.x+=nx*ov;b.y+=ny*ov;
+    }
+  }
+}
+function draw(){
+  step();
+  c.clearRect(0,0,W,H);
+  c.strokeStyle='rgba(232,196,104,.5)';c.lineWidth=2;c.strokeRect(BX,BY,BW,BH);
+  for(const p of ps){
+    const sp=Math.hypot(p.vx,p.vy);
+    c.fillStyle=`rgba(${92+sp*40|0},${200-sp*30|0},255,.9)`;
+    c.beginPath();c.arc(p.x,p.y,3.5,0,7);c.fill();
+  }
+  // 直方图
+  const bins=new Array(12).fill(0);
+  for(const p of ps){const s=Math.hypot(p.vx,p.vy);bins[Math.min(11,s/0.9|0)]++;}
+  const HX=650,HY=340,HW=210,HH=250,maxb=Math.max(...bins,1);
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='center';
+  c.fillText('速度分布直方图',HX+HW/2,BY-8);
+  for(let i=0;i<12;i++){
+    const h=bins[i]/maxb*HH;
+    c.fillStyle=i<3?'#7fc4ff':i<7?'#f5d98a':'#ff9e9e';
+    c.fillRect(HX+i*(HW/12),HY-h,HW/12-3,h);
+  }
+  c.strokeStyle='rgba(255,255,255,.2)';c.strokeRect(HX,HY-HH,HW,HH);
+  // 麦克斯韦参考曲线
+  c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();
+  for(let i=0;i<=60;i++){
+    const v=i/60*12*0.9;
+    const mb=(v*v)*Math.exp(-v*v/(2*PSPEED*PSPEED*0.55));
+    const x=HX+i/60*HW, y=HY-mb/2.1*HH;
+    i?c.lineTo(x,y):c.moveTo(x,y);
+  }
+  c.stroke();
+  c.fillStyle='#8fa0c8';c.font='12px sans-serif';
+  c.fillText('白线 = 麦克斯韦分布（理论预言）',HX+HW/2,HY+22);
+  c.fillText('慢 ← 速度 → 快',HX+HW/2,HY+40);
+  document.getElementById('lbl12').textContent='碰撞中 → 自动趋向钟形曲线';
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='center';
+  c.fillText('小球起初全部同速向右 → 碰撞后速度自动散布成钟形曲线',BX+BW/2,H-14);
+  requestAnimationFrame(draw);
+}
+draw();
+})();
+
+/* ========== 13. 费马大定理 ========== */
+(()=>{
+const cv=document.getElementById('cv13'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const R=13,OX=90,OY=H-60,SC=26;
+function draw(){
+  const n=+document.getElementById('n13').value;
+  document.getElementById('lbl13').textContent='n = '+n;
+  c.clearRect(0,0,W,H);
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='center';
+  c.fillText('曲线 xⁿ + yⁿ = 13ⁿ（第一象限）与白点整数格',W/2,26);
+  // 坐标轴
+  c.strokeStyle='rgba(255,255,255,.25)';c.lineWidth=1.5;
+  c.beginPath();c.moveTo(OX,30);c.lineTo(OX,OY);c.lineTo(OX+R*SC+30,OY);c.stroke();
+  // 整数格点
+  for(let a=0;a<=R;a++)for(let b=0;b<=R;b++){
+    c.fillStyle='rgba(255,255,255,.22)';
+    c.beginPath();c.arc(OX+a*SC,OY-b*SC,2.5,0,7);c.fill();
+  }
+  // 曲线
+  c.strokeStyle='#7fc4ff';c.lineWidth=2.5;c.beginPath();
+  for(let i=0;i<=200;i++){
+    const x=i/200*R;
+    const y=Math.pow(Math.max(0,Math.pow(R,n)-Math.pow(x,n)),1/n);
+    const X=OX+x*SC,Y=OY-y*SC;
+    i?c.lineTo(X,Y):c.moveTo(X,Y);
+  }
+  c.stroke();
+  // 整数解
+  const sols=[];
+  for(let a=1;a<R;a++)for(let b=1;b<R;b++){
+    if(Math.abs(Math.pow(a,n)+Math.pow(b,n)-Math.pow(R,n))<1e-9)sols.push([a,b]);
+  }
+  for(const[a,b]of sols){
+    c.fillStyle='#9dff9d';c.beginPath();c.arc(OX+a*SC,OY-b*SC,7,0,7);c.fill();
+    c.fillStyle='#0b1020';c.font='bold 11px sans-serif';c.fillText(a+','+b,OX+a*SC,OY-b*SC+4);
+  }
+  c.textAlign='left';
+  if(n===2){
+    c.fillStyle='#9dff9d';c.font='bold 17px sans-serif';
+    c.fillText('✓ n=2：找到 '+sols.length+' 组整数解（勾股数 5²+12²=13²）',OX+40,80);
+  }else if(n===1){
+    c.fillStyle='#9dff9d';c.font='bold 17px sans-serif';
+    c.fillText('✓ n=1：直线，整数解随处可见',OX+40,80);
+  }else{
+    c.fillStyle='#ff9e9e';c.font='bold 17px sans-serif';
+    c.fillText('✗ n='+n+'：曲线完美避开所有整数点 —— 0 组解',OX+40,80);
+    c.fillStyle='#9aa7c7';c.font='13px sans-serif';
+    c.fillText('费马大定理：n≥3 时，任何尺度下都永远找不到解（358年后由怀尔斯证明）',OX+40,108);
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+})();
+
+/* ========== 14. 渗流相变 ========== */
+(()=>{
+const cv=document.getElementById('cv14'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const G=44,CS=8.2,OX=(W-G*CS)/2,OY=30;
+let rand=[];
+function regen(){rand=Array.from({length:G*G},()=>Math.random());}
+regen();
+document.getElementById('p14').addEventListener('input',draw);
+cv.addEventListener('click',regen);
+function draw(){
+  const p=+document.getElementById('p14').value/100;
+  document.getElementById('lbl14').textContent='p = '+p.toFixed(2)+(Math.abs(p-0.59)<0.02?' ← 临界值！':'');
+  const open=rand.map(r=>r<p);
+  // 并查集
+  const par=[...Array(G*G).keys()];
+  const find=x=>par[x]===x?x:par[x]=find(par[x]);
+  const uni=(a,b)=>{par[find(a)]=find(b);};
+  for(let y=0;y<G;y++)for(let x=0;x<G;x++){
+    if(!open[y*G+x])continue;
+    if(x+1<G&&open[y*G+x+1])uni(y*G+x,y*G+x+1);
+    if(y+1<G&&open[(y+1)*G+x])uni(y*G+x,(y+1)*G+x);
+  }
+  const size={};
+  for(let i=0;i<G*G;i++)if(open[i]){const r=find(i);size[r]=(size[r]||0)+1;}
+  let big=-1,bs=0;
+  for(const r in size)if(size[r]>bs){bs=size[r];big=+r;}
+  const spans=(()=>{const s=new Set();
+    for(let x=0;x<G;x++){if(open[x])s.add(find(x));}
+    for(let x=0;x<G;x++){if(open[(G-1)*G+x]&&s.has(find((G-1)*G+x)))return true;}
+    return false;})();
+  c.clearRect(0,0,W,H);
+  for(let y=0;y<G;y++)for(let x=0;x<G;x++){
+    const i=y*G+x;
+    if(!open[i]){c.fillStyle='rgba(255,255,255,.05)';}
+    else if(find(i)===big){c.fillStyle=spans?'#e8c468':'#c9a44e';}
+    else{c.fillStyle='rgba(96,140,220,.55)';}
+    c.fillRect(OX+x*CS,OY+y*CS,CS-1,CS-1);
+  }
+  c.fillStyle=spans?'#9dff9d':'#8fa0c8';c.font='bold 15px sans-serif';c.textAlign='center';
+  c.fillText(spans?'✓ 贯通了！金色通道从左岸直达右岸':'未贯通：金色只是最大的一块"孤岛"',W/2,H-40);
+  c.fillStyle='#5a6684';c.font='12px sans-serif';
+  c.fillText('（点击画面随机换一种海绵）',W/2,H-18);
+}
+draw();
+})();
+
+/* ========== 15. 四维超立方 ========== */
+(()=>{
+const cv=document.getElementById('cv15'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const V=[];
+for(let i=0;i<16;i++)V.push([i&1?1:-1,i&2?1:-1,i&4?1:-1,i&8?1:-1]);
+const E=[];
+for(let i=0;i<16;i++)for(let j=i+1;j<16;j++){
+  let d=0;for(let k=0;k<4;k++)if(V[i][k]!==V[j][k])d++;
+  if(d===1)E.push([i,j]);
+}
+let t=0;
+function draw(){
+  t+=0.006;
+  const a=+document.getElementById('a15').value/100+t;
+  const b=+document.getElementById('b15').value/100+t*0.6;
+  c.clearRect(0,0,W,H);
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='center';
+  c.fillText('四维超立方体（16顶点/32棱）在三维的影子——拖动滑杆在第四维里转动它',W/2,26);
+  const P=V.map(v=>{
+    let[x,y,z,w]=v;
+    // XW 旋转
+    let x1=x*Math.cos(a)-w*Math.sin(a), w1=x*Math.sin(a)+w*Math.cos(a);
+    // ZW 旋转
+    let z1=z*Math.cos(b)-w1*Math.sin(b); w1=z*Math.sin(b)+w1*Math.cos(b);
+    // 4D→3D 透视
+    const s4=3/(3-w1);
+    x=x1*s4; y=y*s4; z=z1*s4;
+    // 3D 缓转
+    const ry=t*0.7;
+    const x2=x*Math.cos(ry)+z*Math.sin(ry), z2=-x*Math.sin(ry)+z*Math.cos(ry);
+    const s3=3.2/(3.2-z2);
+    return [W/2+x2*s3*95, H/2+y*s3*95, s3];
+  });
+  for(const[i,j]of E){
+    const s=(P[i][2]+P[j][2])/2;
+    c.strokeStyle=`rgba(${232},${196},${104},${Math.min(1,s-0.5)})`;
+    c.lineWidth=s*1.6;
+    c.beginPath();c.moveTo(P[i][0],P[i][1]);c.lineTo(P[j][0],P[j][1]);c.stroke();
+  }
+  for(const p of P){
+    c.fillStyle=`rgba(92,200,255,${Math.min(1,p[2]-0.4)})`;
+    c.beginPath();c.arc(p[0],p[1],p[2]*2.6,0,7);c.fill();
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+})();
+
+/* ========== 16. 傅里叶齿轮 ========== */
+(()=>{
+const cv=document.getElementById('cv16'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+let t=0,wave=[];
+function draw(){
+  t-=0.035;
+  const N=+document.getElementById('n16').value;
+  document.getElementById('lbl16').textContent=N+' 个谐波';
+  c.clearRect(0,0,W,H);
+  let x=260,y=H/2;
+  for(let i=0;i<N;i++){
+    const k=2*i+1;
+    const r=95*4/(Math.PI*k);
+    const px=x,py=y;
+    x+=r*Math.cos(k*t); y+=r*Math.sin(k*t);
+    c.strokeStyle='rgba(255,255,255,.2)';c.lineWidth=1.2;
+    c.beginPath();c.arc(px,py,r,0,7);c.stroke();
+    c.strokeStyle='rgba(232,196,104,.6)';
+    c.beginPath();c.moveTo(px,py);c.lineTo(x,y);c.stroke();
+    c.fillStyle='#f5d98a';c.beginPath();c.arc(x,y,2.5,0,7);c.fill();
+  }
+  wave.unshift(y);
+  if(wave.length>380)wave.pop();
+  // 连线到波形
+  c.strokeStyle='rgba(255,255,255,.3)';c.setLineDash([3,4]);
+  c.beginPath();c.moveTo(x,y);c.lineTo(520,y);c.stroke();c.setLineDash([]);
+  // 波形
+  c.strokeStyle='#5cc8ff';c.lineWidth=2;c.beginPath();
+  wave.forEach((wy,i)=>{const X=520+i;i?c.lineTo(X,wy):c.moveTo(X,wy);});
+  c.stroke();
+  // 参考方波
+  c.strokeStyle='rgba(255,255,255,.15)';c.setLineDash([4,5]);
+  const per=2*Math.PI/0.035*1;
+  c.beginPath();
+  for(let X=520;X<520+wave.length;X++){
+    const ph=((X-520)*0.035)%(Math.PI*2);
+    const sq=H/2+(ph<Math.PI?-95:95);
+    X===520?c.moveTo(X,sq):c.lineTo(X,sq);
+  }
+  c.stroke();c.setLineDash([]);
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='center';
+  c.fillText('左：首尾相接的旋转圆（谐波）　→　右：末端画出的波形（虚线=目标方波）',W/2,26);
+  requestAnimationFrame(draw);
+}
+draw();
+})();
+
+/* ========== 17. CT 扫描重建 ========== */
+(()=>{
+const cv=document.getElementById('cv17'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const S=72;           // 体素
+const ANG=72,RAYS=90;
+// 幻影：圆形容器 + 骨头椭圆 + 小病灶
+const ph=new Float32Array(S*S);
+function inEll(x,y,cx,cy,rx,ry){return((x-cx)/rx)**2+((y-cy)/ry)**2<=1;}
+for(let y=0;y<S;y++)for(let x=0;x<S;x++){
+  let v=0;
+  if(inEll(x,y,36,36,30,30))v=0.25;                 // 组织
+  if(inEll(x,y,30,30,10,14))v=1.0;                  // 骨头
+  if(inEll(x,y,46,42,5,5))v=0.85;                   // 病灶
+  if(inEll(x,y,44,24,7,6))v=0.1;                    // 空腔
+  ph[y*S+x]=v;
+}
+let rec=new Float32Array(S*S),sino=new Float32Array(ANG*RAYS);
+let ai=0,scanning=false;
+document.getElementById('btn17').onclick=()=>{
+  if(scanning)return;
+  rec.fill(0);sino.fill(0);ai=0;scanning=true;
+};
+function doAngle(){
+  const th=ai/ANG*Math.PI;
+  const ct=Math.cos(th),st=Math.sin(th);
+  const proj=new Float32Array(RAYS);
+  for(let r=0;r<RAYS;r++){
+    const s=(r/(RAYS-1)-0.5)*S*1.42;
+    let sum=0;
+    for(let d=-S;d<S;d+=0.5){
+      const x=36+s*ct-d*st, y=36+s*st+d*ct;
+      const xi=x|0,yi=y|0;
+      if(xi>=0&&xi<S&&yi>=0&&yi<S)sum+=ph[yi*S+xi];
+    }
+    proj[r]=sum*0.5;
+  }
+  sino.set(proj,ai*RAYS);
+  // 反投影
+  for(let y=0;y<S;y++)for(let x=0;x<S;x++){
+    const s=(x-36)*ct+(y-36)*st;
+    const r=(s/(S*1.42)+0.5)*(RAYS-1);
+    const ri=Math.max(0,Math.min(RAYS-1,r|0));
+    rec[y*S+x]+=proj[ri];
+  }
+  ai++;
+  document.getElementById('lbl17').textContent='扫描角度: '+(ai/ANG*180|0)+'°';
+}
+function drawImg(data,ox,oy,scale,norm){
+  for(let y=0;y<S;y++)for(let x=0;x<S;x++){
+    let v=data[y*S+x]*norm;v=Math.max(0,Math.min(1,v));
+    const g=v*255|0;
+    c.fillStyle=`rgb(${g},${g*0.9|0},${g*0.75|0})`;
+    c.fillRect(ox+x*scale,oy+y*scale,scale,scale);
+  }
+}
+function draw(){
+  if(scanning&&ai<ANG){doAngle();}
+  if(ai>=ANG){scanning=false;document.getElementById('lbl17').textContent='✓ 扫描完成：内部结构浮现！';}
+  c.clearRect(0,0,W,H);
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='center';
+  c.fillText('患者（不可见）',150,26);c.fillText('各角度的X光投影（正弦图）',450,26);c.fillText('反投影重建出的图像',750,26);
+  drawImg(ph,60,50,2.2,1);
+  // 正弦图
+  for(let a=0;a<ANG;a++)for(let r=0;r<RAYS;r++){
+    const v=Math.min(1,sino[a*RAYS+r]/14);
+    const g=v*255|0;
+    c.fillStyle=`rgb(${g*0.4|0},${g*0.8|0},${g})`;
+    c.fillRect(330+a*3.3,50+r*1.75,3.3,1.75);
+  }
+  c.strokeStyle='rgba(255,255,255,.15)';c.strokeRect(330,50,ANG*3.3,RAYS*1.75);
+  const norm=ai>0?1/(ai*3.2):0;
+  drawImg(rec,660,50,2.2,norm);
+  c.strokeStyle='rgba(232,196,104,.4)';c.strokeRect(60,50,S*2.2,S*2.2);
+  c.strokeRect(660,50,S*2.2,S*2.2);
+  // 扫描线动画
+  if(scanning){
+    const th=ai/ANG*Math.PI;
+    c.save();c.translate(60+36*2.2,50+36*2.2);c.rotate(th);
+    c.strokeStyle='rgba(255,80,80,.6)';c.lineWidth=2;
+    c.beginPath();c.moveTo(-120,0);c.lineTo(120,0);c.stroke();c.restore();
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+})();
+
+/* ========== 18. KPZ 生长界面 ========== */
+(()=>{
+const cv=document.getElementById('cv18'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const COLS=180,BASE=H-50;
+let h=new Array(COLS).fill(0),paused=false,t=0;
+const wHist=[];
+document.getElementById('btn18').onclick=()=>{paused=!paused;};
+function step(){
+  for(let k=0;k<40;k++){
+    const x=(Math.random()*COLS)|0;
+    const l=h[(x-1+COLS)%COLS],r=h[(x+1)%COLS];
+    // 弹道沉积 + 侧向松弛（KPZ 离散版）
+    h[x]=Math.max(h[x]+1, Math.min(l,r)+1);
+  }
+  t++;
+  const mean=h.reduce((a,b)=>a+b)/COLS;
+  const w=Math.sqrt(h.reduce((a,b)=>a+(b-mean)**2,0)/COLS);
+  wHist.push({t,w});
+  if(h.reduce((a,b)=>Math.max(a,b),0)>BASE-60){h=h.map(v=>Math.max(0,v-140));}
+  if(wHist.length>500)wHist.shift();
+}
+function draw(){
+  if(!paused)step();
+  c.clearRect(0,0,W,H);
+  // 界面
+  c.beginPath();c.moveTo(30,BASE);
+  for(let x=0;x<COLS;x++){
+    c.lineTo(30+x*(620/COLS),BASE-h[x]);
+  }
+  c.lineTo(30+620,BASE);c.closePath();
+  const g=c.createLinearGradient(0,60,0,BASE);
+  g.addColorStop(0,'rgba(232,196,104,.9)');g.addColorStop(1,'rgba(232,196,104,.15)');
+  c.fillStyle=g;c.fill();
+  c.strokeStyle='#f5d98a';c.lineWidth=2;c.beginPath();
+  for(let x=0;x<COLS;x++){
+    const X=30+x*(620/COLS),Y=BASE-h[x];
+    x?c.lineTo(X,Y):c.moveTo(X,Y);
+  }
+  c.stroke();
+  // 粗糙度曲线
+  c.strokeStyle='#5cc8ff';c.lineWidth=1.8;c.beginPath();
+  wHist.forEach((p,i)=>{
+    const X=680+i*(190/500),Y=BASE-40-Math.min(140,p.w*4);
+    i?c.lineTo(X,Y):c.moveTo(X,Y);
+  });
+  c.stroke();
+  c.fillStyle='#8fa0c8';c.font='12.5px sans-serif';c.textAlign='left';
+  c.fillText('粗糙度 w(t)',680,50);
+  if(wHist.length){document.getElementById('lbl18').textContent='粗糙度 w = '+wHist[wHist.length-1].w.toFixed(1)+'（幂律增长）';}
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='center';
+  c.fillText('金色界面随机生长：火焰前沿 / 菌落边缘 / 镀层表面 都是这副模样',400,26);
+  requestAnimationFrame(draw);
+}
+draw();
+})();
+
+/* ========== 19. 机械臂逆运动学 ========== */
+(()=>{
+const cv=document.getElementById('cv19'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const L1=150,L2=150,BX=W/2,BY=H/2+30;
+let tx=BX+160,ty=BY-80;
+cv.addEventListener('mousemove',e=>{
+  const b=cv.getBoundingClientRect();
+  tx=(e.clientX-b.left)*(cv.width/b.width);
+  ty=(e.clientY-b.top)*(cv.height/b.height);
+});
+function draw(){
+  c.clearRect(0,0,W,H);
+  // 工作空间（可达圆环）
+  c.strokeStyle='rgba(255,255,255,.12)';c.setLineDash([5,7]);
+  c.beginPath();c.arc(BX,BY,L1+L2,0,7);c.stroke();
+  c.setLineDash([]);
+  // IK 解算
+  let dx=tx-BX,dy=ty-BY;
+  let d=Math.hypot(dx,dy);
+  const dmax=L1+L2-1;
+  let reach=d<=dmax;
+  if(d>dmax){dx*=dmax/d;dy*=dmax/d;d=dmax;}
+  const a1=Math.atan2(dy,dx);
+  const cosA=Math.max(-1,Math.min(1,(d*d+L1*L1-L2*L2)/(2*d*L1)));
+  const A=Math.acos(cosA);
+  const th1=a1-A;
+  const jx=BX+L1*Math.cos(th1),jy=BY+L1*Math.sin(th1);
+  const th2=Math.atan2(BY+dy-jy,BX+dx-jx);
+  // 画臂
+  c.lineCap='round';
+  c.strokeStyle='#e8c468';c.lineWidth=14;
+  c.beginPath();c.moveTo(BX,BY);c.lineTo(jx,jy);c.stroke();
+  c.strokeStyle='#5cc8ff';c.lineWidth=11;
+  c.beginPath();c.moveTo(jx,jy);c.lineTo(BX+dx,BY+dy);c.stroke();
+  // 关节
+  c.fillStyle='#fff';c.beginPath();c.arc(BX,BY,9,0,7);c.fill();
+  c.beginPath();c.arc(jx,jy,8,0,7);c.fill();
+  c.fillStyle=reach?'#9dff9d':'#ff9e9e';
+  c.beginPath();c.arc(BX+dx,BY+dy,8,0,7);c.fill();
+  // 目标
+  c.strokeStyle='rgba(255,157,157,.7)';c.lineWidth=1.5;
+  c.beginPath();c.moveTo(tx-10,ty);c.lineTo(tx+10,ty);c.moveTo(tx,ty-10);c.lineTo(tx,ty+10);c.stroke();
+  // 关节角显示（构型空间）
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='left';
+  c.fillText('关节角 θ1 = '+(th1*180/Math.PI).toFixed(1)+'°',30,40);
+  c.fillText('关节角 θ2 = '+(th2*180/Math.PI).toFixed(1)+'°',30,62);
+  c.fillText('所有 (θ1, θ2) 组合 = 一个环面 T²（甜甜圈形）',30,84);
+  c.fillStyle=reach?'#9dff9d':'#ff9e9e';
+  c.fillText(reach?'✓ 目标可达':'✗ 超出工作空间（虚线圆）',30,H-24);
+  requestAnimationFrame(draw);
+}
+draw();
+})();
+
+/* ========== 20. 供需均衡 ========== */
+(()=>{
+const cv=document.getElementById('cv20'),c=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const OX=120,OY=H-70,SX=26,SY=26; // Q,P 比例
+let shock=0,p=3.0,path=[];
+document.getElementById('btn20').onclick=()=>{shock=4;p=2.0;path=[];};
+const D=q=>12+shock-q;   // 需求 P=12+shock-Q
+const S=q=>2+q;          // 供给 P=2+Q
+function draw(){
+  // 价格调整：超额需求推动价格
+  const qd=12+shock-p, qs=p-2;
+  p+=0.02*(qd-qs);
+  const qm=(p-2+12+shock-p)/2;
+  path.push({q:qs,p});
+  if(path.length>400)path.shift();
+  c.clearRect(0,0,W,H);
+  c.fillStyle='#8fa0c8';c.font='13px sans-serif';c.textAlign='center';
+  c.fillText('横轴=数量 Q　纵轴=价格 P　｜　白点=当前市场价格，正被"看不见的手"推向交点',W/2,26);
+  // 轴
+  c.strokeStyle='rgba(255,255,255,.3)';c.lineWidth=1.5;
+  c.beginPath();c.moveTo(OX,40);c.lineTo(OX,OY);c.lineTo(OX+13*SX,OY);c.stroke();
+  // 需求线
+  c.strokeStyle='#7fc4ff';c.lineWidth=2.5;c.beginPath();
+  for(let q=0;q<=13;q++){const X=OX+q*SX,Y=OY-Math.max(0,D(q))*SY;q?c.lineTo(X,Y):c.moveTo(X,Y);}
+  c.stroke();
+  // 供给线
+  c.strokeStyle='#f5d98a';c.beginPath();
+  for(let q=0;q<=13;q++){const X=OX+q*SX,Y=OY-S(q)*SY;q?c.lineTo(X,Y):c.moveTo(X,Y);}
+  c.stroke();
+  c.fillStyle='#7fc4ff';c.textAlign='left';c.fillText('需求 D',OX+12.2*SX,OY-D(12.2)*SY-8);
+  c.fillStyle='#f5d98a';c.fillText('供给 S',OX+12.2*SX,OY-S(12.2)*SY+16);
+  // 均衡点
+  const qe=(10+shock)/2, pe=S(qe);
+  c.strokeStyle='rgba(157,255,157,.5)';c.setLineDash([4,5]);
+  c.beginPath();c.moveTo(OX,OY-pe*SY);c.lineTo(OX+qe*SX,OY-pe*SY);c.lineTo(OX+qe*SX,OY);c.stroke();c.setLineDash([]);
+  c.fillStyle='#9dff9d';c.beginPath();c.arc(OX+qe*SX,OY-pe*SY,6,0,7);c.fill();
+  // 价格轨迹
+  c.strokeStyle='rgba(255,255,255,.5)';c.lineWidth=1.5;c.beginPath();
+  path.forEach((pt,i)=>{const X=OX+pt.q*SX,Y=OY-pt.p*SY;i?c.lineTo(X,Y):c.moveTo(X,Y);});
+  c.stroke();
+  // 当前价格点
+  const curQ=Math.max(0,p-2);
+  c.fillStyle='#fff';c.beginPath();c.arc(OX+curQ*SX,OY-p*SY,8,0,7);c.fill();
+  const dist=Math.abs(p-pe);
+  document.getElementById('lbl20').textContent=dist<0.05?('✓ 新均衡达成：P='+(pe.toFixed(1))+', Q='+qe.toFixed(1)):('价格 P='+p.toFixed(2)+'，正在收敛…');
+  requestAnimationFrame(draw);
+}
+draw();
+})();
+
+</script>
+</body>
+</html>

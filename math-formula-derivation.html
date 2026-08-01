@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>高中数学公式推导方法 — 高中全学科绘本馆</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFF8F0; --bg2:#FFFDF7; --bg3:#FFF5EE;
+  --ink:#4A3B2E; --ink-light:#9B8B7A;
+  --pink:#FF8FA3; --pink-light:#FFD1DC; --pink-dim:rgba(255,143,163,0.12);
+  --blue:#6BB6D6; --blue-light:#C5E4F0; --blue-dim:rgba(107,182,214,0.12);
+  --green:#7DCE82; --green-light:#C8ECCB; --green-dim:rgba(125,206,130,0.12);
+  --purple:#B89AD9; --purple-light:#E0D4F0; --purple-dim:rgba(184,154,217,0.12);
+  --yellow:#FFD66B; --yellow-light:#FFF3CC; --yellow-dim:rgba(255,214,107,0.15);
+  --coral:#FF9F7A; --coral-light:#FFD8C8; --coral-dim:rgba(255,159,122,0.12);
+  --gold:#E8A93E; --gold-light:#FBE8C4;
+  --shadow:0 4px 16px rgba(180,160,140,0.15);
+  --shadow-hover:0 8px 28px rgba(255,143,163,0.22);
+  --radius:20px; --radius-sm:12px;
+  --font-zcool:'ZCOOL KuaiLe','Noto Sans SC',sans-serif;
+  --font-body:'Noto Sans SC','Quicksand',system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-body); background:var(--bg); color:var(--ink);
+  min-height:100vh; overflow-x:hidden; position:relative;
+}
+body::before{
+  content:''; position:fixed; inset:0; z-index:-2; pointer-events:none;
+  background-image:
+    radial-gradient(circle at 15% 25%, rgba(255,209,220,0.25) 0%, transparent 2px),
+    radial-gradient(circle at 75% 15%, rgba(197,228,240,0.25) 0%, transparent 2px),
+    radial-gradient(circle at 45% 65%, rgba(255,243,204,0.25) 0%, transparent 2px),
+    radial-gradient(circle at 85% 55%, rgba(224,212,240,0.25) 0%, transparent 2px);
+  background-size:120px 120px,160px 160px,100px 100px,140px 140px;
+}
+body::after{
+  content:''; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background-image:
+    radial-gradient(circle,rgba(255,143,163,0.05) 1px,transparent 1px),
+    radial-gradient(circle,rgba(107,182,214,0.05) 1px,transparent 1px);
+  background-size:30px 30px,50px 50px;
+  background-position:0 0,15px 15px;
+}
+
+/* === Back Button === */
+.back-btn{
+  position:fixed; top:16px; left:20px; z-index:200;
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(255,253,247,0.9); border:2px solid var(--ink); border-radius:50px;
+  padding:8px 20px; text-decoration:none; color:var(--ink);
+  font-family:var(--font-body); font-size:0.85rem; font-weight:600;
+  box-shadow:3px 4px 0 rgba(74,58,46,0.2); backdrop-filter:blur(8px);
+  transition:all 0.2s; cursor:pointer;
+}
+.back-btn:hover{ background:var(--gold-light); transform:translate(-2px,-2px); box-shadow:5px 6px 0 rgba(74,58,46,0.2); }
+.back-btn:active{ transform:translate(2px,3px); box-shadow:1px 1px 0 rgba(74,58,46,0.2); }
+
+/* === Container === */
+.container{ max-width:1000px; margin:0 auto; padding:2rem 1.5rem 4rem; position:relative; z-index:1; }
+
+/* === Header === */
+.page-header{ text-align:center; padding:3rem 0 2rem; }
+.page-header .badge{
+  display:inline-block; background:var(--blue-dim); color:var(--blue);
+  padding:4px 16px; border-radius:50px; font-size:0.8rem; font-weight:700;
+  letter-spacing:1px; margin-bottom:12px;
+}
+.page-header h1{
+  font-family:var(--font-zcool); font-size:2.6rem; letter-spacing:2px;
+  background:linear-gradient(135deg,var(--pink),var(--blue));
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent; margin-bottom:8px;
+}
+.page-header .subtitle{ color:var(--ink-light); font-size:1.05rem; }
+
+/* === Section === */
+.section{ margin:2.5rem 0; }
+.section-title{
+  font-family:var(--font-zcool); font-size:1.6rem; color:var(--ink);
+  display:flex; align-items:center; gap:10px; margin-bottom:1.2rem;
+  padding-bottom:8px; border-bottom:3px dashed var(--pink-light);
+}
+.section-title .icon{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:40px; height:40px; border-radius:50%; font-size:1.3rem;
+  background:var(--pink-dim);
+}
+
+/* === Card === */
+.card{
+  background:var(--bg2); border:2px solid rgba(180,160,140,0.2);
+  border-radius:var(--radius); box-shadow:var(--shadow);
+  padding:1.5rem 1.8rem; margin-bottom:1.2rem;
+  transition:transform 0.25s,box-shadow 0.25s;
+}
+.card:hover{ transform:translateY(-3px); box-shadow:var(--shadow-hover); }
+.card h3{ font-family:var(--font-zcool); font-size:1.2rem; margin-bottom:0.6rem; }
+.card p{ line-height:1.8; color:var(--ink); margin-bottom:0.5rem; }
+.card .tip{
+  background:var(--yellow-light); border-left:4px solid var(--yellow);
+  border-radius:0 var(--radius-sm) var(--radius-sm) 0;
+  padding:0.8rem 1rem; margin-top:0.8rem; font-size:0.9rem; color:var(--ink);
+}
+
+/* === Step Flow === */
+.step-flow{ display:flex; flex-direction:column; gap:1rem; }
+.step-item{
+  display:flex; gap:1rem; align-items:flex-start;
+  background:var(--bg2); border:2px solid rgba(180,160,140,0.2);
+  border-radius:var(--radius); padding:1.2rem 1.5rem;
+  transition:all 0.3s;
+}
+.step-item:hover{ border-color:var(--pink-light); transform:translateX(4px); }
+.step-num{
+  flex-shrink:0; width:44px; height:44px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-zcool); font-size:1.3rem; color:#fff;
+  background:linear-gradient(135deg,var(--pink),#FF6B8A);
+  box-shadow:0 4px 12px rgba(255,143,163,0.35);
+}
+.step-item:nth-child(2) .step-num{ background:linear-gradient(135deg,var(--blue),#4AA8CC); box-shadow:0 4px 12px rgba(107,182,214,0.35); }
+.step-item:nth-child(3) .step-num{ background:linear-gradient(135deg,var(--green),#5BBF66); box-shadow:0 4px 12px rgba(125,206,130,0.35); }
+.step-item:nth-child(4) .step-num{ background:linear-gradient(135deg,var(--purple),#9B7BC6); box-shadow:0 4px 12px rgba(184,154,217,0.35); }
+.step-item:nth-child(5) .step-num{ background:linear-gradient(135deg,var(--coral),#FF7F5B); box-shadow:0 4px 12px rgba(255,159,122,0.35); }
+.step-body h4{ font-family:var(--font-zcool); font-size:1.1rem; margin-bottom:0.4rem; }
+.step-body p{ font-size:0.92rem; line-height:1.7; color:var(--ink); }
+
+/* === Formula Box === */
+.formula-box{
+  background:linear-gradient(135deg,var(--bg3),var(--bg2));
+  border:2px dashed var(--pink-light); border-radius:var(--radius-sm);
+  padding:1rem 1.2rem; margin:0.8rem 0; text-align:center;
+  font-size:1.15rem; color:var(--gold); font-weight:700;
+  font-family:'Quicksand',var(--font-body);
+}
+.formula-box .label{ display:block; font-size:0.75rem; color:var(--ink-light); margin-bottom:4px; font-weight:400; }
+.formula-chain{
+  display:flex; flex-wrap:wrap; align-items:center; gap:0.5rem;
+  justify-content:center; margin:0.8rem 0;
+}
+.formula-chain .node{
+  background:var(--bg2); border:2px solid var(--blue-light); border-radius:var(--radius-sm);
+  padding:0.5rem 0.8rem; font-size:0.9rem; color:var(--ink);
+  transition:all 0.3s;
+}
+.formula-chain .node.highlight{ border-color:var(--pink); background:var(--pink-dim); color:var(--pink); }
+.formula-chain .arrow{ color:var(--ink-light); font-size:1.2rem; }
+
+/* === Interactive Demo === */
+.demo-container{
+  background:var(--bg2); border:2px solid rgba(180,160,140,0.2);
+  border-radius:var(--radius); padding:1.5rem; margin:1rem 0;
+}
+.demo-header{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;
+}
+.demo-header h3{ font-family:var(--font-zcool); font-size:1.15rem; }
+.demo-tabs{
+  display:flex; gap:6px; flex-wrap:wrap;
+}
+.demo-tab{
+  padding:6px 14px; border-radius:50px; cursor:pointer;
+  font-size:0.82rem; font-weight:600; border:2px solid rgba(180,160,140,0.2);
+  background:var(--bg3); color:var(--ink-light); transition:all 0.25s;
+}
+.demo-tab:hover{ border-color:var(--pink-light); color:var(--pink); }
+.demo-tab.active{
+  background:linear-gradient(135deg,var(--pink),#FF6B8A);
+  border-color:var(--pink); color:#fff;
+  box-shadow:0 4px 12px rgba(255,143,163,0.35);
+}
+.demo-content{ min-height:280px; position:relative; }
+
+/* === Canvas === */
+.canvas-wrapper{
+  background:var(--bg3); border-radius:var(--radius-sm);
+  padding:1rem; display:flex; justify-content:center; align-items:center;
+  margin:0.5rem 0; overflow:hidden;
+}
+canvas{ border-radius:var(--radius-sm); max-width:100%; }
+
+/* === Controls === */
+.controls{
+  display:flex; flex-wrap:wrap; gap:0.8rem; align-items:center;
+  justify-content:center; margin:0.8rem 0;
+}
+.btn{
+  display:inline-flex; align-items:center; gap:6px;
+  font-family:var(--font-body); font-size:0.9rem; font-weight:600;
+  padding:8px 20px; border:2px solid var(--ink); border-radius:50px;
+  cursor:pointer; background:rgba(255,255,255,0.8); color:var(--ink);
+  transition:all 0.2s; text-decoration:none;
+}
+.btn:hover{ background:var(--yellow-light); transform:translateY(-2px); box-shadow:0 4px 12px rgba(180,160,140,0.2); }
+.btn:active{ transform:translateY(0); }
+.btn-primary{
+  background:linear-gradient(135deg,var(--pink),#FF6B8A); color:#fff;
+  border-color:var(--pink); box-shadow:0 4px 12px rgba(255,143,163,0.35);
+}
+.btn-primary:hover{ background:linear-gradient(135deg,#FF6B8A,var(--pink)); box-shadow:0 6px 20px rgba(255,143,163,0.4); }
+
+/* === Derivation Steps === */
+.deriv-steps{ display:none; }
+.deriv-steps.active{ display:block; }
+.deriv-step{
+  display:flex; align-items:flex-start; gap:0.8rem; margin:0.6rem 0;
+  padding:0.8rem 1rem; background:var(--bg3); border-radius:var(--radius-sm);
+  border-left:4px solid var(--blue); opacity:0; transform:translateX(-10px);
+  transition:all 0.4s;
+}
+.deriv-step.visible{ opacity:1; transform:translateX(0); }
+.deriv-step .step-tag{
+  flex-shrink:0; font-size:0.75rem; font-weight:700; padding:2px 10px;
+  border-radius:50px; background:var(--blue-dim); color:var(--blue);
+}
+.deriv-step .step-text{ font-size:0.9rem; line-height:1.7; }
+.deriv-step .step-text .math{ color:var(--gold); font-weight:700; }
+.deriv-step.result{ border-left-color:var(--green); }
+.deriv-step.result .step-tag{ background:var(--green-dim); color:var(--green); }
+.deriv-step.conclusion{ border-left-color:var(--pink); background:var(--pink-dim); }
+.deriv-step.conclusion .step-tag{ background:var(--pink-dim); color:var(--pink); }
+
+/* === Module Grid === */
+.module-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1rem; }
+.module-card{
+  background:var(--bg2); border:2px solid rgba(180,160,140,0.2);
+  border-radius:var(--radius); padding:1.2rem 1.5rem;
+  cursor:pointer; transition:all 0.3s;
+}
+.module-card:hover{ border-color:var(--pink-light); transform:translateY(-3px); box-shadow:var(--shadow-hover); }
+.module-card .mod-icon{ font-size:1.8rem; margin-bottom:0.5rem; }
+.module-card h4{ font-family:var(--font-zcool); font-size:1.05rem; margin-bottom:0.4rem; }
+.module-card p{ font-size:0.85rem; color:var(--ink-light); line-height:1.5; }
+.module-card .mod-tag{
+  display:inline-block; font-size:0.7rem; padding:2px 10px; border-radius:50px;
+  margin-top:0.5rem; font-weight:700;
+}
+
+/* === Pitfall === */
+.pitfall-list{ display:grid; grid-template-columns:1fr; gap:0.8rem; }
+.pitfall-item{
+  display:flex; gap:0.8rem; align-items:flex-start;
+  background:var(--coral-dim); border:2px solid var(--coral-light);
+  border-radius:var(--radius-sm); padding:0.8rem 1rem;
+}
+.pitfall-item .pf-icon{ font-size:1.3rem; flex-shrink:0; }
+.pitfall-item .pf-text{ font-size:0.88rem; line-height:1.6; }
+.pitfall-item .pf-text strong{ color:var(--coral); }
+
+/* === Training Plan === */
+.training-box{
+  background:linear-gradient(135deg,var(--green-dim),var(--blue-dim));
+  border:2px dashed var(--green-light); border-radius:var(--radius);
+  padding:1.5rem 1.8rem;
+}
+.training-box h3{ font-family:var(--font-zcool); font-size:1.2rem; margin-bottom:0.8rem; color:var(--green); }
+.training-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:0.8rem; margin-top:1rem; }
+.training-item{
+  background:var(--bg2); border-radius:var(--radius-sm); padding:0.8rem 1rem;
+  text-align:center;
+}
+.training-item .day{ font-family:var(--font-zcool); font-size:0.9rem; color:var(--blue); }
+.training-item .task{ font-size:0.82rem; margin-top:4px; }
+
+/* === Progress Bar === */
+.progress-track{
+  background:var(--bg3); border-radius:50px; height:12px; overflow:hidden;
+  margin:0.5rem 0; border:2px solid var(--pink-light);
+}
+.progress-fill{
+  height:100%; border-radius:50px; width:0%;
+  background:linear-gradient(90deg,var(--pink),var(--blue));
+  transition:width 0.5s ease;
+}
+.progress-label{ font-size:0.8rem; color:var(--ink-light); text-align:center; margin-top:4px; }
+
+/* === Animations === */
+@keyframes floatDeco{
+  0%{ transform:translateY(100vh) rotate(0deg) scale(0.8); opacity:0; }
+  10%{ opacity:0.25; }
+  90%{ opacity:0.15; }
+  100%{ transform:translateY(-10vh) rotate(360deg) scale(1.1); opacity:0; }
+}
+.deco-layer{ position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+.deco-layer .deco{ position:absolute; font-size:20px; opacity:0; animation:floatDeco linear infinite; }
+
+@keyframes popIn{
+  0%{ transform:scale(0.8); opacity:0; }
+  100%{ transform:scale(1); opacity:1; }
+}
+.pop-in{ animation:popIn 0.4s ease; }
+
+/* === Responsive === */
+@media(max-width:640px){
+  .page-header h1{ font-size:1.8rem; }
+  .container{ padding:1rem 0.8rem 3rem; }
+  .step-item{ flex-direction:column; }
+  .step-num{ margin-bottom:0.5rem; }
+  .formula-chain{ flex-direction:column; }
+  .formula-chain .arrow{ transform:rotate(90deg); }
+}
+
+/* === Scrollbar === */
+::-webkit-scrollbar{ width:10px; height:10px; }
+::-webkit-scrollbar-track{ background:var(--bg3); border-radius:5px; }
+::-webkit-scrollbar-thumb{ background:linear-gradient(180deg,var(--pink),var(--blue)); border-radius:5px; }
+</style>
+  <link rel="stylesheet" href="./_shared/cyber-theme.css">
+</head>
+<body>
+
+<!-- Floating decorations -->
+<div class="deco-layer" id="decoLayer"></div>
+
+<!-- Back button -->
+<a href="javascript:void(0)" class="back-btn" onclick="goBack()">← 返回绘本馆</a>
+
+<div class="container">
+
+  <!-- ====== HEADER ====== -->
+  <div class="page-header">
+    <span class="badge">数学 · 公式推导</span>
+    <h1>高中数学公式推导方法</h1>
+    <p class="subtitle">拒绝死记，从定义出发，溯源推导每一个公式 ✨</p>
+  </div>
+
+  <!-- ====== CORE PRINCIPLE ====== -->
+  <div class="section">
+    <div class="section-title">
+      <span class="icon">🎯</span>
+      核心原则：拒绝死记，顺着定义+基础定理溯源推导
+    </div>
+    <div class="card">
+      <p>所有高中公式都不是凭空出现，源头只有三类：</p>
+      <div class="module-grid" style="margin-top:0.8rem;">
+        <div class="module-card">
+          <div class="mod-icon">📘</div>
+          <h4>课本原始定义</h4>
+          <p>如等差数列定义 aₙ - aₙ₋₁ = d</p>
+        </div>
+        <div class="module-card">
+          <div class="mod-icon">📐</div>
+          <h4>基础公理</h4>
+          <p>如平方非负 (√a - √b)² ≥ 0</p>
+        </div>
+        <div class="module-card">
+          <div class="mod-icon">🔗</div>
+          <h4>已学简单定理</h4>
+          <p>如勾股定理 → 余弦定理</p>
+        </div>
+      </div>
+      <div class="tip">💡 推导就是从已知推未知——不背结论，只推过程！</div>
+    </div>
+  </div>
+
+  <!-- ====== 5-STEP PROCESS ====== -->
+  <div class="section">
+    <div class="section-title">
+      <span class="icon">📋</span>
+      分步骤通用推导流程
+    </div>
+    <div class="step-flow">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>锁定公式源头，找"底层起点"</h4>
+          <p>拿到一个公式先问：它由哪几个基础定义/公式衍生？</p>
+          <div class="formula-box">
+            <span class="label">举例</span>
+            等差数列通项 ← 起点：定义 aₙ - aₙ₋₁ = d<br>
+            余弦定理 ← 起点：向量数量积 / 勾股定理<br>
+            圆锥曲线离心率 ← 起点：椭圆/双曲线第一定义
+          </div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>链式递推，一步步演算，不跳步</h4>
+          <p>从定义出发逐层代入，归纳规律。全程只用定义推演，不用提前背结论。</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>普适化抽象</h4>
+          <p>不要只代题目数字，用字母常量推导。推导出来的通用结果就是二级结论，比背结论理解更深。</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h4>反向推导 + 边界验证</h4>
+          <p>正向推完尝试反向变形；验证特殊情况，记住公式适用前提（正负、定义域）。</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h4>推导后复盘，固化记忆</h4>
+          <p>每推完一个公式，闭眼默推一遍，卡住的地方就是薄弱点，反复推演2-3次，比抄写背诵记忆持久得多。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== INTERACTIVE DEMO 1: 等差数列 ====== -->
+  <div class="section">
+    <div class="section-title">
+      <span class="icon">🔢</span>
+      交互演示：等差数列通项公式推导
+    </div>
+    <div class="demo-container">
+      <div class="demo-header">
+        <h3>🔄 链式递推演示</h3>
+        <div class="demo-tabs">
+          <div class="demo-tab active" data-demo="arithmetic" onclick="switchDemo('arithmetic')">等差数列</div>
+          <div class="demo-tab" data-demo="inequality" onclick="switchDemo('inequality')">基本不等式</div>
+          <div class="demo-tab" data-demo="trig" onclick="switchDemo('trig')">三角二倍角</div>
+          <div class="demo-tab" data-demo="derivative" onclick="switchDemo('derivative')">导数定义</div>
+        </div>
+      </div>
+      <div class="demo-content" id="demoContent">
+        <!-- Dynamic content injected by JS -->
+      </div>
+      <div class="controls">
+        <button class="btn btn-primary" id="stepBtn" onclick="nextStep()">▶ 下一步推导</button>
+        <button class="btn" onclick="resetDemo()">↻ 重新推导</button>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+      <div class="progress-label" id="progLabel">进度：0%</div>
+    </div>
+  </div>
+
+  <!-- ====== INTERACTIVE DEMO 2: Canvas 可视化 ====== -->
+  <div class="section">
+    <div class="section-title">
+      <span class="icon">🎨</span>
+      公式可视化：基本不等式几何意义
+    </div>
+    <div class="demo-container">
+      <div class="demo-header">
+        <h3>📐 a + b ≥ 2√(ab) 几何演示</h3>
+      </div>
+      <div class="canvas-wrapper">
+        <canvas id="ineqCanvas" width="420" height="320"></canvas>
+      </div>
+      <div class="controls">
+        <label style="font-size:0.85rem;font-weight:600;color:var(--ink-light);">a = </label>
+        <input type="range" id="sliderA" min="1" max="10" value="4" step="0.5" style="width:120px;"
+          oninput="updateIneqCanvas()">
+        <span id="valA" style="font-size:0.9rem;font-weight:700;color:var(--pink);min-width:30px;">4</span>
+        <label style="font-size:0.85rem;font-weight:600;color:var(--ink-light);">b = </label>
+        <input type="range" id="sliderB" min="1" max="10" value="6" step="0.5" style="width:120px;"
+          oninput="updateIneqCanvas()">
+        <span id="valB" style="font-size:0.9rem;font-weight:700;color:var(--blue);min-width:30px;">6</span>
+      </div>
+      <div class="formula-box" id="ineqResult">
+        <span class="label">实时计算</span>
+        a + b = 10 &nbsp;|&nbsp; 2√(ab) = 9.798 &nbsp;|&nbsp; 差值 = 0.202
+      </div>
+      <div class="tip">💡 当 a = b 时取等号。拖动滑块观察 a+b 始终 ≥ 2√(ab)！</div>
+    </div>
+  </div>
+
+  <!-- ====== MODULE EXAMPLES ====== -->
+  <div class="section">
+    <div class="section-title">
+      <span class="icon">📚</span>
+      分模块高频公式推导示例
+    </div>
+
+    <div class="card">
+      <h3>1️⃣ 三角类：以和差角为母公式</h3>
+      <p>以 sin(α+β) = sinα·cosβ + cosα·sinβ 为母公式：</p>
+      <div class="formula-chain">
+        <div class="node">sin(α+β)</div>
+        <div class="arrow">→ 令 β=α →</div>
+        <div class="node highlight">sin2α = 2sinα·cosα</div>
+      </div>
+      <p>余弦二倍角同理可得，不用单独死背。全部三角公式都可从和差角公式链条推出。</p>
+      <div class="formula-chain">
+        <div class="node">cos(α+β)</div>
+        <div class="arrow">→ 令 β=α →</div>
+        <div class="node highlight">cos2α = cos²α - sin²α</div>
+        <div class="arrow">→ 变形 →</div>
+        <div class="node">= 2cos²α - 1</div>
+        <div class="arrow">→ 变形 →</div>
+        <div class="node">= 1 - 2sin²α</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>2️⃣ 数列类：整套链条连贯推导</h3>
+      <div class="formula-chain">
+        <div class="node">等差定义 aₙ-aₙ₋₁=d</div>
+        <div class="arrow">→</div>
+        <div class="node">等差通项 aₙ=a₁+(n-1)d</div>
+        <div class="arrow">→ 倒序相加 →</div>
+        <div class="node highlight">等差求和 Sₙ = n(a₁+aₙ)/2</div>
+      </div>
+      <div class="formula-chain">
+        <div class="node">等比定义 aₙ/aₙ₋₁=q</div>
+        <div class="arrow">→</div>
+        <div class="node">等比通项 aₙ=a₁·qⁿ⁻¹</div>
+        <div class="arrow">→ 错位相减 →</div>
+        <div class="node highlight">等比求和 Sₙ = a₁(1-qⁿ)/(1-q)</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>3️⃣ 导数公式：从极限定义出发</h3>
+      <div class="formula-box">
+        <span class="label">导数极限定义</span>
+        f'(x) = lim<sub>Δx→0</sub> [f(x+Δx) - f(x)] / Δx
+      </div>
+      <p>由此定义可推导 xⁿ、ln x、sin x 等基础导数公式，再通过四则运算法则延伸复杂求导。</p>
+    </div>
+  </div>
+
+  <!-- ====== AVOID PITFALLS ====== -->
+  <div class="section">
+    <div class="section-title">
+      <span class="icon">⚠️</span>
+      避坑提醒
+    </div>
+    <div class="pitfall-list">
+      <div class="pitfall-item">
+        <div class="pf-icon">🚫</div>
+        <div class="pf-text"><strong>不要直接抄教辅的推导步骤</strong>，自己独立演算，跳步就会似懂非懂。</div>
+      </div>
+      <div class="pitfall-item">
+        <div class="pf-icon">🔁</div>
+        <div class="pf-text"><strong>推导≠一次完成</strong>，每次刷题用到公式就快速脑内复盘推导逻辑。</div>
+      </div>
+      <div class="pitfall-item">
+        <div class="pf-icon">🔍</div>
+        <div class="pf-text"><strong>粗心问题根源</strong>就是公式只记不推，条件模糊、变形易错，推导能从根源降低审题、变形失误。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== TRAINING PLAN ====== -->
+  <div class="section">
+    <div class="section-title">
+      <span class="icon">📅</span>
+      日常训练计划
+    </div>
+    <div class="training-box">
+      <h3>📆 坚持1个月，考场忘公式也能现场推出！</h3>
+      <p>每天选 2-3 个常用公式，限时独立推导，数学稳定性大幅提升。</p>
+      <div class="training-grid" id="trainingGrid">
+        <!-- Generated by JS -->
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ====== Deco Layer ====== */
+(function(){
+  const layer=document.getElementById('decoLayer');
+  const decos=['🌸','⭐','🎈','🦋','🎀','🍀','☁️','💗','🌈','✨','📐','📏'];
+  for(let i=0;i<14;i++){
+    const d=document.createElement('div');
+    d.className='deco'; d.textContent=decos[i%decos.length];
+    d.style.left=Math.random()*100+'%';
+    d.style.animationDuration=(8+Math.random()*8)+'s';
+    d.style.animationDelay=Math.random()*8+'s';
+    layer.appendChild(d);
+  }
+})();
+
+/* ====== Go Back ====== */
+function goBack(){
+  const from=localStorage.getItem('fromTab');
+  const scrollY=localStorage.getItem('fromScroll');
+  if(from){
+    localStorage.setItem('returnToTab',from);
+    localStorage.setItem('returnScroll',scrollY||'0');
+  }
+  window.location.href='./index.html';
+}
+
+/* ====== Demo System ====== */
+const DEMOS={
+  arithmetic:{
+    title:'等差数列通项公式推导',
+    steps:[
+      {tag:'定义',text:'等差数列定义：<span class="math">aₙ - aₙ₋₁ = d</span>（公差恒定）',type:''},
+      {tag:'第1步',text:'a₂ = a₁ + d',type:''},
+      {tag:'第2步',text:'a₃ = a₂ + d = (a₁ + d) + d = <span class="math">a₁ + 2d</span>',type:''},
+      {tag:'第3步',text:'a₄ = a₃ + d = (a₁ + 2d) + d = <span class="math">a₁ + 3d</span>',type:''},
+      {tag:'归纳',text:'观察规律：a₂=a₁+1d, a₃=a₁+2d, a₄=a₁+3d ...',type:'result'},
+      {tag:'结论',text:'<span class="math">aₙ = a₁ + (n-1)d</span> —— 等差数列通项公式',type:'conclusion'}
+    ]
+  },
+  inequality:{
+    title:'基本不等式 a+b ≥ 2√(ab) 推导',
+    steps:[
+      {tag:'起点',text:'底层依据：平方非负 <span class="math">(√a - √b)² ≥ 0</span>（a,b > 0）',type:''},
+      {tag:'展开',text:'(√a - √b)² = a - 2√(ab) + b ≥ 0',type:''},
+      {tag:'移项',text:'a + b - 2√(ab) ≥ 0',type:''},
+      {tag:'整理',text:'<span class="math">a + b ≥ 2√(ab)</span>',type:'result'},
+      {tag:'验证',text:'当 a = b 时：(√a - √a)² = 0，取等号 ✓',type:''},
+      {tag:'结论',text:'基本不等式 a+b ≥ 2√(ab)，当且仅当 a=b 时取等号',type:'conclusion'}
+    ]
+  },
+  trig:{
+    title:'三角二倍角公式推导',
+    steps:[
+      {tag:'母公式',text:'和差角公式：<span class="math">sin(α+β) = sinα·cosβ + cosα·sinβ</span>',type:''},
+      {tag:'令β=α',text:'sin(α+α) = sinα·cosα + cosα·sinα',type:''},
+      {tag:'化简',text:'sin2α = 2·sinα·cosα',type:''},
+      {tag:'结论',text:'<span class="math">sin2α = 2sinα·cosα</span> —— 二倍角正弦公式',type:'result'},
+      {tag:'同理',text:'cos(α+α) = cos²α - sin²α → cos2α = cos²α - sin²α',type:''},
+      {tag:'变形',text:'cos2α = 2cos²α - 1 = 1 - 2sin²α',type:'conclusion'}
+    ]
+  },
+  derivative:{
+    title:'导数公式推导（以 xⁿ 为例）',
+    steps:[
+      {tag:'定义',text:'导数极限定义：<span class="math">f\'(x) = lim<sub>Δx→0</sub> [f(x+Δx) - f(x)] / Δx</span>',type:''},
+      {tag:'代入',text:'f(x) = xⁿ → f(x+Δx) = (x+Δx)ⁿ',type:''},
+      {tag:'展开',text:'(x+Δx)ⁿ = xⁿ + n·xⁿ⁻¹·Δx + C(Δx)²  （二项式定理）',type:''},
+      {tag:'相减',text:'f(x+Δx) - f(x) = n·xⁿ⁻¹·Δx + C(Δx)²',type:''},
+      {tag:'求极限',text:'lim [n·xⁿ⁻¹·Δx + C(Δx)²] / Δx = n·xⁿ⁻¹',type:'result'},
+      {tag:'结论',text:'<span class="math">(xⁿ)\' = n·xⁿ⁻¹</span> —— 幂函数导数公式',type:'conclusion'}
+    ]
+  }
+};
+
+let currentDemo='arithmetic';
+let currentStep=0;
+
+function renderDemo(){
+  const d=DEMOS[currentDemo];
+  const content=document.getElementById('demoContent');
+  let html='<div style="text-align:center;margin-bottom:1rem;"><h3 style="font-family:var(--font-zcool);color:var(--pink);">'+d.title+'</h3></div>';
+  html+='<div class="deriv-steps active" id="derivSteps">';
+  d.steps.forEach((s,i)=>{
+    html+='<div class="deriv-step'+(s.type?' '+s.type:'')+'" id="step-'+i+'">';
+    html+='<span class="step-tag">'+s.tag+'</span>';
+    html+='<span class="step-text">'+s.text+'</span>';
+    html+='</div>';
+  });
+  html+='</div>';
+  content.innerHTML=html;
+  currentStep=0;
+  updateProgress();
+}
+
+function nextStep(){
+  const d=DEMOS[currentDemo];
+  if(currentStep<d.steps.length){
+    const el=document.getElementById('step-'+currentStep);
+    if(el){ el.classList.add('visible','pop-in'); }
+    currentStep++;
+    updateProgress();
+  }
+}
+
+function resetDemo(){
+  document.querySelectorAll('.deriv-step').forEach(el=>{
+    el.classList.remove('visible','pop-in');
+  });
+  currentStep=0;
+  updateProgress();
+}
+
+function updateProgress(){
+  const d=DEMOS[currentDemo];
+  const pct=Math.round((currentStep/d.steps.length)*100);
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progLabel').textContent='进度：'+pct+'%';
+  const btn=document.getElementById('stepBtn');
+  if(currentStep>=d.steps.length){
+    btn.textContent='✓ 推导完成';
+    btn.style.opacity='0.7';
+  } else {
+    btn.textContent='▶ 下一步推导';
+    btn.style.opacity='1';
+  }
+}
+
+function switchDemo(name){
+  currentDemo=name;
+  document.querySelectorAll('.demo-tab').forEach(t=>{
+    t.classList.toggle('active',t.dataset.demo===name);
+  });
+  renderDemo();
+}
+
+/* ====== Canvas: Basic Inequality Visualization ====== */
+function updateIneqCanvas(){
+  const a=parseFloat(document.getElementById('sliderA').value);
+  const b=parseFloat(document.getElementById('sliderB').value);
+  document.getElementById('valA').textContent=a;
+  document.getElementById('valB').textContent=b;
+
+  const canvas=document.getElementById('ineqCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // Background
+  const grad=ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,'#FFFDF7');
+  grad.addColorStop(1,'#FFF5EE');
+  ctx.fillStyle=grad;
+  ctx.fillRect(0,0,W,H);
+
+  // Title
+  ctx.fillStyle='#4A3B2E';
+  ctx.font='bold 16px "Noto Sans SC",sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText('基本不等式几何意义', W/2, 28);
+
+  // Draw two squares side by side: area a and area b
+  const maxVal=Math.max(a,b);
+  const squareSize=Math.min(120, 100/maxVal*5);
+  const sa=Math.max(20, squareSize*Math.sqrt(a/maxVal)*2);
+  const sb=Math.max(20, squareSize*Math.sqrt(b/maxVal)*2);
+
+  const cx1=W*0.28, cx2=W*0.72, cy=H*0.55;
+
+  // Square a (blue)
+  ctx.fillStyle='rgba(107,182,214,0.25)';
+  ctx.fillRect(cx1-sa/2, cy-sa/2, sa, sa);
+  ctx.strokeStyle='#6BB6D6';
+  ctx.lineWidth=2;
+  ctx.strokeRect(cx1-sa/2, cy-sa/2, sa, sa);
+  ctx.fillStyle='#6BB6D6';
+  ctx.font='bold 14px "Noto Sans SC",sans-serif';
+  ctx.fillText('面积 a = '+a, cx1, cy+sa/2+24);
+
+  // Square b (pink)
+  ctx.fillStyle='rgba(255,143,163,0.25)';
+  ctx.fillRect(cx2-sb/2, cy-sb/2, sb, sb);
+  ctx.strokeStyle='#FF8FA3';
+  ctx.lineWidth=2;
+  ctx.strokeRect(cx2-sb/2, cy-sb/2, sb, sb);
+  ctx.fillStyle='#FF8FA3';
+  ctx.fillText('面积 b = '+b, cx2, cy+sb/2+24);
+
+  // Square root geometric mean (green) - in the middle
+  const gm=Math.sqrt(a*b);
+  const sg=Math.max(20, squareSize*Math.sqrt(gm/maxVal)*2);
+  const cxm=W/2;
+  ctx.fillStyle='rgba(125,206,130,0.3)';
+  ctx.fillRect(cxm-sg/2, cy-sg/2, sg, sg);
+  ctx.strokeStyle='#7DCE82';
+  ctx.lineWidth=2;
+  ctx.setLineDash([4,3]);
+  ctx.strokeRect(cxm-sg/2, cy-sg/2, sg, sg);
+  ctx.setLineDash([]);
+  ctx.fillStyle='#7DCE82';
+  ctx.font='bold 12px "Noto Sans SC",sans-serif';
+  ctx.fillText('√(ab)='+gm.toFixed(2), cxm, cy+sg/2+20);
+
+  // Results
+  const sum=a+b;
+  const gm2=2*gm;
+  const diff=sum-gm2;
+  const isEqual=Math.abs(a-b)<0.01;
+
+  ctx.font='bold 13px "Noto Sans SC",sans-serif';
+  ctx.fillStyle='#4A3B2E';
+  ctx.fillText('a + b = '+sum.toFixed(2), W/2, H-50);
+  ctx.fillStyle='#7DCE82';
+  ctx.fillText('2√(ab) = '+gm2.toFixed(2), W/2, H-32);
+
+  if(isEqual){
+    ctx.fillStyle='#FF8FA3';
+    ctx.font='bold 14px "ZCOOL KuaiLe",sans-serif';
+    ctx.fillText('✨ a = b，取等号！', W/2, H-12);
+  } else {
+    ctx.fillStyle='#9B8B7A';
+    ctx.font='12px "Noto Sans SC",sans-serif';
+    ctx.fillText('差值 = '+diff.toFixed(3)+'（a+b > 2√ab）', W/2, H-12);
+  }
+
+  // Update formula box
+  const fb=document.getElementById('ineqResult');
+  fb.innerHTML='<span class="label">实时计算</span>a + b = '+sum.toFixed(2)+' &nbsp;|&nbsp; 2√(ab) = '+gm2.toFixed(2)+' &nbsp;|&nbsp; '+(isEqual?'取等号 ✓':'差值 = '+diff.toFixed(3));
+}
+
+/* ====== Training Plan ====== */
+(function(){
+  const plan=[
+    {day:'第1天',task:'等差通项 + 等差求和'},
+    {day:'第2天',task:'等比通项 + 等比求和'},
+    {day:'第3天',task:'sin(α+β) + 二倍角'},
+    {day:'第4天',task:'基本不等式 + 均值不等式'},
+    {day:'第5天',task:'余弦定理 + 正弦定理'},
+    {day:'第6天',task:'(xⁿ)\' + (sin x)\''},
+    {day:'第7天',task:'复盘本周全部推导'}
+  ];
+  const grid=document.getElementById('trainingGrid');
+  plan.forEach(p=>{
+    const div=document.createElement('div');
+    div.className='training-item';
+    div.innerHTML='<div class="day">'+p.day+'</div><div class="task">'+p.task+'</div>';
+    grid.appendChild(div);
+  });
+})();
+
+/* ====== Init ====== */
+renderDemo();
+updateIneqCanvas();
+</script>
+  <script src="./_shared/theme-manager.js"></script>
+</body>
+</html>

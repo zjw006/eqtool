@@ -129,7 +129,7 @@ header h1 {
 
 /* === Section === */
 section {
-  margin: 2.5rem 0;
+  margin: 2.5rem auto;
 }
 section h2 {
   color: #FF8FA3 !important;

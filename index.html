@@ -285,6 +285,8 @@
     .cat-probability .game-icon { border-color: var(--pink-light); background: var(--pink-dim); }
     .cat-app .game-icon { border-color: var(--coral-light); background: var(--coral-dim); }
     .cat-chinese .game-icon { border-color: var(--chinese-light); background: var(--chinese-dim); }
+    .cat-chem-energy .game-icon { border-color: var(--green-light); background: var(--green-dim); }
+    .cat-pick-theorem .game-icon { border-color: var(--yellow-light); background: var(--gold-light); }
 
     /* ===== GAME TAG (custom per-card override) ===== */
     .game-tag.is-game { background: var(--green-dim) !important; color: var(--green) !important; border: 1px solid var(--green-light); }
@@ -314,6 +316,412 @@
       .search-box { max-width: 100%; }
       .lang-switch { top: 10px; right: 10px; }
       .game-card:hover { transform: translateY(-4px); }
+      .settings-btn { top: 10px; right: 130px; }
+      /* 标签栏横向滚动 */
+      .subject-bar {
+        flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+        max-width: 100%; justify-content: flex-start;
+        scrollbar-width: none; -ms-overflow-style: none;
+      }
+      .subject-bar::-webkit-scrollbar { display: none; }
+      .sub-tab-bar {
+        flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+        max-width: 100%; max-height: none; justify-content: flex-start;
+        scrollbar-width: none; -ms-overflow-style: none;
+      }
+      .sub-tab-bar::-webkit-scrollbar { display: none; }
+      .subject-tab, .tab { flex-shrink: 0; }
+    }
+
+    /* ===== SETTINGS BUTTON ===== */
+    .settings-btn {
+      position: fixed; top: 16px; right: 145px; z-index: 200;
+      width: 38px; height: 38px;
+      background: rgba(255,255,255,0.85);
+      border: 2px solid var(--pink-light); border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s;
+      backdrop-filter: blur(10px); box-shadow: var(--shadow);
+      color: var(--text-dim);
+    }
+    .settings-btn .gear-icon {
+      transition: transform 0.4s ease;
+    }
+    .settings-btn:hover { background: var(--pink-dim); color: var(--pink); }
+    .settings-btn:hover .gear-icon { transform: rotate(120deg); }
+
+    /* ===== SETTINGS PANEL ===== */
+    .settings-overlay {
+      position: fixed; inset: 0; z-index: 300;
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
+      display: none; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .settings-overlay.show { display: flex; opacity: 1; }
+    .settings-panel {
+      background: var(--bg-card); border: 2px solid var(--border);
+      border-radius: var(--radius); padding: 28px;
+      width: min(440px, 92%); max-height: 80vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      transform: scale(0.92); transition: transform 0.3s;
+    }
+    .settings-overlay.show .settings-panel { transform: scale(1); }
+    .settings-panel h2 {
+      font-family: 'ZCOOL KuaiLe', sans-serif; font-size: 1.4rem;
+      color: var(--text); margin-bottom: 4px;
+    }
+    .settings-panel .sub { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 22px; }
+    .settings-section h3 {
+      font-size: 0.82rem; font-weight: 700; color: var(--text);
+      margin-bottom: 12px; letter-spacing: 1px;
+    }
+    .theme-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .theme-card {
+      border: 2px solid var(--border); border-radius: var(--radius-sm);
+      padding: 14px; cursor: pointer; transition: all 0.25s;
+      background: var(--bg-panel); text-align: center;
+    }
+    .theme-card:hover { border-color: var(--pink); transform: translateY(-2px); }
+    .theme-card.active { border-color: var(--pink); box-shadow: 0 0 0 3px var(--pink-dim); }
+    .theme-preview {
+      width: 100%; height: 48px; border-radius: 8px; margin-bottom: 10px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .theme-preview .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .theme-preview-cartoon { background: linear-gradient(135deg, #FFF8F0, #FFE5EC); }
+    .theme-preview-cartoon .dot:nth-child(1) { background: #FF8FA3; }
+    .theme-preview-cartoon .dot:nth-child(2) { background: #6BB6D6; }
+    .theme-preview-cartoon .dot:nth-child(3) { background: #FFD66B; }
+    .theme-preview-cyber { background: linear-gradient(135deg, #0d1117, #161b22); border: 1px solid #30363d; }
+    .theme-preview-cyber .dot:nth-child(1) { background: #f85196; }
+    .theme-preview-cyber .dot:nth-child(2) { background: #58a6ff; }
+    .theme-preview-cyber .dot:nth-child(3) { background: #3fb950; }
+    .theme-card h4 { font-size: 0.82rem; color: var(--text); margin-bottom: 2px; }
+    .theme-card p { font-size: 0.68rem; color: var(--text-dim); }
+    .settings-close {
+      margin-top: 20px; width: 100%; padding: 11px;
+      background: var(--pink); color: #fff; border: none;
+      border-radius: var(--radius-sm); font-family: inherit;
+      font-size: 0.88rem; font-weight: 700; cursor: pointer;
+      transition: all 0.25s; letter-spacing: 1px;
+    }
+    .settings-close:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    /* ===== TECH THEME (科技感增强版) ===== */
+    html[data-theme="cyber"] {
+      --bg: #0a0e14;
+      --bg-card: #0f1620;
+      --bg-panel: #141b26;
+      --pink: #58a6ff;
+      --pink-light: rgba(88,166,255,0.25);
+      --pink-dim: rgba(88,166,255,0.08);
+      --blue: #00d4ff;
+      --blue-light: rgba(0,212,255,0.2);
+      --blue-dim: rgba(0,212,255,0.06);
+      --green: #00ffa3;
+      --green-light: rgba(0,255,163,0.2);
+      --green-dim: rgba(0,255,163,0.06);
+      --purple: #a371f7;
+      --purple-light: rgba(163,113,247,0.2);
+      --purple-dim: rgba(163,113,247,0.06);
+      --yellow: #ffb454;
+      --yellow-light: rgba(255,180,84,0.2);
+      --yellow-dim: rgba(255,180,84,0.06);
+      --coral: #ff7b72;
+      --coral-light: rgba(255,123,114,0.2);
+      --coral-dim: rgba(255,123,114,0.06);
+      --chinese: #ff7b72;
+      --chinese-light: rgba(255,123,114,0.2);
+      --chinese-dim: rgba(255,123,114,0.06);
+      --text: #c9d1d9;
+      --text-dim: #6e7681;
+      --border: #1e2530;
+      --shadow: 0 4px 20px rgba(0,0,0,0.5);
+      --shadow-hover: 0 8px 30px rgba(0,212,255,0.15);
+    }
+
+    /* Tech grid background */
+    html[data-theme="cyber"] body {
+      background-color: #0a0e14;
+      background-image:
+        linear-gradient(rgba(88,166,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(88,166,255,0.04) 1px, transparent 1px),
+        radial-gradient(ellipse at 20% 0%, rgba(0,212,255,0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(163,113,247,0.05) 0%, transparent 50%);
+      background-size: 50px 50px, 50px 50px, 100% 100%, 100% 100%;
+    }
+    html[data-theme="cyber"] body::before {
+      content: ''; position: fixed; inset: 0; z-index: -2; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(88,166,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(88,166,255,0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    /* Scanline overlay */
+    html[data-theme="cyber"] body::after {
+      content: ''; position: fixed; inset: 0; z-index: 9998; pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,212,255,0.015) 2px,
+        rgba(0,212,255,0.015) 4px
+      );
+    }
+
+    /* Tech floating decorations instead of hiding */
+    html[data-theme="cyber"] .deco-layer { display: block !important; }
+    html[data-theme="cyber"] .deco-layer .deco {
+      color: rgba(88,166,255,0.15) !important;
+      font-family: 'JetBrains Mono', monospace !important;
+      opacity: 0.15 !important;
+    }
+
+    /* Header with tech glow */
+    html[data-theme="cyber"] header {
+      background: transparent;
+      position: relative;
+    }
+    html[data-theme="cyber"] header::after {
+      content: ''; position: absolute; left: 50%; bottom: 0;
+      width: 80%; height: 1px; transform: translateX(-50%);
+      background: linear-gradient(90deg, transparent, rgba(0,212,255,0.4), transparent);
+    }
+    html[data-theme="cyber"] .hero-glow {
+      display: block !important;
+      opacity: 0.08;
+      filter: blur(80px);
+    }
+    html[data-theme="cyber"] .hero-glow:nth-child(1) { background: #00d4ff; }
+    html[data-theme="cyber"] .hero-glow:nth-child(2) { background: #a371f7; }
+    html[data-theme="cyber"] .hero-glow:nth-child(3) { background: #00ffa3; }
+
+    /* Language switch & settings button */
+    html[data-theme="cyber"] .lang-switch {
+      background: rgba(15,22,32,0.9);
+      border-color: var(--border);
+      border: 1px solid var(--border);
+    }
+    html[data-theme="cyber"] .settings-btn {
+      background: rgba(15,22,32,0.9);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+    html[data-theme="cyber"] .settings-btn:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+      box-shadow: 0 0 12px rgba(0,212,255,0.3);
+    }
+    html[data-theme="cyber"] .settings-btn:hover .gear-icon {
+      transform: rotate(180deg);
+    }
+
+    /* Sys tag - tech style */
+    html[data-theme="cyber"] .sys-tag {
+      background: rgba(15,22,32,0.8);
+      border: 1px solid var(--border);
+      color: var(--blue);
+      font-family: 'JetBrains Mono', monospace;
+      border-radius: 4px;
+      letter-spacing: 2px;
+    }
+
+    /* Search box */
+    html[data-theme="cyber"] .search-box {
+      background: rgba(15,22,32,0.9); color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    html[data-theme="cyber"] .search-box:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(0,212,255,0.1), 0 0 16px rgba(0,212,255,0.1);
+    }
+    html[data-theme="cyber"] .search-box::placeholder {
+      color: var(--text-dim);
+    }
+
+    /* Subject bar */
+    html[data-theme="cyber"] .subject-bar {
+      background: rgba(15,22,32,0.8);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    html[data-theme="cyber"] .subject-tab {
+      color: var(--text-dim);
+      border-radius: 8px;
+    }
+    html[data-theme="cyber"] .subject-tab:hover {
+      color: var(--blue);
+      background: rgba(0,212,255,0.08);
+    }
+    html[data-theme="cyber"] .subject-tab.active {
+      background: linear-gradient(135deg, #00d4ff, #58a6ff);
+      color: #0a0e14;
+      font-weight: 700;
+      box-shadow: 0 0 16px rgba(0,212,255,0.3);
+    }
+
+    /* Sub tab bar */
+    html[data-theme="cyber"] .sub-tab-bar {
+      background: rgba(15,22,32,0.6);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    html[data-theme="cyber"] .tab {
+      color: var(--text-dim);
+      border-radius: 8px;
+    }
+    html[data-theme="cyber"] .tab:hover {
+      color: var(--blue);
+      background: rgba(0,212,255,0.08);
+    }
+    html[data-theme="cyber"] .tab.active {
+      background: rgba(0,212,255,0.15);
+      color: var(--blue);
+      border: 1px solid rgba(0,212,255,0.3);
+      box-shadow: 0 0 12px rgba(0,212,255,0.15);
+    }
+
+    /* Game cards - tech style */
+    html[data-theme="cyber"] .game-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Card top accent line - tech gradient */
+    html[data-theme="cyber"] .game-card::before {
+      background: linear-gradient(90deg, var(--blue), var(--purple));
+      opacity: 0;
+      transition: opacity 0.3s;
+      height: 2px;
+    }
+    html[data-theme="cyber"] .game-card:hover::before {
+      opacity: 1;
+    }
+    /* Card hover glow */
+    html[data-theme="cyber"] .game-card:hover {
+      border-color: rgba(0,212,255,0.4);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4), 0 0 20px rgba(0,212,255,0.1);
+      transform: translateY(-4px);
+    }
+    /* Card corner accent */
+    html[data-theme="cyber"] .game-card::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 40px; height: 40px;
+      background: linear-gradient(225deg, rgba(0,212,255,0.08) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    html[data-theme="cyber"] .game-card.disabled { opacity: 0.25; }
+
+    /* Game icon */
+    html[data-theme="cyber"] .game-icon {
+      background: rgba(0,212,255,0.06);
+      border: 1px solid rgba(0,212,255,0.15);
+      border-radius: 10px;
+    }
+
+    /* Card text */
+    html[data-theme="cyber"] .game-card h3 {
+      color: #e6edf3;
+    }
+    html[data-theme="cyber"] .game-card p {
+      color: #6e7681;
+    }
+
+    /* Header title colors */
+    html[data-theme="cyber"] header h1 .neon-cyan {
+      color: var(--blue);
+      text-shadow: 0 0 20px rgba(0,212,255,0.3);
+    }
+    html[data-theme="cyber"] header h1 .neon-magenta {
+      color: var(--purple);
+      text-shadow: 0 0 20px rgba(163,113,247,0.3);
+    }
+    html[data-theme="cyber"] header p {
+      color: var(--text-dim);
+    }
+
+    /* Stats bar */
+    html[data-theme="cyber"] .stat-item .num {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    html[data-theme="cyber"] .stat-item:nth-child(1) .num { color: var(--blue); }
+    html[data-theme="cyber"] .stat-item:nth-child(2) .num { color: var(--purple); }
+    html[data-theme="cyber"] .stat-item:nth-child(3) .num { color: var(--green); }
+
+    /* Language buttons */
+    html[data-theme="cyber"] .lang-btn {
+      color: var(--text-dim);
+      border-radius: 6px;
+    }
+    html[data-theme="cyber"] .lang-btn:hover {
+      color: var(--blue);
+      background: rgba(0,212,255,0.08);
+    }
+    html[data-theme="cyber"] .lang-btn.active {
+      background: linear-gradient(135deg, #00d4ff, #58a6ff);
+      color: #0a0e14;
+      font-weight: 700;
+      box-shadow: 0 0 12px rgba(0,212,255,0.25);
+    }
+
+    /* Settings panel - tech style */
+    html[data-theme="cyber"] .settings-overlay {
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+    }
+    html[data-theme="cyber"] .settings-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(0,212,255,0.08);
+      color: var(--text);
+    }
+    html[data-theme="cyber"] .settings-panel h2 { color: var(--blue); }
+    html[data-theme="cyber"] .settings-panel h3 { color: var(--text); }
+    html[data-theme="cyber"] .settings-panel h4 { color: var(--text); }
+    html[data-theme="cyber"] .settings-panel .sub { color: var(--text-dim); }
+    html[data-theme="cyber"] .theme-card {
+      border: 1px solid var(--border);
+      background: var(--bg-panel);
+    }
+    html[data-theme="cyber"] .theme-card.active {
+      border-color: var(--blue);
+      box-shadow: 0 0 16px rgba(0,212,255,0.15);
+    }
+    html[data-theme="cyber"] .theme-preview-cyber {
+      background: linear-gradient(135deg, #0a0e14, #141b26);
+      border: 1px solid var(--border);
+    }
+    html[data-theme="cyber"] .theme-preview-cyber .dot { background: var(--blue); }
+    html[data-theme="cyber"] .theme-preview-cartoon {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+    }
+    html[data-theme="cyber"] .settings-close {
+      background: linear-gradient(135deg, #00d4ff, #58a6ff);
+      color: #0a0e14;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 0 16px rgba(0,212,255,0.2);
+    }
+    html[data-theme="cyber"] .settings-close:hover {
+      box-shadow: 0 0 24px rgba(0,212,255,0.35);
+    }
+
+    /* Footer */
+    html[data-theme="cyber"] footer {
+      color: var(--text-dim);
+      border-top: 1px solid var(--border);
+      background: rgba(10,14,20,0.5);
+    }
+    html[data-theme="cyber"] footer::before {
+      content: ''; display: block; height: 1px; margin-bottom: 16px;
+      background: linear-gradient(90deg, transparent, rgba(0,212,255,0.2), transparent);
     }
   </style>
 </head>
@@ -327,6 +735,14 @@
   <button class="lang-btn active" data-lang="zh">中文</button>
   <button class="lang-btn" data-lang="en">EN</button>
 </div>
+
+<!-- Settings Button -->
+<button class="settings-btn" onclick="toggleSettings()" title="设置" aria-label="设置">
+  <svg class="gear-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+  </svg>
+</button>
 
 <header>
   <div class="hero-glow"></div>
@@ -352,19 +768,27 @@
   <!-- Subject Tabs (1st level) -->
   <div class="subject-bar" id="subjectBar">
     <button class="subject-tab active" data-subject="all" data-i18n="subjectAll">全部<span class="count" id="cntSubjectAll">(23)</span></button>
-    <button class="subject-tab" data-subject="math" data-i18n="subjectMath">数学<span class="count" id="cntSubjectMath">(22)</span></button>
+    <button class="subject-tab" data-subject="math" data-i18n="subjectMath">数学<span class="count" id="cntSubjectMath">(23)</span></button>
     <button class="subject-tab" data-subject="chinese" data-i18n="subjectChinese">语文<span class="count" id="cntSubjectChinese">(1)</span></button>
+    <button class="subject-tab" data-subject="chemistry" data-i18n="subjectChemistry">化学<span class="count" id="cntSubjectChemistry">(1)</span></button>
   </div>
 
   <!-- Sub-category Tabs (2nd level, shown when math is selected) -->
   <div class="sub-tab-bar hidden" id="subTabBar">
-    <button class="tab active" data-cat="all" data-i18n="tabAll">全部<span class="count" id="cntAll">(22)</span></button>
+    <button class="tab active" data-cat="all" data-i18n="tabAll">全部<span class="count" id="cntAll">(23)</span></button>
     <button class="tab" data-cat="algebra" data-i18n="tabAlgebra">代数<span class="count" id="cntAlgebra">(3)</span></button>
     <button class="tab" data-cat="function" data-i18n="tabFunction">函数<span class="count" id="cntFunction">(7)</span></button>
     <button class="tab" data-cat="geometry" data-i18n="tabGeometry">几何<span class="count" id="cntGeometry">(4)</span></button>
     <button class="tab" data-cat="sequence" data-i18n="tabSequence">数列<span class="count" id="cntSequence">(1)</span></button>
     <button class="tab" data-cat="probability" data-i18n="tabProbability">概率统计<span class="count" id="cntProbability">(6)</span></button>
-    <button class="tab" data-cat="app" data-i18n="tabApp">应用<span class="count" id="cntApp">(4)</span></button>
+    <button class="tab" data-cat="app" data-i18n="tabApp">应用<span class="count" id="cntApp">(5)</span></button>
+    <button class="tab" data-cat="pick-theorem" data-i18n="tabPickTheorem">皮克定理<span class="count" id="cntPickTheorem">(1)</span></button>
+  </div>
+
+  <!-- Chemistry Sub-category Tabs (2nd level, shown when chemistry is selected) -->
+  <div class="sub-tab-bar hidden" id="chemSubTabBar">
+    <button class="tab active" data-cat="all" data-i18n="tabAll">全部<span class="count" id="cntChemAll">(1)</span></button>
+    <button class="tab" data-cat="chem-energy" data-i18n="tabChemEnergy">化学能转化<span class="count" id="cntChemEnergy">(1)</span></button>
   </div>
 
   <!-- Cards Grid -->
@@ -378,6 +802,28 @@
       <div class="game-icon">🏅</div>
       <h3 data-i18n-card="title">菲尔兹奖理论 · 动画实验室</h3>
       <p data-i18n-card="desc">每项获奖理论，只挑一个最直观的应用，做成可以动手玩的动画。二十个可以动手玩的动画，亲眼看看抽象数学在干什么。</p>
+      <span class="game-tag" style="background: var(--coral-dim); color: var(--coral);">应用</span>
+    </a>
+
+    <!-- ========== MATH FORMULA DERIVATION ========== -->
+    <a class="game-card cat-app" href="./math-formula-derivation.html" data-cat="app" data-subject="math"
+       data-title-zh="高中数学公式推导方法" data-title-en="Math Formula Derivation Methods"
+       data-desc-zh="拒绝死记！从定义出发，溯源推导每一个公式。五步通用推导流程+四大模块交互演示（等差数列、基本不等式、三角二倍角、导数定义），Canvas可视化基本不等式几何意义。"
+       data-desc-en="Reject memorization! Derive every formula from definitions. 5-step process + 4 interactive demos (arithmetic sequence, basic inequality, double angle, derivatives) with Canvas visualization.">
+      <div class="game-icon">📐</div>
+      <h3 data-i18n-card="title">高中数学公式推导方法</h3>
+      <p data-i18n-card="desc">拒绝死记！从定义出发，溯源推导每一个公式。五步通用推导流程+四大模块交互演示（等差数列、基本不等式、三角二倍角、导数定义），Canvas可视化基本不等式几何意义。</p>
+      <span class="game-tag" style="background: var(--coral-dim); color: var(--coral);">应用</span>
+    </a>
+
+    <!-- ========== CALCULUS COMIC HISTORY ========== -->
+    <a class="game-card cat-app" href="./calculus-comic-history.html" data-cat="app" data-subject="math"
+       data-title-zh="微积分发展漫画史" data-title-en="Calculus History Comic"
+       data-desc-zh="用漫画形式讲述微积分两千年发展史：从芝诺悖论到阿基米德穷竭法，从牛顿莱布尼茨双雄并起到柯西魏尔斯特拉斯严格化，再到勒贝格鲁滨逊的现代升级。含4个Canvas交互动画（穷竭法逼近圆、割线变切线、黎曼和、接力赛时间轴）。"
+       data-desc-en="The 2000-year history of calculus told as a comic: from Zeno's paradox to Archimedes' method of exhaustion, Newton and Leibniz, Cauchy and Weierstrass rigorization, to Lebesgue and Robinson. Includes 4 interactive Canvas animations.">
+      <div class="game-icon">∫</div>
+      <h3 data-i18n-card="title">微积分发展漫画史</h3>
+      <p data-i18n-card="desc">用漫画形式讲述微积分两千年发展史：从芝诺悖论到阿基米德穷竭法，从牛顿莱布尼茨双雄并起到柯西魏尔斯特拉斯严格化，再到勒贝格鲁滨逊的现代升级。含4个Canvas交互动画（穷竭法逼近圆、割线变切线、黎曼和、接力赛时间轴）。</p>
       <span class="game-tag" style="background: var(--coral-dim); color: var(--coral);">应用</span>
     </a>
 
@@ -675,6 +1121,17 @@
       <span class="game-tag" style="background: var(--chinese-dim); color: var(--chinese);">语文</span>
     </a>
 
+    <!-- ========== JINLING AFFECTION ========== -->
+    <a class="game-card cat-chinese" href="./jinling-affection.html" data-cat="chinese" data-subject="chinese"
+       data-title-zh="乙女游戏金陵好感度" data-title-en="Jinling Affection Otome Game"
+       data-desc-zh="红楼梦乙女向互动游戏：黛玉线与宝钗线双剧情，通过对话选择推进剧情，好感度即理解度。每章穿插高考考点解析，在沉浸式故事中掌握金陵十二钗判词、人物性格分析与经典名场面。"
+       data-desc-en="Red Chamber Dream otome-style interactive game: dual storylines for Daiyu and Baochai. Dialogue choices drive the plot — affection level equals understanding. Each chapter includes college entrance exam point analysis.">
+      <div class="game-icon">🌸</div>
+      <h3 data-i18n-card="title">乙女游戏金陵好感度</h3>
+      <p data-i18n-card="desc">红楼梦乙女向互动游戏：黛玉线与宝钗线双剧情，通过对话选择推进剧情，好感度即理解度。每章穿插高考考点解析，在沉浸式故事中掌握金陵十二钗判词、人物性格分析与经典名场面。</p>
+      <span class="game-tag" style="background: var(--chinese-dim); color: var(--chinese);">语文</span>
+    </a>
+
     <a class="game-card cat-app" href="./quantum-educator/" data-cat="app" data-subject="math"
        data-title-zh="从量子纠缠看教育者的角色" data-title-en="Quantum Education"
        data-desc-zh="用量子物理的视角重新理解教育：纠缠、叠加、退相干……教育者如何像量子系统一样影响学生的一生。"
@@ -683,6 +1140,28 @@
       <h3 data-i18n-card="title">从量子纠缠看教育者的角色</h3>
       <p data-i18n-card="desc">用量子物理的视角重新理解教育：纠缠、叠加、退相干……教育者如何像量子系统一样影响学生的一生。</p>
       <span class="game-tag" style="background: var(--coral-dim); color: var(--coral);">应用</span>
+    </a>
+
+    <!-- ========== CHEM ENERGY CONVERSION ========== -->
+    <a class="game-card cat-chem-energy" href="./chem-energy-conversion.html" data-cat="chem-energy" data-subject="chemistry"
+       data-title-zh="化学能转化为热能和动能" data-title-en="Chemical Energy Conversion"
+       data-desc-zh="从食物消化到火箭推进 — 化学能转化为热能和动能的交互式探索。含食物消化动画（千卡计量）、燃烧反应粒子模拟、内燃机四冲程动画、暖手宝放热演示，全部以千卡(kcal)为计量单位。"
+       data-desc-en="From food digestion to rocket propulsion — interactive exploration of chemical energy conversion to thermal and kinetic energy. Includes food digestion animation (kcal), combustion particle simulation, four-stroke engine animation, hand warmer demo, all measured in kcal.">
+      <div class="game-icon">⚗</div>
+      <h3 data-i18n-card="title">化学能转化为热能和动能</h3>
+      <p data-i18n-card="desc">从食物消化到火箭推进 — 化学能转化为热能和动能的交互式探索。含食物消化动画（千卡计量）、燃烧反应粒子模拟、内燃机四冲程动画、暖手宝放热演示，全部以千卡(kcal)为计量单位。</p>
+      <span class="game-tag" style="background: var(--green-dim); color: var(--green);">化学</span>
+    </a>
+
+    <!-- ========== PICK THEOREM ========== -->
+    <a class="game-card cat-pick-theorem" href="./pick-theorem.html" data-cat="pick-theorem" data-subject="math"
+       data-title-zh="皮克定理动画课堂" data-title-en="Pick's Theorem Animation Class"
+       data-desc-zh="数一数格子点就能算面积！格点多边形动画演示（内部点I + 边界点B/2 − 1），含欧拉公式逐步剖分证明、鞋带公式验证，以及果农数树、铺地砖两个生活应用题。"
+       data-desc-en="Count lattice points to calculate area! Animated demo of Pick's theorem (I + B/2 − 1), with Euler formula triangulation proof, shoelace formula verification, and two real-life application problems.">
+      <div class="game-icon">📐</div>
+      <h3 data-i18n-card="title">皮克定理动画课堂</h3>
+      <p data-i18n-card="desc">数一数格子点就能算面积！格点多边形动画演示（内部点I + 边界点B/2 − 1），含欧拉公式逐步剖分证明、鞋带公式验证，以及果农数树、铺地砖两个生活应用题。</p>
+      <span class="game-tag" style="background: var(--gold-light); color: var(--gold);">几何</span>
     </a>
 
     <!-- ========== DISABLED ========== -->
@@ -703,6 +1182,34 @@
   <span data-i18n="footer">高中全学科绘本馆 // 翻开每一页都是新世界</span>
 </footer>
 
+<!-- Settings Overlay -->
+<div class="settings-overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
+  <div class="settings-panel">
+    <h2>设置</h2>
+    <div class="sub">自定义你的绘本馆体验</div>
+    <div class="settings-section">
+      <h3>页面风格</h3>
+      <div class="theme-options">
+        <div class="theme-card active" data-theme-value="cartoon" onclick="setTheme('cartoon')">
+          <div class="theme-preview theme-preview-cartoon">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+          <h4>2D卡通绘本风格</h4>
+          <p>温暖明亮 · 默认风格</p>
+        </div>
+        <div class="theme-card" data-theme-value="cyber" onclick="setTheme('cyber')">
+          <div class="theme-preview theme-preview-cyber">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+          <h4>科技风格</h4>
+          <p>暗色简洁 · 科技感</p>
+        </div>
+      </div>
+    </div>
+    <button class="settings-close" onclick="closeSettings()">完成</button>
+  </div>
+</div>
+
 <script>
 // ===== I18N DATA =====
 var i18n = {
@@ -717,6 +1224,7 @@ var i18n = {
     subjectAll: '全部',
     subjectMath: '数学',
     subjectChinese: '语文',
+    subjectChemistry: '化学',
     tabAll: '全部',
     tabAlgebra: '代数',
     tabFunction: '函数',
@@ -724,6 +1232,8 @@ var i18n = {
     tabSequence: '数列',
     tabProbability: '概率统计',
     tabApp: '应用',
+    tabPickTheorem: '皮克定理',
+    tabChemEnergy: '化学能转化',
     tagAlgebra: '代数',
     tagFunction: '函数',
     tagGeometry: '几何',
@@ -731,6 +1241,7 @@ var i18n = {
     tagProbability: '概率统计',
     tagApp: '应用',
     tagChinese: '语文',
+    tagChemEnergy: '化学能转化',
     footer: '高中全学科绘本馆 // 翻开每一页都是新世界',
     emptyState: '未找到匹配模块',
     emptyStateEn: 'NO MODULES FOUND'
@@ -746,6 +1257,7 @@ var i18n = {
     subjectAll: 'ALL',
     subjectMath: 'MATH',
     subjectChinese: 'CHINESE',
+    subjectChemistry: 'CHEMISTRY',
     tabAll: 'ALL',
     tabAlgebra: 'ALGEBRA',
     tabFunction: 'FUNCTION',
@@ -753,6 +1265,8 @@ var i18n = {
     tabSequence: 'SEQUENCE',
     tabProbability: 'PROBABILITY',
     tabApp: 'APP',
+    tabPickTheorem: "PICK'S THEOREM",
+    tabChemEnergy: 'CHEM ENERGY',
     tagAlgebra: 'ALGEBRA',
     tagFunction: 'FUNCTION',
     tagGeometry: 'GEOMETRY',
@@ -760,6 +1274,7 @@ var i18n = {
     tagProbability: 'PROBABILITY',
     tagApp: 'APP',
     tagChinese: 'CHINESE',
+    tagChemEnergy: 'CHEM ENERGY',
     footer: 'High School Picture Book // Every page is a new world',
     emptyState: 'NO MODULES FOUND',
     emptyStateEn: 'NO MODULES FOUND'
@@ -883,6 +1398,7 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
   var subjectTabs = document.querySelectorAll('.subject-tab');
   var subTabs = document.querySelectorAll('.tab');
   var subTabBar = document.getElementById('subTabBar');
+  var chemSubTabBar = document.getElementById('chemSubTabBar');
   var cards = document.querySelectorAll('.game-card');
   var grid = document.getElementById('gameGrid');
   var searchBox = document.getElementById('searchBox');
@@ -936,16 +1452,27 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
       currentSubject = tab.dataset.subject;
       currentCat = 'all';
 
-      // Show/hide sub-tab bar (only for math or all)
+      // Show/hide sub-tab bar (only for math or chemistry)
       if(currentSubject === 'math'){
         subTabBar.classList.remove('hidden');
+        chemSubTabBar.classList.add('hidden');
+      } else if(currentSubject === 'chemistry'){
+        subTabBar.classList.add('hidden');
+        chemSubTabBar.classList.remove('hidden');
       } else {
         subTabBar.classList.add('hidden');
+        chemSubTabBar.classList.add('hidden');
       }
 
       // Reset sub-tab active state
       subTabs.forEach(function(t){ t.classList.remove('active'); });
- subTabs[0].classList.add('active');
+      if(currentSubject === 'chemistry'){
+        var chemAllTab = chemSubTabBar.querySelector('.tab[data-cat="all"]');
+        if(chemAllTab) chemAllTab.classList.add('active');
+      } else {
+        var mathAllTab = subTabBar.querySelector('.tab[data-cat="all"]');
+        if(mathAllTab) mathAllTab.classList.add('active');
+      }
 
       filterCards();
     });
@@ -976,8 +1503,8 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
   });
 
   // ===== COUNT UPDATE =====
-  var subjectCounts = {all: 0, math: 0, chinese: 0};
-  var catCounts = {all: 0, algebra: 0, function: 0, geometry: 0, sequence: 0, probability: 0, app: 0, chinese: 0};
+  var subjectCounts = {all: 0, math: 0, chinese: 0, chemistry: 0};
+  var catCounts = {all: 0, algebra: 0, function: 0, geometry: 0, sequence: 0, probability: 0, app: 0, chinese: 0, 'chem-energy': 0, 'pick-theorem': 0};
   var enabledCats = {};
 
   cards.forEach(function(c){
@@ -1004,6 +1531,7 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
   document.getElementById('cntSubjectAll').textContent = '(' + subjectCounts.all + ')';
   document.getElementById('cntSubjectMath').textContent = '(' + subjectCounts.math + ')';
   document.getElementById('cntSubjectChinese').textContent = '(' + subjectCounts.chinese + ')';
+  document.getElementById('cntSubjectChemistry').textContent = '(' + subjectCounts.chemistry + ')';
 
   document.getElementById('cntAll').textContent = '(' + subjectCounts.math + ')';
   document.getElementById('cntAlgebra').textContent = '(' + catCounts.algebra + ')';
@@ -1012,6 +1540,10 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
   document.getElementById('cntSequence').textContent = '(' + catCounts.sequence + ')';
   document.getElementById('cntProbability').textContent = '(' + catCounts.probability + ')';
   document.getElementById('cntApp').textContent = '(' + catCounts.app + ')';
+  document.getElementById('cntPickTheorem').textContent = '(' + catCounts['pick-theorem'] + ')';
+
+  document.getElementById('cntChemAll').textContent = '(' + subjectCounts.chemistry + ')';
+  document.getElementById('cntChemEnergy').textContent = '(' + catCounts['chem-energy'] + ')';
 
   // ===== RESTORE TAB & SCROLL STATE (inside IIFE so filterCards is accessible) =====
   window.addEventListener('pageshow', function(e){
@@ -1032,8 +1564,13 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
       // Show/hide sub-tab bar
       if(currentSubject === 'math'){
         subTabBar.classList.remove('hidden');
+        chemSubTabBar.classList.add('hidden');
+      } else if(currentSubject === 'chemistry'){
+        subTabBar.classList.add('hidden');
+        chemSubTabBar.classList.remove('hidden');
       } else {
         subTabBar.classList.add('hidden');
+        chemSubTabBar.classList.add('hidden');
       }
 
       // Restore sub-tab
@@ -1045,8 +1582,13 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
       } else {
         currentCat = 'all';
         subTabs.forEach(function(t){ t.classList.remove('active'); });
-        var allTab = document.querySelector('.tab[data-cat="all"]');
-        if(allTab) allTab.classList.add('active');
+        if(currentSubject === 'chemistry'){
+          var chemAll = chemSubTabBar.querySelector('.tab[data-cat="all"]');
+          if(chemAll) chemAll.classList.add('active');
+        } else {
+          var mathAll = subTabBar.querySelector('.tab[data-cat="all"]');
+          if(mathAll) mathAll.classList.add('active');
+        }
       }
 
       filterCards();
@@ -1068,6 +1610,42 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
 
 // ===== FALLBACK: ensure i18n is applied after all scripts run =====
 setTimeout(function(){ var s = 'zh'; try { s = localStorage.getItem('mathos_lang') || 'zh'; } catch(e){} setLang(s); }, 50);
+
+// ===== THEME MANAGEMENT =====
+function toggleSettings(){
+  document.getElementById('settingsOverlay').classList.add('show');
+}
+function closeSettings(){
+  document.getElementById('settingsOverlay').classList.remove('show');
+}
+function setTheme(theme){
+  if(theme === 'cyber'){
+    document.documentElement.setAttribute('data-theme','cyber');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  document.querySelectorAll('.theme-card').forEach(function(c){
+    c.classList.toggle('active', c.getAttribute('data-theme-value') === theme);
+  });
+  try { localStorage.setItem('pb_theme', theme); } catch(e){}
+}
+
+// Init theme on load
+(function(){
+  var saved = 'cartoon';
+  try { saved = localStorage.getItem('pb_theme') || 'cartoon'; } catch(e){}
+  if(saved === 'cyber'){
+    document.documentElement.setAttribute('data-theme','cyber');
+    document.querySelectorAll('.theme-card').forEach(function(c){
+      c.classList.toggle('active', c.getAttribute('data-theme-value') === 'cyber');
+    });
+  }
+})();
+
+// Close settings on Escape
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') closeSettings();
+});
 </script>
 
 </body>
