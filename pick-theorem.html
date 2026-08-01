@@ -227,6 +227,7 @@
       <button id="play1">▶ 播放动画</button>
       <button id="next1" class="ghost">🔀 换一个图形</button>
       <button id="speed1" class="ghost">⏩ 加速</button>
+      <button id="coord1" class="ghost">📍 坐标标注</button>
     </div>
     <div class="counters">
       <div class="counter c-blue"><div class="num" id="nI">0</div><div class="lbl">内部点 I</div></div>
@@ -316,7 +317,7 @@ function toggleAns(id,btn){ const e=document.getElementById(id); const open=e.st
 
 /* ================= 第一部分画布 ================= */
 const cv1=document.getElementById('cv1'),ctx1=cv1.getContext('2d');
-const CELL=46, OX=60, OY=40;
+const CELL=46; let OX=60, OY=40;
 const SHAPES=[
  [[0,0],[6,0],[7,3],[4,5],[1,4]],
  [[0,2],[2,0],[6,1],[7,4],[3,5],[0,4]],
@@ -325,7 +326,7 @@ const SHAPES=[
  [[0,0],[8,0],[8,3],[5,5],[2,5],[0,3]],
  [[2,0],[6,0],[8,3],[6,5],[2,5],[0,2]],
 ];
-let poly,Ipts=[],Bpts=[],anim=null,shownI=0,shownB=0,speed=6;
+let poly,Ipts=[],Bpts=[],anim=null,shownI=0,shownB=0,speed=6,showCoords=false;
 
 function gcd(a,b){return b?gcd(b,a%b):a;}
 function boundaryPoints(p){const s=new Set();for(let i=0;i<p.length;i++){const a=p[i],b=p[(i+1)%p.length];const dx=b[0]-a[0],dy=b[1]-a[1];const g=gcd(Math.abs(dx),Math.abs(dy));for(let k=0;k<=g;k++)s.add((a[0]+dx/g*k)+','+(a[1]+dy/g*k));}return [...s].map(t=>t.split(',').map(Number));}
@@ -337,7 +338,11 @@ function setup1(){
  poly=SHAPES[Math.floor(Math.random()*SHAPES.length)];
  const bset=new Set(boundaryPoints(poly).map(q=>q[0]+','+q[1]));
  Bpts=boundaryPoints(poly); Ipts=[];
- let maxX=0,maxY=0; poly.forEach(q=>{maxX=Math.max(maxX,q[0]);maxY=Math.max(maxY,q[1]);});
+ let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+ poly.forEach(q=>{minX=Math.min(minX,q[0]);maxX=Math.max(maxX,q[0]);minY=Math.min(minY,q[1]);maxY=Math.max(maxY,q[1]);});
+ // 将多边形居中到画布中心
+ OX=Math.round(cv1.width/2-(minX+maxX)/2*CELL);
+ OY=Math.round(cv1.height/2-(minY+maxY)/2*CELL);
  for(let x=0;x<=maxX+1;x++)for(let y=0;y<=maxY+1;y++){
    if(bset.has(x+','+y))continue;
    if(inside(poly,x,y))Ipts.push([x,y]);
@@ -352,17 +357,35 @@ function setup1(){
  draw1();
 }
 function X(x){return OX+x*CELL;} function Y(y){return OY+y*CELL;}
-function drawGrid(c,w,h){c.strokeStyle='#ece7dd';c.lineWidth=1;for(let x=OX;x<w;x+=CELL){c.beginPath();c.moveTo(x,20);c.lineTo(x,h-20);c.stroke();}for(let y=OY;y<h;y+=CELL){c.beginPath();c.moveTo(20,y);c.lineTo(w-20,y);c.stroke();}
- c.fillStyle='#b8b2a7';for(let x=OX;x<w-30;x+=CELL)for(let y=OY;y<h-30;y+=CELL){c.beginPath();c.arc(x,y,2.2,0,7);c.fill();}
- // 坐标轴标注
+function drawGrid(c,w,h){
+ c.strokeStyle='#ece7dd';c.lineWidth=1;
+ // 网格线铺满整个画布（向左、向上延伸至画布边缘）
+ const sx=OX-Math.ceil((OX-22)/CELL)*CELL;
+ const sy=OY-Math.ceil((OY-22)/CELL)*CELL;
+ for(let x=sx;x<=w-18;x+=CELL){c.beginPath();c.moveTo(x,20);c.lineTo(x,h-20);c.stroke();}
+ for(let y=sy;y<=h-18;y+=CELL){c.beginPath();c.moveTo(20,y);c.lineTo(w-20,y);c.stroke();}
+ c.fillStyle='#b8b2a7';
+ for(let x=sx;x<=w-30;x+=CELL)for(let y=sy;y<=h-30;y+=CELL){c.beginPath();c.arc(x,y,2.2,0,7);c.fill();}
+ // 坐标轴标注（覆盖可见范围内的所有坐标值）
  c.fillStyle='#9b958a';c.font='11px sans-serif';c.textAlign='center';c.textBaseline='middle';
- for(let i=0;i<=12;i++){c.fillText(i,OX+i*CELL,OY-12);}
+ const xStart=-Math.ceil((OX-22)/CELL), xEnd=Math.floor((w-22-OX)/CELL);
+ const yStart=-Math.ceil((OY-22)/CELL), yEnd=Math.floor((h-22-OY)/CELL);
+ for(let i=xStart;i<=xEnd;i++){const px=OX+i*CELL;if(px<22||px>w-20)continue;c.fillText(i,px,OY-12);}
  c.textAlign='right';
- for(let i=0;i<=8;i++){c.fillText(i,OX-8,OY+i*CELL);}
+ for(let i=yStart;i<=yEnd;i++){const py=OY+i*CELL;if(py<20||py>h-20)continue;c.fillText(i,OX-8,py);}
  // 轴名
  c.fillStyle='#6b655c';c.font='bold 12px sans-serif';
- c.textAlign='left';c.fillText('x →',OX+12*CELL+8,OY-12);
- c.textAlign='center';c.fillText('y ↑',OX-25,OY-20);
+ c.textAlign='left';c.fillText('x →',w-35,OY-12);
+ c.textAlign='center';c.fillText('y ↑',OX-25,28);
+ // 坐标参数：在每个格点标注坐标值
+ if(showCoords){
+   c.fillStyle='rgba(107,101,92,.55)';c.font='9px sans-serif';c.textAlign='center';c.textBaseline='middle';
+   for(let i=xStart;i<=xEnd;i++)for(let j=yStart;j<=yEnd;j++){
+     const px=OX+i*CELL,py=OY+j*CELL;
+     if(px<25||px>w-25||py<25||py>h-25)continue;
+     c.fillText('('+i+','+j+')',px,py-12);
+   }
+ }
 }
 function draw1(){
  ctx1.clearRect(0,0,cv1.width,cv1.height); drawGrid(ctx1,cv1.width,cv1.height);
@@ -371,6 +394,11 @@ function draw1(){
  for(let i=0;i<shownI;i++){ctx1.fillStyle='#1971c2';ctx1.beginPath();ctx1.arc(X(Ipts[i][0]),Y(Ipts[i][1]),7,0,7);ctx1.fill();ctx1.fillStyle='#fff';ctx1.font='bold 9px sans-serif';ctx1.textAlign='center';ctx1.textBaseline='middle';ctx1.fillText(i+1,X(Ipts[i][0]),Y(Ipts[i][1]));}
  for(let i=0;i<shownB;i++){ctx1.fillStyle='#e8590c';ctx1.beginPath();ctx1.arc(X(Bpts[i][0]),Y(Bpts[i][1]),7,0,7);ctx1.fill();ctx1.fillStyle='#fff';ctx1.font='bold 9px sans-serif';ctx1.fillText(i+1,X(Bpts[i][0]),Y(Bpts[i][1]));}
  poly.forEach(q=>{ctx1.fillStyle='#2d2a26';ctx1.beginPath();ctx1.arc(X(q[0]),Y(q[1]),4.5,0,7);ctx1.fill();});
+ // 顶点坐标标注（开启坐标标注时显示）
+ if(showCoords){
+   ctx1.fillStyle='#2d2a26';ctx1.font='bold 11px sans-serif';ctx1.textAlign='center';ctx1.textBaseline='top';
+   poly.forEach(q=>{ctx1.fillText('('+q[0]+','+q[1]+')',X(q[0]),Y(q[1])+8);});
+ }
  // 单位面积说明
  ctx1.fillStyle='#6b655c';ctx1.font='13px sans-serif';ctx1.textAlign='right';ctx1.textBaseline='bottom';
  ctx1.fillText('每格 = 1 × 1 = 1 单位面积',cv1.width-16,cv1.height-6);
@@ -390,6 +418,7 @@ function step1(){
 document.getElementById('play1').onclick=()=>{ if(!anim){ if(shownI>=Ipts.length&&shownB>=Bpts.length){setup1();} anim=requestAnimationFrame(step1);} };
 document.getElementById('next1').onclick=setup1;
 document.getElementById('speed1').onclick=function(){ speed=speed===6?2:(speed===2?1:6); this.textContent=speed===6?'⏩ 加速':(speed===2?'⏩ 更快':'🐢 慢速'); };
+document.getElementById('coord1').onclick=function(){ showCoords=!showCoords; this.textContent=showCoords?'📍 隐藏坐标':'📍 坐标标注'; draw1(); };
 setup1();
 
 /* ================= 第二部分：欧拉公式剖分 ================= */

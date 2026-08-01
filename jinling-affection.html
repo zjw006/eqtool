@@ -250,6 +250,81 @@
     backdrop-filter:blur(3px); box-shadow:3px 3px 0 rgba(43,43,43,.18);
   }
   .back-to-home:hover { background:#9e2b25; color:#f5f0e6; border-color:#9e2b25; transform:translateY(-2px); }
+
+  /* ===== 响应式适配：窄屏手机 ===== */
+  @media (max-width: 640px) {
+    /* 标题页 */
+    #title h1 { font-size:clamp(28px,9vw,44px); letter-spacing:4px; }
+    #title h1::after { width:80px; margin:12px auto 0; }
+    #title h2 { font-size:14px; letter-spacing:4px; margin:12px 0 32px; }
+    .tbtn { width:min(260px,88%); font-size:16px; letter-spacing:4px; padding:12px; }
+    .tbtn.sub { font-size:14px; }
+    #title .tip { font-size:11px; letter-spacing:1px; bottom:14px; }
+
+    /* 章节卡 */
+    #chapterCard h3 { font-size:14px; letter-spacing:4px; padding:6px 14px; }
+    #chapterCard h2 { font-size:clamp(28px,9vw,40px); letter-spacing:6px; }
+    #chapterCard p { font-size:12px; margin-top:20px; }
+
+    /* 顶栏 HUD */
+    #hud { padding:8px 12px; gap:8px; flex-wrap:wrap; }
+    #chapterTag { font-size:12px; letter-spacing:1px; padding:4px 10px; }
+    #favorBox { font-size:12px; letter-spacing:1px; padding:4px 10px; }
+    #favorBar { width:80px; height:6px; margin-left:6px; margin-right:4px; }
+    #favorNum { font-size:12px; }
+
+    /* 对话框 */
+    #dlg { bottom:16px; width:min(94%,94%); }
+    #dlgName { font-size:14px; letter-spacing:2px; padding:5px 18px; min-width:90px; margin-left:10px; }
+    #dlgBox { padding:14px 16px 20px; font-size:15px; line-height:1.8; min-height:90px; }
+    #nextMark { font-size:12px; right:14px; bottom:8px; }
+
+    /* 选项 */
+    #choices { width:min(94%,94%); top:56px; bottom:16px; gap:8px; }
+    #choicePrompt { font-size:15px; letter-spacing:1px; padding:10px 14px; }
+    .cbtn { font-size:15px; padding:10px 16px; border-left-width:6px; }
+
+    /* 考点解析 */
+    #analysis { right:10px; left:10px; top:60px; width:auto; padding:14px 16px; }
+    #analysis h4 { font-size:14px; letter-spacing:2px; }
+    #analysis .favor-delta { font-size:13px; }
+    #analysis p { font-size:13px; line-height:1.7; }
+    #analysis button { font-size:14px; letter-spacing:2px; padding:8px; }
+
+    /* CG 名场面 */
+    #cgCaption { font-size:clamp(16px,5vw,22px); letter-spacing:4px; }
+    #cgHint { font-size:11px; letter-spacing:2px; }
+
+    /* 结局 */
+    #endCard { padding:24px 20px; }
+    #endCard .be { font-size:13px; letter-spacing:4px; }
+    #endCard h2 { font-size:clamp(26px,8vw,36px); letter-spacing:6px; }
+    #endCard .judge { font-size:14px; line-height:1.8; letter-spacing:1px; }
+    #endCard .sum { font-size:13px; line-height:1.7; padding:10px 14px; }
+
+    /* 立绘适配 */
+    .sprite { height:80%; margin-left:-180px; }
+    #spDaiyu { margin-left:-100px; }
+
+    /* 返回按钮 */
+    .back-to-home { font-size:13px; letter-spacing:2px; padding:6px 14px; top:10px; left:10px; }
+  }
+
+  /* ===== 超窄屏 (≤360px) ===== */
+  @media (max-width: 360px) {
+    #title h1 { font-size:24px; letter-spacing:2px; }
+    #title h2 { font-size:12px; letter-spacing:2px; margin:8px 0 24px; }
+    .tbtn { width:92%; font-size:14px; letter-spacing:3px; padding:10px; }
+    #chapterCard h2 { font-size:24px; letter-spacing:4px; }
+    #dlgBox { font-size:14px; line-height:1.7; }
+    #dlgName { font-size:13px; padding:4px 14px; min-width:80px; }
+    #choicePrompt { font-size:13px; padding:8px 12px; }
+    .cbtn { font-size:13px; padding:9px 14px; }
+    #endCard h2 { font-size:22px; letter-spacing:4px; }
+    .back-to-home { font-size:12px; padding:5px 10px; }
+    .sprite { height:75%; margin-left:-140px; }
+    #spDaiyu { margin-left:-80px; }
+  }
 </style>
 </head>
 <body>
@@ -675,6 +750,9 @@ const $ = id => document.getElementById(id);
 function showScreen(id){
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("show"));
   $(id).classList.add("show");
+  // 返回按钮仅在标题页显示
+  var backBtn=document.querySelector('.back-to-home');
+  if(backBtn) backBtn.style.display = (id==="title") ? '' : 'none';
   if(id==="album") renderAlbum();
 }
 function setFavor(v){

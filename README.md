@@ -2,7 +2,7 @@
 
 一套面向高中全学科的交互式可视化学习工具，用动画和可调参数让抽象概念变得温暖可触。
 
-**版本**: v2.3.0 (2026-08-01)
+**版本**: v2.4.0 (2026-08-02)
 
 ## 在线预览
 
@@ -28,6 +28,8 @@
 | `sequence-cyber.html` | 数列核心协议 | 赛博科技风格互动页面：序列探测游戏（等差/等比/斐波那契/平方/摆动数列辨识）、阶梯计费模拟器（等差数列可视化）、增长模拟器（等比数列复利/病毒传播，发散/收敛判定）、多米诺证明协议（数学归纳法三步演示）、求和方法选择器（等差/等比/裂项）；9 个真实应用案例（金融复利、房贷分期、用户增长模型、斐波那契与黄金分割、图像加密、放射性衰变、十二平均律、人口模型、信号处理 DFT）|
 | `complex-exponential.html` | 复指数函数可视化 | 欧拉公式 e^(iθ) 的几何意义与信号处理应用 |
 | `derivative-comic.html` | 导数英雄传 | 美式漫画风格互动导数学习页面：6 大章节 + 3 个定积分交互案例 + 18 个真实应用案例卡片（见下方详情） |
+| `math-formula-derivation.html` | 高中数学公式推导方法 | 拒绝死记！从定义出发，溯源推导每一个公式。五步通用推导流程 + 四大模块交互演示（等差数列、基本不等式、三角二倍角、导数定义），Canvas 可视化基本不等式几何意义 |
+| `calculus-comic-history.html` | 微积分发展漫画史 | 用漫画形式讲述微积分两千年发展史：从芝诺悖论到阿基米德穷竭法，从牛顿莱布尼茨双雄并起到柯西魏尔斯特拉斯严格化，再到勒贝格鲁滨逊的现代升级。含 4 个 Canvas 交互动画（穷竭法逼近圆、割线变切线、黎曼和、接力赛时间轴） |
 
 ### 一元二次
 
@@ -106,6 +108,12 @@
 | `transforms-app/` | 三大变换通信工程应用 (React SPA) | 傅里叶变换、拉普拉斯变换、Z变换在 5G OFDM、滤波器、语音处理中的动画演示 |
 | `convolution-life.html` | 数学卷积人生计算器 | 用卷积模拟人生事件叠加效应，交互式人生轨迹计算器 |
 
+### 化学
+
+| 文件 | 页面 | 说明 |
+|------|------|------|
+| `chem-energy-conversion.html` | 化学能转化为热能和动能 | 从食物消化到火箭推进 — 化学能转化为热能和动能的交互式探索。含食物消化动画（千卡计量）、燃烧反应粒子模拟、内燃机四冲程动画、暖手宝放热演示，全部以千卡 (kcal) 为计量单位。食物选择支持多选，所有属性实时联动更新 |
+
 ### 趣味与创意
 
 | 文件 | 页面 | 说明 |
@@ -114,6 +122,7 @@
 | `ancient-scholar-ai.html` | 古代状元如何看待AI | 王安石、文天祥、苏轼、范仲淹的 AI 策论 |
 | `gaokao-chinese-130plus.html` | 高考语文130+提分攻略 | 起点定位→五大考情趋势→四大提分模块（古诗文/现代文阅读/作文/语用）→提分路径→全年四阶段规划→目标阶梯 |
 | `wenyan-fill-game.html` | 文言文填词游戏 | 2D 绘本风格游戏化文言文语法学习，19 篇高中必背经典，95 道填词题，覆盖判断句/被动句/倒装句/省略句四大句式类型 |
+| `jinling-affection.html` | 乙女游戏金陵好感度 | 红楼梦乙女向互动游戏：黛玉线与宝钗线双剧情，通过对话选择推进剧情，好感度即理解度。每章穿插高考考点解析，在沉浸式故事中掌握金陵十二钗判词、人物性格分析与经典名场面。立绘图片内嵌为 base64，适配窄屏手机 |
 | `classical-chinese/` | 文言文装叉指南 (React SPA) | 输入白话文，一键生成文言文金句，179+ 语料库 |
 | `quantum-educator/` | 从量子纠缠看教育者的角色 (React SPA) | 量子物理视角下的教育隐喻 |
 
@@ -127,12 +136,12 @@
 - **字体**: ZCOOL KuaiLe + Noto Sans SC + Quicksand (全局二次元绘本风格)
 - **样式**: 原生 CSS，CSS Variables 管理主题色，`_shared/anime-cartoon-theme.css` 统一二次元绘本风格
 - **主题工具**: `_shared/anime-cartoon-tools.js` 自动注入字体、主题 CSS、浮动装饰和返回按钮
-- **i18n**: 首页 `index.html` 和全部 26 个数学子页面支持中英双语切换
+- **i18n**: 首页 `index.html` 和全部 30 个数学/化学子页面支持中英双语切换
   - 首页：`data-i18n` + `data-title-zh` / `data-title-en` + `setLang()` 函数
   - 子页面：`_shared/subpage-i18n.js` + `window.__PAGE_I18N__` 字典 + `data-i18n` 属性
   - 语言状态通过 `localStorage('mathos_lang')` 跨页面持久化与同步（storage 事件 + focus 事件）
   - 控制按钮统一在主页面，默认中文
-  - 语文相关子页面（`gaokao-chinese-130plus.html`、`ancient-scholar-ai.html`、`wenyan-fill-game.html`）不做中英文适配
+  - 语文相关子页面（`gaokao-chinese-130plus.html`、`ancient-scholar-ai.html`、`wenyan-fill-game.html`、`jinling-affection.html`）不做中英文适配
 - **美术风格**: 统一二次元绘本风格（粉/蓝/绿/紫/黄/珊瑚色系 + 圆角卡片 + 浮动装饰 + 暖色渐变背景）
 - **构建**: 无需构建，纯静态文件，直接部署
 
@@ -157,6 +166,8 @@ trigonometry-visualization/
 ├── quadratic-cases.html                # 一元二次函数应用案例
 ├── sequence-cyber.html                 # 数列核心协议 (赛博科技风格互动游戏)
 ├── derivative-comic.html               # 导数英雄传 (美式漫画风格互动导数学习，6 章节 + 3 交互案例)
+├── math-formula-derivation.html       # 高中数学公式推导方法 (五步流程 + 四大模块交互演示)
+├── calculus-comic-history.html         # 微积分发展漫画史 (两千年发展史 + 4 个 Canvas 交互动画)
 ├── stats-visualization.html            # 计算原理与概率统计
 ├── stats-cases.html                    # 高中统计实际案例
 ├── counting-adventure.html             # 计数原理冒险记 (绘本风格互动游戏)
@@ -171,7 +182,11 @@ trigonometry-visualization/
 ├── ancient-scholar-ai.html             # 古代状元如何看待AI
 ├── gaokao-chinese-130plus.html         # 高考语文130+提分攻略
 ├── wenyan-fill-game.html               # 文言文填词游戏 (2D绘本风格, 19篇/95题)
+├── jinling-affection.html              # 乙女游戏金陵好感度 (红楼梦互动游戏, 立绘内嵌base64)
+├── chem-energy-conversion.html         # 化学能转化为热能和动能 (食物消化/燃烧/内燃机/暖手宝)
 ├── chinese130-assets/                 # 语文130+攻略图片资源
+├── assets-jinling/                    # 金陵好感度立绘图片 (PNG)
+├── assets-jinling-compressed/         # 金陵好感度立绘图片 (WebP 压缩版)
 ├── _shared/
 │   ├── fonts/                          # Outfit, JetBrainsMono
 │   ├── js/echarts.min.js             # ECharts 5.5.1
@@ -202,6 +217,32 @@ trigonometry-visualization/
 ```
 
 ## 更新日志
+
+### v2.4.0 (2026-08-02)
+
+- **新增** 高中数学公式推导方法（`math-formula-derivation.html`）：拒绝死记，从定义出发溯源推导每一个公式
+  - 五步通用推导流程 + 四大模块交互演示（等差数列、基本不等式、三角二倍角、导数定义）
+  - Canvas 可视化基本不等式几何意义
+- **新增** 微积分发展漫画史（`calculus-comic-history.html`）：用漫画形式讲述微积分两千年发展史
+  - 从芝诺悖论到阿基米德穷竭法，从牛顿莱布尼茨双雄并起到柯西魏尔斯特拉斯严格化
+  - 4 个 Canvas 交互动画（穷竭法逼近圆、割线变切线、黎曼和、接力赛时间轴）
+- **新增** 乙女游戏金陵好感度（`jinling-affection.html`）：红楼梦乙女向互动游戏
+  - 黛玉线与宝钗线双剧情，通过对话选择推进剧情，好感度即理解度
+  - 每章穿插高考考点解析，掌握金陵十二钗判词、人物性格分析与经典名场面
+  - 立绘图片内嵌为 base64，消除路径依赖；窄屏手机 UI 适配（标题 clamp 响应式字号）
+  - 返回按钮仅在首页显示，进入游戏后自动隐藏
+- **新增** 化学能转化为热能和动能（`chem-energy-conversion.html`）：交互式化学能转化探索
+  - 食物消化动画（千卡计量）、燃烧反应粒子模拟、内燃机四冲程动画、暖手宝放热演示
+  - 食物选择改为多选模式，所有属性（能量条、ATP、温度、营养素图表、活动消耗对比线）实时联动更新
+- **优化** 皮克定理动画课堂全面响应式适配
+  - 页面内容居中显示，Canvas 添加 `aspect-ratio` 保持比例
+  - 多边形自动居中于演示框中心
+  - 新增坐标标注功能：可切换显示每个格点的坐标参数 `(x, y)`
+  - 添加 768px / 480px 两档媒体查询，适配平板和手机
+- **优化** 首页移动端响应式改进
+  - 数学标签下的分类标签在窄屏手机上支持横向滚动（`overflow-x: auto`），不再被截断
+  - 设置按钮移动至左上角，适配窄屏
+- **更新** README.md 补充 `math-formula-derivation.html`、`calculus-comic-history.html`、`jinling-affection.html`、`chem-energy-conversion.html` 四个页面的文档
 
 ### v2.3.0 (2026-08-01)
 
