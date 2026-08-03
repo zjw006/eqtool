@@ -2,7 +2,7 @@
 
 一套面向高中全学科的交互式可视化学习工具，用动画和可调参数让抽象概念变得温暖可触。
 
-**版本**: v2.4.0 (2026-08-02)
+**版本**: v2.7.0 (2026-08-03)
 
 ## 在线预览
 
@@ -80,6 +80,7 @@
 | `random-variable-adventure.html` | 随机变量及其分布（互动绘本） | 二次元乙女风格游戏化学习：条件概率与贝叶斯公式、离散型分布列、期望与方差、二项分布与超几何分布、正态分布；5 个 Canvas 互动可视化；6 大真实应用场景 |
 | `paired-data-detective.html` | 成对数据的统计分析（Q版侦探） | Q 版卡通游戏化学习：变量的相关关系与散点图、一元线性回归模型与最小二乘法、列联表与卡方独立性检验；3 个 Canvas 互动可视化；6 大真实应用场景 |
 | `university-science.html` | 一本院校理科就业分析 | 985/211 六大专业就业率、升学率、去向可视化 |
+| `bayes-theorem.html` | 贝叶斯定理动画课堂 | 从逆概率问题出发，八个部分交互式阐明贝叶斯定理：为何而生（Venn 动画）、公式参数（先验/似然/证据/后验）、三步推导动画、能做什么、重点讲解机器学习应用（朴素贝叶斯分类器、贝叶斯网络、贝叶斯优化、贝叶斯深度学习、贝叶斯推断与 MCMC、自动驾驶感知融合）、交互式医学诊断计算器（可调流行率/灵敏度/假阳性率）、朴素贝叶斯垃圾邮件过滤演示、8 个实际生活应用案例（司法 DNA 鉴定、天气预报、药物试验、信用卡风控、搜索引擎、疫情预测、网络安全、A/B 测试） |
 
 #### 导数英雄传详情
 
@@ -122,9 +123,20 @@
 | `ancient-scholar-ai.html` | 古代状元如何看待AI | 王安石、文天祥、苏轼、范仲淹的 AI 策论 |
 | `gaokao-chinese-130plus.html` | 高考语文130+提分攻略 | 起点定位→五大考情趋势→四大提分模块（古诗文/现代文阅读/作文/语用）→提分路径→全年四阶段规划→目标阶梯 |
 | `wenyan-fill-game.html` | 文言文填词游戏 | 2D 绘本风格游戏化文言文语法学习，19 篇高中必背经典，95 道填词题，覆盖判断句/被动句/倒装句/省略句四大句式类型 |
-| `jinling-affection.html` | 乙女游戏金陵好感度 | 红楼梦乙女向互动游戏：黛玉线与宝钗线双剧情，通过对话选择推进剧情，好感度即理解度。每章穿插高考考点解析，在沉浸式故事中掌握金陵十二钗判词、人物性格分析与经典名场面。立绘图片内嵌为 base64，适配窄屏手机 |
 | `classical-chinese/` | 文言文装叉指南 (React SPA) | 输入白话文，一键生成文言文金句，179+ 语料库 |
 | `quantum-educator/` | 从量子纠缠看教育者的角色 (React SPA) | 量子物理视角下的教育隐喻 |
+
+### 数学符号
+
+| 文件 | 页面 | 说明 |
+|------|------|------|
+| `math-symbols.html` | 数学符号的意义 | 探索数学符号的由来、含义、运用和有趣知识：第一部分时间线动画展示加减号、等号、乘除号、积分号、圆周率等关键符号的发明历程；第二部分按类别（基础运算、关系符号、代数、微积分、集合、希腊字母、逻辑）展示 70+ 符号，点击卡片查看详情；第三部分讲解等号哲学、变量约定、积分号结构、求和号用法等 8 个核心概念；第四部分 12 个符号冷知识（最古老的符号、被废除的符号、Unicode 数学符号区、不同大小的无穷等）；响应式设计，支持主题切换，含分类过滤功能 |
+
+### 物理
+
+| 文件 | 页面 | 说明 |
+|------|------|------|
+| `fermion-boson-comic.html` | 费米子 VS 玻色子 | 漫画风格量子粒子图鉴：宇宙间所有基本粒子只分两大阵营——费米子搭起万物的「身躯」，玻色子传递宇宙的「力量」。含 3D 原子模型（Three.js）、粒子英雄档案、泡利不相容原理动画演示。美式漫画风格（Boldonse + BigShoulders + RedHatMono 字体），左上角返回按钮 |
 
 ## 技术栈
 
@@ -136,12 +148,12 @@
 - **字体**: ZCOOL KuaiLe + Noto Sans SC + Quicksand (全局二次元绘本风格)
 - **样式**: 原生 CSS，CSS Variables 管理主题色，`_shared/anime-cartoon-theme.css` 统一二次元绘本风格
 - **主题工具**: `_shared/anime-cartoon-tools.js` 自动注入字体、主题 CSS、浮动装饰和返回按钮
-- **i18n**: 首页 `index.html` 和全部 30 个数学/化学子页面支持中英双语切换
+- **i18n**: 首页 `index.html` 和全部 31 个数学/化学子页面支持中英双语切换
   - 首页：`data-i18n` + `data-title-zh` / `data-title-en` + `setLang()` 函数
   - 子页面：`_shared/subpage-i18n.js` + `window.__PAGE_I18N__` 字典 + `data-i18n` 属性
   - 语言状态通过 `localStorage('mathos_lang')` 跨页面持久化与同步（storage 事件 + focus 事件）
   - 控制按钮统一在主页面，默认中文
-  - 语文相关子页面（`gaokao-chinese-130plus.html`、`ancient-scholar-ai.html`、`wenyan-fill-game.html`、`jinling-affection.html`）不做中英文适配
+  - 语文相关子页面（`gaokao-chinese-130plus.html`、`ancient-scholar-ai.html`、`wenyan-fill-game.html`）不做中英文适配
 - **美术风格**: 统一二次元绘本风格（粉/蓝/绿/紫/黄/珊瑚色系 + 圆角卡片 + 浮动装饰 + 暖色渐变背景）
 - **构建**: 无需构建，纯静态文件，直接部署
 
@@ -175,6 +187,8 @@ trigonometry-visualization/
 ├── random-variable-adventure.html      # 随机变量及其分布 (乙女风格互动游戏)
 ├── paired-data-detective.html          # 成对数据的统计分析 (Q版侦探游戏)
 ├── university-science.html             # 一本院校理科就业分析
+├── bayes-theorem.html                  # 贝叶斯定理动画课堂 (交互式, 8部分)
+├── math-symbols.html                   # 数学符号的意义 (符号由来/含义/运用/冷知识, 70+符号)
 ├── transforms-visualization.html       # 三大变换基础可视化
 ├── convolution-life.html               # 数学卷积人生计算器
 ├── trig-cases.html                     # 三角函数实际案例
@@ -182,14 +196,13 @@ trigonometry-visualization/
 ├── ancient-scholar-ai.html             # 古代状元如何看待AI
 ├── gaokao-chinese-130plus.html         # 高考语文130+提分攻略
 ├── wenyan-fill-game.html               # 文言文填词游戏 (2D绘本风格, 19篇/95题)
-├── jinling-affection.html              # 乙女游戏金陵好感度 (红楼梦互动游戏, 立绘内嵌base64)
 ├── chem-energy-conversion.html         # 化学能转化为热能和动能 (食物消化/燃烧/内燃机/暖手宝)
+├── fermion-boson-comic.html            # 费米子 VS 玻色子 (漫画风格量子粒子图鉴, Three.js 3D原子)
 ├── chinese130-assets/                 # 语文130+攻略图片资源
-├── assets-jinling/                    # 金陵好感度立绘图片 (PNG)
-├── assets-jinling-compressed/         # 金陵好感度立绘图片 (WebP 压缩版)
 ├── _shared/
-│   ├── fonts/                          # Outfit, JetBrainsMono
+│   ├── fonts/                          # Outfit, JetBrainsMono, Boldonse, BigShoulders, RedHatMono
 │   ├── js/echarts.min.js             # ECharts 5.5.1
+│   ├── js/three.min.js               # Three.js (费米子 VS 玻色子 3D 原子模型)
 │   ├── anime-cartoon-theme.css       # 全局二次元绘本主题
 │   ├── anime-cartoon-tools.js        # 主题注入工具（字体/CSS/装饰/返回按钮）
 │   └── subpage-i18n.js               # 子页面中英文切换工具
@@ -218,6 +231,43 @@ trigonometry-visualization/
 
 ## 更新日志
 
+### v2.7.0 (2026-08-03)
+
+- **新增** 物理学科页签 + 费米子 VS 玻色子（`fermion-boson-comic.html`）：漫画风格量子粒子图鉴
+  - 宇宙间所有基本粒子只分两大阵营：费米子搭起万物的「身躯」，玻色子传递宇宙的「力量」
+  - 含 3D 原子模型（Three.js）、粒子英雄档案、泡利不相容原理动画演示
+  - 美式漫画风格（Boldonse + BigShoulders + RedHatMono 字体），网点背景，蛛网角落装饰
+  - 左上角返回按钮，保持原页面美术风格和内容不变
+  - 引入 Three.js 库（`_shared/js/three.min.js`）和三款漫画字体
+- **更新** 首页导航新增「物理」学科页签，含「费米子 VS 玻色子」子分类
+- **更新** README.md 新增物理学科文档、项目结构和更新日志
+- **移除** 乙女游戏金陵好感度（`jinling-affection.html`）及其立绘资源目录 `assets-jinling/`、`assets-jinling-compressed/`，从首页导航和 README 中同步移除
+
+### v2.6.0 (2026-08-02)
+
+- **新增** 数学符号的意义（`math-symbols.html`）：探索数学符号的由来、含义、运用和有趣知识
+  - **第一部分**：符号的由来 — 时间线动画展示加减号、等号、乘除号、积分号、圆周率等关键符号的发明历程，含 10 张历史趣闻卡片
+  - **第二部分**：常用符号大全 — 按类别（基础运算、关系符号、代数、微积分、集合、希腊字母、逻辑）展示 70+ 符号，点击卡片查看详情（含义/示例/起源/故事），含分类过滤功能
+  - **第三部分**：符号如何运用 — 等号的哲学、变量的约定、积分号的结构、求和号的用法等 8 个核心概念
+  - **第四部分**：补充知识 — 12 个符号冷知识（最古老的符号、被废除的符号、Unicode 数学符号区、不同大小的无穷、欧拉恒等式、LaTeX 排版、中国古算符号等）
+  - 响应式设计，支持主题切换，纯原生 HTML/CSS/JS（Canvas 2D），无外部依赖
+- **更新** README.md 补充数学符号页面文档
+- **更新** 首页导航新增「数学符号的意义」页签
+
+### v2.5.0 (2026-08-02)
+
+- **新增** 贝叶斯定理动画课堂（`bayes-theorem.html`）：八个部分交互式阐明贝叶斯定理
+  - **第一部分**：为什么会有贝叶斯定理 — Venn 图动画展示逆概率问题，正向 P(B|A) 与逆向 P(A|B) 的本质区别
+  - **第二部分**：公式参数 — 后验概率、似然、先验概率、证据概率四张卡片详解
+  - **第三部分**：公式推导 — Canvas 逐步推导动画：条件概率定义 → 乘法法则 → 全概率公式 → 贝叶斯定理
+  - **第四部分**：贝叶斯定理能做什么 — 信念更新、医学诊断、证据评估、参数估计、机器学习、实时决策
+  - **第五部分**：交互式医学诊断演示 — 可调流行率/灵敏度/假阳性率三个滑块，实时计算后验概率，揭示「基础率忽视」直觉错误
+  - **第六部分**：朴素贝叶斯垃圾邮件过滤演示 — 点击关键词按钮模拟邮件内容，实时计算垃圾概率
+  - **第七部分**：重点讲解机器学习应用 — Canvas 推理框架动画 + 6 大应用卡片（朴素贝叶斯分类器、贝叶斯网络、贝叶斯优化、贝叶斯深度学习、贝叶斯推断与 MCMC、自动驾驶感知融合）
+  - **第八部分**：8 个实际生活应用案例 — 司法 DNA 鉴定、天气预报、药物临床试验、信用卡风控、搜索引擎推荐、流行病预测、网络安全入侵检测、A/B 测试
+  - 纯原生 HTML/CSS/JS（Canvas 2D），无外部依赖
+- **更新** README.md 补充贝叶斯定理页面文档
+
 ### v2.4.0 (2026-08-02)
 
 - **新增** 高中数学公式推导方法（`math-formula-derivation.html`）：拒绝死记，从定义出发溯源推导每一个公式
@@ -226,11 +276,6 @@ trigonometry-visualization/
 - **新增** 微积分发展漫画史（`calculus-comic-history.html`）：用漫画形式讲述微积分两千年发展史
   - 从芝诺悖论到阿基米德穷竭法，从牛顿莱布尼茨双雄并起到柯西魏尔斯特拉斯严格化
   - 4 个 Canvas 交互动画（穷竭法逼近圆、割线变切线、黎曼和、接力赛时间轴）
-- **新增** 乙女游戏金陵好感度（`jinling-affection.html`）：红楼梦乙女向互动游戏
-  - 黛玉线与宝钗线双剧情，通过对话选择推进剧情，好感度即理解度
-  - 每章穿插高考考点解析，掌握金陵十二钗判词、人物性格分析与经典名场面
-  - 立绘图片内嵌为 base64，消除路径依赖；窄屏手机 UI 适配（标题 clamp 响应式字号）
-  - 返回按钮仅在首页显示，进入游戏后自动隐藏
 - **新增** 化学能转化为热能和动能（`chem-energy-conversion.html`）：交互式化学能转化探索
   - 食物消化动画（千卡计量）、燃烧反应粒子模拟、内燃机四冲程动画、暖手宝放热演示
   - 食物选择改为多选模式，所有属性（能量条、ATP、温度、营养素图表、活动消耗对比线）实时联动更新
@@ -242,7 +287,7 @@ trigonometry-visualization/
 - **优化** 首页移动端响应式改进
   - 数学标签下的分类标签在窄屏手机上支持横向滚动（`overflow-x: auto`），不再被截断
   - 设置按钮移动至左上角，适配窄屏
-- **更新** README.md 补充 `math-formula-derivation.html`、`calculus-comic-history.html`、`jinling-affection.html`、`chem-energy-conversion.html` 四个页面的文档
+- **更新** README.md 补充 `math-formula-derivation.html`、`calculus-comic-history.html`、`chem-energy-conversion.html` 三个页面的文档
 
 ### v2.3.0 (2026-08-01)
 

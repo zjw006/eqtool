@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>贝叶斯定理动画课堂</title>
+  <style>
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./_shared/fonts/Outfit-Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./_shared/fonts/Outfit-Bold.ttf') format('truetype');
+      font-weight: 700;
+    }
+    @font-face {
+      font-family: 'JetBrainsMono';
+      src: url('./_shared/fonts/JetBrainsMono-Regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./_shared/anime-cartoon-theme.css">
+  <link rel="stylesheet" href="./_shared/cyber-theme.css">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family:"ZCOOL KuaiLe","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+      background:#f7f5f0; color:#2d2a26; min-height:100vh;
+      overflow-x:hidden;
+    }
+    /* ===== Header ===== */
+    header {
+      text-align:center; padding:48px 20px 32px;
+      background:linear-gradient(135deg,#eef6ff,#d9ecff);
+      border-bottom:4px solid #2d2a26;
+      max-width:100%;
+    }
+    header > * { max-width:960px; margin-left:auto; margin-right:auto; }
+    header h1 {
+      font-family:'ZCOOL KuaiLe','Noto Sans SC',sans-serif;
+      font-size:clamp(28px,5vw,52px); letter-spacing:4px;
+      -webkit-text-fill-color: initial; background: none;
+      color:#2d2a26; text-shadow:none;
+    }
+    header p { margin-top:12px; color:#6b655c; font-size:clamp(14px,2vw,16px); padding:0 16px; }
+    .formula-big {
+      display:inline-block; margin-top:18px; background:#fff;
+      border:3px solid #2d2a26; border-radius:14px; padding:14px 34px;
+      font-size:clamp(18px,3.5vw,26px); font-weight:700; box-shadow:5px 5px 0 #2d2a26;
+    }
+    .formula-big em { color:#9c36b5; font-style:normal; }
+    .formula-big b { color:#1971c2; }
+    .formula-big i { color:#e8590c; font-style:normal; }
+    .formula-big u { color:#2f9e44; text-decoration:none; }
+
+    /* ===== Section ===== */
+    section { width:100%; max-width:960px; margin:0 auto !important; padding:48px 20px; }
+    .card {
+      background:#fff; border:3px solid #2d2a26; border-radius:18px;
+      padding:28px; box-shadow:6px 6px 0 rgba(45,42,38,.15);
+    }
+    h2 { font-size:clamp(20px,3vw,26px); margin-bottom:8px; font-family:'ZCOOL KuaiLe','Noto Sans SC',sans-serif; }
+    h2 .tag {
+      display:inline-block; background:#2d2a26; color:#fff;
+      font-size:13px; border-radius:20px; padding:4px 14px;
+      vertical-align:middle; margin-right:10px;
+    }
+    .sub { color:#6b655c; margin-bottom:18px; line-height:1.7; }
+    canvas {
+      display:block; width:100%; height:auto; border:2px solid #e0dacd;
+      border-radius:12px; background:#fffdf8;
+    }
+    #cvVenn { aspect-ratio:900/480; }
+    #cvDerive { aspect-ratio:900/360; }
+    #cvMed { aspect-ratio:900/480; }
+    #cvSpam { aspect-ratio:900/420; }
+    #cvML { aspect-ratio:900/400; }
+
+    /* ===== Buttons ===== */
+    .btns { display:flex; gap:12px; flex-wrap:wrap; margin:16px 0; justify-content:center; }
+    button {
+      font-family:inherit; cursor:pointer; border:3px solid #2d2a26;
+      background:#74c0fc; border-radius:12px; padding:10px 22px;
+      font-size:15px; font-weight:700; box-shadow:3px 3px 0 #2d2a26;
+      transition:.15s;
+    }
+    button:hover { transform:translate(-1px,-1px); box-shadow:4px 4px 0 #2d2a26; }
+    button:active { transform:translate(2px,2px); box-shadow:none; }
+    button.ghost { background:#fff; }
+    button.green { background:#69db7c; }
+
+    /* ===== Parameter cards ===== */
+    .params { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-top:16px; }
+    .param {
+      border:3px solid #2d2a26; border-radius:14px; padding:16px;
+      background:#fffdf8; text-align:center;
+    }
+    .param .sym { font-size:28px; font-weight:800; font-family:'Quicksand','JetBrainsMono',monospace; }
+    .param .nm { font-size:14px; font-weight:700; margin-top:6px; }
+    .param .ds { font-size:13px; color:#6b655c; margin-top:6px; line-height:1.6; }
+    .p-purple .sym { color:#9c36b5; }
+    .p-blue .sym { color:#1971c2; }
+    .p-green .sym { color:#2f9e44; }
+    .p-orange .sym { color:#e8590c; }
+
+    /* ===== Sliders ===== */
+    .sliders { display:flex; flex-direction:column; gap:14px; margin:16px 0; }
+    .slider-row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .slider-row label { min-width:200px; font-size:14px; font-weight:700; }
+    .slider-row input[type=range] { flex:1; min-width:120px; accent-color:#1971c2; }
+    .slider-row .val { min-width:70px; text-align:right; font-family:'Quicksand',monospace; font-weight:700; font-size:15px; }
+
+    /* ===== Counters ===== */
+    .counters { display:flex; gap:14px; flex-wrap:wrap; margin-top:14px; justify-content:center; }
+    .counter {
+      flex:1; min-width:120px; border:3px solid #2d2a26;
+      border-radius:14px; padding:14px; text-align:center; background:#fffdf8;
+    }
+    .counter .num { font-size:clamp(24px,4vw,34px); font-weight:800; font-family:'Quicksand','JetBrainsMono',monospace; }
+    .counter .lbl { font-size:14px; color:#6b655c; margin-top:4px; }
+    .c-blue .num { color:#1971c2; }
+    .c-orange .num { color:#e8590c; }
+    .c-green .num { color:#2f9e44; }
+    .c-purple .num { color:#9c36b5; }
+
+    /* ===== Result box ===== */
+    .result {
+      margin-top:16px; padding:14px 18px; border-radius:12px;
+      background:#f1f8e9; border:2px dashed #2f9e44;
+      font-size:17px; line-height:1.8; min-height:56px;
+    }
+    .result.warn { background:#fff5f5; border-color:#c92a2a; }
+    .result .hl { color:#9c36b5; font-weight:800; }
+
+    /* ===== Steps ===== */
+    .steps-list { counter-reset:st; margin-top:16px; }
+    .steps-list li {
+      list-style:none; position:relative; padding:14px 14px 14px 58px;
+      border:2px solid #e0dacd; border-radius:12px; margin-bottom:12px;
+      background:#fffdf8; line-height:1.8;
+    }
+    .steps-list li::before {
+      counter-increment:st; content:counter(st);
+      position:absolute; left:14px; top:14px; width:30px; height:30px;
+      border-radius:50%; background:#2d2a26; color:#fff; font-weight:700;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .steps-list li.active { border-color:#9c36b5; background:#f8f0ff; }
+    code { background:#f1efe9; padding:1px 7px; border-radius:6px; font-family:'JetBrainsMono',ui-monospace,monospace; }
+
+    /* ===== Application cards ===== */
+    .app-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin-top:16px; }
+    .app-card {
+      border:3px solid #2d2a26; border-radius:14px; padding:18px;
+      background:#fffdf8; transition:.2s;
+    }
+    .app-card:hover { transform:translateY(-3px); box-shadow:4px 4px 0 rgba(45,42,38,.12); }
+    .app-card .icon { font-size:32px; margin-bottom:8px; }
+    .app-card h4 { font-size:16px; margin-bottom:8px; }
+    .app-card p { font-size:13px; color:#6b655c; line-height:1.7; }
+
+    /* ===== Legend ===== */
+    .legend { display:flex; gap:20px; margin-top:12px; font-size:14px; flex-wrap:wrap; justify-content:center; }
+    .dot { display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+
+    /* ===== Footer ===== */
+    footer {
+      text-align:center; padding:32px; color:#6b655c;
+      font-size:13px; border-top:2px solid #e0dacd;
+      max-width:960px; margin:0 auto;
+    }
+
+    /* ===== 响应式适配 ===== */
+    @media (max-width:768px) {
+      header { padding:36px 16px 24px; }
+      section { padding:32px 12px; }
+      .card { padding:18px 14px; }
+      .formula-big { padding:10px 20px; }
+      .counters { gap:8px; }
+      .counter { min-width:100px; padding:10px; }
+      .steps-list li { padding:12px 10px 12px 50px; }
+      .steps-list li::before { width:26px; height:26px; left:10px; top:12px; font-size:13px; }
+      .result { font-size:15px; padding:12px; }
+      .btns button { padding:8px 16px; font-size:13px; }
+      .params { grid-template-columns:1fr 1fr; }
+      .slider-row label { min-width:140px; }
+      .app-grid { grid-template-columns:1fr; }
+    }
+    @media (max-width:480px) {
+      header { padding:28px 12px 20px; }
+      header h1 { letter-spacing:2px; }
+      .formula-big { padding:8px 14px; letter-spacing:0; }
+      .counter { min-width:calc(50% - 6px); }
+      .legend { gap:10px; font-size:12px; }
+      .steps-list li { padding:10px 8px 10px 44px; line-height:1.6; }
+      .steps-list li::before { width:22px; height:22px; left:8px; top:10px; font-size:11px; }
+      .params { grid-template-columns:1fr; }
+      .slider-row { flex-direction:column; align-items:flex-start; }
+      .slider-row label { min-width:auto; }
+      .slider-row input[type=range] { width:100%; }
+    }
+
+    /* ===== Cyber theme overrides ===== */
+    html[data-theme="cyber"] body { background:#0a0e14 !important; color:#c9d1d9 !important; }
+    html[data-theme="cyber"] header { background:linear-gradient(135deg,#0f1620,#141b26) !important; border-bottom-color:#1e2530 !important; }
+    html[data-theme="cyber"] header h1 { color:#58a6ff !important; }
+    html[data-theme="cyber"] header p { color:#6e7681 !important; }
+    html[data-theme="cyber"] .formula-big { background:#0f1620 !important; border-color:#1e2530 !important; color:#c9d1d9 !important; box-shadow:5px 5px 0 #1e2530 !important; }
+    html[data-theme="cyber"] .formula-big em { color:#d2a8ff !important; }
+    html[data-theme="cyber"] .formula-big b { color:#58a6ff !important; }
+    html[data-theme="cyber"] .formula-big i { color:#ff7b72 !important; }
+    html[data-theme="cyber"] .formula-big u { color:#7ee787 !important; }
+    html[data-theme="cyber"] .card { background:#0f1620 !important; border-color:#1e2530 !important; box-shadow:6px 6px 0 rgba(0,0,0,.3) !important; }
+    html[data-theme="cyber"] h2 { color:#c9d1d9 !important; }
+    html[data-theme="cyber"] h2 .tag { background:#1f6feb !important; }
+    html[data-theme="cyber"] .sub { color:#6e7681 !important; }
+    html[data-theme="cyber"] canvas { background:#0a0e14 !important; border-color:#1e2530 !important; }
+    html[data-theme="cyber"] button { background:#141b26 !important; border-color:#1e2530 !important; color:#c9d1d9 !important; box-shadow:3px 3px 0 #1e2530 !important; }
+    html[data-theme="cyber"] button:hover { border-color:#58a6ff !important; color:#58a6ff !important; }
+    html[data-theme="cyber"] button.ghost { background:#0a0e14 !important; }
+    html[data-theme="cyber"] button.green { background:#0a3320 !important; }
+    html[data-theme="cyber"] .param { background:#0a0e14 !important; border-color:#1e2530 !important; color:#c9d1d9 !important; }
+    html[data-theme="cyber"] .param .ds { color:#6e7681 !important; }
+    html[data-theme="cyber"] .counter { background:#0a0e14 !important; border-color:#1e2530 !important; }
+    html[data-theme="cyber"] .counter .lbl { color:#6e7681 !important; }
+    html[data-theme="cyber"] .result { background:rgba(63,185,80,0.08) !important; border-color:#2f9e44 !important; color:#c9d1d9 !important; }
+    html[data-theme="cyber"] .result.warn { background:rgba(201,42,42,0.08) !important; border-color:#c92a2a !important; }
+    html[data-theme="cyber"] .steps-list li { background:#0a0e14 !important; border-color:#1e2530 !important; color:#c9d1d9 !important; }
+    html[data-theme="cyber"] .steps-list li::before { background:#1f6feb !important; }
+    html[data-theme="cyber"] .steps-list li.active { border-color:#d2a8ff !important; background:rgba(210,168,255,0.08) !important; }
+    html[data-theme="cyber"] .app-card { background:#0a0e14 !important; border-color:#1e2530 !important; color:#c9d1d9 !important; }
+    html[data-theme="cyber"] .app-card p { color:#6e7681 !important; }
+    html[data-theme="cyber"] footer { border-top-color:#1e2530 !important; color:#6e7681 !important; }
+    html[data-theme="cyber"] code { background:#0a0e14 !important; color:#c9d1d9 !important; border:1px solid #1e2530 !important; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>贝 叶 斯 定 理</h1>
+  <p>用新证据更新旧信念 —— 18世纪英国牧师 Thomas Bayes 留下的思维革命</p>
+  <div class="formula-big">
+    <em>P(A|B)</em> = <b>P(B|A)</b> · <u>P(A)</u> ÷ <i>P(B)</i>
+  </div>
+</header>
+
+<!-- ============ 第一部分：为什么会有贝叶斯定理 ============ -->
+<section id="why">
+  <div class="card">
+    <h2><span class="tag">第一部分</span>为什么会有贝叶斯定理？</h2>
+    <p class="sub">贝叶斯定理解决的是<b>「逆概率问题」</b>：我们知道 P(B|A)（原因导致结果的概率），但实际生活中我们往往需要反推 P(A|B)（看到结果后，原因的概率）。正是这种「从果推因」的需求，催生了贝叶斯定理。</p>
+    <canvas id="cvVenn" width="900" height="480"></canvas>
+    <div class="legend">
+      <span><i class="dot" style="background:#1971c2"></i>事件 A（原因/假设）</span>
+      <span><i class="dot" style="background:#e8590c"></i>事件 B（结果/证据）</span>
+      <span><i class="dot" style="background:#9c36b5"></i>交集 A∩B（原因+结果同时发生）</span>
+    </div>
+    <div class="btns">
+      <button id="playVenn">▶ 播放动画</button>
+      <button id="resetVenn" class="ghost">↺ 重置</button>
+    </div>
+    <ol class="steps-list" id="whySteps">
+      <li><b>正向思维：</b>如果一个人<b>已经感冒</b>（原因 A），那么他<b>打喷嚏</b>（结果 B）的概率 P(B|A) 很容易统计——观察感冒患者中有多少人打喷嚏即可。</li>
+      <li><b>逆向难题：</b>但现实中，我们看到一个人<b>打喷嚏</b>（已知结果 B），想知道他<b>到底有没有感冒</b>（反推原因 A）。这就是 P(A|B)，它无法直接观察得到。</li>
+      <li><b>核心洞察：</b>P(B|A) ≠ P(A|B)！感冒的人大部分打喷嚏（P(B|A)≈0.8），但打喷嚏的人不一定感冒（花粉、灰尘也会让人打喷嚏，P(A|B) 可能只有 0.3）。</li>
+      <li><b>贝叶斯的智慧：</b>贝叶斯定理就是连接这两座方向的桥梁。它告诉我们如何利用<b>已知的正向概率 P(B|A)</b>，加上<b>先验知识 P(A)</b>，计算出<b>逆向概率 P(A|B)</b>——从证据反推原因。</li>
+      <li><b>哲学意义：</b>贝叶斯定理不只是一个公式，它是一种<b>认知方式</b>：我们的信念不是非黑即白的，而是随着新证据不断更新的。先验 → 观察证据 → 后验 → 再作为新的先验 → 继续更新……这就是人类理性的本质。</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ 第二部分：公式参数 ============ -->
+<section id="params">
+  <div class="card">
+    <h2><span class="tag">第二部分</span>公式中每个参数是什么意思？</h2>
+    <p class="sub">贝叶斯定理 <code>P(A|B) = P(B|A) · P(A) / P(B)</code> 中的每一项都有明确的含义和角色。</p>
+    <div class="params">
+      <div class="param p-purple">
+        <div class="sym">P(A|B)</div>
+        <div class="nm">后验概率 Posterior</div>
+        <div class="ds">看到证据 B 之后，对假设 A 成立的<b>更新后</b>信念。这是我们想求的答案——「我观察到了打喷嚏，那感冒的概率是多少？」</div>
+      </div>
+      <div class="param p-orange">
+        <div class="sym">P(B|A)</div>
+        <div class="nm">似然 Likelihood</div>
+        <div class="ds">假设 A 为真时，观察到证据 B 的概率。「如果真的感冒了，打喷嚏的概率有多大？」</div>
+      </div>
+      <div class="param p-blue">
+        <div class="sym">P(A)</div>
+        <div class="nm">先验概率 Prior</div>
+        <div class="ds">看到证据之前，对假设 A 的<b>初始</b>信念。「不看任何症状，一个人感冒的概率是多少？」</div>
+      </div>
+      <div class="param p-green">
+        <div class="sym">P(B)</div>
+        <div class="nm">证据概率 Evidence</div>
+        <div class="ds">在所有可能情况下，观察到证据 B 的总概率。它起<b>归一化</b>作用，让后验概率落在 0~1 之间。</div>
+      </div>
+    </div>
+    <div class="result" style="margin-top:20px">
+      <b>一句话记忆：</b><br>
+      <span class="hl">后验概率</span> = <span style="color:#e8590c;font-weight:700">似然</span> × <span style="color:#1971c2;font-weight:700">先验</span> ÷ <span style="color:#2f9e44;font-weight:700">证据</span><br>
+      通俗版：<b>「我现在的判断」 = 「新证据支持多少」 × 「我原来怎么想」 ÷ 「这个证据有多常见」</b>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第三部分：公式推导 ============ -->
+<section id="derive">
+  <div class="card">
+    <h2><span class="tag">第三部分</span>公式是如何推导出来的？</h2>
+    <p class="sub">贝叶斯定理的推导只需要<b>条件概率的定义</b>和<b>乘法法则</b>，短短三步就能完成。</p>
+    <canvas id="cvDerive" width="900" height="360"></canvas>
+    <div class="btns">
+      <button id="playDerive">▶ 下一步</button>
+      <button id="resetDerive" class="ghost">↺ 重置</button>
+    </div>
+    <ol class="steps-list" id="deriveSteps">
+      <li><b>第一步：条件概率定义。</b>根据定义，在 B 发生的条件下 A 发生的概率为 <code>P(A|B) = P(A∩B) / P(B)</code>；同理 <code>P(B|A) = P(A∩B) / P(A)</code>。这两个式子都来自条件概率的基本定义。</li>
+      <li><b>第二步：乘法法则。</b>从上面两个式子分别解出 <code>P(A∩B)</code>：由第一个得 <code>P(A∩B) = P(A|B) · P(B)</code>；由第二个得 <code>P(A∩B) = P(B|A) · P(A)</code>。因为它们描述的是同一个交集概率，所以令它们相等：<code>P(A|B) · P(B) = P(B|A) · P(A)</code>。</li>
+      <li><b>第三步：全概率公式展开（可选）。</b>如果 P(B) 不能直接获得，可以用全概率公式展开：<code>P(B) = P(B|A)·P(A) + P(B|Ā)·P(Ā)</code>。这意味着证据 B 的总概率 = A 发生时看到 B 的概率 + A 不发生时也看到 B 的概率。</li>
+      <li><b>第四步：代入得贝叶斯定理。</b>将第三步的全概率展开代入第一步的条件概率公式，得到完整形式：<code>P(A|B) = P(B|A) · P(A) / [P(B|A)·P(A) + P(B|Ā)·P(Ā)]</code>。推导完成！✅</li>
+    </ol>
+    <div class="result">
+      <b>推导链总结：</b>条件概率定义 → 乘法法则 P(A∩B) 两种写法相等 → 全概率公式展开分母 → 代入整理 → 贝叶斯定理 ∎
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第四部分：贝叶斯定理能做什么 ============ -->
+<section id="capability">
+  <div class="card">
+    <h2><span class="tag">第四部分</span>贝叶斯定理能做什么？</h2>
+    <p class="sub">贝叶斯定理的核心能力是<b>「用证据更新信念」</b>——它贯穿了科学推理、决策分析、机器学习的方方面面。</p>
+    <div class="app-grid">
+      <div class="app-card">
+        <div class="icon">🔄</div>
+        <h4>信念更新</h4>
+        <p>从先验出发，每获得一条新证据，就计算后验概率。后验又成为下一次更新的先验，形成<b>迭代精化</b>的闭环。</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">🏥</div>
+        <h4>医学诊断</h4>
+        <p>已知某检测的灵敏度和特异度，加上疾病流行率（先验），计算<b>阳性结果下的真实患病概率</b>，避免假阳性恐慌。</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">🔍</div>
+        <h4>证据评估</h4>
+        <p>在司法鉴定中，DNA 匹配、指纹比对都可以用贝叶斯方法评估<b>嫌疑人有罪的后验概率</b>，量化证据强度。</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">📊</div>
+        <h4>参数估计</h4>
+        <p>贝叶斯推断将未知参数视为随机变量，给出<b>后验分布</b>而非单点估计，天然包含不确定性度量。</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">🤖</div>
+        <h4>机器学习</h4>
+        <p>朴素贝叶斯分类器、贝叶斯网络、贝叶斯优化……从垃圾邮件过滤到超参数搜索，贝叶斯方法无处不在。</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">🚗</div>
+        <h4>实时决策</h4>
+        <p>自动驾驶车辆持续用传感器数据更新对环境的信念：P(障碍物|传感器读数)，在不确定中做出最优决策。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第五部分：交互式医学诊断演示 ============ -->
+<section id="medical">
+  <div class="card">
+    <h2><span class="tag">第五部分</span>交互演示：医学检测中的贝叶斯</h2>
+    <p class="sub">某疾病的患病率为 <b>1%</b>。一种检测方法：真正患病者 99% 检测阳性（灵敏度），未患病者有 5% 误报阳性（假阳性率）。如果检测结果是<b>阳性</b>，你真正患病的概率是多少？<b>直觉答案是 95%？错！</b>用贝叶斯算算看。</p>
+    <canvas id="cvMed" width="900" height="480"></canvas>
+    <div class="sliders">
+      <div class="slider-row">
+        <label>疾病流行率 P(A) 先验</label>
+        <input type="range" id="prevSlider" min="0.001" max="0.5" step="0.001" value="0.01">
+        <span class="val" id="prevVal">1.0%</span>
+      </div>
+      <div class="slider-row">
+        <label>灵敏度 P(B|A) 真阳性率</label>
+        <input type="range" id="sensSlider" min="0.5" max="1" step="0.01" value="0.99">
+        <span class="val" id="sensVal">99%</span>
+      </div>
+      <div class="slider-row">
+        <label>假阳性率 P(B|¬A)</label>
+        <input type="range" id="fprSlider" min="0.001" max="0.3" step="0.001" value="0.05">
+        <span class="val" id="fprVal">5.0%</span>
+      </div>
+    </div>
+    <div class="counters">
+      <div class="counter c-purple"><div class="num" id="nPosterior">?</div><div class="lbl">后验概率 P(A|B)</div></div>
+      <div class="counter c-blue"><div class="num" id="nPrior">1%</div><div class="lbl">先验概率 P(A)</div></div>
+      <div class="counter c-orange"><div class="num" id="nLikelihood">99%</div><div class="lbl">似然 P(B|A)</div></div>
+      <div class="counter c-green"><div class="num" id="nEvidence">?</div><div class="lbl">证据 P(B)</div></div>
+    </div>
+    <div class="result" id="medResult">拖动滑块，观察参数变化如何影响后验概率。</div>
+    <div class="btns">
+      <button id="playMed">▶ 播放动画</button>
+      <button id="resetMed" class="ghost">↺ 恢复默认</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第六部分：垃圾邮件过滤演示 ============ -->
+<section id="spam">
+  <div class="card">
+    <h2><span class="tag">第六部分</span>交互演示：朴素贝叶斯垃圾邮件过滤</h2>
+    <p class="sub">朴素贝叶斯分类器是机器学习中最经典的文本分类算法之一。它假设词与词之间<b>条件独立</b>（「朴素」一词的由来），然后用贝叶斯定理计算邮件是垃圾邮件的概率。下面演示：输入一封含关键词的邮件，实时计算它是垃圾邮件的概率。</p>
+    <canvas id="cvSpam" width="900" height="420"></canvas>
+    <div class="sliders">
+      <div class="slider-row">
+        <label>先验：垃圾邮件占比 P(垃圾)</label>
+        <input type="range" id="spamPriorSlider" min="0.1" max="0.9" step="0.05" value="0.4">
+        <span class="val" id="spamPriorVal">40%</span>
+      </div>
+    </div>
+    <div class="btns">
+      <button id="toggleFree">🎁 免费</button>
+      <button id="toggleWin">🏆 中奖</button>
+      <button id="toggleClick">👆 点击链接</button>
+      <button id="toggleDeal">💼 限时优惠</button>
+      <button id="toggleUrgent">⚡ 紧急</button>
+      <button id="toggleMeeting">📅 会议</button>
+      <button id="resetSpam" class="ghost">↺ 清空</button>
+    </div>
+    <div class="counters">
+      <div class="counter c-purple"><div class="num" id="nSpamProb">?</div><div class="lbl">垃圾邮件概率</div></div>
+      <div class="counter c-green"><div class="num" id="nHamProb">?</div><div class="lbl">正常邮件概率</div></div>
+    </div>
+    <div class="result" id="spamResult">点击上方关键词按钮，模拟邮件内容，观察分类器如何判断。</div>
+  </div>
+</section>
+
+<!-- ============ 第七部分：贝叶斯在机器学习中的应用 ============ -->
+<section id="ml">
+  <div class="card">
+    <h2><span class="tag">第七部分</span>重点：贝叶斯定理在机器学习中的应用</h2>
+    <p class="sub">贝叶斯定理是机器学习最重要的数学基石之一。从最简单的分类器到最前沿的深度学习不确定性量化，贝叶斯思想贯穿始终。</p>
+    <canvas id="cvML" width="900" height="400"></canvas>
+    <div class="btns">
+      <button id="playML">▶ 播放动画</button>
+      <button id="resetML" class="ghost">↺ 重置</button>
+    </div>
+    <div class="app-grid" style="margin-top:20px">
+      <div class="app-card">
+        <div class="icon">📧</div>
+        <h4>朴素贝叶斯分类器</h4>
+        <p><b>原理：</b>假设特征条件独立，用贝叶斯定理计算 P(类别|特征)。<br><b>应用：</b>垃圾邮件过滤（准确率可达 99%+）、情感分析、新闻分类、文档自动归类。<br><b>优势：</b>训练快、可解释性强、对小数据集效果好。</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">🕸️</div>
+        <h4>贝叶斯网络</h4>
+        <p><b>原理：</b>用有向无环图（DAG）表示变量间的条件依赖关系，每个节点存储条件概率表。<br><b>应用：</b>医疗诊断系统（乳腺癌诊断 AUC 达 0.96）、基因调控网络、风险评估、故障诊断。<br><b>优势：</b>能处理不确定性、融合专家知识与数据。</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">🎯</div>
+        <h4>贝叶斯优化</h4>
+        <p><b>原理：</b>用高斯过程建模目标函数，通过采集函数（EI/UCB）选择下一个采样点，平衡探索与利用。<br><b>应用：</b>超参数调优（比网格搜索高效 10~100 倍）、AutoML、药物分子设计、材料科学。<br><b>优势：</b>评估代价高时尤其实用，少量迭代即可找到最优解。</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">🧠</div>
+        <h4>贝叶斯深度学习</h4>
+        <p><b>原理：</b>将神经网络权重视为概率分布而非确定值，通过变分推断或 MC Dropout 估计预测不确定性。<br><b>应用：</b>自动驾驶安全决策、医疗影像诊断、金融风控、Alzheimer 病早期检测。<br><b>优势：</b>知道「自己不知道什么」，避免过度自信的危险预测。</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">🔬</div>
+        <h4>贝叶斯推断与 MCMC</h4>
+        <p><b>原理：</b>马尔可夫链蒙特卡洛（MCMC）方法从后验分布中采样，近似计算复杂模型的参数分布。<br><b>应用：</b>贝叶斯回归、层级模型、生态学、心理学、流行病学模型。<br><b>优势：</b>给出参数的完整后验分布，天然包含不确定性。</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">🚗</div>
+        <h4>自动驾驶感知融合</h4>
+        <p><b>原理：</b>多传感器数据（摄像头、雷达、激光雷达）用贝叶斯融合，计算 P(障碍物|所有传感器读数)。<br><b>应用：</b>障碍物检测、路径规划、行人意图预测、风险评估。<br><b>优势：</b>单一传感器不可靠时，多源融合大幅提升置信度。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第八部分：实际生活应用案例 ============ -->
+<section id="cases">
+  <div class="card">
+    <h2><span class="tag">第八部分</span>贝叶斯定理的实际生活应用案例</h2>
+    <p class="sub">从法庭到诊室，从邮箱到方向盘，贝叶斯定理的应用远比你想象的广泛。</p>
+    <div class="app-grid">
+      <div class="app-card">
+        <div class="icon">⚖️</div>
+        <h4>司法 DNA 鉴定</h4>
+        <p>犯罪现场 DNA 与嫌疑人匹配概率为百万分之一。但贝叶斯提醒我们：先验概率不等于百万分之一，还需考虑其他证据（目击者指证准确率 70% 时后验大幅提升）。<b>检察官谬误</b>正是忽视了先验概率的经典错误。</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">🌡️</div>
+        <h4>天气预报</h4>
+        <p>「降水概率 70%」本质是贝叶斯后验：基于历史气象数据（先验）+ 当前卫星云图和气压数据（证据），计算明天降雨的概率（后验）。数值天气预报模型大量使用贝叶斯方法更新预测。</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">💊</div>
+        <h4>药物临床试验</h4>
+        <p>新药是否有效？贝叶斯方法允许在试验过程中<b>持续更新</b>有效性的后验概率，支持自适应试验设计——在数据足够时提前终止试验，比传统频率学派方法更灵活高效。</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">🛡️</div>
+        <h4>信用卡风控</h4>
+        <p>银行实时计算 P(欺诈|交易特征)。先验来自历史欺诈率，证据是交易金额、地点、时间偏差、消费模式异常度等。后验超过阈值则触发风控拦截，降低误报和漏报。</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">🔍</div>
+        <h4>搜索引擎与推荐</h4>
+        <p>Google 的 PageRank 早期包含贝叶斯思想。推荐系统中，P(用户喜欢|物品特征) 的计算本质是贝叶斯推断——用用户历史行为（先验）+ 物品特征（证据）预测偏好（后验）。</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">🦠</div>
+        <h4>流行病传播预测</h4>
+        <p>新冠疫情期间，贝叶斯模型用于估计感染率 R0、预测疫情高峰。先验来自早期数据，证据是每日新增检测数，后验给出带置信区间的预测，比单点预测更诚实可靠。</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">🛡️</div>
+        <h4>网络安全入侵检测</h4>
+        <p>入侵检测系统用贝叶斯方法计算 P(攻击|网络流量模式)。正常流量模式作为先验，异常端口访问、流量突增作为证据，后验超过阈值则触发告警。</p>
+      </div>
+      <div class="app-card">
+        <div class="icon">📊</div>
+        <h4>A/B 测试与决策</h4>
+        <p>互联网公司用贝叶斯 A/B 测试替代传统假设检验：持续更新 P(方案A更优|数据)，随时可以停止试验做决策，不必预设样本量，结果直接可解释为「A 比B 好的概率是 95%」。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  贝叶斯定理动画课堂 · 高中全学科绘本馆 · 纯原生 HTML/CSS/JS (Canvas 2D)，无外部依赖
+</footer>
+
+<script>
+// ============================================================
+// Utility
+// ============================================================
+function ease(t){ return t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; }
+function lerp(a,b,t){ return a+(b-a)*t; }
+function $(id){ return document.getElementById(id); }
+
+// ============================================================
+// Part 1: Venn Diagram — Why Bayes?
+// ============================================================
+(function(){
+  const cv=$('cvVenn'),c=cv.getContext('2d');
+  const W=900,H=480;
+  let r1=110,r2=110,cx1=320,cx2=580,cy=170;
+  let anim=0,timer=null,step=0;
+
+  function draw(){
+    c.clearRect(0,0,W,H);
+    const p=ease(Math.min(anim,1));
+
+    // Circle A
+    c.fillStyle='rgba(25,113,194,0.18)';
+    c.beginPath(); c.arc(cx1,cy,r1,0,7); c.fill();
+    c.strokeStyle='#1971c2'; c.lineWidth=3; c.stroke();
+
+    // Circle B (starts inside canvas, slides left into position)
+    const startX = W - r2 - 30; // start near right edge, inside canvas
+    const curCx2 = lerp(startX, cx2, p);
+    c.fillStyle='rgba(232,89,12,0.18)';
+    c.beginPath(); c.arc(curCx2,cy,r2,0,7); c.fill();
+    c.strokeStyle='#e8590c'; c.lineWidth=3; c.stroke();
+
+    // Labels
+    c.fillStyle='#1971c2'; c.font='bold 24px sans-serif'; c.textAlign='center';
+    c.fillText('A (原因/假设)', cx1, cy-r1-16);
+    c.fillStyle='#e8590c';
+    c.fillText('B (结果/证据)', curCx2, cy-r2-16);
+
+    // Intersection label
+    if(p>0.5){
+      const alpha=(p-0.5)*2;
+      c.fillStyle='rgba(156,54,181,'+alpha+')';
+      c.font='bold 16px sans-serif';
+      c.fillText('A∩B', (cx1+curCx2)/2, cy+5);
+      c.font='12px sans-serif';
+      c.fillStyle='rgba(107,101,92,'+alpha+')';
+      c.fillText('P(A∩B)=P(B|A)·P(A)', (cx1+curCx2)/2, cy+28);
+      c.fillText('=P(A|B)·P(B)', (cx1+curCx2)/2, cy+46);
+    }
+
+    // Forward & Reverse arrows (below circles, with enough spacing)
+    if(p>=1 && anim>1.0){
+      const aa=Math.min((anim-1.0)*3,1);
+      c.globalAlpha=aa;
+      // Forward arrow
+      c.strokeStyle='#1971c2'; c.lineWidth=2;
+      c.beginPath();
+      c.moveTo(cx1+30, cy+r1+25); c.lineTo(cx2-30, cy+r1+25);
+      c.stroke();
+      c.beginPath(); c.moveTo(cx2-40,cy+r1+20); c.lineTo(cx2-30,cy+r1+25); c.lineTo(cx2-40,cy+r1+30); c.stroke();
+      c.fillStyle='#1971c2'; c.font='13px sans-serif';
+      c.fillText('正向 P(B|A): 原因→结果', (cx1+cx2)/2, cy+r1+48);
+
+      // Reverse arrow
+      c.strokeStyle='#9c36b5'; c.lineWidth=2;
+      c.beginPath();
+      c.moveTo(cx2-30, cy+r1+70); c.lineTo(cx1+30, cy+r1+70);
+      c.stroke();
+      c.beginPath(); c.moveTo(cx1+40,cy+r1+65); c.lineTo(cx1+30,cy+r1+70); c.lineTo(cx1+40,cy+r1+75); c.stroke();
+      c.fillStyle='#9c36b5'; c.font='13px sans-serif';
+      c.fillText('逆向 P(A|B): 结果→原因 (贝叶斯!)', (cx1+cx2)/2, cy+r1+93);
+      c.globalAlpha=1;
+    }
+
+    // Equation at very bottom (separated from arrows)
+    if(p>=1 && anim>1.5){
+      const pa2=Math.min((anim-1.5)*2,1);
+      if(pa2>0){
+        c.globalAlpha=pa2;
+        c.fillStyle='#2d2a26'; c.font='bold 18px sans-serif';
+        c.fillText('P(A|B) · P(B) = P(B|A) · P(A)', W/2, H-20);
+        c.globalAlpha=1;
+      }
+    }
+  }
+
+  function activateSteps(){
+    const steps=document.querySelectorAll('#whySteps li');
+    steps.forEach((s,i)=>{
+      s.classList.toggle('active', i<step);
+    });
+  }
+
+  function loop(){
+    anim+=0.012;
+    if(anim<2.5){
+      // Update step counter
+      const newStep = Math.min(Math.floor(anim*2.5)+1, 5);
+      if(newStep!==step){ step=newStep; activateSteps(); }
+      draw();
+      requestAnimationFrame(loop);
+    } else {
+      step=5; activateSteps(); draw();
+    }
+  }
+
+  $('playVenn').onclick=()=>{
+    clearInterval(timer); anim=0; step=0; activateSteps();
+    timer=setInterval(loop,16);
+  };
+  $('resetVenn').onclick=()=>{
+    clearInterval(timer); anim=0; step=0; activateSteps();
+    c.clearRect(0,0,W,H); draw();
+  };
+
+  draw();
+})();
+
+// ============================================================
+// Part 3: Derivation Animation
+// ============================================================
+(function(){
+  const cv=$('cvDerive'),c=cv.getContext('2d');
+  const W=900,H=360;
+  let step=0;
+
+  const steps=[
+    {title:'条件概率定义', eq1:'P(A|B) = P(A∩B) / P(B)', eq2:'P(B|A) = P(A∩B) / P(A)'},
+    {title:'乘法法则', eq1:'P(A∩B) = P(A|B) · P(B)', eq2:'P(A∩B) = P(B|A) · P(A)'},
+    {title:'令两式相等', eq1:'P(A|B) · P(B) = P(B|A) · P(A)', eq2:''},
+    {title:'全概率公式展开 P(B)', eq1:'P(B) = P(B|A)·P(A) + P(B|¬A)·P(¬A)', eq2:''},
+    {title:'代入整理 → 贝叶斯定理', eq1:'P(A|B) = P(B|A)·P(A) / [P(B|A)·P(A) + P(B|¬A)·P(¬A)]', eq2:''}
+  ];
+
+  function draw(){
+    c.clearRect(0,0,W,H);
+
+    // Background boxes
+    for(let i=0;i<steps.length;i++){
+      const x=45, y=30+i*60, w=W-90, h=50;
+      const active = step>i;
+      const current = step===i+1; // current step is step-th (1-indexed)
+
+      c.fillStyle = current ? 'rgba(156,54,181,0.1)' : (active ? 'rgba(47,158,68,0.08)' : '#fffdf8');
+      c.fillRect(x,y,w,h);
+      c.strokeStyle = current ? '#9c36b5' : (active ? '#2f9e44' : '#e0dacd');
+      c.lineWidth = current ? 3 : 2;
+      c.strokeRect(x,y,w,h);
+
+      // Only show content for revealed steps
+      if(step<=i) continue;
+
+      // Step number
+      c.fillStyle = current ? '#9c36b5' : (active ? '#2f9e44' : '#6b655c');
+      c.font='bold 16px sans-serif'; c.textAlign='left';
+      c.fillText('Step '+(i+1), x+12, y+20);
+
+      // Title
+      c.fillStyle='#2d2a26'; c.font='bold 14px sans-serif';
+      c.fillText(steps[i].title, x+12, y+38);
+
+      // Equation
+      c.fillStyle = current ? '#9c36b5' : '#1971c2';
+      c.font='14px "JetBrainsMono",monospace'; c.textAlign='right';
+      c.fillText(steps[i].eq1, x+w-12, y+28);
+      if(steps[i].eq2){
+        c.fillStyle='#e8590c';
+        c.fillText(steps[i].eq2, x+w-12, y+44);
+      }
+    }
+
+    // Final result
+    if(step>=5){
+      c.fillStyle='#2f9e44';
+      c.font='bold 20px sans-serif'; c.textAlign='center';
+      c.fillText('✅ P(A|B) = P(B|A) · P(A) / P(B)  —— 贝叶斯定理得证！', W/2, H-20);
+    }
+  }
+
+  function activateSteps(){
+    const lis=document.querySelectorAll('#deriveSteps li');
+    lis.forEach((s,i)=>s.classList.toggle('active', i<step));
+  }
+
+  $('playDerive').onclick=()=>{
+    // Each click reveals one more step
+    if(step<5){
+      step++;
+      activateSteps();
+      draw();
+    } else {
+      // Reset after all steps shown
+      step=0; activateSteps(); draw();
+    }
+  };
+  $('resetDerive').onclick=()=>{
+    step=0; activateSteps();
+    c.clearRect(0,0,W,H); draw();
+  };
+
+  draw();
+})();
+
+// ============================================================
+// Part 5: Medical Diagnosis Interactive
+// ============================================================
+(function(){
+  const cv=$('cvMed'),c=cv.getContext('2d');
+  const W=900,H=480;
+
+  function calc(){
+    const prior=parseFloat($('prevSlider').value);
+    const sens=parseFloat($('sensSlider').value);
+    const fpr=parseFloat($('fprSlider').value);
+    const evidence=sens*prior + fpr*(1-prior);
+    const posterior=(sens*prior)/evidence;
+
+    $('nPosterior').textContent=(posterior*100).toFixed(1)+'%';
+    $('nPrior').textContent=(prior*100).toFixed(1)+'%';
+    $('nLikelihood').textContent=(sens*100).toFixed(0)+'%';
+    $('nEvidence').textContent=(evidence*100).toFixed(1)+'%';
+
+    // Result text
+    const r=$('medResult');
+    if(posterior<0.1){
+      r.className='result warn';
+      r.innerHTML='⚠️ <b>惊人结论：</b>即使检测阳性，真正患病的概率只有 <b style="color:#9c36b5">'+(posterior*100).toFixed(1)+'%</b>！<br>原因：疾病太罕见（先验仅 '+(prior*100).toFixed(1)+'%），假阳性人数远超真阳性。这就是<b>「基础率忽视」</b>——人类直觉最容易犯的统计错误！';
+    } else if(posterior<0.5){
+      r.className='result warn';
+      r.innerHTML='📊 后验概率 <b style="color:#9c36b5">'+(posterior*100).toFixed(1)+'%</b>：不到一半！虽然检测阳性，但假阳性仍占多数。<br>公式：P(A|B) = ('+(sens*100).toFixed(0)+'% × '+(prior*100).toFixed(1)+'%) / '+(evidence*100).toFixed(1)+'% = '+(posterior*100).toFixed(1)+'%';
+    } else {
+      r.className='result';
+      r.innerHTML='✅ 后验概率 <b style="color:#9c36b5">'+(posterior*100).toFixed(1)+'%</b>：阳性结果较可信。<br>公式：P(A|B) = ('+(sens*100).toFixed(0)+'% × '+(prior*100).toFixed(1)+'%) / '+(evidence*100).toFixed(1)+'% = '+(posterior*100).toFixed(1)+'%<br>当疾病越常见（先验越高）或假阳性率越低，后验就越接近检测结果本身。';
+    }
+
+    draw(prior,sens,fpr,posterior,evidence);
+  }
+
+  function draw(prior,sens,fpr,posterior,evidence){
+    c.clearRect(0,0,W,H);
+    const cx=W/2, cy=H/2;
+    const rA=120, rB=120;
+
+    // Size circles by probability
+    const sA=Math.sqrt(prior)*200+40;
+    const sB=Math.sqrt(evidence)*200+40;
+
+    // Positions
+    const ax=cx-140, bx=cx+140, ay=cy, by=cy;
+
+    // Circle A (disease)
+    c.fillStyle='rgba(25,113,194,0.15)';
+    c.beginPath(); c.arc(ax,ay,sA,0,7); c.fill();
+    c.strokeStyle='#1971c2'; c.lineWidth=3; c.stroke();
+    c.fillStyle='#1971c2'; c.font='bold 18px sans-serif'; c.textAlign='center';
+    c.fillText('患病 A', ax, ay-sA-14);
+    c.font='14px sans-serif'; c.fillStyle='#6b655c';
+    c.fillText('P(A)='+(prior*100).toFixed(1)+'%', ax, ay-sA+2);
+
+    // Circle B (test positive)
+    c.fillStyle='rgba(232,89,12,0.15)';
+    c.beginPath(); c.arc(bx,by,sB,0,7); c.fill();
+    c.strokeStyle='#e8590c'; c.lineWidth=3; c.stroke();
+    c.fillStyle='#e8590c'; c.font='bold 18px sans-serif';
+    c.fillText('检测阳性 B', bx, by-sB-14);
+    c.font='14px sans-serif'; c.fillStyle='#6b655c';
+    c.fillText('P(B)='+(evidence*100).toFixed(1)+'%', bx, by-sB+2);
+
+    // True positive (intersection)
+    const tp = sens*prior; // P(A∩B)
+    const tpRatio = tp/evidence; // = posterior
+    const ix=(ax+bx)/2, iy=cy;
+
+    // Draw intersection area
+    c.fillStyle='rgba(156,54,181,0.3)';
+    c.beginPath();
+    // Approximate intersection as ellipse
+    const intW = Math.min(sA,sB)*0.8*tpRatio;
+    const intH = Math.min(sA,sB)*0.7;
+    c.ellipse(ix,iy,intW,intH,0,0,7);
+    c.fill();
+    c.strokeStyle='#9c36b5'; c.lineWidth=2;
+    c.stroke();
+
+    c.fillStyle='#9c36b5'; c.font='bold 16px sans-serif';
+    c.fillText('真阳性', ix, iy-5);
+    c.font='13px sans-serif';
+    c.fillText('P(A∩B)='+(tp*100).toFixed(2)+'%', ix, iy+15);
+    c.fillText('占阳性 '+(posterior*100).toFixed(1)+'%', ix, iy+33);
+
+    // False positive area
+    const fp=fpr*(1-prior);
+    c.fillStyle='rgba(201,42,42,0.2)';
+    c.font='13px sans-serif'; c.textAlign='left';
+    c.fillText('假阳性: '+(fp*100).toFixed(2)+'%', bx+sB+10, by-10);
+    c.fillText('假阴性: '+((1-sens)*prior*100).toFixed(2)+'%', ax-sA-90, ay+40);
+    c.fillText('真阴性: '+((1-fpr)*(1-prior)*100).toFixed(2)+'%', ax-sA-90, ay+60);
+
+    // Formula at bottom
+    c.fillStyle='#2d2a26'; c.font='bold 16px sans-serif'; c.textAlign='center';
+    c.fillText('P(患病|阳性) = P(阳性|患病)·P(患病) / P(阳性)', cx, H-40);
+    c.fillStyle='#9c36b5'; c.font='bold 20px sans-serif';
+    c.fillText('= '+(sens*100).toFixed(0)+'% × '+(prior*100).toFixed(1)+'% / '+(evidence*100).toFixed(1)+'% = '+(posterior*100).toFixed(1)+'%', cx, H-15);
+  }
+
+  // Sliders
+  $('prevSlider').oninput=()=>{$('prevVal').textContent=(parseFloat($('prevSlider').value)*100).toFixed(1)+'%';calc();};
+  $('sensSlider').oninput=()=>{$('sensVal').textContent=(parseFloat($('sensSlider').value)*100).toFixed(0)+'%';calc();};
+  $('fprSlider').oninput=()=>{$('fprVal').textContent=(parseFloat($('fprSlider').value)*100).toFixed(1)+'%';calc();};
+
+  // Animation
+  let animT=0,timer=null;
+  function animate(){
+    animT+=0.01;
+    if(animT<1){
+      const p=ease(animT);
+      // Sweep prior from 0.001 to 0.5
+      const prior=0.001+p*0.499;
+      $('prevSlider').value=prior;
+      $('prevVal').textContent=(prior*100).toFixed(1)+'%';
+      calc();
+      requestAnimationFrame(animate);
+    } else {
+      $('prevSlider').value=0.01;
+      $('prevVal').textContent='1.0%';
+      calc();
+    }
+  }
+  $('playMed').onclick=()=>{
+    clearInterval(timer); animT=0;
+    timer=setInterval(animate,16);
+  };
+  $('resetMed').onclick=()=>{
+    clearInterval(timer);
+    $('prevSlider').value=0.01; $('prevVal').textContent='1.0%';
+    $('sensSlider').value=0.99; $('sensVal').textContent='99%';
+    $('fprSlider').value=0.05; $('fprVal').textContent='5.0%';
+    calc();
+  };
+
+  calc();
+})();
+
+// ============================================================
+// Part 6: Spam Filter Interactive
+// ============================================================
+(function(){
+  const cv=$('cvSpam'),c=cv.getContext('2d');
+  const W=900,H=420;
+
+  // Word statistics: P(word|spam) and P(word|ham)
+  const words={
+    'free':    {pSpam:0.30, pHam:0.01, label:'🎁 免费', on:false},
+    'win':     {pSpam:0.25, pHam:0.005,label:'🏆 中奖', on:false},
+    'click':   {pSpam:0.35, pHam:0.02, label:'👆 点击链接', on:false},
+    'deal':    {pSpam:0.20, pHam:0.03, label:'💼 限时优惠', on:false},
+    'urgent':  {pSpam:0.28, pHam:0.01, label:'⚡ 紧急', on:false},
+    'meeting': {pSpam:0.005,pHam:0.12, label:'📅 会议', on:false}
+  };
+  const wordKeys=Object.keys(words);
+
+  function calc(){
+    const spamPrior=parseFloat($('spamPriorSlider').value);
+    const hamPrior=1-spamPrior;
+
+    // Naive Bayes: P(spam|words) ∝ P(spam) * ∏ P(word|spam)
+    let logSpam=Math.log(spamPrior);
+    let logHam=Math.log(hamPrior);
+
+    for(const k of wordKeys){
+      if(words[k].on){
+        logSpam+=Math.log(words[k].pSpam);
+        logHam+=Math.log(words[k].pHam);
+      }
+    }
+
+    // Convert to probabilities
+    const spamProb=Math.exp(logSpam);
+    const hamProb=Math.exp(logHam);
+    const total=spamProb+hamProb;
+    const pSpam=total>0 ? spamProb/total : 0.5;
+    const pHam=1-pSpam;
+
+    $('nSpamProb').textContent=(pSpam*100).toFixed(1)+'%';
+    $('nHamProb').textContent=(pHam*100).toFixed(1)+'%';
+
+    const r=$('spamResult');
+    if(pSpam>0.8){
+      r.className='result warn';
+      r.innerHTML='🚨 <b>判定：垃圾邮件！</b> 垃圾概率 <b style="color:#c92a2a">'+(pSpam*100).toFixed(1)+'%</b>。朴素贝叶斯分类器认为这封邮件极有可能是垃圾邮件。';
+    } else if(pSpam>0.5){
+      r.className='result warn';
+      r.innerHTML='⚠️ <b>疑似垃圾邮件</b>，概率 <b style="color:#e8590c">'+(pSpam*100).toFixed(1)+'%</b>。需要更多特征才能确定。';
+    } else if(pSpam>0.2){
+      r.className='result';
+      r.innerHTML='📊 <b>倾向正常邮件</b>，垃圾概率仅 <b style="color:#1971c2">'+(pSpam*100).toFixed(1)+'%</b>。';
+    } else {
+      r.className='result';
+      r.innerHTML='✅ <b>判定：正常邮件！</b> 垃圾概率仅 <b style="color:#2f9e44">'+(pSpam*100).toFixed(1)+'%</b>，可放心阅读。';
+    }
+
+    draw(pSpam,pHam,spamPrior);
+  }
+
+  function draw(pSpam,pHam,spamPrior){
+    c.clearRect(0,0,W,H);
+    const cx=W/2, cy=H/2-20;
+
+    // Bar chart
+    const barW=180, barH=250;
+    const bx1=cx-220, bx2=cx+40;
+    const by=cy-barH/2+30;
+
+    // Spam bar
+    const spamH=barH*pSpam;
+    const grad1=c.createLinearGradient(0,by+barH-spamH,0,by+barH);
+    grad1.addColorStop(0,'#c92a2a');
+    grad1.addColorStop(1,'#ff6b6b');
+    c.fillStyle=grad1;
+    c.fillRect(bx1,by+barH-spamH,barW,spamH);
+    c.strokeStyle='#2d2a26'; c.lineWidth=3;
+    c.strokeRect(bx1,by,barW,barH);
+
+    c.fillStyle='#2d2a26'; c.font='bold 18px sans-serif'; c.textAlign='center';
+    c.fillText('垃圾邮件', bx1+barW/2, by-10);
+    c.fillStyle='#c92a2a'; c.font='bold 28px sans-serif';
+    c.fillText((pSpam*100).toFixed(1)+'%', bx1+barW/2, by+barH+30);
+
+    // Ham bar
+    const hamH=barH*pHam;
+    const grad2=c.createLinearGradient(0,by+barH-hamH,0,by+barH);
+    grad2.addColorStop(0,'#2f9e44');
+    grad2.addColorStop(1,'#69db7c');
+    c.fillStyle=grad2;
+    c.fillRect(bx2,by+barH-hamH,barW,hamH);
+    c.strokeStyle='#2d2a26'; c.lineWidth=3;
+    c.strokeRect(bx2,by,barW,barH);
+
+    c.fillStyle='#2d2a26'; c.font='bold 18px sans-serif';
+    c.fillText('正常邮件', bx2+barW/2, by-10);
+    c.fillStyle='#2f9e44'; c.font='bold 28px sans-serif';
+    c.fillText((pHam*100).toFixed(1)+'%', bx2+barW/2, by+barH+30);
+
+    // Active words list
+    c.fillStyle='#2d2a26'; c.font='14px sans-serif'; c.textAlign='left';
+    c.fillText('激活的关键词:', 30, 30);
+    let yy=52;
+    for(const k of wordKeys){
+      if(words[k].on){
+        c.fillStyle='#1971c2';
+        c.fillText('✓ '+words[k].label+'  P(词|垃圾)='+(words[k].pSpam*100).toFixed(1)+'%  P(词|正常)='+(words[k].pHam*100).toFixed(1)+'%', 30, yy);
+        yy+=20;
+      }
+    }
+    if(yy===52){
+      c.fillStyle='#9b958a'; c.font='italic 14px sans-serif';
+      c.fillText('(请点击上方按钮选择关键词)', 30, 52);
+    }
+
+    // Formula
+    c.fillStyle='#2d2a26'; c.font='13px sans-serif'; c.textAlign='center';
+    c.fillText('P(垃圾|词₁,词₂,...) = P(垃圾)·∏P(词ᵢ|垃圾) / [P(垃圾)·∏P(词ᵢ|垃圾) + P(正常)·∏P(词ᵢ|正常)]', cx, H-15);
+  }
+
+  // Button toggles
+  function setupToggle(btnId,wordKey){
+    $(btnId).onclick=function(){
+      words[wordKey].on=!words[wordKey].on;
+      this.style.background=words[wordKey].on ? '#ffd43b' : '';
+      this.style.borderColor=words[wordKey].on ? '#9c36b5' : '#2d2a26';
+      calc();
+    };
+  }
+  setupToggle('toggleFree','free');
+  setupToggle('toggleWin','win');
+  setupToggle('toggleClick','click');
+  setupToggle('toggleDeal','deal');
+  setupToggle('toggleUrgent','urgent');
+  setupToggle('toggleMeeting','meeting');
+
+  $('spamPriorSlider').oninput=()=>{
+    $('spamPriorVal').textContent=(parseFloat($('spamPriorSlider').value)*100).toFixed(0)+'%';
+    calc();
+  };
+  $('resetSpam').onclick=()=>{
+    for(const k of wordKeys){ words[k].on=false; }
+    const btns=['toggleFree','toggleWin','toggleClick','toggleDeal','toggleUrgent','toggleMeeting'];
+    btns.forEach(b=>{ $(b).style.background=''; $(b).style.borderColor='#2d2a26'; });
+    $('spamPriorSlider').value=0.4;
+    $('spamPriorVal').textContent='40%';
+    calc();
+  };
+
+  calc();
+})();
+
+// ============================================================
+// Part 7: ML Applications Animation
+// ============================================================
+(function(){
+  const cv=$('cvML'),c=cv.getContext('2d');
+  const W=900,H=400;
+  let anim=0,timer=null;
+
+  const nodes=[
+    {x:100,y:80,label:'先验\nP(θ)',color:'#1971c2'},
+    {x:100,y:320,label:'数据\nD={x₁,...,xₙ}',color:'#e8590c'},
+    {x:450,y:200,label:'贝叶斯推断\nP(θ|D)',color:'#9c36b5'},
+    {x:800,y:80,label:'朴素贝叶斯\n分类器',color:'#2f9e44'},
+    {x:800,y:180,label:'贝叶斯网络',color:'#2f9e44'},
+    {x:800,y:280,label:'贝叶斯优化',color:'#2f9e44'},
+    {x:800,y:360,label:'贝叶斯深度\n学习',color:'#2f9e44'}
+  ];
+
+  function draw(){
+    c.clearRect(0,0,W,H);
+    const p=ease(Math.min(anim,1));
+
+    // Draw connections
+    if(p>0.1){
+      const ca=Math.min((p-0.1)*3,1);
+      c.globalAlpha=ca;
+      c.strokeStyle='#9b36b5'; c.lineWidth=2; c.setLineDash([5,5]);
+      // Prior -> Bayes
+      c.beginPath(); c.moveTo(nodes[0].x+80,nodes[0].y); c.lineTo(nodes[2].x-60,nodes[2].y-20); c.stroke();
+      // Data -> Bayes
+      c.beginPath(); c.moveTo(nodes[1].x+80,nodes[1].y); c.lineTo(nodes[2].x-60,nodes[2].y+20); c.stroke();
+      c.setLineDash([]);
+
+      // Bayes -> applications
+      const apps=[3,4,5,6];
+      apps.forEach((ai,i)=>{
+        const ap=Math.min(Math.max((p-0.3-i*0.1)*3,0),1);
+        c.globalAlpha=ap*ca;
+        c.strokeStyle='#2f9e44'; c.lineWidth=2;
+        c.beginPath(); c.moveTo(nodes[2].x+60,nodes[2].y); c.lineTo(nodes[ai].x-60,nodes[ai].y); c.stroke();
+      });
+      c.globalAlpha=1;
+    }
+
+    // Draw nodes
+    nodes.forEach((n,i)=>{
+      const np=Math.min(Math.max(p-i*0.08,0)*1.5,1);
+      if(np<=0) return;
+      c.globalAlpha=np;
+
+      // Node circle
+      c.fillStyle=n.color+'30';
+      c.beginPath(); c.arc(n.x,n.y,45,0,7); c.fill();
+      c.strokeStyle=n.color; c.lineWidth=3; c.stroke();
+
+      // Label
+      const lines=n.label.split('\n');
+      c.fillStyle=n.color; c.font='bold 12px sans-serif'; c.textAlign='center';
+      lines.forEach((line,j)=>{
+        c.fillText(line, n.x, n.y-6+j*16);
+      });
+
+      c.globalAlpha=1;
+    });
+
+    // Title
+    if(p>0.5){
+      const ta=Math.min((p-0.5)*2,1);
+      c.globalAlpha=ta;
+      c.fillStyle='#2d2a26'; c.font='bold 16px sans-serif'; c.textAlign='center';
+      c.fillText('贝叶斯定理 → 机器学习的核心推理框架', W/2, H-15);
+      c.globalAlpha=1;
+    }
+  }
+
+  function loop(){
+    anim+=0.01;
+    if(anim<2){
+      draw();
+      requestAnimationFrame(loop);
+    } else { draw(); }
+  }
+
+  $('playML').onclick=()=>{
+    clearInterval(timer); anim=0;
+    timer=setInterval(loop,16);
+  };
+  $('resetML').onclick=()=>{
+    clearInterval(timer); anim=0;
+    c.clearRect(0,0,W,H); draw();
+  };
+
+  draw();
+})();
+</script>
+<script src="./_shared/anime-cartoon-tools.js"></script>
+<script src="./_shared/theme-manager.js"></script>
+</body>
+</html>

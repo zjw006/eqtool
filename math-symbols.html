@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数学符号的意义 · 动画课堂</title>
+  <style>
+    @font-face { font-family:'Outfit'; src:url('./_shared/fonts/Outfit-Regular.ttf') format('truetype'); font-weight:400; }
+    @font-face { font-family:'Outfit'; src:url('./_shared/fonts/Outfit-Bold.ttf') format('truetype'); font-weight:700; }
+    @font-face { font-family:'JetBrainsMono'; src:url('./_shared/fonts/JetBrainsMono-Regular.ttf') format('truetype'); font-weight:400; }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./_shared/anime-cartoon-theme.css">
+  <link rel="stylesheet" href="./_shared/cyber-theme.css">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:"ZCOOL KuaiLe","Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif; background:#f7f5f0; color:#2d2a26; min-height:100vh; overflow-x:hidden; }
+
+    /* ===== Header ===== */
+    header { text-align:center; padding:48px 20px 32px; background:linear-gradient(135deg,#f0e6ff,#e0d0ff); border-bottom:4px solid #2d2a26; max-width:100%; }
+    header > * { max-width:960px; margin-left:auto; margin-right:auto; }
+    header h1 { font-family:'ZCOOL KuaiLe','Noto Sans SC',sans-serif; font-size:clamp(28px,5vw,52px); letter-spacing:4px; -webkit-text-fill-color:initial; background:none; color:#2d2a26; text-shadow:none; }
+    header p { margin-top:12px; color:#6b655c; font-size:clamp(14px,2vw,16px); padding:0 16px; }
+
+    /* ===== Section ===== */
+    section { width:100%; max-width:960px; margin:0 auto !important; padding:48px 20px; }
+    .card { background:#fff; border:3px solid #2d2a26; border-radius:18px; padding:28px; box-shadow:6px 6px 0 rgba(45,42,38,.15); }
+    h2 { font-size:clamp(20px,3vw,26px); margin-bottom:8px; font-family:'ZCOOL KuaiLe','Noto Sans SC',sans-serif; }
+    h2 .tag { display:inline-block; background:#2d2a26; color:#fff; font-size:13px; border-radius:20px; padding:4px 14px; vertical-align:middle; margin-right:10px; }
+    .sub { color:#6b655c; margin-bottom:18px; line-height:1.7; }
+    canvas { display:block; width:100%; height:auto; border:2px solid #e0dacd; border-radius:12px; background:#fffdf8; }
+    #cvTimeline { aspect-ratio:900/400; }
+
+    /* ===== Buttons ===== */
+    .btns { display:flex; gap:12px; flex-wrap:wrap; margin:16px 0; justify-content:center; }
+    button { font-family:inherit; cursor:pointer; border:3px solid #2d2a26; background:#b197fc; border-radius:12px; padding:10px 22px; font-size:15px; font-weight:700; box-shadow:3px 3px 0 #2d2a26; transition:.15s; }
+    button:hover { transform:translate(-1px,-1px); box-shadow:4px 4px 0 #2d2a26; }
+    button:active { transform:translate(2px,2px); box-shadow:none; }
+    button.ghost { background:#fff; }
+
+    /* ===== Symbol Table ===== */
+    .sym-table { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px; margin-top:16px; }
+    .sym-card { border:3px solid #2d2a26; border-radius:14px; padding:16px; background:#fffdf8; transition:.2s; cursor:pointer; }
+    .sym-card:hover { transform:translateY(-3px); box-shadow:4px 4px 0 rgba(45,42,38,.12); }
+    .sym-card.active { border-color:#9c36b5; background:#f8f0ff; box-shadow:4px 4px 0 #9c36b5; }
+    .sym-card .glyph { font-size:36px; font-weight:800; font-family:'Quicksand','JetBrainsMono',monospace; text-align:center; color:#9c36b5; }
+    .sym-card .name { font-size:14px; font-weight:700; text-align:center; margin-top:4px; }
+    .sym-card .cat { font-size:11px; color:#6b655c; text-align:center; margin-top:2px; }
+
+    /* ===== Detail Panel ===== */
+    .detail-panel { margin-top:20px; padding:20px; border:3px solid #9c36b5; border-radius:14px; background:#f8f0ff; display:none; }
+    .detail-panel.show { display:block; }
+    .detail-panel .d-glyph { font-size:48px; font-weight:800; color:#9c36b5; font-family:'Quicksand',monospace; text-align:center; }
+    .detail-panel .d-name { font-size:20px; font-weight:700; text-align:center; margin-top:4px; }
+    .detail-panel .d-row { margin-top:12px; line-height:1.8; }
+    .detail-panel .d-label { font-weight:700; color:#9c36b5; }
+    .detail-panel code { background:#fff; padding:2px 8px; border-radius:6px; font-family:'JetBrainsMono',monospace; border:1px solid #e0dacd; }
+
+    /* ===== Category Filter ===== */
+    .filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+    .filter-btn { border:2px solid #2d2a26; border-radius:20px; padding:6px 16px; font-size:13px; font-weight:700; cursor:pointer; background:#fff; transition:.15s; }
+    .filter-btn.active { background:#9c36b5; color:#fff; border-color:#9c36b5; }
+
+    /* ===== History Timeline Cards ===== */
+    .timeline-item { border:3px solid #2d2a26; border-radius:14px; padding:18px; margin-bottom:16px; background:#fffdf8; position:relative; transition:.2s; }
+    .timeline-item:hover { transform:translateX(4px); }
+    .timeline-item .year { display:inline-block; background:#9c36b5; color:#fff; font-size:14px; font-weight:700; border-radius:20px; padding:4px 14px; margin-bottom:8px; }
+    .timeline-item .glyph-show { font-size:32px; font-weight:800; color:#9c36b5; font-family:'Quicksand',monospace; float:right; }
+    .timeline-item h4 { font-size:16px; margin-bottom:6px; }
+    .timeline-item p { font-size:14px; color:#6b655c; line-height:1.8; }
+    .timeline-item .fun { margin-top:8px; padding:10px; background:#fff8e6; border:2px dashed #e8590c; border-radius:10px; font-size:13px; line-height:1.7; }
+
+    /* ===== Trivia Cards ===== */
+    .trivia-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-top:16px; }
+    .trivia-card { border:3px solid #2d2a26; border-radius:14px; padding:18px; background:#fffdf8; transition:.2s; }
+    .trivia-card:hover { transform:translateY(-3px); box-shadow:4px 4px 0 rgba(45,42,38,.12); }
+    .trivia-card .icon { font-size:28px; margin-bottom:8px; }
+    .trivia-card h4 { font-size:15px; margin-bottom:8px; }
+    .trivia-card p { font-size:13px; color:#6b655c; line-height:1.7; }
+    .trivia-card code { background:#f1efe9; padding:1px 7px; border-radius:6px; font-family:'JetBrainsMono',monospace; }
+
+    /* ===== Result box ===== */
+    .result { margin-top:16px; padding:14px 18px; border-radius:12px; background:#f1f8e9; border:2px dashed #2f9e44; font-size:16px; line-height:1.8; }
+
+    /* ===== Footer ===== */
+    footer { text-align:center; padding:32px; color:#6b655c; font-size:13px; border-top:2px solid #e0dacd; max-width:960px; margin:0 auto; }
+    code { background:#f1efe9; padding:1px 7px; border-radius:6px; font-family:'JetBrainsMono',ui-monospace,monospace; }
+
+    /* ===== 响应式 ===== */
+    @media (max-width:768px) {
+      header { padding:36px 16px 24px; }
+      section { padding:32px 12px; }
+      .card { padding:18px 14px; }
+      .sym-table { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); }
+      .timeline-item .glyph-show { font-size:24px; }
+      .trivia-grid { grid-template-columns:1fr; }
+    }
+    @media (max-width:480px) {
+      header { padding:28px 12px 20px; }
+      header h1 { letter-spacing:2px; }
+      .sym-table { grid-template-columns:1fr 1fr; }
+      .sym-card .glyph { font-size:28px; }
+      .filter-bar { flex-direction:column; }
+    }
+
+    /* ===== Cyber theme ===== */
+    html[data-theme="cyber"] body { background:#0a0e14 !important; color:#c9d1d9 !important; }
+    html[data-theme="cyber"] header { background:linear-gradient(135deg,#0f1620,#141b26) !important; border-bottom-color:#1e2530 !important; }
+    html[data-theme="cyber"] header h1 { color:#d2a8ff !important; }
+    html[data-theme="cyber"] header p { color:#6e7681 !important; }
+    html[data-theme="cyber"] .card { background:#0f1620 !important; border-color:#1e2530 !important; box-shadow:6px 6px 0 rgba(0,0,0,.3) !important; }
+    html[data-theme="cyber"] h2 { color:#c9d1d9 !important; }
+    html[data-theme="cyber"] h2 .tag { background:#1f6feb !important; }
+    html[data-theme="cyber"] .sub { color:#6e7681 !important; }
+    html[data-theme="cyber"] canvas { background:#0a0e14 !important; border-color:#1e2530 !important; }
+    html[data-theme="cyber"] button { background:#141b26 !important; border-color:#1e2530 !important; color:#c9d1d9 !important; box-shadow:3px 3px 0 #1e2530 !important; }
+    html[data-theme="cyber"] button:hover { border-color:#d2a8ff !important; color:#d2a8ff !important; }
+    html[data-theme="cyber"] button.ghost { background:#0a0e14 !important; }
+    html[data-theme="cyber"] .sym-card { background:#0a0e14 !important; border-color:#1e2530 !important; }
+    html[data-theme="cyber"] .sym-card .glyph { color:#d2a8ff !important; }
+    html[data-theme="cyber"] .sym-card .name { color:#c9d1d9 !important; }
+    html[data-theme="cyber"] .sym-card .cat { color:#6e7681 !important; }
+    html[data-theme="cyber"] .sym-card.active { border-color:#d2a8ff !important; background:rgba(210,168,255,0.08) !important; }
+    html[data-theme="cyber"] .detail-panel { background:rgba(210,168,255,0.06) !important; border-color:#d2a8ff !important; color:#c9d1d9 !important; }
+    html[data-theme="cyber"] .detail-panel .d-glyph { color:#d2a8ff !important; }
+    html[data-theme="cyber"] .detail-panel .d-label { color:#d2a8ff !important; }
+    html[data-theme="cyber"] .detail-panel code { background:#0a0e14 !important; color:#c9d1d9 !important; border-color:#1e2530 !important; }
+    html[data-theme="cyber"] .filter-btn { background:#0a0e14 !important; border-color:#1e2530 !important; color:#c9d1d9 !important; }
+    html[data-theme="cyber"] .filter-btn.active { background:#9c36b5 !important; color:#fff !important; }
+    html[data-theme="cyber"] .timeline-item { background:#0a0e14 !important; border-color:#1e2530 !important; color:#c9d1d9 !important; }
+    html[data-theme="cyber"] .timeline-item .year { background:#9c36b5 !important; }
+    html[data-theme="cyber"] .timeline-item .glyph-show { color:#d2a8ff !important; }
+    html[data-theme="cyber"] .timeline-item p { color:#6e7681 !important; }
+    html[data-theme="cyber"] .timeline-item .fun { background:rgba(232,89,12,0.08) !important; border-color:#e8590c !important; color:#c9d1d9 !important; }
+    html[data-theme="cyber"] .trivia-card { background:#0a0e14 !important; border-color:#1e2530 !important; color:#c9d1d9 !important; }
+    html[data-theme="cyber"] .trivia-card p { color:#6e7681 !important; }
+    html[data-theme="cyber"] .trivia-card code { background:#0a0e14 !important; color:#c9d1d9 !important; border:1px solid #1e2530 !important; }
+    html[data-theme="cyber"] .result { background:rgba(63,185,80,0.08) !important; border-color:#2f9e44 !important; color:#c9d1d9 !important; }
+    html[data-theme="cyber"] footer { border-top-color:#1e2530 !important; color:#6e7681 !important; }
+    html[data-theme="cyber"] code { background:#0a0e14 !important; color:#c9d1d9 !important; border:1px solid #1e2530 !important; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>数 学 符 号 的 意 义</h1>
+  <p>每一个符号背后，都藏着一段跨越千年的智慧故事</p>
+</header>
+
+<!-- ============ 第一部分：数学符号的由来 ============ -->
+<section id="history">
+  <div class="card">
+    <h2><span class="tag">第一部分</span>数学符号是怎么来的？</h2>
+    <p class="sub">在没有符号的年代，数学家只能用文字描述运算——写一个方程像写小作文。符号的发明，让数学从冗长的文字中解放，成为全人类通用的「世界语」。</p>
+    <canvas id="cvTimeline" width="900" height="400"></canvas>
+    <div class="btns">
+      <button id="playTimeline">▶ 播放时间线</button>
+      <button id="resetTimeline" class="ghost">↺ 重置</button>
+    </div>
+
+    <div class="timeline-item">
+      <span class="glyph-show">+ −</span>
+      <span class="year">1489年</span>
+      <h4>加号 + 与减号 −</h4>
+      <p>德国数学家 Johannes Widmann 在 1489 年的算术书中首次使用 <code>+</code> 和 <code>−</code>。据推测，<code>+</code> 来源于拉丁文 <code>et</code>（「和」）的速记简写——手写时 e 和 t 连笔，逐渐变成了十字。而 <code>−</code> 可能来自拉丁文 <code>minus</code>（「减」）的首字母 m 的简化横线。</p>
+      <div class="fun">💡 趣闻：在 <code>+</code> 和 <code>−</code> 出现之前，欧洲人用字母 <code>p</code>（più，加）和 <code>m</code>（meno，减）表示加减。想象一下做算术题满纸都是 p 和 m 的痛苦吧！</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="glyph-show">=</span>
+      <span class="year">1557年</span>
+      <h4>等号 =</h4>
+      <p>威尔士数学家 Robert Recorde 在 1557 年的《砺智石》中发明了等号 <code>=</code>。他写道：「我找不到比两条等长平行线更相等的东西了。」这是人类历史上第一条印刷方程：<code>14x + 15 = 71</code>——你可以声称自己解过世界上最古老的印刷方程！</p>
+      <div class="fun">💡 趣闻：Recorde 最初的等号画得非常长（两倍于现在的长度），因为「太短了不够平等」。直到 1631 年才被缩短为现在的样子。</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="glyph-show">×</span>
+      <span class="year">1631年</span>
+      <h4>乘号 ×</h4>
+      <p>英国牧师 William Oughtred 在 1631 年的《数学之钥》中首次使用 <code>×</code> 表示乘法。他将交叉符号选为乘号，是因为乘法本质上是「将两组数交叉配对」。<code>·</code>（点乘）则由莱布尼茨在 1698 年引入，以避免 <code>×</code> 与字母 x 混淆。</p>
+      <div class="fun">💡 趣闻：莱布尼茨非常讨厌 <code>×</code>，他觉得它太像字母 x 了。他在信中抱怨说：「这个符号简直是在制造混乱！」于是发明了点乘 <code>·</code> 代替。</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="glyph-show">÷</span>
+      <span class="year">1659年</span>
+      <h4>除号 ÷</h4>
+      <p>瑞士数学家 Johann Rahn 在 1659 年的《代数学》中首次使用 <code>÷</code>。这个符号的设计精妙：上方和下方的点分别代表被除数和除数，中间的横线代表「分开」。它也叫「obelus」，源自希腊语「长矛」——在古希腊用于标记有疑问的文本段落。</p>
+      <div class="fun">💡 趣闻：除号在不同国家写法不同。英美用 <code>÷</code>，欧洲大陆更喜欢用冒号 <code>:</code>，而分数线本身就是最古老的除号！</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="glyph-show">∫</span>
+      <span class="year">1675年</span>
+      <h4>积分号 ∫</h4>
+      <p>莱布尼茨在 1675 年发明积分符号 <code>∫</code>。它来自拉丁文 <code>summa</code>（「总和」）首字母 s 的长写体 <code>ſ</code>——积分的本质就是「无限多个无穷小的和」。莱布尼茨还同时发明了微分符号 <code>d</code>（来自 <code>differentia</code>，「差分」），以及 <code>dx</code>、<code>dy</code> 等记法。</p>
+      <div class="fun">💡 趣闻：莱布尼茨是数学史上最伟大的「符号设计师」。他坚信好的符号能代替一半的思考工作。现代微积分使用的符号几乎全部出自他一人之手，比牛顿的「点记号」优雅得多，最终统一了世界。</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="glyph-show">π</span>
+      <span class="year">1706年</span>
+      <h4>圆周率 π</h4>
+      <p>英国数学家 William Jones 在 1706 年首次用希腊字母 <code>π</code> 表示圆周率，取自希腊语 <code>περίμετρος</code>（perimetron，「周长」）的首字母。但真正让它流行起来的，是欧拉在 1737 年的广泛采用。此前，圆周率被写作 <code>355/113</code> 或冗长的文字描述。</p>
+      <div class="fun">💡 趣闻：<code>π</code> 是第一个「跨界出圈」的数学符号——它出现在电影《少年派的奇幻漂流》的片名中，被注册为美国商标，还有每年 3 月 14 日的「π日」全球庆祝活动！</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="glyph-show">∞</span>
+      <span class="year">1655年</span>
+      <h4>无穷大 ∞</h4>
+      <p>英国数学家 John Wallis 在 1655 年的《无穷算术》中首次使用 <code>∞</code>。有人认为它来自罗马数字 1000 的变体 CIƆ（在拉丁文中写作 <code>∞</code>）；也有人说它代表一条莫比乌斯带——没有起点也没有终点。</p>
+      <div class="fun">💡 趣闻：康托尔后来用 <code>ℵ₀</code>（阿列夫零）表示「可数无穷」，<code>ℵ₁</code> 表示更大的无穷——证明了<b>无穷也有大小之分</b>！这是数学史上最颠覆直觉的发现之一。</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="glyph-show">∑</span>
+      <span class="year">1755年</span>
+      <h4>求和号 ∑</h4>
+      <p>欧拉在 1755 年引入大写希腊字母 <code>Σ</code>（sigma）表示求和，取自希腊语 <code>σίνος</code>（syn，「合计」）的首字母。与积分号 <code>∫</code> 的区别是：<code>∑</code> 对<b>离散</b>项求和，<code>∫</code> 对<b>连续</b>项积分。</p>
+      <div class="fun">💡 趣闻：类似的还有 <code>∏</code>（大写 Pi）表示连乘积。如果你把 <code>∑</code> 竖过来看，它和 <code>∫</code> 的形状惊人地相似——两者本质都是「累加」！</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="glyph-show">!</span>
+      <span class="year">1808年</span>
+      <h4>阶乘 !</h4>
+      <p>法国数学家 Christian Kramp 在 1808 年引入 <code>!</code> 表示阶乘。例如 <code>5! = 5×4×3×2×1 = 120</code>。此前阶乘被写作 <code>1·2·3·4·5</code> 或用冗长的符号 <code>n!</code> 的前身 <code>|n</code>。</p>
+      <div class="fun">💡 趣闻：0 的阶乘等于 1（<code>0! = 1</code>），因为「什么都不做」只有一种方式——这和空集的元素数恰好是 1 个（空集本身）有着深层联系。</div>
+    </div>
+
+    <div class="timeline-item">
+      <span class="glyph-show">∴</span>
+      <span class="year">1659年</span>
+      <h4>所以 ∴ 与 因为 ∵</h4>
+      <p>瑞士数学家 Johann Rahn 在 1659 年引入 <code>∴</code>（所以）。后来又出现了反向的 <code>∵</code>（因为）。这两个点阵符号完美地用视觉语言表达了逻辑推理的方向——三点朝下是结论在下方，三点朝上是原因在上方。</p>
+      <div class="fun">💡 趣闻：<code>∴</code> 在日常聊天中也被用来表示「推理结论」——它已成为网络文化的一部分。有些程序员开玩笑说：「我的代码能编译，<code>∴</code> 它是对的。」</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第二部分：常用符号一览 ============ -->
+<section id="symbols">
+  <div class="card">
+    <h2><span class="tag">第二部分</span>常用数学符号大全</h2>
+    <p class="sub">点击任意符号卡片，查看详细含义、用法示例和历史故事。</p>
+
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">全部</button>
+      <button class="filter-btn" data-filter="basic">基础运算</button>
+      <button class="filter-btn" data-filter="compare">关系符号</button>
+      <button class="filter-btn" data-filter="algebra">代数符号</button>
+      <button class="filter-btn" data-filter="calc">微积分</button>
+      <button class="filter-btn" data-filter="set">集合符号</button>
+      <button class="filter-btn" data-filter="greek">希腊字母</button>
+      <button class="filter-btn" data-filter="logic">逻辑符号</button>
+    </div>
+
+    <div class="sym-table" id="symTable"></div>
+
+    <div class="detail-panel" id="detailPanel">
+      <div class="d-glyph" id="dGlyph"></div>
+      <div class="d-name" id="dName"></div>
+      <div class="d-row" id="dContent"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第三部分：符号如何运用 ============ -->
+<section id="usage">
+  <div class="card">
+    <h2><span class="tag">第三部分</span>数学符号是如何运用的？</h2>
+    <p class="sub">符号不只是缩写——它们是思维的工具。好的符号能让你「看见」数学结构，让推理变得几乎自动。</p>
+
+    <div class="trivia-grid">
+      <div class="trivia-card">
+        <div class="icon">🔗</div>
+        <h4>等号 = 的哲学</h4>
+        <p>等号不只是「答案」——它是<b>等价关系</b>的声明。当你写 <code>3+5 = 8</code>，你在说「左边和右边是同一个东西」。代数中所有变形（移项、合并同类项）都是在<b>保持等号成立</b>的前提下操作。<br><br>等号的三大性质：<br>① <b>自反性</b>：a = a<br>② <b>对称性</b>：a = b 则 b = a<br>③ <b>传递性</b>：a = b 且 b = c 则 a = c</p>
+      </div>
+      <div class="trivia-card">
+        <div class="icon">📐</div>
+        <h4>变量 x, y, z</h4>
+        <p>为什么用 x 表示未知数？传说：阿拉伯数学家花拉子米用 <code>shay</code>（「东西」）表示未知量。传入西班牙后译为 <code>xay</code>，又被法国人简写为 <code>x</code>。另一个说法：印刷工人排字时 x 用得最少（接近词尾字母），所以拿来凑数。<br><br>笛卡儿在 1637 年确立了用字母表<b>后段</b>（x, y, z）表示未知数、<b>前段</b>（a, b, c）表示已知数的惯例，沿用至今。</p>
+      </div>
+      <div class="trivia-card">
+        <div class="icon">∫</div>
+        <h4>积分号 ∫ 的运用</h4>
+        <p><code>∫</code> 底部的 <code>a</code> 和顶部的 <code>b</code> 表示积分区间，末尾的 <code>dx</code> 表示对哪个变量积分。例如 <code>∫₀¹ x² dx = 1/3</code> 表示在 0 到 1 之间对 x² 累加无穷多个无穷小。<br><br>没有 <code>dx</code> 就不知道积什么——就像「跑步」不知道跑向哪里。<code>dx</code> 是积分号的<b>方向盘</b>。</p>
+      </div>
+      <div class="trivia-card">
+        <div class="icon">∑</div>
+        <h4>求和号 ∑ 的运用</h4>
+        <p><code>∑</code> 下方写起始值，上方写终止值，右边写通项。例如 <code>∑(i=1→n) i = n(n+1)/2</code> 表示 1+2+...+n。<br><br>它和积分号的对应关系：<br><code>∑</code>（离散）↔ <code>∫</code>（连续）<br>下标 i ↔ 微分 dx<br>范围 [1,n] ↔ 区间 [a,b]</p>
+      </div>
+      <div class="trivia-card">
+        <div class="icon">∈</div>
+        <h4>属于 ∈ 的运用</h4>
+        <p><code>∈</code> 表示元素与集合的隶属关系，由意大利数学家 Peano 在 1895 年引入，来自希腊语 <code>ἐστί</code>（esti，「是」）的首字母 ε 的变形。<br><br><code>x ∈ A</code> 读作「x 属于 A」，是集合论中最基本的原子命题。整个现代数学几乎都建立在 <code>∈</code> 之上——ZFC 公理系统的第一条就是关于 <code>∈</code> 的。</p>
+      </div>
+      <div class="trivia-card">
+        <div class="icon">∀∃</div>
+        <h4>量词 ∀ 与 ∃</h4>
+        <p><code>∀</code>（全称量词，forall）来自德语 <code>Alle</code>（所有）的倒写 A；<code>∃</code>（存在量词）来自英语 <code>Exist</code> 的倒写 E。由 Gerhard Gentzen 在 1934 年引入。<br><br><code>∀x P(x)</code> = 「对每个 x，P(x) 成立」<br><code>∃x P(x)</code> = 「存在某个 x 使 P(x) 成立」<br>它们互为否定：<code>¬∀x P(x) ≡ ∃x ¬P(x)</code></p>
+      </div>
+      <div class="trivia-card">
+        <div class="icon">⇒⇔</div>
+        <h4>蕴含 ⇒ 与 等价 ⇔</h4>
+        <p><code>A ⇒ B</code>（A 推出 B）是逻辑推理的核心。<code>A ⇔ B</code>（A 与 B 等价）表示互相推出。<br><br>注意 <code>⇒</code> 不具有对称性：下雨 ⇒ 地湿，但地湿 ⇏ 下雨（可能是洒水车经过）。这正是<b>充分条件</b>与<b>必要条件</b>的区别：<br>• A ⇒ B：A 是 B 的充分条件<br>• B ⇒ A：A 是 B 的必要条件<br>• A ⇔ B：A 是 B 的充要条件</p>
+      </div>
+      <div class="trivia-card">
+        <div class="icon">|x|</div>
+        <h4>绝对值 |x| 与 范围 [a,b]</h4>
+        <p><code>|x|</code> 表示 x 到 0 的距离，由 Weierstrass 在 1841 年引入。它总是非负的：<code>|-3| = 3</code>。<br><br>方括号 <code>[a, b]</code> 表示闭区间（含端点），圆括号 <code>(a, b)</code> 表示开区间（不含端点），混合 <code>[a, b)</code> 表示半开半闭。<br><br>记忆口诀：<b>方是闭、圆是开</b>——方括号像墙挡住端点，圆括号像门敞开端点。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 第四部分：补充知识 ============ -->
+<section id="extra">
+  <div class="card">
+    <h2><span class="tag">第四部分</span>你也许不知道的符号冷知识</h2>
+    <p class="sub">符号世界远比你想象的更深邃——以下是那些容易被忽略、但极有趣的知识点。</p>
+
+    <div class="trivia-grid">
+      <div class="trivia-card">
+        <div class="icon">🗓️</div>
+        <h4>最古老的数学符号：分数线</h4>
+        <p>分数线 <code>—</code> 是最古老的数学符号之一，由阿拉伯数学家 al-Hassar 在 12 世纪发明。它同时是「除号」和「比号」的祖先——除号 <code>÷</code> 就是把分数线上下各放一个点！</p>
+      </div>
+      <div class="trivia-card">
+        <div class="icon">⚡</div>
+        <h4>被废除的符号：÷</h4>
+        <p>在高等数学中，<code>÷</code> 几乎完全消失——它只在小学算术中使用。高等数学中除法一律用分数 <code>a/b</code> 或 <code>a·b⁻¹</code> 表示。原因：<code>÷</code> 在复杂表达式中容易混淆运算顺序，而分数线天然包含「括号」功能。</p>
+      </div>
+      <div class="trivia-card">
+        <div class="icon">🔤</div>
+        <h4>被废黜的符号：÷ vs ⟌</h4>
+        <p>历史上曾有多种符号竞争除法的位置：分数线、冒号 <code>:</code>、<code>÷</code>、<code>/</code>。最终分数线和 <code>/</code> 胜出——它们在计算机输入中更方便，在印刷排版中也更清晰。</p>
+      </div>
+      <div class="trivia-card">
+        <div class="icon">🌐</div>
+        <h4>Unicode 数学符号区</h4>
+        <p>Unicode 标准为数学符号专门分配了约 2500 个码位（U+2200–U+22FF）。其中最常用的不到 100 个，其余用于专业数学、物理、逻辑学。有趣的是，<code>∀</code> 的码位是 U+2200——它是「数学符号区」的第一个符号。</p>
+      </div>
+      <div class="trivia-card">
+        <div class="icon">♾️</div>
+        <h4>不同大小的无穷：ℵ</h4>
+        <p>康托尔用希伯来字母 <code>ℵ</code>（aleph）表示无穷的「大小」：<code>ℵ₀</code> 是整数集的大小，<code>ℵ₁</code> 是实数集的大小。<code>ℵ₀ < ℵ₁</code> 意味着<b>有些无穷比另一些无穷更大</b>——这是数学史上最烧脑的结论之一，至今仍有未解之谜（连续统假设）。</p>
+      </div>
+      <div class="trivia-card">
+        <div class="icon">🎨</div>
+        <h4>最美公式：欧拉恒等式</h4>
+        <p><code>e^(iπ) + 1 = 0</code> 被誉为「数学最美公式」——它一次性串联了五大基本常数：自然底数 <code>e</code>、虚数单位 <code>i</code>、圆周率 <code>π</code>、乘法单位 <code>1</code>、加法单位 <code>0</code>，以及三种基本运算：加、乘、幂。这全靠符号系统才能精炼成一行。</p>
+      </div>
+      <div class="trivia-card">
+        <div class="icon">⌨️</div>
+        <h4>LaTeX：数学符号的输入法</h4>
+        <p>Donald Knuth 在 1978 年发明 TeX 排版系统，解决了数学符号在计算机中的输入与排版问题。LaTeX 用 <code>\sum</code>、<code>\int</code>、<code>\frac{}{}</code> 等命令输入符号，至今是学术论文的标准工具。学好 LaTeX = 学好数学排版。</p>
+      </div>
+      <div class="trivia-card">
+        <div class="icon">🧠</div>
+        <h4>符号与思维：认知科学</h4>
+        <p>认知科学研究表明：好的数学符号能<b>卸载认知负担</b>——把推理步骤外化到纸上，释放工作记忆。没有积分号 <code>∫</code>，微积分的推理将极其吃力。莱布尼茨的直觉是对的：好符号等于半个大脑。</p>
+      </div>
+      <div class="trivia-card">
+        <div class="icon">📜</div>
+        <h4>中国古算的符号</h4>
+        <p>中国古代数学长期用<b>算筹</b>（竹棍）表示数字和运算，不用符号。《九章算术》中方程用文字描述，如「天元术」用「天、地、人、物」表示未知数。直到清代李善兰翻译西方数学，才引入 <code>+</code> <code>−</code> <code>×</code> <code>÷</code> <code>=</code> 等符号。</p>
+      </div>
+      <div class="trivia-card">
+        <div class="icon">🔄</div>
+        <h4>同义符号的竞争</h4>
+        <p>数学史上很多符号经过激烈竞争才胜出：乘法有 <code>×</code>、<code>·</code>、<code>*</code> 三个候选；除法有 <code>÷</code>、<code>:</code>、<code>/</code> 三个候选；不等号有 <code>≠</code> 和 <code>~=</code> 两个候选。最终胜出的往往不是最好的，而是<b>最方便印刷的</b>。</p>
+      </div>
+      <div class="trivia-card">
+        <div class="icon">🎯</div>
+        <h4>≤ 和 ≥ 的起源</h4>
+        <p><code>≤</code> 和 <code>≥</code> 由法国数学家 Pierre Bouguer 在 1734 年发明。在它出现之前，不等关系用文字「小于」「大于」或缩写 <code>lt</code> <code>gt</code> 表示。有些数学家甚至用 <code>⊰</code> 和 <code>⊱</code> 表示——显然太复杂了。</p>
+      </div>
+      <div class="trivia-card">
+        <div class="icon">❓</div>
+        <h4>还有未标准化的符号！</h4>
+        <p>并非所有数学符号都已标准化。不同教材中：<code>自然数集</code> 有时含 0 有时不含；<code>log</code> 默认底数有时是 10 有时是 e；<code>arctan⁻¹</code> 有人理解为反函数有人理解为倒数。这些歧义至今仍让学生头疼——数学并非完美无瑕。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  数学符号的意义 · 动画课堂 · 高中全学科绘本馆 · 纯原生 HTML/CSS/JS (Canvas 2D)，无外部依赖
+</footer>
+
+<script>
+function $(id){ return document.getElementById(id); }
+
+// ============================================================
+// Symbol Data
+// ============================================================
+const symbols = [
+  // 基础运算
+  {glyph:'+', name:'加号', cat:'basic', meaning:'加法运算', example:'3 + 5 = 8', origin:'1489年 Widmann，来自拉丁文 et 的连写', story:'手写 e 和 t 连笔变成十字形'},
+  {glyph:'−', name:'减号', cat:'basic', meaning:'减法运算', example:'8 − 3 = 5', origin:'1489年 Widmann，来自 minus 的横线', story:'可能是 m 的简化，也可能来自商人的减货标记'},
+  {glyph:'×', name:'乘号', cat:'basic', meaning:'乘法运算', example:'3 × 5 = 15', origin:'1631年 Oughtred', story:'交叉表示两组数交叉配对'},
+  {glyph:'·', name:'点乘', cat:'basic', meaning:'乘法（避免与x混淆）', example:'3 · 5 = 15', origin:'1698年 Leibniz', story:'莱布尼茨嫌 × 太像字母 x 而发明'},
+  {glyph:'÷', name:'除号', cat:'basic', meaning:'除法运算', example:'15 ÷ 3 = 5', origin:'1659年 Rahn', story:'上下点代表被除数和除数，横线代表分开'},
+  {glyph:'/', name:'斜杠', cat:'basic', meaning:'除法/分数线', example:'a / b', origin:'18世纪', story:'印刷排版的产物，输入方便'},
+  {glyph:'=', name:'等号', cat:'basic', meaning:'两数相等', example:'3 + 2 = 5', origin:'1557年 Recorde', story:'「没有比两条平行线更相等的东西了」'},
+  {glyph:'≠', name:'不等号', cat:'basic', meaning:'两数不相等', example:'3 ≠ 5', origin:'近代', story:'在等号上划斜线表示否定'},
+  {glyph:'±', name:'正负号', cat:'basic', meaning:'正或负', example:'±3 表示 +3 或 −3', origin:'17世纪', story:'一个符号表示两种值，用于方程求解'},
+  {glyph:'mod', name:'取模', cat:'basic', meaning:'取余数', example:'7 mod 3 = 1', origin:'1801年 Gauss', story:'来自拉丁文 modulus（模）'},
+
+  // 关系符号
+  {glyph:'<', name:'小于号', cat:'compare', meaning:'左小于右', example:'3 < 5', origin:'1631年 Harriot', story:'尖角指向较小的数'},
+  {glyph:'>', name:'大于号', cat:'compare', meaning:'左大于右', example:'5 > 3', origin:'1631年 Harriot', story:'开口朝向较大的数'},
+  {glyph:'≤', name:'小于等于', cat:'compare', meaning:'不大于', example:'3 ≤ 5', origin:'1734年 Bouguer', story:'小于号下加横线表示「等于也成立」'},
+  {glyph:'≥', name:'大于等于', cat:'compare', meaning:'不小于', example:'5 ≥ 3', origin:'1734年 Bouguer', story:'大于号下加横线表示「等于也成立」'},
+  {glyph:'≈', name:'约等于', cat:'compare', meaning:'近似相等', example:'π ≈ 3.14', origin:'19世纪', story:'波浪线表示「差不多相等」'},
+  {glyph:'≡', name:'恒等于', cat:'compare', meaning:'恒等/同余', example:'a ≡ a, 5 ≡ 2 (mod 3)', origin:'18世纪', story:'三条线表示「永远相等」'},
+  {glyph:'∝', name:'正比号', cat:'compare', meaning:'成正比例', example:'y ∝ x', origin:'18世纪', story:'变形的 ∞，去掉下半圈'},
+  {glyph:'|', name:'整除', cat:'compare', meaning:'a整除b', example:'3 | 9（3整除9）', origin:'近代', story:'竖线像一把刀切开'},
+  {glyph:'∤', name:'不整除', cat:'compare', meaning:'a不整除b', example:'3 ∤ 10', origin:'近代', story:'整除号加斜线否定'},
+
+  // 代数符号
+  {glyph:'x', name:'未知数', cat:'algebra', meaning:'未知量', example:'x + 1 = 2', origin:'1637年 Descartes', story:'来自阿拉伯语 shay→西班牙语 xay→简化为 x'},
+  {glyph:'a²', name:'指数', cat:'algebra', meaning:'a的n次方', example:'2³ = 8', origin:'1637年 Descartes', story:'右上角小数字表示连乘次数'},
+  {glyph:'√', name:'根号', cat:'algebra', meaning:'开方', example:'√9 = 3', origin:'1525年 Rudolff', story:'来自拉丁文 radix（根）的首字母 r 的变形'},
+  {glyph:'|x|', name:'绝对值', cat:'algebra', meaning:'x到0的距离', example:'|−3| = 3', origin:'1841年 Weierstrass', story:'两条竖线代表「夹住」取正'},
+  {glyph:'n!', name:'阶乘', cat:'algebra', meaning:'n×(n-1)×...×1', example:'5! = 120', origin:'1808年 Kramp', story:'感叹号表示「惊叹于数值之大」'},
+  {glyph:'C(n,k)', name:'组合', cat:'algebra', meaning:'从n中选k', example:'C(5,2) = 10', origin:'19世纪', story:'来自 Combination'},
+  {glyph:'f(x)', name:'函数', cat:'algebra', meaning:'x的函数', example:'f(x) = x²', origin:'1734年 Euler', story:'f 来自 function'},
+  {glyph:'log', name:'对数', cat:'algebra', meaning:'对数运算', example:'log₁₀100 = 2', origin:'1614年 Napier', story:'来自 logarithm，希腊语 logos+arithmos'},
+  {glyph:'ln', name:'自然对数', cat:'algebra', meaning:'以e为底的对数', example:'ln(e) = 1', origin:'19世纪', story:'l 来自 logarithmus，n 来自 naturalis'},
+  {glyph:'Σ', name:'求和号', cat:'algebra', meaning:'离散求和', example:'Σ(i=1→n) i = n(n+1)/2', origin:'1755年 Euler', story:'大写 Sigma，来自希腊语 syn（合计）'},
+  {glyph:'∏', name:'连乘号', cat:'algebra', meaning:'离散连乘', example:'∏(i=1→n) i = n!', origin:'19世纪', story:'大写 Pi，与 Σ 平行的乘法版本'},
+
+  // 微积分
+  {glyph:'∫', name:'积分号', cat:'calc', meaning:'连续求和（积分）', example:'∫₀¹ x² dx = 1/3', origin:'1675年 Leibniz', story:'拉丁文 summa 首字母 s 的长写体 ſ'},
+  {glyph:'d/dx', name:'微分号', cat:'calc', meaning:'导数/微分', example:'d/dx(x²) = 2x', origin:'1675年 Leibniz', story:'来自拉丁文 differentia（差分）'},
+  {glyph:'∂', name:'偏导号', cat:'calc', meaning:'偏导数', example:'∂f/∂x', origin:'1786年 Legendre', story:'变形的 d，来自 partial'},
+  {glyph:'lim', name:'极限', cat:'calc', meaning:'趋于极限', example:'lim(x→0) sin(x)/x = 1', origin:'19世纪 Cauchy', story:'来自拉丁文 limes'},
+  {glyph:'→', name:'趋向', cat:'calc', meaning:'趋于/映射到', example:'x → 0', origin:'20世纪', story:'箭头表示方向'},
+  {glyph:'∞', name:'无穷大', cat:'calc', meaning:'无限大', example:'1/0 = ∞', origin:'1655年 Wallis', story:'可能来自莫比乌斯带的形状'},
+  {glyph:'Δ', name:'增量', cat:'calc', meaning:'变化量', example:'Δx = x₂ − x₁', origin:'近代', story:'大写 Delta，希腊语 diaforá（差异）'},
+  {glyph:'∇', name:'nabla', cat:'calc', meaning:'梯度算子', example:'∇f = 梯度', origin:'1846年 Hamilton', story:'形似希腊竖琴 nabla'},
+
+  // 集合符号
+  {glyph:'∈', name:'属于', cat:'set', meaning:'元素属于集合', example:'3 ∈ {1,2,3}', origin:'1895年 Peano', story:'来自希腊语 esti（是）的 ε'},
+  {glyph:'∉', name:'不属于', cat:'set', meaning:'元素不属于集合', example:'4 ∉ {1,2,3}', origin:'近代', story:'属于号加斜线否定'},
+  {glyph:'⊂', name:'子集', cat:'set', meaning:'A是B的子集', example:'{1} ⊂ {1,2,3}', origin:'19世纪', story:'U 形开口朝向大集'},
+  {glyph:'⊆', name:'子集含等', cat:'set', meaning:'子集或相等', example:'{1,2} ⊆ {1,2,3}', origin:'近代', story:'子集号下加横线'},
+  {glyph:'∪', name:'并集', cat:'set', meaning:'两集合并', example:'{1} ∪ {2} = {1,2}', origin:'19世纪', story:'U 来自 union'},
+  {glyph:'∩', name:'交集', cat:'set', meaning:'两集合交', example:'{1,2} ∩ {2,3} = {2}', origin:'19世纪', story:'倒 U，来自 intersection'},
+  {glyph:'∅', name:'空集', cat:'set', meaning:'不含任何元素', example:'∅ ⊆ 任意集合', origin:'1939年 Weil', story:'来自丹麦字母 Ø'},
+  {glyph:'ℕ', name:'自然数集', cat:'set', meaning:'{0,1,2,...}', example:'3 ∈ ℕ', origin:'20世纪', story:'N 来自 Natural numbers'},
+  {glyph:'ℤ', name:'整数集', cat:'set', meaning:'{...,-2,-1,0,1,2,...}', example:'−3 ∈ ℤ', origin:'20世纪', story:'Z 来自德文 Zahlen（数）'},
+  {glyph:'ℚ', name:'有理数集', cat:'set', meaning:'分数p/q', example:'1/2 ∈ ℚ', origin:'20世纪', story:'Q 来自 Quotient（商）'},
+  {glyph:'ℝ', name:'实数集', cat:'set', meaning:'所有实数', example:'√2 ∈ ℝ', origin:'20世纪', story:'R 来自 Real numbers'},
+  {glyph:'ℂ', name:'复数集', cat:'set', meaning:'a+bi', example:'2+3i ∈ ℂ', origin:'20世纪', story:'C 来自 Complex numbers'},
+
+  // 希腊字母
+  {glyph:'π', name:'圆周率', cat:'greek', meaning:'≈3.14159', example:'C = 2πr', origin:'1706年 Jones', story:'希腊语 perimetron（周长）首字母'},
+  {glyph:'e', name:'自然底数', cat:'greek', meaning:'≈2.71828', example:'d/dx(eˣ) = eˣ', origin:'1731年 Euler', story:'可能来自 exponential，也可能只是字母表下一个'},
+  {glyph:'φ', name:'黄金比例', cat:'greek', meaning:'≈1.61803', example:'φ = (1+√5)/2', origin:'20世纪', story:'希腊雕塑家 Phidias 的首字母'},
+  {glyph:'θ', name:'角度', cat:'greek', meaning:'角度变量', example:'sin(θ)', origin:'近代', story:'希腊字母，常用于角度'},
+  {glyph:'λ', name:'波长/参数', cat:'greek', meaning:'波长或参数', example:'λ = v/f', origin:'近代', story:'希腊字母 lambda'},
+  {glyph:'Σ', name:'大写Sigma', cat:'greek', meaning:'求和', example:'Σxᵢ', origin:'1755年 Euler', story:'与求和号同源'},
+  {glyph:'Δ', name:'大写Delta', cat:'greek', meaning:'变化量/判别式', example:'Δ = b²−4ac', origin:'近代', story:'希腊语 diaphorá（差异）'},
+  {glyph:'α β γ', name:'小写希腊', cat:'greek', meaning:'角度/系数', example:'α+β=90°', origin:'古希腊', story:'希腊字母表前三个'},
+
+  // 逻辑符号
+  {glyph:'∀', name:'全称量词', cat:'logic', meaning:'对所有', example:'∀x∈ℝ, x²≥0', origin:'1934年 Gentzen', story:'倒写 A，来自 All'},
+  {glyph:'∃', name:'存在量词', cat:'logic', meaning:'存在某个', example:'∃x, x>5', origin:'1934年 Gentzen', story:'倒写 E，来自 Exist'},
+  {glyph:'¬', name:'否定', cat:'logic', meaning:'非/否定', example:'¬(x>0) 即 x≤0', origin:'近代', story:'逻辑非运算'},
+  {glyph:'∧', name:'逻辑与', cat:'logic', meaning:'且', example:'x>0 ∧ x<10', origin:'19世纪', story:'来自 conjunction'},
+  {glyph:'∨', name:'逻辑或', cat:'logic', meaning:'或', example:'x<0 ∨ x>10', origin:'19世纪', story:'来自 disjunction'},
+  {glyph:'⇒', name:'蕴含', cat:'logic', meaning:'推出', example:'x>2 ⇒ x>1', origin:'近代', story:'箭头表示推理方向'},
+  {glyph:'⇔', name:'等价', cat:'logic', meaning:'当且仅当', example:'x²=1 ⇔ x=±1', origin:'近代', story:'双向箭头表示互推'},
+  {glyph:'∴', name:'所以', cat:'logic', meaning:'结论', example:'A=B, ∴ A²=B²', origin:'1659年 Rahn', story:'三点朝下，结论在下方'},
+  {glyph:'∵', name:'因为', cat:'logic', meaning:'原因', example:'∵ 3>0, ∴ |3|=3', origin:'近代', story:'三点朝上，原因在上方'},
+  {glyph:'⊕', name:'异或', cat:'logic', meaning:'排他或', example:'A⊕B: 恰有一个为真', origin:'近代', story:'圆圈+表示「互斥」'},
+];
+
+// ============================================================
+// Render Symbol Table
+// ============================================================
+const catNames = {basic:'基础运算', compare:'关系', algebra:'代数', calc:'微积分', set:'集合', greek:'希腊字母', logic:'逻辑'};
+function renderTable(filter){
+  const container=$('symTable');
+  container.innerHTML='';
+  const list = filter==='all' ? symbols : symbols.filter(s=>s.cat===filter);
+  list.forEach((s,idx)=>{
+    const card=document.createElement('div');
+    card.className='sym-card';
+    card.dataset.idx = symbols.indexOf(s);
+    card.innerHTML = '<div class="glyph">'+s.glyph+'</div><div class="name">'+s.name+'</div><div class="cat">'+catNames[s.cat]+'</div>';
+    card.onclick=()=>showDetail(symbols.indexOf(s),card);
+    container.appendChild(card);
+  });
+}
+function showDetail(idx, cardEl){
+  const s=symbols[idx];
+  document.querySelectorAll('.sym-card').forEach(c=>c.classList.remove('active'));
+  if(cardEl) cardEl.classList.add('active');
+  const panel=$('detailPanel');
+  panel.classList.add('show');
+  $('dGlyph').textContent=s.glyph;
+  $('dName').textContent=s.name;
+  $('dContent').innerHTML=
+    '<div class="d-row"><span class="d-label">含义：</span>'+s.meaning+'</div>'+
+    '<div class="d-row"><span class="d-label">示例：</span><code>'+s.example+'</code></div>'+
+    '<div class="d-row"><span class="d-label">起源：</span>'+s.origin+'</div>'+
+    '<div class="d-row"><span class="d-label">故事：</span>'+s.story+'</div>';
+}
+renderTable('all');
+
+// Filter buttons
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTable(btn.dataset.filter);
+  };
+});
+
+// ============================================================
+// Timeline Canvas Animation
+// ============================================================
+(function(){
+  const cv=$('cvTimeline'),c=cv.getContext('2d');
+  const W=900,H=400;
+  let step=0;
+
+  const items=[
+    {x:80,  y:200, glyph:'+ −', year:'1489', name:'加减号', color:'#1971c2'},
+    {x:220, y:200, glyph:'=',   year:'1557', name:'等号',   color:'#2f9e44'},
+    {x:360, y:200, glyph:'×',   year:'1631', name:'乘号',   color:'#e8590c'},
+    {x:500, y:200, glyph:'÷',   year:'1659', name:'除号',   color:'#9c36b5'},
+    {x:640, y:200, glyph:'∫',   year:'1675', name:'积分号', color:'#1971c2'},
+    {x:780, y:200, glyph:'π',   year:'1706', name:'圆周率', color:'#2f9e44'},
+  ];
+
+  function draw(){
+    c.clearRect(0,0,W,H);
+    // Timeline base line
+    c.strokeStyle='#e0dacd'; c.lineWidth=4;
+    c.beginPath(); c.moveTo(40,200); c.lineTo(W-40,200); c.stroke();
+
+    for(let i=0;i<items.length;i++){
+      const it=items[i];
+      const revealed = step>i;
+      const current = step===i+1;
+
+      // Node circle
+      const r = current ? 32 : (revealed ? 26 : 20);
+      c.fillStyle = revealed ? it.color : '#e0dacd';
+      c.beginPath(); c.arc(it.x, it.y, r, 0, 7); c.fill();
+      c.strokeStyle = revealed ? '#2d2a26' : '#c9c2b8';
+      c.lineWidth = revealed ? 3 : 2; c.stroke();
+
+      // Glyph
+      if(revealed){
+        c.fillStyle='#fff'; c.font='bold 16px sans-serif'; c.textAlign='center'; c.textBaseline='middle';
+        c.fillText(it.glyph, it.x, it.y);
+      }
+
+      // Year
+      c.fillStyle = revealed ? it.color : '#c9c2b8';
+      c.font='bold 14px sans-serif'; c.textAlign='center';
+      c.fillText(it.year, it.x, it.y-r-12);
+
+      // Name
+      if(revealed){
+        c.fillStyle = current ? '#9c36b5' : '#6b655c';
+        c.font = current ? 'bold 16px sans-serif' : '13px sans-serif';
+        c.fillText(it.name, it.x, it.y+r+22);
+      }
+
+      // Arrow to next
+      if(revealed && i<items.length-1){
+        c.strokeStyle = revealed ? it.color+'80' : '#e0dacd';
+        c.lineWidth=2;
+        c.beginPath();
+        c.moveTo(it.x+r, it.y);
+        c.lineTo(items[i+1].x-r, items[i+1].y);
+        c.stroke();
+      }
+    }
+
+    // Title
+    c.fillStyle='#2d2a26'; c.font='bold 18px sans-serif'; c.textAlign='center';
+    c.fillText('数学符号发展时间线 · 点击「下一步」依次揭晓', W/2, 30);
+
+    // Hint
+    if(step===0){
+      c.fillStyle='#9b958a'; c.font='14px sans-serif';
+      c.fillText('点击下方按钮开始 →', W/2, H-20);
+    } else if(step>=items.length){
+      c.fillStyle='#2f9e44'; c.font='bold 16px sans-serif';
+      c.fillText('✅ 数学符号的演变跨越了200多年！每一个都改变了数学的面貌。', W/2, H-20);
+    } else {
+      c.fillStyle='#6b655c'; c.font='14px sans-serif';
+      c.fillText('已揭晓 '+step+'/'+items.length+' 个符号', W/2, H-20);
+    }
+  }
+
+  $('playTimeline').onclick=()=>{
+    if(step<items.length){ step++; draw(); }
+    else { step=0; draw(); }
+  };
+  $('resetTimeline').onclick=()=>{ step=0; draw(); };
+
+  draw();
+})();
+</script>
+<script src="./_shared/anime-cartoon-tools.js"></script>
+<script src="./_shared/theme-manager.js"></script>
+</body>
+</html>

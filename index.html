@@ -32,6 +32,9 @@
       --chinese: #D4726A;
       --chinese-light: #F0C4C0;
       --chinese-dim: rgba(212,114,106,0.12);
+      --physics: #5B8DEF;
+      --physics-light: #C5D8F5;
+      --physics-dim: rgba(91,141,239,0.12);
       --text: #4A3B2E;
       --text-dim: #9B8B7A;
       --border: rgba(180,160,140,0.2);
@@ -286,6 +289,7 @@
     .cat-app .game-icon { border-color: var(--coral-light); background: var(--coral-dim); }
     .cat-chinese .game-icon { border-color: var(--chinese-light); background: var(--chinese-dim); }
     .cat-chem-energy .game-icon { border-color: var(--green-light); background: var(--green-dim); }
+    .cat-physics .game-icon { border-color: var(--physics-light); background: var(--physics-dim); }
     .cat-pick-theorem .game-icon { border-color: var(--yellow-light); background: var(--gold-light); }
 
     /* ===== GAME TAG (custom per-card override) ===== */
@@ -771,6 +775,7 @@
     <button class="subject-tab" data-subject="math" data-i18n="subjectMath">数学<span class="count" id="cntSubjectMath">(23)</span></button>
     <button class="subject-tab" data-subject="chinese" data-i18n="subjectChinese">语文<span class="count" id="cntSubjectChinese">(1)</span></button>
     <button class="subject-tab" data-subject="chemistry" data-i18n="subjectChemistry">化学<span class="count" id="cntSubjectChemistry">(1)</span></button>
+    <button class="subject-tab" data-subject="physics" data-i18n="subjectPhysics">物理<span class="count" id="cntSubjectPhysics">(1)</span></button>
   </div>
 
   <!-- Sub-category Tabs (2nd level, shown when math is selected) -->
@@ -780,7 +785,7 @@
     <button class="tab" data-cat="function" data-i18n="tabFunction">函数<span class="count" id="cntFunction">(7)</span></button>
     <button class="tab" data-cat="geometry" data-i18n="tabGeometry">几何<span class="count" id="cntGeometry">(4)</span></button>
     <button class="tab" data-cat="sequence" data-i18n="tabSequence">数列<span class="count" id="cntSequence">(1)</span></button>
-    <button class="tab" data-cat="probability" data-i18n="tabProbability">概率统计<span class="count" id="cntProbability">(6)</span></button>
+    <button class="tab" data-cat="probability" data-i18n="tabProbability">概率统计<span class="count" id="cntProbability">(8)</span></button>
     <button class="tab" data-cat="app" data-i18n="tabApp">应用<span class="count" id="cntApp">(5)</span></button>
     <button class="tab" data-cat="pick-theorem" data-i18n="tabPickTheorem">皮克定理<span class="count" id="cntPickTheorem">(1)</span></button>
   </div>
@@ -789,6 +794,12 @@
   <div class="sub-tab-bar hidden" id="chemSubTabBar">
     <button class="tab active" data-cat="all" data-i18n="tabAll">全部<span class="count" id="cntChemAll">(1)</span></button>
     <button class="tab" data-cat="chem-energy" data-i18n="tabChemEnergy">化学能转化<span class="count" id="cntChemEnergy">(1)</span></button>
+  </div>
+
+  <!-- Physics Sub-category Tabs (2nd level, shown when physics is selected) -->
+  <div class="sub-tab-bar hidden" id="physicsSubTabBar">
+    <button class="tab active" data-cat="all" data-i18n="tabAll">全部<span class="count" id="cntPhysicsAll">(1)</span></button>
+    <button class="tab" data-cat="fermion-boson" data-i18n="tabFermionBoson">费米子 VS 玻色子<span class="count" id="cntFermionBoson">(1)</span></button>
   </div>
 
   <!-- Cards Grid -->
@@ -1068,6 +1079,28 @@
       <span class="game-tag" style="background: var(--pink-dim); color: var(--pink);">概率统计</span>
     </a>
 
+    <!-- ========== BAYES THEOREM ========== -->
+    <a class="game-card cat-probability" href="./bayes-theorem.html" data-cat="probability" data-subject="math"
+       data-title-zh="贝叶斯定理动画课堂" data-title-en="Bayes' Theorem Animation"
+       data-desc-zh="从逆概率问题出发，阐明贝叶斯定理为何而生、公式参数含义、三步推导、能做什么，重点讲解在机器学习中的应用（朴素贝叶斯、贝叶斯网络、贝叶斯优化、贝叶斯深度学习），含交互式医学诊断和垃圾邮件过滤演示。"
+       data-desc-en="From the inverse probability problem to Bayes' theorem: why it exists, parameter meanings, 3-step derivation, capabilities, and machine learning applications (naive Bayes, Bayesian networks, Bayesian optimization, Bayesian deep learning). Includes interactive medical diagnosis and spam filter demos.">
+      <div class="game-icon">📐</div>
+      <h3 data-i18n-card="title">贝叶斯定理动画课堂</h3>
+      <p data-i18n-card="desc">从逆概率问题出发，阐明贝叶斯定理为何而生、公式参数含义、三步推导、能做什么，重点讲解在机器学习中的应用（朴素贝叶斯、贝叶斯网络、贝叶斯优化、贝叶斯深度学习），含交互式医学诊断和垃圾邮件过滤演示。</p>
+      <span class="game-tag" style="background: var(--pink-dim); color: var(--pink);">概率统计</span>
+    </a>
+
+    <!-- ========== MATH SYMBOLS ========== -->
+    <a class="game-card cat-app" href="./math-symbols.html" data-cat="app" data-subject="math"
+       data-title-zh="数学符号的意义" data-title-en="Meaning of Mathematical Symbols"
+       data-desc-zh="探索数学符号的由来、含义、运用和有趣知识，从加减乘除到微积分符号，一网打尽。含时间线动画、70+符号卡片、分类过滤和冷知识。"
+       data-desc-en="Explore the origins, meanings, usage and interesting knowledge of mathematical symbols, from basic operations to calculus symbols. Includes timeline animation, 70+ symbol cards, category filters and trivia.">
+      <div class="game-icon">🔤</div>
+      <h3 data-i18n-card="title">数学符号的意义</h3>
+      <p data-i18n-card="desc">探索数学符号的由来、含义、运用和有趣知识，从加减乘除到微积分符号，一网打尽。含时间线动画、70+符号卡片、分类过滤和冷知识。</p>
+      <span class="game-tag" style="background: var(--coral-dim); color: var(--coral);">应用</span>
+    </a>
+
     <!-- ========== APP ========== -->
     <a class="game-card cat-app" href="./transforms-app/" data-cat="app" data-subject="math"
        data-title-zh="三大变换的通信工程应用" data-title-en="Signal Transforms"
@@ -1121,16 +1154,7 @@
       <span class="game-tag" style="background: var(--chinese-dim); color: var(--chinese);">语文</span>
     </a>
 
-    <!-- ========== JINLING AFFECTION ========== -->
-    <a class="game-card cat-chinese" href="./jinling-affection.html" data-cat="chinese" data-subject="chinese"
-       data-title-zh="乙女游戏金陵好感度" data-title-en="Jinling Affection Otome Game"
-       data-desc-zh="红楼梦乙女向互动游戏：黛玉线与宝钗线双剧情，通过对话选择推进剧情，好感度即理解度。每章穿插高考考点解析，在沉浸式故事中掌握金陵十二钗判词、人物性格分析与经典名场面。"
-       data-desc-en="Red Chamber Dream otome-style interactive game: dual storylines for Daiyu and Baochai. Dialogue choices drive the plot — affection level equals understanding. Each chapter includes college entrance exam point analysis.">
-      <div class="game-icon">🌸</div>
-      <h3 data-i18n-card="title">乙女游戏金陵好感度</h3>
-      <p data-i18n-card="desc">红楼梦乙女向互动游戏：黛玉线与宝钗线双剧情，通过对话选择推进剧情，好感度即理解度。每章穿插高考考点解析，在沉浸式故事中掌握金陵十二钗判词、人物性格分析与经典名场面。</p>
-      <span class="game-tag" style="background: var(--chinese-dim); color: var(--chinese);">语文</span>
-    </a>
+    <!-- ========== JINLING AFFECTION REMOVED ========== -->
 
     <a class="game-card cat-app" href="./quantum-educator/" data-cat="app" data-subject="math"
        data-title-zh="从量子纠缠看教育者的角色" data-title-en="Quantum Education"
@@ -1151,6 +1175,17 @@
       <h3 data-i18n-card="title">化学能转化为热能和动能</h3>
       <p data-i18n-card="desc">从食物消化到火箭推进 — 化学能转化为热能和动能的交互式探索。含食物消化动画（千卡计量）、燃烧反应粒子模拟、内燃机四冲程动画、暖手宝放热演示，全部以千卡(kcal)为计量单位。</p>
       <span class="game-tag" style="background: var(--green-dim); color: var(--green);">化学</span>
+    </a>
+
+    <!-- ========== FERMION VS BOSON ========== -->
+    <a class="game-card cat-physics" href="./fermion-boson-comic.html" data-cat="fermion-boson" data-subject="physics"
+       data-title-zh="费米子 VS 玻色子" data-title-en="Fermions vs Bosons"
+       data-desc-zh="漫画风格量子粒子图鉴：宇宙间所有基本粒子只分两大阵营——费米子搭起万物的「身躯」，玻色子传递宇宙的「力量」。含 3D 原子模型、粒子英雄档案、泡利不相容原理动画演示。"
+       data-desc-en="Comic-style quantum particle guide: all fundamental particles fall into two camps — fermions build the 'body' of everything, bosons transmit the 'forces' of the universe. Includes 3D atom model, particle hero profiles, Pauli exclusion principle animation.">
+      <div class="game-icon">⚛</div>
+      <h3 data-i18n-card="title">费米子 VS 玻色子</h3>
+      <p data-i18n-card="desc">漫画风格量子粒子图鉴：宇宙间所有基本粒子只分两大阵营——费米子搭起万物的「身躯」，玻色子传递宇宙的「力量」。含 3D 原子模型、粒子英雄档案、泡利不相容原理动画演示。</p>
+      <span class="game-tag" style="background: var(--physics-dim); color: var(--physics);">物理</span>
     </a>
 
     <!-- ========== PICK THEOREM ========== -->
@@ -1225,6 +1260,7 @@ var i18n = {
     subjectMath: '数学',
     subjectChinese: '语文',
     subjectChemistry: '化学',
+    subjectPhysics: '物理',
     tabAll: '全部',
     tabAlgebra: '代数',
     tabFunction: '函数',
@@ -1234,6 +1270,7 @@ var i18n = {
     tabApp: '应用',
     tabPickTheorem: '皮克定理',
     tabChemEnergy: '化学能转化',
+    tabFermionBoson: '费米子 VS 玻色子',
     tagAlgebra: '代数',
     tagFunction: '函数',
     tagGeometry: '几何',
@@ -1258,6 +1295,7 @@ var i18n = {
     subjectMath: 'MATH',
     subjectChinese: 'CHINESE',
     subjectChemistry: 'CHEMISTRY',
+    subjectPhysics: 'PHYSICS',
     tabAll: 'ALL',
     tabAlgebra: 'ALGEBRA',
     tabFunction: 'FUNCTION',
@@ -1267,6 +1305,7 @@ var i18n = {
     tabApp: 'APP',
     tabPickTheorem: "PICK'S THEOREM",
     tabChemEnergy: 'CHEM ENERGY',
+    tabFermionBoson: 'FERMIONS VS BOSONS',
     tagAlgebra: 'ALGEBRA',
     tagFunction: 'FUNCTION',
     tagGeometry: 'GEOMETRY',
@@ -1399,6 +1438,7 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
   var subTabs = document.querySelectorAll('.tab');
   var subTabBar = document.getElementById('subTabBar');
   var chemSubTabBar = document.getElementById('chemSubTabBar');
+  var physicsSubTabBar = document.getElementById('physicsSubTabBar');
   var cards = document.querySelectorAll('.game-card');
   var grid = document.getElementById('gameGrid');
   var searchBox = document.getElementById('searchBox');
@@ -1452,16 +1492,23 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
       currentSubject = tab.dataset.subject;
       currentCat = 'all';
 
-      // Show/hide sub-tab bar (only for math or chemistry)
+      // Show/hide sub-tab bar (only for math, chemistry, or physics)
       if(currentSubject === 'math'){
         subTabBar.classList.remove('hidden');
         chemSubTabBar.classList.add('hidden');
+        physicsSubTabBar.classList.add('hidden');
       } else if(currentSubject === 'chemistry'){
         subTabBar.classList.add('hidden');
         chemSubTabBar.classList.remove('hidden');
+        physicsSubTabBar.classList.add('hidden');
+      } else if(currentSubject === 'physics'){
+        subTabBar.classList.add('hidden');
+        chemSubTabBar.classList.add('hidden');
+        physicsSubTabBar.classList.remove('hidden');
       } else {
         subTabBar.classList.add('hidden');
         chemSubTabBar.classList.add('hidden');
+        physicsSubTabBar.classList.add('hidden');
       }
 
       // Reset sub-tab active state
@@ -1469,6 +1516,9 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
       if(currentSubject === 'chemistry'){
         var chemAllTab = chemSubTabBar.querySelector('.tab[data-cat="all"]');
         if(chemAllTab) chemAllTab.classList.add('active');
+      } else if(currentSubject === 'physics'){
+        var physicsAllTab = physicsSubTabBar.querySelector('.tab[data-cat="all"]');
+        if(physicsAllTab) physicsAllTab.classList.add('active');
       } else {
         var mathAllTab = subTabBar.querySelector('.tab[data-cat="all"]');
         if(mathAllTab) mathAllTab.classList.add('active');
@@ -1503,8 +1553,8 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
   });
 
   // ===== COUNT UPDATE =====
-  var subjectCounts = {all: 0, math: 0, chinese: 0, chemistry: 0};
-  var catCounts = {all: 0, algebra: 0, function: 0, geometry: 0, sequence: 0, probability: 0, app: 0, chinese: 0, 'chem-energy': 0, 'pick-theorem': 0};
+  var subjectCounts = {all: 0, math: 0, chinese: 0, chemistry: 0, physics: 0};
+  var catCounts = {all: 0, algebra: 0, function: 0, geometry: 0, sequence: 0, probability: 0, app: 0, chinese: 0, 'chem-energy': 0, 'pick-theorem': 0, 'fermion-boson': 0};
   var enabledCats = {};
 
   cards.forEach(function(c){
@@ -1532,6 +1582,7 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
   document.getElementById('cntSubjectMath').textContent = '(' + subjectCounts.math + ')';
   document.getElementById('cntSubjectChinese').textContent = '(' + subjectCounts.chinese + ')';
   document.getElementById('cntSubjectChemistry').textContent = '(' + subjectCounts.chemistry + ')';
+  document.getElementById('cntSubjectPhysics').textContent = '(' + subjectCounts.physics + ')';
 
   document.getElementById('cntAll').textContent = '(' + subjectCounts.math + ')';
   document.getElementById('cntAlgebra').textContent = '(' + catCounts.algebra + ')';
@@ -1544,6 +1595,9 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
 
   document.getElementById('cntChemAll').textContent = '(' + subjectCounts.chemistry + ')';
   document.getElementById('cntChemEnergy').textContent = '(' + catCounts['chem-energy'] + ')';
+
+  document.getElementById('cntPhysicsAll').textContent = '(' + subjectCounts.physics + ')';
+  document.getElementById('cntFermionBoson').textContent = '(' + catCounts['fermion-boson'] + ')';
 
   // ===== RESTORE TAB & SCROLL STATE (inside IIFE so filterCards is accessible) =====
   window.addEventListener('pageshow', function(e){
@@ -1565,12 +1619,19 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
       if(currentSubject === 'math'){
         subTabBar.classList.remove('hidden');
         chemSubTabBar.classList.add('hidden');
+        physicsSubTabBar.classList.add('hidden');
       } else if(currentSubject === 'chemistry'){
         subTabBar.classList.add('hidden');
         chemSubTabBar.classList.remove('hidden');
+        physicsSubTabBar.classList.add('hidden');
+      } else if(currentSubject === 'physics'){
+        subTabBar.classList.add('hidden');
+        chemSubTabBar.classList.add('hidden');
+        physicsSubTabBar.classList.remove('hidden');
       } else {
         subTabBar.classList.add('hidden');
         chemSubTabBar.classList.add('hidden');
+        physicsSubTabBar.classList.add('hidden');
       }
 
       // Restore sub-tab
@@ -1585,6 +1646,9 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
         if(currentSubject === 'chemistry'){
           var chemAll = chemSubTabBar.querySelector('.tab[data-cat="all"]');
           if(chemAll) chemAll.classList.add('active');
+        } else if(currentSubject === 'physics'){
+          var physicsAll = physicsSubTabBar.querySelector('.tab[data-cat="all"]');
+          if(physicsAll) physicsAll.classList.add('active');
         } else {
           var mathAll = subTabBar.querySelector('.tab[data-cat="all"]');
           if(mathAll) mathAll.classList.add('active');
