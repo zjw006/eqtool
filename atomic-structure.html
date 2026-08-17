@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>元素档案馆 · 原子结构与核反应</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css"/>
+<style>
+  @font-face { font-family:'JetBrainsMono'; src:url('./_shared/fonts/JetBrainsMono-Regular.ttf'); font-display:swap; }
+
+  :root{
+    /* 低饱和暖色 + 中性色 · 木质 / 纸张 / 布料 */
+    --paper:#F4EDDD;
+    --paper-deep:#EBE1C9;
+    --card:#FBF6E9;
+    --card-2:#F3ECDA;
+    --ink:#473E31;
+    --ink-dim:#8D806C;
+    --ink-faint:#B4A88F;
+    --wood:#7B6247;
+    --wood-deep:#5C4934;
+    --wood-line:#4A3B2A;
+    --wood-light:#A98E68;
+    --phys:#5E7E92;        /* 物理 · 灰蓝 */
+    --phys-soft:#DCE4E8;
+    --phys-dim:rgba(94,126,146,.14);
+    --chem:#9E7250;        /* 化学 · 陶土 */
+    --chem-soft:#EDDFCB;
+    --chem-dim:rgba(158,114,80,.14);
+    --gold:#B3945A;
+    --sage:#87976F;
+    --rose:#BC8878;
+    --seal:#9E5140;        /* 印泥 · 朱砂（低饱和） */
+    --shadow:0 3px 10px rgba(74,59,42,.14), 0 10px 28px rgba(74,59,42,.08);
+    --shadow-sm:0 2px 6px rgba(74,59,42,.14);
+    --r-card:18px 22px 16px 24px / 22px 16px 24px 18px; /* 手绘感不规则圆角 */
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
+    font-size:15.5px; line-height:1.85;
+    overflow-x:hidden;
+  }
+  /* 纸张噪点 + 柔和暖晕 */
+  body::before{
+    content:''; position:fixed; inset:0; z-index:-2; pointer-events:none; opacity:.5;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.38 0 0 0 0 0.28 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  body::after{
+    content:''; position:fixed; inset:0; z-index:-3; pointer-events:none;
+    background:
+      radial-gradient(ellipse 60% 45% at 12% 0%, rgba(179,148,90,.14), transparent 60%),
+      radial-gradient(ellipse 55% 45% at 95% 30%, rgba(94,126,146,.10), transparent 60%),
+      radial-gradient(ellipse 70% 50% at 50% 105%, rgba(158,114,80,.12), transparent 65%),
+      var(--paper);
+  }
+  .kai{ font-family:'LXGW WenKai','Noto Sans SC',serif; }
+  .mono{ font-family:'JetBrainsMono',monospace; }
+  ::selection{ background:rgba(179,148,90,.35); }
+
+  /* ============ 顶部木梁 ============ */
+  .topbar{
+    position:sticky; top:0; z-index:500;
+    background:linear-gradient(180deg,#6E5840,#5C4934);
+    border-bottom:3px solid var(--wood-line);
+    box-shadow:0 4px 14px rgba(60,45,30,.35);
+    display:flex; align-items:center; gap:14px;
+    padding:10px 18px;
+  }
+  .topbar::after{ /* 木纹 */
+    content:''; position:absolute; inset:0; pointer-events:none; opacity:.25;
+    background:repeating-linear-gradient(92deg, transparent 0 26px, rgba(0,0,0,.12) 26px 27px, transparent 27px 61px, rgba(255,255,255,.05) 61px 62px);
+  }
+  .top-seal{
+    width:44px; height:44px; flex:none; border-radius:50%;
+    background:radial-gradient(circle at 34% 30%, #B4634F, var(--seal) 62%, #7E4032);
+    box-shadow:inset 0 2px 5px rgba(255,255,255,.25), inset 0 -3px 6px rgba(0,0,0,.25), 0 2px 5px rgba(0,0,0,.35);
+    display:flex; align-items:center; justify-content:center;
+    color:#F6EBDD; font-size:21px; font-weight:700; z-index:2;
+  }
+  .top-title{ z-index:2; line-height:1.3; }
+  .top-title h1{ font-size:1.12rem; color:#F3E9D6; font-weight:700; letter-spacing:.12em; }
+  .top-title span{ font-size:.72rem; color:#CBB894; letter-spacing:.28em; }
+  .top-progress{
+    margin-left:auto; z-index:2; display:flex; align-items:center; gap:10px;
+    background:rgba(0,0,0,.22); border:1px solid rgba(255,255,255,.14);
+    border-radius:999px; padding:5px 14px 5px 8px; color:#EADFC6; font-size:.8rem;
+  }
+  .top-progress .orb{
+    width:26px; height:26px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #D9C69A, var(--gold) 65%, #8F7440);
+    display:flex; align-items:center; justify-content:center; font-size:14px;
+  }
+  .back-btn{
+    position:fixed; top:64px; left:14px; z-index:600;
+    display:inline-flex; align-items:center; gap:7px;
+    background:linear-gradient(180deg,#FCF7EA,#F0E6CE);
+    color:var(--wood-deep); text-decoration:none;
+    font-size:.82rem; font-weight:700; letter-spacing:.08em;
+    border:2px solid var(--wood); border-radius:12px 14px 12px 15px / 14px 12px 15px 12px;
+    padding:7px 14px; box-shadow:var(--shadow-sm);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .back-btn:hover{ transform:translateY(-2px); box-shadow:0 5px 14px rgba(74,59,42,.22); }
+
+  /* ============ 主布局 ============ */
+  .layout{
+    max-width:1240px; margin:0 auto;
+    display:grid; grid-template-columns:244px minmax(0,1fr);
+    gap:26px; padding:30px 20px 80px;
+  }
+
+  /* ============ 侧边·档案柜 ============ */
+  .side{ position:sticky; top:74px; align-self:start; }
+  .side-inner{
+    background:linear-gradient(180deg,#F8F1E0,#F0E6CF);
+    border:2px solid var(--wood); border-radius:var(--r-card);
+    box-shadow:var(--shadow); padding:18px 14px 14px; position:relative;
+  }
+  .side-inner::before,.side-inner::after{ /* 木钉 */
+    content:''; position:absolute; width:9px; height:9px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #C9B088, var(--wood) 70%);
+    box-shadow:inset 0 -1px 2px rgba(0,0,0,.3);
+  }
+  .side-inner::before{ top:8px; left:8px; } .side-inner::after{ top:8px; right:8px; }
+  .side-title{
+    text-align:center; font-size:.95rem; font-weight:700; color:var(--wood-deep);
+    letter-spacing:.3em; padding-bottom:10px; margin-bottom:12px;
+    border-bottom:1px dashed rgba(123,98,71,.45);
+  }
+  .wing-nav{ display:flex; flex-direction:column; gap:10px; }
+  .wing-tab{
+    display:block; text-decoration:none; color:var(--ink);
+    background:var(--card); border:1.5px solid rgba(123,98,71,.4);
+    border-radius:12px 14px 12px 15px / 14px 12px 15px 12px;
+    padding:10px 12px; transition:all .2s ease; position:relative;
+  }
+  .wing-tab:hover{ transform:translateX(3px); border-color:var(--wood); box-shadow:var(--shadow-sm); }
+  .wing-tab .wt-no{
+    font-size:.66rem; letter-spacing:.22em; color:var(--ink-dim); display:block;
+  }
+  .wing-tab .wt-name{ font-size:.94rem; font-weight:700; }
+  .wing-tab .wt-dots{ display:flex; gap:5px; margin-top:7px; }
+  .wing-tab .dot{
+    width:10px; height:10px; border-radius:50%;
+    border:1.5px solid var(--ink-faint); background:transparent; transition:all .3s;
+  }
+  .wing-tab .dot.done{ background:var(--seal); border-color:var(--seal); box-shadow:0 0 0 2px rgba(158,81,64,.18); }
+  .side-note{
+    margin-top:14px; padding:10px 12px; font-size:.74rem; color:var(--ink-dim);
+    background:var(--card-2); border:1px dashed rgba(123,98,71,.4); border-radius:12px;
+    line-height:1.7;
+  }
+  .side-note b{ color:var(--seal); }
+
+  /* ============ 主栏 ============ */
+  .wing{ margin-bottom:64px; scroll-margin-top:84px; }
+  .wing-head{ margin-bottom:22px; position:relative; padding-left:6px; }
+  .wing-head .wh-no{
+    display:inline-block; font-size:.7rem; letter-spacing:.3em; color:#F3E9D6;
+    background:linear-gradient(180deg,var(--wood),var(--wood-deep));
+    padding:3px 12px; border-radius:6px 8px 6px 9px / 8px 6px 9px 6px;
+    box-shadow:var(--shadow-sm); margin-bottom:10px;
+  }
+  .wing-head h2{ font-size:1.75rem; font-weight:900; letter-spacing:.06em; }
+  .wing-head h2 .wh-en{ font-size:.8rem; color:var(--ink-faint); letter-spacing:.24em; font-weight:500; margin-left:12px; }
+  .wing-head .wh-desc{ color:var(--ink-dim); font-size:.9rem; margin-top:6px; max-width:640px; }
+  .wing-head::after{ /* 墨痕下划线 */
+    content:''; display:block; margin-top:12px; height:5px; width:210px;
+    background:linear-gradient(90deg, var(--wood) 0%, rgba(123,98,71,.35) 70%, transparent);
+    border-radius:0 8px 8px 0; transform:skewX(-24deg);
+  }
+
+  /* ============ 实验卡片（木框 + 纸面） ============ */
+  .bench{
+    background:linear-gradient(180deg,#836A4D,#6E5840);
+    border:2px solid var(--wood-line); border-radius:20px;
+    box-shadow:var(--shadow); padding:12px; margin-bottom:26px;
+  }
+  .bench-paper{
+    background:var(--card); border-radius:14px 16px 13px 17px / 16px 13px 17px 14px;
+    border:1px solid rgba(123,98,71,.25); overflow:hidden;
+  }
+  .bench-head{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    padding:14px 18px 12px; border-bottom:1px dashed rgba(123,98,71,.4);
+    background:linear-gradient(180deg, rgba(179,148,90,.10), transparent);
+  }
+  .bench-tag{
+    font-size:.66rem; letter-spacing:.18em; font-weight:700; color:#F6EEDD;
+    background:var(--seal); padding:3px 10px; border-radius:6px 8px 6px 9px / 8px 6px 9px 6px;
+    box-shadow:inset 0 -2px 4px rgba(0,0,0,.18);
+  }
+  .bench-head h3{ font-size:1.14rem; font-weight:900; letter-spacing:.04em; }
+  .side-chip{
+    font-size:.68rem; font-weight:700; letter-spacing:.1em; padding:2px 9px;
+    border-radius:999px; margin-left:auto;
+  }
+  .side-chip.ph{ background:var(--phys-dim); color:var(--phys); border:1px solid rgba(94,126,146,.4); }
+  .side-chip.ch{ background:var(--chem-dim); color:var(--chem); border:1px solid rgba(158,114,80,.4); }
+  .bench-lead{ padding:10px 18px 0; font-size:.86rem; color:var(--ink-dim); }
+  .bench-body{ padding:14px 18px 18px; }
+
+  canvas.stage{
+    display:block; width:100%; height:auto;
+    background:#FDFAF1;
+    border:1.5px solid rgba(123,98,71,.35); border-radius:12px;
+    box-shadow:inset 0 2px 10px rgba(123,98,71,.10);
+  }
+
+  /* 控制台 */
+  .console{
+    display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center;
+    margin-top:12px; padding:12px 14px;
+    background:var(--card-2); border:1.5px solid rgba(123,98,71,.35);
+    border-radius:12px 14px 12px 15px / 14px 12px 15px 12px;
+  }
+  .ctl{ display:flex; align-items:center; gap:8px; font-size:.82rem; font-weight:600; color:var(--wood-deep); }
+  .ctl .val{ font-family:'JetBrainsMono',monospace; font-size:.8rem; color:var(--seal); min-width:56px; }
+  input[type=range]{
+    -webkit-appearance:none; appearance:none; width:130px; height:6px; border-radius:99px;
+    background:linear-gradient(90deg, var(--wood-light), var(--wood)); outline:none; cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #F2E7CE, #C9AE7E 60%, var(--wood));
+    border:2px solid var(--wood-deep); box-shadow:0 2px 5px rgba(0,0,0,.25); cursor:grab;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:16px; height:16px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #F2E7CE, #C9AE7E 60%, var(--wood));
+    border:2px solid var(--wood-deep); cursor:grab;
+  }
+  .btn{
+    font-family:inherit; font-size:.82rem; font-weight:700; letter-spacing:.08em;
+    color:#F6EEDD; background:linear-gradient(180deg,#8A7052,var(--wood));
+    border:2px solid var(--wood-deep); border-radius:10px 12px 10px 13px / 12px 10px 13px 10px;
+    padding:7px 16px; cursor:pointer; box-shadow:var(--shadow-sm);
+    transition:transform .12s ease, filter .12s ease;
+  }
+  .btn:hover{ filter:brightness(1.07); transform:translateY(-1px); }
+  .btn:active{ transform:translateY(1px); box-shadow:none; }
+  .btn.seal{ background:linear-gradient(180deg,#B4634F,var(--seal)); border-color:#7E4032; }
+  .btn.ghost{
+    background:var(--card); color:var(--wood-deep); border:1.5px solid rgba(123,98,71,.55);
+  }
+  .btn:disabled{ opacity:.45; cursor:not-allowed; transform:none; }
+  .chip-row{ display:flex; flex-wrap:wrap; gap:7px; }
+  .chip{
+    font-size:.78rem; font-weight:700; color:var(--wood-deep);
+    background:var(--card); border:1.5px solid rgba(123,98,71,.5);
+    padding:5px 12px; border-radius:999px; cursor:pointer; transition:all .15s;
+  }
+  .chip:hover{ border-color:var(--wood); transform:translateY(-1px); }
+  .chip.active{
+    background:var(--wood); color:#F6EEDD; border-color:var(--wood-deep);
+    box-shadow:inset 0 2px 4px rgba(0,0,0,.2);
+  }
+
+  /* 读数板 */
+  .readout{
+    display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;
+  }
+  .ro-item{
+    flex:1 1 120px; background:var(--card-2); border:1.5px solid rgba(123,98,71,.35);
+    border-radius:10px 12px 10px 13px / 12px 10px 13px 10px; padding:8px 12px;
+  }
+  .ro-item .ro-k{ font-size:.68rem; color:var(--ink-dim); letter-spacing:.1em; }
+  .ro-item .ro-v{ font-family:'JetBrainsMono',monospace; font-size:1.02rem; font-weight:700; color:var(--ink); }
+  .ro-item .ro-v em{ font-style:normal; font-size:.72rem; color:var(--ink-dim); }
+
+  .note-strip{
+    margin-top:12px; padding:10px 14px; font-size:.84rem; line-height:1.8;
+    background:linear-gradient(90deg, rgba(179,148,90,.14), rgba(179,148,90,.04));
+    border-left:4px solid var(--gold); border-radius:0 12px 12px 0;
+  }
+  .note-strip b{ color:var(--wood-deep); }
+
+  /* ============ 交汇手札 ============ */
+  .bridge{
+    background:linear-gradient(180deg,#F8F1DE,#F2E8D0);
+    border:2px solid var(--wood); border-radius:var(--r-card);
+    box-shadow:var(--shadow); padding:20px; margin:6px 0 30px; position:relative;
+  }
+  .bridge-title{
+    position:absolute; top:-15px; left:50%; transform:translateX(-50%) rotate(-1.5deg);
+    background:linear-gradient(180deg,#B4634F,var(--seal)); color:#F8EEDD;
+    font-size:.82rem; font-weight:900; letter-spacing:.3em; padding:6px 22px;
+    border-radius:8px 10px 8px 11px / 10px 8px 11px 8px;
+    box-shadow:0 3px 8px rgba(126,64,50,.4); white-space:nowrap;
+  }
+  .bridge-grid{
+    display:grid; grid-template-columns:1fr auto 1fr; gap:16px; align-items:stretch; margin-top:8px;
+  }
+  .bridge-col{
+    background:var(--card); border:1.5px solid rgba(123,98,71,.3);
+    border-radius:12px 14px 12px 15px / 14px 12px 15px 12px; padding:14px 16px;
+  }
+  .bridge-col h4{ font-size:.86rem; letter-spacing:.14em; margin-bottom:8px; display:flex; align-items:center; gap:7px; }
+  .bridge-col.ph h4{ color:var(--phys); } .bridge-col.ch h4{ color:var(--chem); }
+  .bridge-col ul{ list-style:none; font-size:.84rem; color:var(--ink); }
+  .bridge-col li{ padding:4px 0 4px 18px; position:relative; }
+  .bridge-col li::before{ content:'❧'; position:absolute; left:0; color:var(--ink-faint); font-size:.8rem; }
+  .bridge-seal{
+    align-self:center; width:118px; height:118px; border-radius:50%; flex:none;
+    background:radial-gradient(circle at 36% 30%, #B4634F, var(--seal) 60%, #7E4032);
+    box-shadow:inset 0 3px 8px rgba(255,255,255,.22), inset 0 -5px 10px rgba(0,0,0,.28), 0 4px 12px rgba(126,64,50,.35);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    color:#F8EEDD; text-align:center; transform:rotate(-3deg); padding:12px;
+  }
+  .bridge-seal .bs-k{ font-size:.62rem; letter-spacing:.3em; opacity:.85; }
+  .bridge-seal .bs-t{ font-size:.92rem; font-weight:900; line-height:1.4; letter-spacing:.06em; }
+  .bridge-core{
+    margin-top:14px; text-align:center; font-size:.95rem; font-weight:700; color:var(--wood-deep);
+    padding:10px 16px; background:rgba(158,81,64,.08); border:1px dashed rgba(158,81,64,.45); border-radius:12px;
+  }
+  .bridge-core .mono{ color:var(--seal); }
+
+  /* ============ 页脚 ============ */
+  footer{
+    text-align:center; padding:34px 16px 44px; color:var(--ink-dim); font-size:.8rem;
+    border-top:1px dashed rgba(123,98,71,.4); letter-spacing:.1em;
+  }
+  footer .kai{ font-size:.95rem; color:var(--wood-deep); }
+
+  /* ============ 响应式 ============ */
+  @media (max-width: 980px){
+    .layout{ grid-template-columns:1fr; }
+    .side{ position:static; }
+    .wing-nav{ flex-direction:row; overflow-x:auto; padding-bottom:4px; }
+    .wing-tab{ min-width:170px; }
+    .side-note{ display:none; }
+    .back-btn{ top:auto; bottom:16px; left:14px; }
+  }
+  @media (max-width: 640px){
+    .wing-head h2{ font-size:1.32rem; }
+    .bridge-grid{ grid-template-columns:1fr; }
+    .bridge-seal{ margin:0 auto; width:96px; height:96px; }
+    .top-title span{ display:none; }
+    input[type=range]{ width:100px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ 顶部木梁 ============ -->
+<div class="topbar">
+  <div class="top-seal kai">原</div>
+  <div class="top-title">
+    <h1 class="kai">元素档案馆</h1>
+    <span>ARCHIVE · OF · ATOMS</span>
+  </div>
+  <div class="top-progress">
+    <div class="orb">📜</div>
+    <span>研究手账&nbsp;<b class="mono" id="journalCount">0</b> / 7</span>
+  </div>
+</div>
+
+<a class="back-btn" href="./index.html">← 返回绘本馆</a>
+
+<div class="layout">
+
+  <!-- ============ 侧边档案柜 ============ -->
+  <aside class="side">
+    <div class="side-inner">
+      <div class="side-title kai">研 究 目 录</div>
+      <nav class="wing-nav">
+        <a class="wing-tab" href="#wing-a">
+          <span class="wt-no">第一研究室</span>
+          <span class="wt-name kai">核式结构厅</span>
+          <span class="wt-dots"><span class="dot" data-mod="rutherford"></span><span class="dot" data-mod="periodic"></span></span>
+        </a>
+        <a class="wing-tab" href="#wing-b">
+          <span class="wt-no">第二研究室</span>
+          <span class="wt-name kai">光谱回廊</span>
+          <span class="wt-dots"><span class="dot" data-mod="bohr"></span><span class="dot" data-mod="flame"></span></span>
+        </a>
+        <a class="wing-tab" href="#wing-c">
+          <span class="wt-no">第三研究室</span>
+          <span class="wt-name kai">衰变密室</span>
+          <span class="wt-dots"><span class="dot" data-mod="decay"></span><span class="dot" data-mod="equation"></span><span class="dot" data-mod="dating"></span></span>
+        </a>
+      </nav>
+      <div class="side-note">
+        馆长寄语：这里每一台仪器都连接着<b>物理</b>与<b>化学</b>两个世界。动手完成实验，即可在研究手账上盖下一枚<b>印章</b>。
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ 主栏 ============ -->
+  <main>
+
+  <!-- ================= 第一研究室 · 核式结构厅 ================= -->
+  <section class="wing" id="wing-a">
+    <div class="wing-head">
+      <span class="wh-no">第一研究室</span>
+      <h2 class="kai">核式结构厅<span class="wh-en">NUCLEAR · MODEL</span></h2>
+      <p class="wh-desc">原子到底有多「空」？用 α 粒子轰击金箔，复现 1909 年那场改变物理学的实验；再打开元素陈列柜，看核电荷如何暗中排布整张周期表。</p>
+    </div>
+
+    <!-- 实验壹 · 卢瑟福散射 -->
+    <div class="bench" id="bench-rutherford">
+      <div class="bench-paper">
+        <div class="bench-head">
+          <span class="bench-tag">实验 · 壹</span>
+          <h3 class="kai">α 粒子散射实验台</h3>
+          <span class="side-chip ph">物理侧 · 卢瑟福核式结构</span>
+        </div>
+        <p class="bench-lead">调节 α 粒子能量并发射粒子流，观察它们穿过金箔时的轨迹。切换「枣糕模型 / 核式模型」，看看哪种模型预言了你的观测结果。</p>
+        <div class="bench-body">
+          <canvas class="stage" id="rsCanvas" width="860" height="380"></canvas>
+          <div class="console">
+            <div class="chip-row" id="rsModelRow">
+              <button class="chip active" data-model="rutherford">卢瑟福核式模型</button>
+              <button class="chip" data-model="plum">汤姆孙枣糕模型</button>
+            </div>
+            <label class="ctl">α 能量 <input type="range" id="rsEnergy" min="1" max="9" step="0.5" value="5"><span class="val" id="rsEnergyVal">5.0 MeV</span></label>
+            <button class="btn seal" id="rsFire">发射粒子流</button>
+            <button class="btn ghost" id="rsTrace">轨迹：开</button>
+            <button class="btn ghost" id="rsReset">重置计数</button>
+          </div>
+          <div class="readout">
+            <div class="ro-item"><div class="ro-k">已发射 α</div><div class="ro-v" id="rsTotal">0</div></div>
+            <div class="ro-item"><div class="ro-k">直线穿过 (&lt;4°)</div><div class="ro-v" id="rsStraight">0 <em>—%</em></div></div>
+            <div class="ro-item"><div class="ro-k">小角偏转 (4–25°)</div><div class="ro-v" id="rsBend">0 <em>—%</em></div></div>
+            <div class="ro-item"><div class="ro-k">大角散射 (&gt;25°)</div><div class="ro-v" id="rsLarge">0 <em>—%</em></div></div>
+            <div class="ro-item"><div class="ro-k">被弹回 (&gt;90°)</div><div class="ro-v" id="rsBack">0 <em>—%</em></div></div>
+          </div>
+          <div class="note-strip" id="rsNote">
+            <b>观测手记：</b>绝大多数 α 粒子直线穿过金箔 —— 原子内部<b>空旷</b>得惊人；约万分之一的粒子被大角度弹回 —— 原子的质量与正电荷集中在一个<b>极小、极重的核</b>里。试试切换枣糕模型，还能打出大角度散射吗？
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 实验贰 · 元素周期律陈列柜 -->
+    <div class="bench" id="bench-periodic">
+      <div class="bench-paper">
+        <div class="bench-head">
+          <span class="bench-tag">实验 · 贰</span>
+          <h3 class="kai">元素周期律陈列柜</h3>
+          <span class="side-chip ch">化学侧 · 原子半径与电负性</span>
+        </div>
+        <p class="bench-lead">点击任意元素格，查看它的原子半径、电负性与电子层结构。切换热力图模式，找出「同周期」与「同主族」的递变规律。</p>
+        <div class="bench-body">
+          <div class="console" style="margin-top:0;margin-bottom:12px;">
+            <div class="chip-row" id="ptModeRow">
+              <button class="chip active" data-mode="radius">原子半径热力图</button>
+              <button class="chip" data-mode="en">电负性热力图</button>
+            </div>
+            <span style="font-size:.78rem;color:var(--ink-dim);" id="ptHint">暖色 = 半径大 · 冷色 = 半径小</span>
+          </div>
+          <div id="ptGrid" style="display:grid;grid-template-columns:repeat(18,1fr);gap:3px;"></div>
+          <div id="ptDetail" style="display:none;margin-top:14px;">
+            <div style="display:grid;grid-template-columns:auto 1fr 220px;gap:16px;align-items:center;background:var(--card-2);border:1.5px solid rgba(123,98,71,.35);border-radius:14px;padding:14px 18px;">
+              <div id="ptBigTile" style="width:84px;height:84px;border-radius:14px;border:2px solid var(--wood);background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:var(--shadow-sm);"></div>
+              <div id="ptInfo" style="font-size:.85rem;"></div>
+              <canvas id="ptAtom" width="220" height="150" style="width:220px;height:150px;background:#FDFAF1;border:1px solid rgba(123,98,71,.3);border-radius:10px;"></canvas>
+            </div>
+          </div>
+          <div class="note-strip">
+            <b>陈列规律：</b>同周期从左到右，核电荷数增加 → 原子半径<b>减小</b>、电负性<b>增大</b>；同主族从上到下，电子层数增加 → 原子半径<b>增大</b>、电负性<b>减小</b>（稀有气体一般不讨论电负性）。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 交汇手札 A -->
+    <div class="bridge">
+      <div class="bridge-title kai">交 汇 手 札 · 壹</div>
+      <div class="bridge-grid">
+        <div class="bridge-col ph">
+          <h4>⚛ 物理侧 · 核式结构模型</h4>
+          <ul>
+            <li>α 散射实验 → 原子中心有体积极小、质量极大的原子核</li>
+            <li>原子核直径仅约 10⁻¹⁵ m，却集中了 99.97% 的质量</li>
+            <li>核电荷数 Z = 质子数，决定核外电子数目</li>
+          </ul>
+        </div>
+        <div class="bridge-seal kai">
+          <span class="bs-k">交汇点</span>
+          <span class="bs-t">原子 = 核 + 电子<br>核电荷数定元素</span>
+        </div>
+        <div class="bridge-col ch">
+          <h4>⚗ 化学侧 · 元素周期律</h4>
+          <ul>
+            <li>元素性质随核电荷数递增呈周期性变化</li>
+            <li>原子半径与电负性的递变源于核对外层电子的吸引</li>
+            <li>同一核电荷数 = 同一种元素，无论中子多少（同位素）</li>
+          </ul>
+        </div>
+      </div>
+      <div class="bridge-core">原子由<span class="mono">原子核</span>和<span class="mono">核外电子</span>构成 —— <span class="mono">核电荷数</span>决定元素种类</div>
+    </div>
+  </section>
+
+  <!-- ================= 第二研究室 · 光谱回廊 ================= -->
+  <section class="wing" id="wing-b">
+    <div class="wing-head">
+      <span class="wh-no">第二研究室</span>
+      <h2 class="kai">光谱回廊<span class="wh-en">SPECTRUM · GALLERY</span></h2>
+      <p class="wh-desc">电子住在分层的「楼梯」上，每次跳下都会点亮一盏特定颜色的灯。氢原子的能级跃迁与金属的焰色反应，本质是同一首光的诗。</p>
+    </div>
+
+    <!-- 实验叁 · 玻尔能级跃迁仪 -->
+    <div class="bench" id="bench-bohr">
+      <div class="bench-paper">
+        <div class="bench-head">
+          <span class="bench-tag">实验 · 叁</span>
+          <h3 class="kai">玻尔能级跃迁仪</h3>
+          <span class="side-chip ph">物理侧 · 能级跃迁与光谱</span>
+        </div>
+        <p class="bench-lead">先用光子把氢原子的电子「撞」上高能级（吸收），再看它逐级跳回，沿途放出一串串特定频率的光子（发射）。收集到的每条谱线，都是元素的指纹。</p>
+        <div class="bench-body">
+          <canvas class="stage" id="bohrCanvas" width="860" height="400"></canvas>
+          <div class="console">
+            <span class="ctl" style="font-size:.8rem;">激发到能级：</span>
+            <div class="chip-row" id="bohrLevelRow">
+              <button class="chip" data-n="2">n=2</button>
+              <button class="chip" data-n="3">n=3</button>
+              <button class="chip" data-n="4">n=4</button>
+              <button class="chip" data-n="5">n=5</button>
+              <button class="chip" data-n="6">n=6</button>
+            </div>
+            <button class="btn seal" id="bohrExcite">⚡ 照射激发</button>
+            <button class="btn ghost" id="bohrReset">重置光谱</button>
+            <div class="chip-row" id="bohrSpecMode" style="margin-left:auto;">
+              <button class="chip active" data-m="emission">发射光谱</button>
+              <button class="chip" data-m="absorption">吸收光谱</button>
+            </div>
+          </div>
+          <div class="readout">
+            <div class="ro-item"><div class="ro-k">当前能级</div><div class="ro-v" id="bohrN">n = 1</div></div>
+            <div class="ro-item"><div class="ro-k">能量</div><div class="ro-v" id="bohrE">−13.60 <em>eV</em></div></div>
+            <div class="ro-item"><div class="ro-k">本次光子</div><div class="ro-v" id="bohrPhoton">— <em>eV · nm</em></div></div>
+            <div class="ro-item"><div class="ro-k">谱线所属</div><div class="ro-v" id="bohrSeries">—</div></div>
+          </div>
+          <div class="note-strip">
+            <b>观测手记：</b>电子只能在<b>特定能级</b>间跃迁，吸收或放出光子的能量必须恰好等于两能级之差 <span class="mono">hν = E<sub>m</sub> − E<sub>n</sub></span>。落到 n=2 的跃迁发出<b>可见光</b>（巴耳末系）；落到 n=1 是紫外线（莱曼系）；落到 n=3 以外是红外线。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 实验肆 · 焰色反应试验台 -->
+    <div class="bench" id="bench-flame">
+      <div class="bench-paper">
+        <div class="bench-head">
+          <span class="bench-tag">实验 · 肆</span>
+          <h3 class="kai">焰色反应试验台</h3>
+          <span class="side-chip ch">化学侧 · 焰色反应与光谱分析</span>
+        </div>
+        <p class="bench-lead">取一瓶金属盐溶液，用铂丝蘸取后送入本生灯外焰。火焰瞬间染上的颜色，就是金属离子跃迁发光的「签名」。</p>
+        <div class="bench-body">
+          <div class="chip-row" id="flameShelf" style="margin-bottom:12px;"></div>
+          <canvas class="stage" id="flameCanvas" width="860" height="330"></canvas>
+          <div class="console">
+            <button class="btn ghost" id="flameCobalt">蓝色钴玻璃：关</button>
+            <span style="font-size:.78rem;color:var(--ink-dim);">观察钾的紫色焰色时，钴玻璃可滤去钠杂质的黄光干扰</span>
+          </div>
+          <div class="readout">
+            <div class="ro-item"><div class="ro-k">当前试剂</div><div class="ro-v" id="flameName">—</div></div>
+            <div class="ro-item"><div class="ro-k">焰色</div><div class="ro-v" id="flameColor">—</div></div>
+            <div class="ro-item"><div class="ro-k">特征谱线</div><div class="ro-v" id="flameLines">— <em>nm</em></div></div>
+            <div class="ro-item"><div class="ro-k">生活应用</div><div class="ro-v" id="flameApp">—</div></div>
+          </div>
+          <div class="note-strip">
+            <b>试验要领：</b>焰色反应是<b>物理变化</b> —— 火焰的能量把电子托上高能级，电子回落时放出特征光。化学家借此<b>鉴定金属元素</b>（原子光谱分析），烟花师傅则用它调配夜空的颜色。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 交汇手札 B -->
+    <div class="bridge">
+      <div class="bridge-title kai">交 汇 手 札 · 贰</div>
+      <div class="bridge-grid">
+        <div class="bridge-col ph">
+          <h4>⚛ 物理侧 · 玻尔模型</h4>
+          <ul>
+            <li>电子轨道与能量量子化：E<sub>n</sub> = −13.6/n² eV</li>
+            <li>跃迁条件：hν = |E<sub>m</sub> − E<sub>n</sub>|，频率 ν 唯一确定</li>
+            <li>氢光谱莱曼系、巴耳末系波长被精确预言</li>
+          </ul>
+        </div>
+        <div class="bridge-seal kai">
+          <span class="bs-k">交汇点</span>
+          <span class="bs-t">跃迁 ⇄ 特定<br>频率的光子</span>
+        </div>
+        <div class="bridge-col ch">
+          <h4>⚗ 化学侧 · 焰色与光谱分析</h4>
+          <ul>
+            <li>每种金属离子有独一无二的特征谱线</li>
+            <li>焰色反应快速检验金属元素（钠黄、钾紫、锶红…）</li>
+            <li>光谱分析可测定未知物质成分，曾发现铯、铷、氦</li>
+          </ul>
+        </div>
+      </div>
+      <div class="bridge-core">电子跃迁释放 / 吸收<span class="mono">特定频率</span>的光子 —— 光谱是元素通用的<span class="mono">指纹</span></div>
+    </div>
+  </section>
+
+  <!-- ================= 第三研究室 · 衰变密室 ================= -->
+  <section class="wing" id="wing-c">
+    <div class="wing-head">
+      <span class="wh-no">第三研究室</span>
+      <h2 class="kai">衰变密室<span class="wh-en">DECAY · CHAMBER</span></h2>
+      <p class="wh-desc">不稳定的原子核会悄悄变身。单个核的衰变无法预言，亿万核的衰变却遵守精确的数学律 —— 这就是半衰期，也是考古学家手中的时间标尺。</p>
+    </div>
+
+    <!-- 实验伍 · 半衰期沙漏 -->
+    <div class="bench" id="bench-decay">
+      <div class="bench-paper">
+        <div class="bench-head">
+          <span class="bench-tag">实验 · 伍</span>
+          <h3 class="kai">半衰期沙漏</h3>
+          <span class="side-chip ph">物理侧 · 放射性衰变与半衰期</span>
+        </div>
+        <p class="bench-lead">128 个原子核静静躺在铅室中。启动时间之轮，看它们一个接一个地衰变 —— 完全随机，却在整体上画出一条确定的指数曲线。</p>
+        <div class="bench-body">
+          <canvas class="stage" id="decayCanvas" width="860" height="400"></canvas>
+          <div class="console">
+            <div class="chip-row" id="decayIsoRow">
+              <button class="chip active" data-t="5730" data-label="年" data-speed="300">¹⁴C · T½=5730年</button>
+              <button class="chip" data-t="8.02" data-label="天" data-speed="2.5">¹³¹I · T½=8.02天</button>
+              <button class="chip" data-t="3.82" data-label="天" data-speed="1.2">²²²Rn · T½=3.82天</button>
+              <button class="chip" data-t="10" data-label="秒" data-speed="0.5">模拟核素 · T½=10秒</button>
+            </div>
+            <button class="btn seal" id="decayStart">▶ 启动时间之轮</button>
+            <label class="ctl">时间流速 <input type="range" id="decaySpeed" min="0.2" max="3" step="0.2" value="1"><span class="val" id="decaySpeedVal">×1.0</span></label>
+            <button class="btn ghost" id="decayReset">重置</button>
+          </div>
+          <div class="readout">
+            <div class="ro-item"><div class="ro-k">流逝时间</div><div class="ro-v" id="decayTime">0 <em>年</em></div></div>
+            <div class="ro-item"><div class="ro-k">剩余原子核</div><div class="ro-v" id="decayRemain">128 <em>/ 128</em></div></div>
+            <div class="ro-item"><div class="ro-k">剩余比例</div><div class="ro-v" id="decayPct">100.0 <em>%</em></div></div>
+            <div class="ro-item"><div class="ro-k">经过半衰期</div><div class="ro-v" id="decayHalf">0.00 <em>个</em></div></div>
+          </div>
+          <div class="note-strip">
+            <b>观测手记：</b>每经过一个半衰期 T½，剩余核数就<b>减半一次</b>：<span class="mono">N = N₀·(½)<sup>t/T½</sup></span>。单个核何时衰变纯属随机，但大量核的统计行为精确可测 —— 虚线是理论曲线，亮点是真实模拟，它们几乎重合。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 实验陆 · 核反应方程式配平室 -->
+    <div class="bench" id="bench-equation">
+      <div class="bench-paper">
+        <div class="bench-head">
+          <span class="bench-tag">实验 · 陆</span>
+          <h3 class="kai">核反应方程式配平室</h3>
+          <span class="side-chip ph">物理侧 · 核反应方程</span>
+        </div>
+        <p class="bench-lead">每张反应卡片上都缺了一味「料」。从药盘中选出正确的粒子填入，让天平两端的质量数与电荷数同时平衡。</p>
+        <div class="bench-body">
+          <div class="console" style="margin-top:0;margin-bottom:12px;">
+            <span class="ctl" style="font-size:.8rem;">药盘 · 可选粒子：</span>
+            <div class="chip-row" id="eqPalette"></div>
+          </div>
+          <div id="eqList"></div>
+          <div class="readout">
+            <div class="ro-item"><div class="ro-k">已配平方程式</div><div class="ro-v" id="eqScore">0 <em>/ 8</em></div></div>
+            <div class="ro-item"><div class="ro-k">当前选中</div><div class="ro-v" id="eqPicked">—</div></div>
+          </div>
+          <div class="note-strip">
+            <b>配平心法：</b>核反应前后<span class="mono">质量数 A 守恒</span>、<span class="mono">电荷数 Z 守恒</span>。α 粒子取走 4 和 2；β⁻ 粒子留下 −1 的电荷；中子只带走 1 份质量。先算 A，再算 Z，答案自然浮现。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 实验柒 · 碳十四考古测年仪 -->
+    <div class="bench" id="bench-dating">
+      <div class="bench-paper">
+        <div class="bench-head">
+          <span class="bench-tag">实验 · 柒</span>
+          <h3 class="kai">碳十四考古测年仪</h3>
+          <span class="side-chip ch">化学侧 · 放射性同位素的应用</span>
+        </div>
+        <p class="bench-lead">生物活着时不断吸收 ¹⁴C，死亡后只剩衰减。测量遗物中 ¹⁴C 的剩余比例，就能读出它沉睡了多少年。试试为四件出土文物测年！</p>
+        <div class="bench-body">
+          <div class="chip-row" id="dateArtRow" style="margin-bottom:12px;"></div>
+          <canvas class="stage" id="datingCanvas" width="860" height="300"></canvas>
+          <div class="console">
+            <label class="ctl">估计年代 <input type="range" id="dateGuess" min="0" max="50000" step="100" value="0"><span class="val" id="dateGuessVal">0 年</span></label>
+            <button class="btn seal" id="dateJudge">🔍 鉴定年代</button>
+            <button class="btn ghost" id="dateCalc">打开测年计算器</button>
+          </div>
+          <div class="readout">
+            <div class="ro-item"><div class="ro-k">出土文物</div><div class="ro-v" id="dateArtName">—</div></div>
+            <div class="ro-item"><div class="ro-k">¹⁴C 剩余比例</div><div class="ro-v" id="datePct">— <em>%</em></div></div>
+            <div class="ro-item"><div class="ro-k">鉴定结果</div><div class="ro-v" id="dateResult">—</div></div>
+          </div>
+          <div class="note-strip" id="dateNote">
+            <b>测年原理：</b><span class="mono">t = T½ · log₂(N₀/N)</span>，¹⁴C 半衰期 5730 年。剩余一半 → 5730 年；剩四分之一 → 11460 年。同位素还可作<b>示踪原子</b>：医学上用 ¹³¹I 追踪甲状腺摄碘，农业上用 ³²P 研究作物吸收。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 交汇手札 C -->
+    <div class="bridge">
+      <div class="bridge-title kai">交 汇 手 札 · 叁</div>
+      <div class="bridge-grid">
+        <div class="bridge-col ph">
+          <h4>⚛ 物理侧 · 衰变与核反应</h4>
+          <ul>
+            <li>α / β / γ 三种衰变改变原子核的组成</li>
+            <li>核反应方程满足质量数守恒与电荷数守恒</li>
+            <li>半衰期 T½ 是核素的固有属性，与外界条件无关</li>
+          </ul>
+        </div>
+        <div class="bridge-seal kai">
+          <span class="bs-k">交汇点</span>
+          <span class="bs-t">A·Z 双守恒<br>半衰期计时</span>
+        </div>
+        <div class="bridge-col ch">
+          <h4>⚗ 化学侧 · 同位素的应用</h4>
+          <ul>
+            <li>¹⁴C 测年：为考古文物与古生物遗骸定年代</li>
+            <li>示踪原子：追踪化学反应路径与物质代谢</li>
+            <li>放射诊疗：⁶⁰Co 放疗、¹³¹I 治疗甲状腺疾病</li>
+          </ul>
+        </div>
+      </div>
+      <div class="bridge-core"><span class="mono">质量数守恒 · 电荷数守恒 · 半衰期计算</span> —— 物理立的法则，正是化学用的工具</div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="kai">元素档案馆 · 原子结构与核反应</div>
+    <div style="margin-top:6px;">物理 × 化学 · 三次交汇 // 高中全学科绘本馆</div>
+  </footer>
+
+<script>
+/* =====================================================
+   研究手账 · 进度印章
+===================================================== */
+const Journal = {
+  done: {},
+  mark(mod){
+    if(this.done[mod]) return;
+    this.done[mod] = true;
+    document.querySelectorAll('.wing-tab .dot[data-mod="'+mod+'"]').forEach(d=>d.classList.add('done'));
+    document.getElementById('journalCount').textContent = Object.keys(this.done).length;
+  }
+};
+
+/* 工具：可见光波长 → 颜色 */
+function waveColor(nm){
+  if(nm < 380) return '#8E7FC0';   // 紫外 ·  muted
+  if(nm > 750) return '#A9705F';   // 红外
+  // 380-750 → HSL 色相
+  const t = (nm - 380) / 370;
+  const h = 270 - t * 270;         // 紫→红
+  return 'hsl(' + h.toFixed(0) + ',62%,52%)';
+}
+function fmt(n, d){ return Number(n).toFixed(d === undefined ? 2 : d); }
+
+/* =====================================================
+   实验壹 · α 粒子散射实验台
+===================================================== */
+(function(){
+  const cv = document.getElementById('rsCanvas'), ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  const foilX = 430, foilW = 56;                 // 金箔位置
+  const atoms = [];
+  for(let c=0;c<3;c++) for(let r=0;r<9;r++)
+    atoms.push({x: foilX + 10 + c*18, y: 30 + r*36});
+  let model = 'rutherford', energy = 5, traces = true, streaming = false;
+  let particles = [], fired = 0;
+  const counts = {straight:0, bend:0, large:0, back:0};
+
+  function spawn(){
+    const y = 60 + Math.random() * (H - 120);
+    // 命中参数：b 在 [0, bMax] 上按面积均匀（b² 均匀）
+    const bMax = 30;
+    const b = bMax * Math.sqrt(Math.random());
+    const b0 = 15 / energy;                       // 瞄准距离 ∝ 1/E
+    let theta;
+    if(model === 'plum'){
+      theta = (Math.random()+Math.random()+Math.random()-1.5) * 0.9; // 高斯小角
+    }else{
+      theta = 2 * Math.atan(b0 / Math.max(b, 0.15)) * 180 / Math.PI;
+    }
+    if(Math.abs(theta) < 0.02) theta = 0.02;
+    const sign = Math.random() < 0.5 ? -1 : 1;
+    const ang = sign * theta * Math.PI / 180;
+    // 预先铺设路径：入射直线 → 核旁弯转 → 出射射线
+    const pts = [];
+    const enterX = foilX - 60, exitStartX = foilX + foilW + 40;
+    const bendY = y - sign * (b / bMax) * 26;     // 弯转靠近某个"原子"
+    for(let i=0;i<=20;i++){ const t=i/20; pts.push([10 + (enterX-10)*t, y]); }
+    for(let i=1;i<=24;i++){
+      const t=i/24;
+      const x = (1-t)*(1-t)*enterX + 2*(1-t)*t*(foilX+foilW/2) + t*t*exitStartX;
+      const yy = (1-t)*(1-t)*y + 2*(1-t)*t*bendY + t*t*(y + Math.tan(ang)*(exitStartX-enterX)*0.25);
+      pts.push([x, yy]);
+    }
+    for(let i=1;i<=40;i++){
+      const t=i/40;
+      pts.push([exitStartX + (W-10-exitStartX)*t*1.4, (y + Math.tan(ang)*(exitStartX-enterX)*0.25) + Math.tan(ang)*(W-10-exitStartX)*t*1.4]);
+    }
+    particles.push({pts, i:0, theta: sign*theta, speed: 3.2 + energy*0.55, dead:false});
+    fired++;
+  }
+
+  function classify(th){
+    const a = Math.abs(th);
+    if(a < 4) counts.straight++;
+    else if(a < 25) counts.bend++;
+    else if(a <= 90) counts.large++;
+    else counts.back++;
+    updateReadout();
+  }
+  function pct(n){ return fired ? fmt(100*n/fired, 1) : '0.0'; }
+  function updateReadout(){
+    document.getElementById('rsTotal').textContent = fired;
+    document.getElementById('rsStraight').innerHTML = counts.straight + ' <em>' + pct(counts.straight) + '%</em>';
+    document.getElementById('rsBend').innerHTML = counts.bend + ' <em>' + pct(counts.bend) + '%</em>';
+    document.getElementById('rsLarge').innerHTML = counts.large + ' <em>' + pct(counts.large) + '%</em>';
+    document.getElementById('rsBack').innerHTML = counts.back + ' <em>' + pct(counts.back) + '%</em>';
+    if(fired >= 30) Journal.mark('rutherford');
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    // 铅盒 α 源
+    ctx.fillStyle = '#8A8069'; ctx.fillRect(4, H/2-46, 26, 92);
+    ctx.fillStyle = '#5C5648'; ctx.fillRect(4, H/2-46, 6, 92);
+    ctx.fillStyle = '#473E31'; ctx.font = '12px sans-serif';
+    ctx.save(); ctx.translate(18, H/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText('α 放射源', 0, 4); ctx.restore();
+    // 金箔
+    ctx.fillStyle = 'rgba(179,148,90,.16)'; ctx.fillRect(foilX, 14, foilW, H-28);
+    ctx.strokeStyle = 'rgba(123,98,71,.5)'; ctx.setLineDash([5,4]); ctx.lineWidth = 1.2;
+    ctx.strokeRect(foilX, 14, foilW, H-28); ctx.setLineDash([]);
+    ctx.fillStyle = '#8D806C'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('金箔（约 400 层原子）', foilX + foilW/2, H-4);
+    // 原子：电子云 + 核
+    atoms.forEach(a=>{
+      if(model === 'plum'){
+        ctx.fillStyle = 'rgba(201,154,96,.34)';
+        ctx.beginPath(); ctx.arc(a.x, a.y, 15, 0, 7); ctx.fill();
+        ctx.fillStyle = '#7B6247';
+        ctx.beginPath(); ctx.arc(a.x, a.y, 2, 0, 7); ctx.fill();
+      }else{
+        ctx.strokeStyle = 'rgba(94,126,146,.35)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(a.x, a.y, 15, 0, 7); ctx.stroke();
+        const g = ctx.createRadialGradient(a.x-1,a.y-1,0,a.x,a.y,5);
+        g.addColorStop(0,'#E8CE93'); g.addColorStop(1,'#B3945A');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(a.x, a.y, 3.4, 0, 7); ctx.fill();
+      }
+    });
+    // 粒子
+    particles.forEach(p=>{
+      if(traces && p.i > 2){
+        const m = Math.min(p.i, p.pts.length - 1);
+        ctx.strokeStyle = 'rgba(158,81,64,.30)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(p.pts[0][0], p.pts[0][1]);
+        for(let k=1;k<m;k++) ctx.lineTo(p.pts[k][0], p.pts[k][1]);
+        ctx.stroke();
+      }
+      if(p.i < p.pts.length){
+        const [x,y] = p.pts[p.i];
+        ctx.fillStyle = '#9E5140';
+        ctx.beginPath(); ctx.arc(x, y, 3, 0, 7); ctx.fill();
+        ctx.fillStyle = 'rgba(158,81,64,.25)';
+        ctx.beginPath(); ctx.arc(x, y, 6, 0, 7); ctx.fill();
+      }
+    });
+    ctx.fillStyle = '#8D806C'; ctx.font = '12px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('模型：' + (model==='plum' ? '汤姆孙枣糕模型（正电荷均匀分布）' : '卢瑟福核式模型（质量与正电荷集中于核）'), 14, 24);
+  }
+
+  function loop(){
+    if(streaming && particles.filter(p=>!p.dead).length < 10 && Math.random() < 0.35) spawn();
+    particles.forEach(p=>{
+      if(p.dead) return;
+      p.i += Math.max(1, Math.round(p.speed));
+      if(p.i >= p.pts.length){
+        p.dead = true; classify(p.theta);
+      }
+    });
+    particles = particles.filter(p=>!p.dead || traces);
+    if(particles.length > 140){
+      // 只保留最近的轨迹，防止无限堆积
+      const alive = particles.filter(p=>!p.dead);
+      const deadTraced = particles.filter(p=>p.dead).slice(-(140 - alive.length));
+      particles = alive.concat(deadTraced);
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
+  loop();
+
+  document.getElementById('rsModelRow').addEventListener('click', e=>{
+    const b = e.target.closest('.chip'); if(!b) return;
+    document.querySelectorAll('#rsModelRow .chip').forEach(c=>c.classList.remove('active'));
+    b.classList.add('active'); model = b.dataset.model;
+  });
+  document.getElementById('rsEnergy').addEventListener('input', e=>{
+    energy = +e.target.value;
+    document.getElementById('rsEnergyVal').textContent = fmt(energy,1) + ' MeV';
+  });
+  document.getElementById('rsFire').addEventListener('click', function(){
+    streaming = !streaming;
+    this.textContent = streaming ? '停止发射' : '发射粒子流';
+    if(streaming) spawn();
+  });
+  document.getElementById('rsTrace').addEventListener('click', function(){
+    traces = !traces;
+    this.textContent = traces ? '轨迹：开' : '轨迹：关';
+  });
+  document.getElementById('rsReset').addEventListener('click', ()=>{
+    particles = []; fired = 0;
+    counts.straight = counts.bend = counts.large = counts.back = 0;
+    updateReadout();
+  });
+})();
+
+/* =====================================================
+   实验贰 · 元素周期律陈列柜
+===================================================== */
+(function(){
+  // [符号, 中文名, 族, 周期, 半径pm, 电负性, 电子层]
+  const EL = [
+    ['H','氢',1,1,53,2.20,[1]],                                                                 ['He','氦',18,1,31,0,[2]],
+    ['Li','锂',1,2,167,0.98,[2,1]],['Be','铍',2,2,112,1.57,[2,2]],['B','硼',13,2,87,2.04,[2,3]],['C','碳',14,2,67,2.55,[2,4]],['N','氮',15,2,56,3.04,[2,5]],['O','氧',16,2,48,3.44,[2,6]],['F','氟',17,2,42,3.98,[2,7]],['Ne','氖',18,2,38,0,[2,8]],
+    ['Na','钠',1,3,190,0.93,[2,8,1]],['Mg','镁',2,3,145,1.31,[2,8,2]],['Al','铝',13,3,118,1.61,[2,8,3]],['Si','硅',14,3,111,1.90,[2,8,4]],['P','磷',15,3,98,2.19,[2,8,5]],['S','硫',16,3,88,2.58,[2,8,6]],['Cl','氯',17,3,79,3.16,[2,8,7]],['Ar','氩',18,3,71,0,[2,8,8]],
+    ['K','钾',1,4,243,0.82,[2,8,8,1]],['Ca','钙',2,4,194,1.00,[2,8,8,2]],['Sc','钪',3,4,184,1.36,[2,8,9,2]],['Ti','钛',4,4,176,1.54,[2,8,10,2]],['V','钒',5,4,171,1.63,[2,8,11,2]],['Cr','铬',6,4,166,1.66,[2,8,13,1]],['Mn','锰',7,4,161,1.55,[2,8,13,2]],['Fe','铁',8,4,156,1.83,[2,8,14,2]],['Co','钴',9,4,152,1.88,[2,8,15,2]],['Ni','镍',10,4,149,1.91,[2,8,16,2]],['Cu','铜',11,4,145,1.90,[2,8,18,1]],['Zn','锌',12,4,142,1.65,[2,8,18,2]],['Ga','镓',13,4,136,1.81,[2,8,18,3]],['Ge','锗',14,4,125,2.01,[2,8,18,4]],['As','砷',15,4,114,2.18,[2,8,18,5]],['Se','硒',16,4,103,2.55,[2,8,18,6]],['Br','溴',17,4,94,2.96,[2,8,18,7]],['Kr','氪',18,4,88,3.00,[2,8,18,8]]
+  ];
+  const grid = document.getElementById('ptGrid');
+  let mode = 'radius', selected = null;
+
+  function lerp(a,b,t){ return a + (b-a)*t; }
+  function heat(t){ // 低饱和 冷蓝 → 暖陶
+    const c1=[214,224,228], c2=[201,138,107];
+    return 'rgb(' + Math.round(lerp(c1[0],c2[0],t)) + ',' + Math.round(lerp(c1[1],c2[1],t)) + ',' + Math.round(lerp(c1[2],c2[2],t)) + ')';
+  }
+  function render(){
+    grid.innerHTML = '';
+    EL.forEach((el,i)=>{
+      const [sym,name,g,p,r,en] = el;
+      const d = document.createElement('div');
+      d.style.cssText = 'grid-column:'+g+';grid-row:'+p+';border-radius:6px;padding:3px 1px;text-align:center;cursor:pointer;border:1.5px solid rgba(123,98,71,.25);transition:transform .12s;line-height:1.25;';
+      let bg;
+      if(mode==='radius'){ bg = heat((r-31)/(243-31)); }
+      else { bg = en===0 ? '#E4DCC9' : heat((en-0.79)/(3.98-0.79)); }
+      d.style.background = bg;
+      d.innerHTML = '<div style="font-size:8px;color:rgba(71,62,49,.65);">'+(i+1)+'</div>' +
+        '<div style="font-size:12px;font-weight:700;color:#473E31;">'+sym+'</div>' +
+        '<div style="font-size:9px;color:rgba(71,62,49,.8);">'+name+'</div>';
+      d.onmouseenter = ()=>{ d.style.transform='scale(1.14)'; d.style.zIndex=5; d.style.boxShadow='0 3px 10px rgba(74,59,42,.3)'; };
+      d.onmouseleave = ()=>{ d.style.transform=''; d.style.zIndex=''; d.style.boxShadow=''; };
+      d.onclick = ()=>show(i);
+      grid.appendChild(d);
+    });
+    document.getElementById('ptHint').textContent = mode==='radius' ? '暖色 = 半径大 · 冷色 = 半径小' : '暖色 = 电负性大 · 冷色 = 电负性小 · 米灰 = 稀有气体';
+  }
+
+  const GNAME = {1:'ⅠA',2:'ⅡA',3:'ⅢB',4:'ⅣB',5:'ⅤB',6:'ⅥB',7:'ⅦB',8:'Ⅷ',9:'Ⅷ',10:'Ⅷ',11:'ⅠB',12:'ⅡB',13:'ⅢA',14:'ⅣA',15:'ⅤA',16:'ⅥA',17:'ⅦA',18:'0'};
+  function show(i){
+    const [sym,name,g,p,r,en,cfg] = EL[i];
+    selected = i;
+    document.getElementById('ptDetail').style.display = 'block';
+    document.getElementById('ptBigTile').innerHTML =
+      '<div style="font-size:10px;color:var(--ink-dim);">'+(i+1)+'</div>' +
+      '<div style="font-size:26px;font-weight:900;">'+sym+'</div>' +
+      '<div style="font-size:12px;">'+name+'</div>';
+    document.getElementById('ptInfo').innerHTML =
+      '<div style="margin-bottom:6px;"><b style="font-size:1rem;">'+name+'（'+sym+'）</b> · 第 '+p+' 周期 · 第 '+GNAME[g]+' 族</div>' +
+      '<div style="display:flex;align-items:center;gap:8px;margin:4px 0;"><span style="width:64px;color:var(--ink-dim);">原子半径</span><div style="flex:1;height:10px;background:#E4DCC9;border-radius:99px;overflow:hidden;"><div style="width:'+(r/243*100).toFixed(1)+'%;height:100%;background:linear-gradient(90deg,#B3945A,#9E7250);border-radius:99px;"></div></div><b class="mono">'+r+' pm</b></div>' +
+      '<div style="display:flex;align-items:center;gap:8px;margin:4px 0;"><span style="width:64px;color:var(--ink-dim);">电负性</span><div style="flex:1;height:10px;background:#E4DCC9;border-radius:99px;overflow:hidden;"><div style="width:'+(en/4*100).toFixed(1)+'%;height:100%;background:linear-gradient(90deg,#8AA0AE,#5E7E92);border-radius:99px;"></div></div><b class="mono">'+(en===0?'—':en.toFixed(2))+'</b></div>' +
+      '<div style="margin-top:6px;color:var(--ink-dim);">电子排布：<span class="mono">'+cfg.join(' · ')+'</span>　核电荷数 Z = <b class="mono" style="color:var(--seal);">'+(i+1)+'</b></div>';
+    // 电子层示意图
+    const cv = document.getElementById('ptAtom'), ctx = cv.getContext('2d');
+    const cx = cv.width/2, cy = cv.height/2;
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ctx.fillStyle = '#B3945A';
+    ctx.beginPath(); ctx.arc(cx, cy, 10, 0, 7); ctx.fill();
+    ctx.fillStyle = '#473E31'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('+'+(i+1), cx, cy+3);
+    cfg.forEach((n,si)=>{
+      const rr = 24 + si*16;
+      ctx.strokeStyle = 'rgba(94,126,146,.5)'; ctx.lineWidth = 1; ctx.setLineDash([3,3]);
+      ctx.beginPath(); ctx.arc(cx, cy, rr, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+      for(let k=0;k<n;k++){
+        const a = -Math.PI/2 + k * 2*Math.PI/n;
+        ctx.fillStyle = '#5E7E92';
+        ctx.beginPath(); ctx.arc(cx + rr*Math.cos(a), cy + rr*Math.sin(a), 2.6, 0, 7); ctx.fill();
+      }
+    });
+    Journal.mark('periodic');
+  }
+
+  document.getElementById('ptModeRow').addEventListener('click', e=>{
+    const b = e.target.closest('.chip'); if(!b) return;
+    document.querySelectorAll('#ptModeRow .chip').forEach(c=>c.classList.remove('active'));
+    b.classList.add('active'); mode = b.dataset.mode; render();
+  });
+  render();
+})();
+
+/* =====================================================
+   实验叁 · 玻尔能级跃迁仪
+===================================================== */
+(function(){
+  const cv = document.getElementById('bohrCanvas'), ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  const EN = n => -13.6 / (n*n);
+  const AX = 165, AY = 168;                       // 原子视图中心
+  const LX0 = 380, LX1 = 838;                     // 能级图范围
+  const SY = 350, SH = 38;                        // 光谱条
+  let cur = 1, target = 2, busy = false, mode = 'emission';
+  let photons = [];                               // 飞行中的光子
+  let lines = [];                                 // 已收集谱线 nm
+  let elecAngle = 0, elecR = rOf(1), elecAnim = null;
+
+  function rOf(n){ return 20 + n*15; }
+  function yOf(E){ return 60 + (1 - (E / -13.6)) * 250; }   // E∈[-13.6,0] → y∈[310,60]
+  function xOfNm(nm){ return 40 + (nm-380)/(750-380) * (W-80); }
+
+  function excite(){
+    if(busy) return;
+    busy = true;
+    const n0 = cur, n1 = target;
+    const dE = EN(n1) - EN(n0);
+    showPhoton(dE, 1240/dE, true);
+    animateJump(n0, n1, ()=>{
+      cur = n1; updateReadout();
+      setTimeout(cascade, 650);
+    });
+    Journal.mark('bohr');
+  }
+  function cascade(){
+    // 随机级联回基态
+    let seq = [];
+    let n = cur;
+    while(n > 1){
+      const lower = [];
+      for(let k=1;k<n;k++) lower.push(k);
+      // 偏好落到 n=2（可见光）与逐步下落
+      let next = lower[Math.floor(Math.random()*lower.length)];
+      if(n > 2 && Math.random() < 0.45) next = 2;
+      seq.push(next); n = next;
+    }
+    runSeq(seq);
+  }
+  function runSeq(seq){
+    if(!seq.length){ busy = false; return; }
+    const n1 = seq.shift(), n0 = cur;
+    const dE = EN(n0) - EN(n1);
+    const nm = 1240 / dE;
+    photons.push({x: AX + rOf(n0), y: AY - rOf(n0)*0.4, vx: 5.2, nm, color: waveColor(nm), wob: Math.random()*7});
+    animateJump(n0, n1, ()=>{
+      cur = n1; updateReadout();
+      lines.push(nm);
+      showPhoton(dE, nm, false);
+      setTimeout(()=>runSeq(seq), 420);
+    });
+  }
+  function animateJump(n0, n1, cb){
+    elecAnim = {r0: rOf(n0), r1: rOf(n1), t: 0, cb};
+  }
+  function showPhoton(dE, nm, absorb){
+    document.getElementById('bohrPhoton').innerHTML = fmt(dE,2) + ' <em>eV · </em>' + (nm>999?fmt(nm,0):fmt(nm,1)) + ' <em>nm</em>';
+    const land = absorb ? target : cur;
+    let s;
+    if(absorb) s = '光子吸收';
+    else if(land === 1) s = '莱曼系 · 紫外';
+    else if(land === 2) s = '巴耳末系 · ' + (nm>=380&&nm<=750?'可见光':'紫外/近紫外');
+    else if(land === 3) s = '帕邢系 · 红外';
+    else s = '红外区';
+    document.getElementById('bohrSeries').textContent = s;
+  }
+  function updateReadout(){
+    document.getElementById('bohrN').textContent = 'n = ' + cur;
+    document.getElementById('bohrE').innerHTML = fmt(EN(cur),2) + ' <em>eV</em>';
+  }
+
+  function drawSpectrum(){
+    const x0=40, x1=W-40, y0=SY, h=SH;
+    if(mode === 'emission'){
+      ctx.fillStyle = '#241E18';
+      ctx.fillRect(x0, y0, x1-x0, h);
+      lines.forEach(nm=>{
+        if(nm<380||nm>750) return;
+        const x = xOfNm(nm);
+        ctx.strokeStyle = waveColor(nm); ctx.lineWidth = 2.4;
+        ctx.shadowColor = waveColor(nm); ctx.shadowBlur = 7;
+        ctx.beginPath(); ctx.moveTo(x, y0+3); ctx.lineTo(x, y0+h-3); ctx.stroke();
+        ctx.shadowBlur = 0;
+      });
+    }else{
+      // 吸收：连续彩虹背景 + 暗线
+      for(let nm=380; nm<=750; nm+=2){
+        ctx.fillStyle = waveColor(nm);
+        ctx.fillRect(xOfNm(nm), y0, (x1-x0)/370*2+1, h);
+      }
+      lines.forEach(nm=>{
+        if(nm<380||nm>750) return;
+        const x = xOfNm(nm);
+        ctx.strokeStyle = '#241E18'; ctx.lineWidth = 2.6;
+        ctx.beginPath(); ctx.moveTo(x, y0+2); ctx.lineTo(x, y0+h-2); ctx.stroke();
+      });
+    }
+    ctx.fillStyle = '#8D806C'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+    [400,500,600,700].forEach(nm=> ctx.fillText(nm + ' nm', xOfNm(nm), y0+h+13));
+    // 巴耳末四线标注
+    [['Hα',656],['Hβ',486],['Hγ',434],['Hδ',410]].forEach(([lb,nm])=>{
+      if(lines.some(l=>Math.abs(l-nm)<6)){
+        ctx.fillStyle = mode==='emission' ? waveColor(nm) : '#473E31';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText(lb, xOfNm(nm), y0-5);
+      }
+    });
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = '#8D806C'; ctx.font = '12px sans-serif'; ctx.textAlign='left';
+    ctx.fillText('氢原子 · 玻尔模型', 16, 22);
+    ctx.fillText('能级图', LX0, 22);
+    ctx.fillText(mode==='emission' ? '发射光谱（亮线）' : '吸收光谱（暗线）', 40, SY-8);
+    // 原子视图
+    for(let n=1;n<=6;n++){
+      ctx.strokeStyle = n===cur ? 'rgba(158,81,64,.75)' : 'rgba(94,126,146,.35)';
+      ctx.lineWidth = n===cur ? 1.8 : 1;
+      ctx.setLineDash([4,4]);
+      ctx.beginPath(); ctx.arc(AX, AY, rOf(n), 0, 7); ctx.stroke(); ctx.setLineDash([]);
+    }
+    const g = ctx.createRadialGradient(AX-2,AY-2,0,AX,AY,9);
+    g.addColorStop(0,'#E8CE93'); g.addColorStop(1,'#B3945A');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(AX, AY, 8, 0, 7); ctx.fill();
+    ctx.fillStyle = '#473E31'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('+1', AX, AY+3);
+    // 电子
+    elecAngle += 0.05;
+    let er = elecR;
+    if(elecAnim){
+      elecAnim.t += 0.06;
+      const t = Math.min(1, elecAnim.t);
+      er = elecAnim.r0 + (elecAnim.r1 - elecAnim.r0) * t;
+      if(t >= 1){ const cb = elecAnim.cb; elecAnim = null; elecR = er; cb && cb(); }
+    }
+    const ex = AX + er*Math.cos(elecAngle), ey = AY + er*Math.sin(elecAngle);
+    ctx.fillStyle = '#5E7E92';
+    ctx.beginPath(); ctx.arc(ex, ey, 5, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(94,126,146,.3)';
+    ctx.beginPath(); ctx.arc(ex, ey, 9, 0, 7); ctx.fill();
+    // 能级图
+    for(let n=1;n<=6;n++){
+      const y = yOf(EN(n));
+      ctx.strokeStyle = n===cur ? '#9E5140' : 'rgba(123,98,71,.5)';
+      ctx.lineWidth = n===cur ? 2.2 : 1.2;
+      ctx.beginPath(); ctx.moveTo(LX0, y); ctx.lineTo(LX1-40, y); ctx.stroke();
+      ctx.fillStyle = '#8D806C'; ctx.font = '11px sans-serif'; ctx.textAlign='left';
+      ctx.fillText('n=' + n, LX1-34, y+4);
+      ctx.textAlign='right';
+      ctx.fillText(fmt(EN(n),2) + ' eV', LX0-8, y+4);
+    }
+    const y0v = yOf(0);
+    ctx.strokeStyle = 'rgba(123,98,71,.35)'; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(LX0, y0v); ctx.lineTo(LX1-40, y0v); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#8D806C'; ctx.textAlign='right'; ctx.fillText('0 eV（电离）', LX0-8, y0v+4);
+    // 电子在能级图上的位置
+    ctx.fillStyle = '#5E7E92';
+    ctx.beginPath(); ctx.arc(LX0 + 20, yOf(EN(cur)), 5, 0, 7); ctx.fill();
+    // 飞行光子（波浪线）
+    photons.forEach(p=>{
+      p.x += p.vx; p.wob += 0.35;
+      ctx.strokeStyle = p.color; ctx.lineWidth = 2;
+      ctx.shadowColor = p.color; ctx.shadowBlur = 6;
+      ctx.beginPath();
+      for(let k=0;k<22;k++){
+        const xx = p.x - k*4, yy = p.y + Math.sin(p.wob - k*0.6) * 4;
+        k ? ctx.lineTo(xx,yy) : ctx.moveTo(xx,yy);
+      }
+      ctx.stroke(); ctx.shadowBlur = 0;
+      ctx.fillStyle = p.color; ctx.font = '10px sans-serif'; ctx.textAlign='left';
+      ctx.fillText(fmt(p.nm,0) + ' nm', p.x + 6, p.y - 6);
+    });
+    photons = photons.filter(p => p.x < W - 30);
+    drawSpectrum();
+  }
+  function loop(){ draw(); requestAnimationFrame(loop); }
+  loop();
+
+  document.getElementById('bohrLevelRow').addEventListener('click', e=>{
+    const b = e.target.closest('.chip'); if(!b) return;
+    document.querySelectorAll('#bohrLevelRow .chip').forEach(c=>c.classList.remove('active'));
+    b.classList.add('active'); target = +b.dataset.n;
+  });
+  document.querySelector('#bohrLevelRow .chip[data-n="2"]').classList.add('active');
+  document.getElementById('bohrExcite').addEventListener('click', excite);
+  document.getElementById('bohrReset').addEventListener('click', ()=>{
+    lines = []; cur = 1; elecR = rOf(1); busy = false; updateReadout();
+    document.getElementById('bohrPhoton').innerHTML = '— <em>eV · nm</em>';
+    document.getElementById('bohrSeries').textContent = '—';
+  });
+  document.getElementById('bohrSpecMode').addEventListener('click', e=>{
+    const b = e.target.closest('.chip'); if(!b) return;
+    document.querySelectorAll('#bohrSpecMode .chip').forEach(c=>c.classList.remove('active'));
+    b.classList.add('active'); mode = b.dataset.m;
+  });
+  updateReadout();
+})();
+
+/* =====================================================
+   实验肆 · 焰色反应试验台
+===================================================== */
+(function(){
+  const cv = document.getElementById('flameCanvas'), ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  const REAGENTS = [
+    {id:'NaCl',  ion:'Na⁺',  name:'氯化钠 NaCl',   color:'#E3C24F', glow:'rgba(227,194,79,.5)',  cname:'黄色',   lines:[589],            app:'高压钠灯'},
+    {id:'KCl',   ion:'K⁺',   name:'氯化钾 KCl',    color:'#A98BC9', glow:'rgba(169,139,201,.5)', cname:'浅紫色', lines:[404,767],        app:'紫色烟花'},
+    {id:'CaCl2', ion:'Ca²⁺', name:'氯化钙 CaCl₂',  color:'#C9704A', glow:'rgba(201,112,74,.5)',  cname:'砖红色', lines:[423,616,643],    app:'橙色烟花'},
+    {id:'SrCl2', ion:'Sr²⁺', name:'氯化锶 SrCl₂',  color:'#C94F5E', glow:'rgba(201,79,94,.5)',   cname:'洋红色', lines:[606,640,687],    app:'红色信号弹'},
+    {id:'BaCl2', ion:'Ba²⁺', name:'氯化钡 BaCl₂',  color:'#9FB85E', glow:'rgba(159,184,94,.5)',  cname:'黄绿色', lines:[524,553,577],    app:'绿色烟花'},
+    {id:'CuSO4', ion:'Cu²⁺', name:'硫酸铜 CuSO₄',  color:'#5EA89B', glow:'rgba(94,168,155,.5)',  cname:'蓝绿色', lines:[510,522,570],    app:'蓝绿烟火'},
+    {id:'LiCl',  ion:'Li⁺',  name:'氯化锂 LiCl',   color:'#D46A5E', glow:'rgba(212,106,94,.5)',  cname:'深红色', lines:[610,670],        app:'深红烟花'}
+  ];
+  let cur = null, cobalt = false;
+  const parts = [];
+
+  const shelf = document.getElementById('flameShelf');
+  REAGENTS.forEach((r,i)=>{
+    const b = document.createElement('button');
+    b.className = 'chip'; b.textContent = r.name;
+    b.onclick = ()=>{
+      document.querySelectorAll('#flameShelf .chip').forEach(c=>c.classList.remove('active'));
+      b.classList.add('active');
+      cur = r;
+      document.getElementById('flameName').textContent = r.name;
+      document.getElementById('flameColor').textContent = r.cname;
+      document.getElementById('flameLines').innerHTML = r.lines.join(' · ') + ' <em>nm</em>';
+      document.getElementById('flameApp').textContent = r.app;
+      for(let k=0;k<40;k++) parts.push(newPart(true));   // 喷入试剂
+      Journal.mark('flame');
+    };
+    shelf.appendChild(b);
+  });
+
+  function newPart(burst){
+    return {
+      x: W/2 + (Math.random()-0.5)*26,
+      y: 208 + Math.random()*8,
+      vy: -(0.7 + Math.random()*1.3) * (burst?1.8:1),
+      vx: (Math.random()-0.5)*0.5,
+      life: 1, decay: 0.008 + Math.random()*0.012,
+      r: 2.5 + Math.random()*4.5
+    };
+  }
+
+  function xOfNm(nm){ return 60 + (nm-380)/(750-380) * (W-120); }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    // 台面
+    ctx.fillStyle = 'rgba(123,98,71,.25)'; ctx.fillRect(0, 216, W, 3);
+    // 本生灯
+    ctx.fillStyle = '#7B6247';
+    ctx.fillRect(W/2-16, 208, 32, 10);                       // 底座
+    ctx.fillStyle = '#8D806C';
+    ctx.fillRect(W/2-5, 168, 10, 42);                        // 灯管
+    ctx.fillStyle = '#B3945A';
+    ctx.fillRect(W/2-7, 198, 14, 4);                         // 气阀
+    ctx.fillStyle = '#8D806C'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('本生灯 · 外焰', W/2, 234);
+    // 火焰粒子
+    for(let i=parts.length-1;i>=0;i--){
+      const p = parts[i];
+      p.y += p.vy; p.x += p.vx + Math.sin(p.y*0.05)*0.3; p.life -= p.decay;
+      if(p.life <= 0 || p.y < 60){ parts.splice(i,1); continue; }
+      let col;
+      if(cur){
+        if(cobalt && cur.id==='NaCl') col = 'rgba(120,110,95,' + (p.life*0.25) + ')';      // 黄光被钴玻璃滤掉
+        else if(p.life > 0.55) col = 'rgba(126,160,190,' + (p.life*0.5) + ')';              // 内焰蓝
+        else col = cur.color + Math.round(p.life*220).toString(16).padStart(2,'0');
+      }else{
+        col = 'rgba(126,160,190,' + (p.life*0.65) + ')';
+      }
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (0.5 + p.life*0.7), 0, 7); ctx.fill();
+    }
+    if(parts.length < 110) for(let k=0;k<3;k++) parts.push(newPart(false));
+    // 焰色光晕
+    if(cur && !(cobalt && cur.id==='NaCl')){
+      const g = ctx.createRadialGradient(W/2, 170, 4, W/2, 170, 90);
+      g.addColorStop(0, cur.glow); g.addColorStop(1, 'transparent');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(W/2, 170, 90, 0, 7); ctx.fill();
+    }
+    // 钴玻璃滤镜
+    if(cobalt){
+      ctx.fillStyle = 'rgba(58,74,120,.30)';
+      ctx.fillRect(0, 0, W, 250);
+      ctx.fillStyle = '#E9E2D2'; ctx.font = '12px sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText('🔷 透过蓝色钴玻璃观察中 —— 黄光被吸收', 14, 20);
+    }
+    // 试剂瓶指示
+    if(cur){
+      ctx.fillStyle = '#473E31'; ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(cur.ion + ' 的焰色：' + cur.cname, W/2, 262);
+    }else{
+      ctx.fillStyle = '#8D806C'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('从上方试剂架选择一瓶金属盐，蘸取后送入火焰', W/2, 262);
+    }
+    // 特征谱线条
+    ctx.fillStyle = '#241E18';
+    ctx.fillRect(60, 278, W-120, 34);
+    ctx.fillStyle = '#8D806C'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+    [400,500,600,700].forEach(nm=> ctx.fillText(nm, xOfNm(nm), 326));
+    if(cur){
+      cur.lines.forEach(nm=>{
+        if(nm<380||nm>750) return;
+        ctx.strokeStyle = waveColor(nm); ctx.lineWidth = 2.4;
+        ctx.shadowColor = waveColor(nm); ctx.shadowBlur = 6;
+        ctx.beginPath(); ctx.moveTo(xOfNm(nm), 281); ctx.lineTo(xOfNm(nm), 309); ctx.stroke();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = waveColor(nm);
+        ctx.fillText(nm, xOfNm(nm), 276);
+      });
+      ctx.fillStyle = '#CFC4AC'; ctx.font = '10px sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText(cur.ion + ' 特征谱线', 66, 296);
+    }
+  }
+  function loop(){ draw(); requestAnimationFrame(loop); }
+  loop();
+
+  document.getElementById('flameCobalt').addEventListener('click', function(){
+    cobalt = !cobalt;
+    this.textContent = '蓝色钴玻璃：' + (cobalt ? '开' : '关');
+  });
+})();
+
+/* =====================================================
+   实验伍 · 半衰期沙漏
+===================================================== */
+(function(){
+  const cv = document.getElementById('decayCanvas'), ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  const N0 = 128;
+  let T = 5730, label = '年', baseSpeed = 300;
+  let t = 0, running = false, speedMul = 1;
+  let nuclei = [], trail = [];
+
+  function reset(){
+    nuclei = [];
+    for(let r=0;r<8;r++) for(let c=0;c<16;c++)
+      nuclei.push({x: 30 + c*21, y: 40 + r*21, alive:true, flash:0});
+    t = 0; trail = [[0,1]];
+    updateReadout();
+  }
+  function remain(){ return nuclei.filter(n=>n.alive).length; }
+  function fmtTime(v){
+    if(v >= 10000) return (v/1000).toFixed(1) + ' k';
+    if(v >= 100) return v.toFixed(0);
+    return v.toFixed(1);
+  }
+  function updateReadout(){
+    const r = remain();
+    document.getElementById('decayTime').innerHTML = fmtTime(t) + ' <em>' + label + '</em>';
+    document.getElementById('decayRemain').innerHTML = r + ' <em>/ ' + N0 + '</em>';
+    document.getElementById('decayPct').innerHTML = fmt(100*r/N0, 1) + ' <em>%</em>';
+    document.getElementById('decayHalf').innerHTML = fmt(t/T, 2) + ' <em>个</em>';
+    if(t/T >= 1) Journal.mark('decay');
+  }
+
+  // 图表区域
+  const CX0 = 420, CX1 = 840, CY0 = 40, CY1 = 330;
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = '#8D806C'; ctx.font = '12px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('铅室 · 128 个原子核', 20, 20);
+    ctx.fillText('剩余比例 — 时间（半衰期）', CX0, 20);
+    // 核
+    nuclei.forEach(n=>{
+      if(n.alive){
+        ctx.fillStyle = '#5E7E92';
+        ctx.beginPath(); ctx.arc(n.x, n.y, 7.5, 0, 7); ctx.fill();
+        ctx.fillStyle = '#DCE4E8';
+        ctx.beginPath(); ctx.arc(n.x-1.5, n.y-1.5, 2, 0, 7); ctx.fill();
+      }else{
+        ctx.strokeStyle = 'rgba(141,128,108,.6)'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.arc(n.x, n.y, 7.5, 0, 7); ctx.stroke();
+        if(n.flash > 0){
+          n.flash -= 0.04;
+          ctx.strokeStyle = 'rgba(158,81,64,' + n.flash + ')';
+          ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(n.x, n.y, 7.5 + (1-n.flash)*10, 0, 7); ctx.stroke();
+        }
+      }
+    });
+    // 图表框
+    ctx.strokeStyle = 'rgba(123,98,71,.5)'; ctx.lineWidth = 1.2;
+    ctx.strokeRect(CX0, CY0, CX1-CX0, CY1-CY0);
+    ctx.fillStyle = '#8D806C'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+    for(let k=0;k<=5;k++){
+      const x = CX0 + k/5*(CX1-CX0);
+      ctx.fillText(k + 'T½', x, CY1+14);
+    }
+    ctx.textAlign = 'right';
+    ['0%','50%','100%'].forEach((s,i)=>{
+      const y = CY1 - i/2*(CY1-CY0);
+      ctx.fillText(s, CX0-6, y+3);
+    });
+    // 理论曲线
+    ctx.strokeStyle = 'rgba(158,114,80,.75)'; ctx.setLineDash([5,4]); ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    for(let k=0;k<=60;k++){
+      const tt = k/60*5;
+      const x = CX0 + tt/5*(CX1-CX0);
+      const y = CY1 - Math.pow(0.5, tt)*(CY1-CY0);
+      k ? ctx.lineTo(x,y) : ctx.moveTo(x,y);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+    // 实际轨迹
+    ctx.fillStyle = '#5E7E92';
+    trail.forEach(([tt,frac])=>{
+      if(tt > 5) return;
+      const x = CX0 + tt/5*(CX1-CX0);
+      const y = CY1 - frac*(CY1-CY0);
+      ctx.beginPath(); ctx.arc(x, y, 2.2, 0, 7); ctx.fill();
+    });
+  }
+
+  let acc = 0;
+  function loop(){
+    if(running){
+      const dt = baseSpeed * speedMul / 60;
+      t += dt;
+      const p = 1 - Math.pow(0.5, dt/T);
+      nuclei.forEach(n=>{
+        if(n.alive && Math.random() < p){ n.alive = false; n.flash = 1; }
+      });
+      acc += dt;
+      if(acc > T/40){ acc = 0; trail.push([t/T, remain()/N0]); updateReadout(); }
+      if(remain() === 0){ running = false; document.getElementById('decayStart').textContent = '▶ 启动时间之轮'; }
+    }
+    draw();
+    requestAnimationFrame(loop);
+  }
+  reset(); loop();
+
+  document.getElementById('decayIsoRow').addEventListener('click', e=>{
+    const b = e.target.closest('.chip'); if(!b) return;
+    document.querySelectorAll('#decayIsoRow .chip').forEach(c=>c.classList.remove('active'));
+    b.classList.add('active');
+    T = +b.dataset.t; label = b.dataset.label; baseSpeed = +b.dataset.speed;
+    running = false;
+    document.getElementById('decayStart').textContent = '▶ 启动时间之轮';
+    reset();
+  });
+  document.getElementById('decayStart').addEventListener('click', function(){
+    running = !running;
+    this.textContent = running ? '⏸ 暂停' : '▶ 启动时间之轮';
+  });
+  document.getElementById('decaySpeed').addEventListener('input', e=>{
+    speedMul = +e.target.value;
+    document.getElementById('decaySpeedVal').textContent = '×' + speedMul.toFixed(1);
+  });
+  document.getElementById('decayReset').addEventListener('click', ()=>{
+    running = false;
+    document.getElementById('decayStart').textContent = '▶ 启动时间之轮';
+    reset();
+  });
+})();
+
+/* =====================================================
+   实验陆 · 核反应方程式配平室
+===================================================== */
+(function(){
+  const PALETTE = [
+    {id:'a',  A:4, Z:2,  sym:'He',  name:'α 粒子'},
+    {id:'b-', A:0, Z:-1, sym:'e',   name:'β⁻ 电子'},
+    {id:'b+', A:0, Z:1,  sym:'e',   name:'β⁺ 正电子'},
+    {id:'n',  A:1, Z:0,  sym:'n',   name:'中子'},
+    {id:'p',  A:1, Z:1,  sym:'p',   name:'质子'},
+    {id:'g',  A:0, Z:0,  sym:'γ',   name:'γ 光子'},
+    {id:'3n', A:3, Z:0,  sym:'3n',  name:'3 个中子'}
+  ];
+  const EQS = [
+    {tag:'α 衰变',        left:[['U',238,92]],                 right:[['Th',234,90]], ans:'a'},
+    {tag:'β⁻ 衰变',       left:[['C',14,6]],                   right:[['N',14,7]],    ans:'b-'},
+    {tag:'发现质子 · 卢瑟福', left:[['N',14,7],['He',4,2]],    right:[['O',17,8]],    ans:'p'},
+    {tag:'发现中子 · 查德威克', left:[['Be',9,4],['He',4,2]],  right:[['C',12,6]],    ans:'n'},
+    {tag:'核裂变',        left:[['U',235,92],['n',1,0]],       right:[['Ba',141,56],['Kr',92,36]], ans:'3n'},
+    {tag:'核聚变',        left:[['H',2,1],['H',3,1]],          right:[['He',4,2]],    ans:'n'},
+    {tag:'人工放射性 · 居里夫妇', left:[['Al',27,13],['He',4,2]], right:[['P',30,15]], ans:'n'},
+    {tag:'β⁺ 衰变',       left:[['P',30,15]],                  right:[['Si',30,14]],  ans:'b+'}
+  ];
+  let picked = null, solved = 0;
+
+  const pal = document.getElementById('eqPalette');
+  PALETTE.forEach(p=>{
+    const b = document.createElement('button');
+    b.className = 'chip'; b.dataset.id = p.id;
+    b.innerHTML = nuc(p.sym, p.A, p.Z) + ' ' + p.name;
+    b.onclick = ()=>{
+      document.querySelectorAll('#eqPalette .chip').forEach(c=>c.classList.remove('active'));
+      b.classList.add('active'); picked = p;
+      document.getElementById('eqPicked').textContent = p.name;
+    };
+    pal.appendChild(b);
+  });
+
+  function nuc(sym, A, Z){
+    return '<span class="mono" style="font-weight:700;"><sup>'+A+'</sup><sub>'+Z+'</sub>'+sym+'</span>';
+  }
+
+  const list = document.getElementById('eqList');
+  EQS.forEach((q, qi)=>{
+    const card = document.createElement('div');
+    card.style.cssText = 'background:var(--card-2);border:1.5px solid rgba(123,98,71,.35);border-radius:12px;padding:12px 16px;margin-bottom:10px;position:relative;transition:all .2s;';
+    const sumL = q.left.reduce((s,t)=>[s[0]+t[1],s[1]+t[2]],[0,0]);
+    const sumR = q.right.reduce((s,t)=>[s[0]+t[1],s[1]+t[2]],[0,0]);
+    card.innerHTML =
+      '<div style="font-size:.7rem;color:var(--ink-dim);letter-spacing:.14em;margin-bottom:6px;">方程式 · ' + (qi+1) + ' — ' + q.tag + '</div>' +
+      '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:1.05rem;">' +
+        q.left.map(t=>nuc(t[0],t[1],t[2])).join(' <span style="color:var(--ink-dim);">+</span> ') +
+        ' <span style="color:var(--seal);font-weight:900;margin:0 6px;">→</span> ' +
+        q.right.map(t=>nuc(t[0],t[1],t[2])).join(' <span style="color:var(--ink-dim);">+</span> ') +
+        ' <span style="color:var(--ink-dim);">+</span> ' +
+        '<button class="eq-hole" data-q="'+qi+'" style="font-family:JetBrainsMono,monospace;font-size:.95rem;font-weight:700;min-width:74px;padding:5px 10px;background:var(--card);border:2px dashed rgba(158,81,64,.6);border-radius:10px;color:var(--seal);cursor:pointer;">【 ? 】</button>' +
+        '<span class="eq-msg" data-q="'+qi+'" style="font-size:.78rem;margin-left:8px;"></span>' +
+      '</div>' +
+      '<div class="eq-stamp" data-q="'+qi+'" style="display:none;position:absolute;right:14px;top:8px;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 36% 30%,#B4634F,#9E5140 60%,#7E4032);color:#F8EEDD;align-items:center;justify-content:center;font-size:.72rem;font-weight:900;transform:rotate(8deg);box-shadow:0 3px 8px rgba(126,64,50,.4);">配平</div>';
+    list.appendChild(card);
+    card.querySelector('.eq-hole').addEventListener('click', function(){
+      if(this.dataset.done) return;
+      if(!picked){
+        const msg = card.querySelector('.eq-msg');
+        msg.style.color = 'var(--ink-dim)';
+        msg.textContent = '← 先从药盘选一种粒子';
+        return;
+      }
+      const need = {A: sumL[0]-sumR[0], Z: sumL[1]-sumR[1]};
+      const msg = card.querySelector('.eq-msg');
+      if(picked.A === need.A && picked.Z === need.Z){
+        this.dataset.done = '1';
+        this.style.borderStyle = 'solid';
+        this.style.borderColor = 'var(--sage)';
+        this.style.color = 'var(--ink)';
+        this.innerHTML = nuc(picked.sym, picked.A, picked.Z);
+        msg.style.color = '#5F7A52';
+        msg.textContent = '✓ A: ' + sumL[0] + ' = ' + sumR[0] + ' + ' + need.A + '　Z: ' + sumL[1] + ' = ' + sumR[1] + ' + ' + need.Z;
+        card.querySelector('.eq-stamp').style.display = 'flex';
+        solved++;
+        document.getElementById('eqScore').innerHTML = solved + ' <em>/ 8</em>';
+        Journal.mark('equation');
+      }else{
+        msg.style.color = 'var(--seal)';
+        msg.textContent = '✗ 不平衡 —— 缺口需要 A=' + need.A + '，Z=' + need.Z + '（你选的 ' + picked.name + ' 是 A=' + picked.A + '，Z=' + picked.Z + '）';
+        card.style.transform = 'translateX(4px)';
+        setTimeout(()=>{ card.style.transform = ''; }, 160);
+      }
+    });
+  });
+})();
+
+/* =====================================================
+   实验柒 · 碳十四考古测年仪
+===================================================== */
+(function(){
+  const cv = document.getElementById('datingCanvas'), ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  const T = 5730;
+  const ARTS = [
+    {name:'楼兰木简',       age:1900,  era:'汉代·西域'},
+    {name:'马王堆汉墓漆器', age:2170,  era:'西汉早期'},
+    {name:'殷墟甲骨',       age:3200,  era:'商代晚期'},
+    {name:'山顶洞人骨',     age:30000, era:'旧石器时代'}
+  ];
+  let cur = null, calcMode = false, judged = false;
+
+  const row = document.getElementById('dateArtRow');
+  ARTS.forEach(a=>{
+    const b = document.createElement('button');
+    b.className = 'chip'; b.textContent = a.name;
+    b.onclick = ()=>{
+      document.querySelectorAll('#dateArtRow .chip').forEach(c=>c.classList.remove('active'));
+      b.classList.add('active');
+      cur = a; judged = false;
+      const pct = 100 * Math.pow(0.5, a.age/T);
+      document.getElementById('dateArtName').textContent = a.name;
+      document.getElementById('datePct').innerHTML = fmt(pct, 2) + ' <em>%</em>';
+      document.getElementById('dateResult').textContent = '待鉴定';
+      Journal.mark('dating');
+    };
+    row.appendChild(b);
+  });
+
+  const slider = document.getElementById('dateGuess');
+  slider.addEventListener('input', ()=>{
+    if(calcMode){
+      const p = Math.max(1, +slider.value / 500);       // 0.2% ~ 100%
+      const age = T * Math.log2(100/p);
+      document.getElementById('dateGuessVal').textContent = fmt(p,1) + ' %';
+      document.getElementById('dateResult').innerHTML = '≈ ' + fmt(age, 0) + ' <em>年</em>';
+    }else{
+      document.getElementById('dateGuessVal').textContent = (+slider.value).toLocaleString() + ' 年';
+    }
+  });
+
+  document.getElementById('dateJudge').addEventListener('click', ()=>{
+    if(calcMode || !cur) return;
+    const guess = +slider.value;
+    judged = true;
+    const err = Math.abs(guess - cur.age) / cur.age;
+    if(err <= 0.15){
+      document.getElementById('dateResult').innerHTML = '✓ ' + fmt(cur.age, 0) + ' <em>年 · ' + cur.era + '</em>';
+    }else{
+      document.getElementById('dateResult').innerHTML = '✗ 实为 ' + fmt(cur.age, 0) + ' <em>年 · ' + cur.era + '</em>';
+    }
+  });
+  document.getElementById('dateCalc').addEventListener('click', function(){
+    calcMode = !calcMode;
+    this.textContent = calcMode ? '返回文物鉴定' : '打开测年计算器';
+    if(calcMode){
+      slider.value = 50000;
+      document.getElementById('dateGuessVal').textContent = '100.0 %';
+      document.getElementById('dateNote').innerHTML = '<b>计算器模式：</b>拖动滑块设置 ¹⁴C 剩余比例 p，实时换算年代 <span class="mono">t = 5730 × log₂(100/p)</span>。';
+    }else{
+      slider.value = 0;
+      document.getElementById('dateGuessVal').textContent = '0 年';
+      document.getElementById('dateResult').textContent = '—';
+      document.getElementById('dateNote').innerHTML = '<b>测年原理：</b><span class="mono">t = T½ · log₂(N₀/N)</span>，¹⁴C 半衰期 5730 年。剩余一半 → 5730 年；剩四分之一 → 11460 年。同位素还可作<b>示踪原子</b>：医学上用 ¹³¹I 追踪甲状腺摄碘，农业上用 ³²P 研究作物吸收。';
+    }
+  });
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    const X0=70, X1=W-40, Y0=30, Y1=H-40;
+    ctx.fillStyle = '#8D806C'; ctx.font = '12px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('¹⁴C 剩余比例 — 年代曲线（T½ = 5730 年）', X0, 16);
+    // 网格 + 轴
+    ctx.strokeStyle = 'rgba(123,98,71,.4)'; ctx.lineWidth = 1;
+    ctx.strokeRect(X0, Y0, X1-X0, Y1-Y0);
+    ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+    for(let k=0;k<=5;k++){
+      const x = X0 + k/5*(X1-X0);
+      ctx.fillText((k*10) + 'k年', x, Y1+14);
+      ctx.strokeStyle = 'rgba(123,98,71,.15)';
+      ctx.beginPath(); ctx.moveTo(x, Y0); ctx.lineTo(x, Y1); ctx.stroke();
+    }
+    ctx.textAlign = 'right';
+    ['0%','25%','50%','75%','100%'].forEach((s,i)=>{
+      const y = Y1 - i/4*(Y1-Y0);
+      ctx.fillText(s, X0-6, y+3);
+    });
+    // 半衰期阶梯参考线
+    ctx.strokeStyle = 'rgba(158,81,64,.35)'; ctx.setLineDash([4,4]);
+    for(let k=1;k<=3;k++){
+      const tt = k*T/50000;
+      const x = X0 + tt*(X1-X0);
+      const y = Y1 - Math.pow(0.5,k)*(Y1-Y0);
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, Y1); ctx.stroke();
+      ctx.fillStyle = 'rgba(158,81,64,.7)'; ctx.textAlign = 'center';
+      ctx.fillText(k + 'T½', x, y - 5);
+    }
+    ctx.setLineDash([]);
+    // 曲线
+    ctx.strokeStyle = '#9E7250'; ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    for(let k=0;k<=100;k++){
+      const tt = k/100;
+      const x = X0 + tt*(X1-X0);
+      const y = Y1 - Math.pow(0.5, tt*50000/T)*(Y1-Y0);
+      k ? ctx.lineTo(x,y) : ctx.moveTo(x,y);
+    }
+    ctx.stroke();
+    // 用户估计
+    if(!calcMode && cur){
+      const g = +slider.value/50000;
+      const gx = X0 + g*(X1-X0);
+      const gy = Y1 - Math.pow(0.5, (+slider.value)/T)*(Y1-Y0);
+      ctx.fillStyle = '#5E7E92';
+      ctx.beginPath(); ctx.arc(gx, gy, 6, 0, 7); ctx.fill();
+      ctx.font = '10px sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText('你的估计', gx + 9, gy - 6);
+      if(judged){
+        const tx = X0 + cur.age/50000*(X1-X0);
+        const ty = Y1 - Math.pow(0.5, cur.age/T)*(Y1-Y0);
+        ctx.fillStyle = '#9E5140';
+        ctx.beginPath(); ctx.arc(tx, ty, 6, 0, 7); ctx.fill();
+        ctx.fillText('真实年代 ' + cur.age + ' 年', tx + 9, ty + 14);
+      }
+    }
+    if(calcMode){
+      const p = Math.max(1, +slider.value/500);
+      const x = X0 + (T*Math.log2(100/p))/50000*(X1-X0);
+      const y = Y1 - p/100*(Y1-Y0);
+      ctx.fillStyle = '#5E7E92';
+      ctx.beginPath(); ctx.arc(x, y, 6, 0, 7); ctx.fill();
+    }
+  }
+  function loop(){ draw(); requestAnimationFrame(loop); }
+  loop();
+})();
+</script>
+</main>
+</div>
+</body>
+</html>
