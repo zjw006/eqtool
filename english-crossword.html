@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>英语填字游戏 // Gaokao Word Quest</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.7.0/style.css"/>
+  <style>
+    :root {
+      /* 低饱和暖色 + 中性色 · 木质 / 纸张 / 布料 · 模拟经营类独立游戏 UI */
+      --paper: #F4EDDD;
+      --paper-deep: #EBE1C9;
+      --card: #FBF6E9;
+      --card-2: #F3ECDA;
+      --ink: #473E31;
+      --ink-dim: #8D806C;
+      --ink-faint: #B4A88F;
+      --wood: #7B6247;
+      --wood-deep: #5C4934;
+      --wood-line: #4A3B2A;
+      --wood-light: #A98E68;
+      --seal: #9E5140;
+      --seal-deep: #7E4032;
+      --gold: #B3945A;
+      --eng: #6E7FA0;
+      --eng-soft: #DEE3EC;
+      --eng-dim: rgba(110,127,160,.14);
+      --sage: #87976F;
+      --sage-soft: #E3E7D8;
+      --sage-dim: rgba(135,151,111,.15);
+      --rose: #BC8878;
+      --rose-dim: rgba(188,136,120,.14);
+      --shadow: 0 3px 10px rgba(74,59,42,.14), 0 10px 28px rgba(74,59,42,.08);
+      --shadow-sm: 0 2px 6px rgba(74,59,42,.14);
+      --shadow-hover: 0 6px 16px rgba(74,59,42,.18), 0 16px 36px rgba(74,59,42,.12);
+      --r-card: 18px 22px 16px 24px / 22px 16px 24px 18px;
+      --r-sm: 12px 14px 12px 15px / 14px 12px 15px 12px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Noto Sans SC', 'Quicksand', system-ui, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: -2; pointer-events: none; opacity: .5;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.38 0 0 0 0 0.28 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    body::after {
+      content: ''; position: fixed; inset: 0; z-index: -3; pointer-events: none;
+      background:
+        radial-gradient(ellipse 60% 45% at 12% 0%, rgba(110,127,160,.12), transparent 60%),
+        radial-gradient(ellipse 55% 45% at 95% 30%, rgba(179,148,90,.13), transparent 60%),
+        radial-gradient(ellipse 70% 50% at 50% 105%, rgba(158,114,80,.11), transparent 65%),
+        var(--paper);
+    }
+    .kai { font-family: 'LXGW WenKai', 'Noto Sans SC', serif; }
+    .en-font { font-family: 'Quicksand', 'Noto Sans SC', sans-serif; }
+    ::selection { background: rgba(110,127,160,.3); }
+    .hidden { display: none !important; }
+
+    /* ===== 漂浮手绘纹样（克制） ===== */
+    .deco-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .deco-layer .deco {
+      position: absolute; font-size: 17px; opacity: 0; color: var(--ink-faint);
+      animation: floatDeco linear infinite;
+    }
+    @keyframes floatDeco {
+      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      12% { opacity: 0.16; }
+      88% { opacity: 0.12; }
+      100% { transform: translateY(-10vh) rotate(40deg); opacity: 0; }
+    }
+
+    /* ===== 顶部木梁 ===== */
+    .topbar {
+      position: sticky; top: 0; z-index: 500;
+      background: linear-gradient(180deg, #6E5840, #5C4934);
+      border-bottom: 3px solid var(--wood-line);
+      box-shadow: 0 4px 14px rgba(60,45,30,.35);
+      display: flex; align-items: center; gap: 14px;
+      padding: 10px 18px;
+    }
+    .topbar::after {
+      content: ''; position: absolute; left: 0; right: 0; bottom: 4px; height: 1px;
+      background: rgba(255,240,210,.12); pointer-events: none;
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: #E4D7BC; text-decoration: none; font-size: .9rem; letter-spacing: 1px;
+      padding: 7px 14px; border: 1.5px solid rgba(228,215,188,.35); border-radius: var(--r-sm);
+      transition: all .22s; white-space: nowrap;
+    }
+    .back-link:hover { background: rgba(255,255,255,.1); color: #F6EBDD; }
+    .top-title { flex: 1; min-width: 0; }
+    .top-title h1 {
+      font-family: 'LXGW WenKai', serif; font-size: 1.25rem; color: #F6EBDD;
+      letter-spacing: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .top-title span { font-size: .68rem; color: #C7B694; letter-spacing: 3px; }
+    .top-actions { display: flex; gap: 8px; }
+    .wood-btn {
+      font-family: 'LXGW WenKai', serif; font-size: .88rem; letter-spacing: 1px;
+      padding: 7px 14px; border-radius: var(--r-sm); cursor: pointer; white-space: nowrap;
+      color: #E4D7BC; background: rgba(255,255,255,.06);
+      border: 1.5px solid rgba(228,215,188,.35);
+      transition: all .22s;
+    }
+    .wood-btn:hover { background: rgba(255,255,255,.12); color: #F6EBDD; }
+    .wood-btn.on { background: linear-gradient(180deg,#FCF7EA,#F0E6CE); color: var(--wood-deep); border-color: var(--wood-deep); }
+    .wood-btn.danger:hover { border-color: #D9A08C; color: #F0C4B4; }
+
+    /* ===== 布局 ===== */
+    .container { max-width: 860px; margin: 0 auto; padding: 26px 18px 60px; position: relative; z-index: 1; }
+
+    /* ===== 牌匾 ===== */
+    .plaque {
+      position: relative; text-align: center; margin: 8px auto 22px; padding: 30px 26px 26px;
+      background: linear-gradient(170deg, #FDFAF1, var(--card) 60%, var(--card-2));
+      border: 2px solid var(--wood-line); border-radius: var(--r-card);
+      box-shadow: var(--shadow); max-width: 640px;
+    }
+    .plaque::before {
+      content: ''; position: absolute; inset: 7px; pointer-events: none;
+      border: 1px dashed rgba(123,98,71,.3); border-radius: 14px 17px 13px 19px / 17px 13px 19px 14px;
+    }
+    .plaque-pegs { position: absolute; top: 10px; left: 0; right: 0; height: 8px; pointer-events: none; }
+    .plaque-pegs::before, .plaque-pegs::after {
+      content: ''; position: absolute; width: 8px; height: 8px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #C9B490, var(--wood));
+      box-shadow: 0 1px 2px rgba(60,45,30,.4);
+    }
+    .plaque-pegs::before { left: 18px; } .plaque-pegs::after { right: 18px; }
+    .sys-tag { font-size: .7rem; letter-spacing: 4px; color: var(--ink-faint); margin-bottom: 8px; }
+    .plaque h1 { font-family: 'LXGW WenKai', serif; font-size: 2.2rem; letter-spacing: 6px; color: var(--ink); }
+    .plaque h1 .seal-word {
+      color: var(--seal);
+      text-shadow: 1px 1px 0 rgba(158,81,64,.15);
+    }
+    .h1-en { font-size: .72rem; letter-spacing: 5px; color: var(--ink-faint); margin-top: 6px; }
+    .plaque .sub { margin-top: 12px; font-size: .92rem; color: var(--ink-dim); line-height: 1.8; }
+    .divider {
+      width: 120px; height: 10px; margin: 14px auto 0;
+      background:
+        radial-gradient(circle at 10px 5px, var(--wood-light) 2px, transparent 2.5px),
+        radial-gradient(circle at calc(100% - 10px) 5px, var(--wood-light) 2px, transparent 2.5px),
+        linear-gradient(90deg, transparent, rgba(123,98,71,.5), transparent);
+      background-size: 20px 10px, 20px 10px, 100% 1px;
+      background-position: left, right, center;
+      background-repeat: no-repeat;
+    }
+
+    /* ===== 记录卡 ===== */
+    .record-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .record-card {
+      background: linear-gradient(170deg, #FDFAF1, var(--card));
+      border: 1.5px solid rgba(123,98,71,.4); border-radius: var(--r-card);
+      padding: 14px 16px; text-align: center; box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+    }
+    .record-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--eng), rgba(110,127,160,.2)); opacity: .6;
+    }
+    .record-card .lbl { font-size: .72rem; letter-spacing: 2px; color: var(--ink-faint); margin-bottom: 6px; }
+    .record-card .val { font-family: 'Quicksand', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--eng); }
+    .record-card .val.small { font-size: 1rem; color: var(--ink); font-family: 'LXGW WenKai', serif; }
+    .record-card .sub-lbl { font-size: .7rem; color: var(--ink-dim); margin-top: 4px; }
+
+    /* ===== 主题选择 ===== */
+    .theme-bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 20px; }
+    .theme-chip {
+      font-family: 'LXGW WenKai', serif; font-size: .88rem; letter-spacing: 1px;
+      padding: 8px 18px; border-radius: var(--r-sm); cursor: pointer;
+      background: var(--card); color: var(--ink-dim);
+      border: 1.5px solid rgba(123,98,71,.35);
+      transition: all .22s; box-shadow: var(--shadow-sm);
+    }
+    .theme-chip:hover { border-color: var(--wood); color: var(--ink); transform: translateY(-2px); }
+    .theme-chip.active {
+      background: linear-gradient(180deg, #E7EBF3, var(--eng-soft));
+      color: var(--eng); border-color: var(--eng); font-weight: 700;
+    }
+
+    /* ===== 大按钮 ===== */
+    .big-btn {
+      display: block; margin: 0 auto; font-family: 'LXGW WenKai', serif;
+      font-size: 1.15rem; letter-spacing: 4px; padding: 14px 54px; cursor: pointer;
+      color: #F6EBDD; background: linear-gradient(180deg, #836A4D, #6E5840);
+      border: 2px solid var(--wood-line); border-radius: var(--r-card);
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,240,210,.25);
+      transition: all .22s;
+    }
+    .big-btn:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover), inset 0 1px 0 rgba(255,240,210,.25); }
+    .big-btn:active { transform: translateY(-1px); }
+    .big-btn.eng { background: linear-gradient(180deg, #7E8DAD, #66759A); border-color: #4E5A78; }
+
+    .howto {
+      margin-top: 22px; padding: 16px 20px;
+      background: var(--sage-dim); border: 1.5px dashed rgba(135,151,111,.5);
+      border-radius: var(--r-card); font-size: .85rem; color: var(--ink-dim); line-height: 2;
+    }
+    .howto b { color: var(--ink); }
+
+    /* ===== 语音设置 ===== */
+    .voice-row {
+      display: flex; gap: 10px; align-items: center; justify-content: center;
+      margin-top: 16px; flex-wrap: wrap;
+    }
+    .voice-lbl { font-family: 'LXGW WenKai', serif; font-size: .9rem; color: var(--ink-dim); letter-spacing: 1px; }
+    .voice-select {
+      font-family: 'Quicksand', 'Noto Sans SC', sans-serif; font-size: .85rem; color: var(--ink);
+      background: var(--card); border: 1.5px solid rgba(123,98,71,.4); border-radius: var(--r-sm);
+      padding: 9px 12px; max-width: 320px; cursor: pointer; box-shadow: var(--shadow-sm);
+      transition: border-color .2s;
+    }
+    .voice-select:hover, .voice-select:focus { border-color: var(--eng); outline: none; }
+    .voice-hint {
+      text-align: center; font-size: .74rem; color: var(--ink-faint); margin-top: 8px; letter-spacing: .5px;
+    }
+
+    /* ===== 对局信息带 ===== */
+    .hud {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px;
+      margin-bottom: 12px;
+    }
+    .hud-cell {
+      background: linear-gradient(170deg, #FDFAF1, var(--card));
+      border: 1.5px solid rgba(123,98,71,.35); border-radius: var(--r-sm);
+      padding: 8px 10px; text-align: center; box-shadow: var(--shadow-sm);
+    }
+    .hud-cell .k { font-size: .66rem; letter-spacing: 1.5px; color: var(--ink-faint); }
+    .hud-cell .v { font-family: 'Quicksand', sans-serif; font-size: 1.15rem; font-weight: 700; color: var(--ink); margin-top: 2px; }
+    .hud-cell .v.eng { color: var(--eng); }
+    .hud-cell .v.gold { color: var(--gold); }
+    .hud-cell .v.fire { color: var(--seal); }
+
+    /* 纪录进度条 */
+    .record-track { margin-bottom: 18px; }
+    .record-track .lbl-row { display: flex; justify-content: space-between; font-size: .72rem; color: var(--ink-dim); margin-bottom: 5px; letter-spacing: 1px; }
+    .record-bar {
+      height: 12px; border-radius: 8px; border: 1.5px solid rgba(123,98,71,.4);
+      background: var(--paper-deep); overflow: hidden; position: relative;
+    }
+    .record-fill {
+      height: 100%; width: 0%; border-radius: 8px;
+      background: linear-gradient(90deg, var(--eng-soft), var(--eng));
+      transition: width .5s ease;
+    }
+    .record-fill.record-breaking { background: linear-gradient(90deg, #E8D9B8, var(--gold)); }
+
+    /* ===== 题卡 ===== */
+    .clue-card {
+      background: linear-gradient(170deg, #FDFAF1 0%, var(--card) 55%, var(--card-2) 100%);
+      border: 1.5px solid rgba(123,98,71,.45); border-radius: var(--r-card);
+      padding: 22px 24px 20px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+      margin-bottom: 18px;
+    }
+    .clue-card::after {
+      content: ''; position: absolute; inset: 6px; pointer-events: none;
+      border: 1px dashed rgba(123,98,71,.25); border-radius: 14px 17px 13px 19px / 17px 13px 19px 14px;
+    }
+    .clue-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .tag {
+      font-size: .68rem; letter-spacing: 1px; padding: 4px 10px; border-radius: 20px;
+      background: var(--eng-dim); color: var(--eng); font-weight: 500;
+    }
+    .tag.theme { background: var(--sage-dim); color: var(--sage); }
+    .tag.exam { background: rgba(179,148,90,.16); color: var(--gold); }
+    .tag.mode { background: var(--rose-dim); color: var(--rose); }
+    .clue-text {
+      font-family: 'LXGW WenKai', serif; font-size: 1.3rem; line-height: 1.7; color: var(--ink);
+      margin-bottom: 6px; min-height: 2.2em;
+    }
+    .clue-text .base-word {
+      font-family: 'Quicksand', sans-serif; font-weight: 700; color: var(--eng);
+      border-bottom: 2px dashed rgba(110,127,160,.5); padding: 0 2px;
+    }
+    .clue-phonetic { font-family: 'Quicksand', sans-serif; color: var(--ink-faint); font-size: .9rem; margin-bottom: 14px; min-height: 1.2em; }
+
+    .sentence-panel {
+      background: rgba(110,127,160,.07);
+      border: 1.5px solid rgba(110,127,160,.25); border-radius: var(--r-sm);
+      padding: 16px 18px; position: relative;
+    }
+    .sentence-text {
+      font-family: 'Quicksand', 'Noto Sans SC', sans-serif; font-size: 1.12rem; line-height: 1.9;
+      color: var(--ink); font-weight: 500;
+    }
+    .sentence-text .blank {
+      display: inline-block; min-width: 90px; text-align: center;
+      border-bottom: 2px solid var(--eng); color: var(--eng); font-weight: 700; letter-spacing: 2px;
+    }
+    .sentence-cn { font-size: .85rem; color: var(--ink-dim); margin-top: 10px; line-height: 1.7; }
+    .speak-btn {
+      position: absolute; top: 10px; right: 10px;
+      width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+      background: var(--card); border: 1.5px solid rgba(110,127,160,.4);
+      color: var(--eng); font-size: 1rem; display: flex; align-items: center; justify-content: center;
+      transition: all .2s; box-shadow: var(--shadow-sm);
+    }
+    .speak-btn:hover { background: var(--eng-soft); transform: scale(1.08); }
+    .speak-btn.speaking { animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(110,127,160,.4);} 50% { box-shadow: 0 0 0 7px rgba(110,127,160,0);} }
+    .translate-toggle {
+      margin-top: 8px; background: none; border: none; cursor: pointer;
+      font-size: .76rem; color: var(--eng); letter-spacing: 1px; font-family: 'LXGW WenKai', serif;
+      border-bottom: 1px dashed rgba(110,127,160,.5); padding: 2px 0;
+    }
+
+    /* ===== 拼写槽 ===== */
+    .slots { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0 16px; min-height: 52px; }
+    .slot {
+      width: 44px; height: 52px; border-radius: 10px 12px 10px 13px / 12px 10px 13px 10px;
+      background: var(--card); border: 2px solid rgba(123,98,71,.4);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Quicksand', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--ink);
+      cursor: pointer; transition: all .18s; box-shadow: var(--shadow-sm); text-transform: lowercase;
+    }
+    .slot.filled { border-color: var(--eng); background: #F5F7FB; color: var(--eng); }
+    .slot.filled:hover { transform: translateY(-2px); }
+    .slot.locked { border-color: var(--sage); background: var(--sage-soft); color: var(--sage); cursor: default; }
+    .slot.pop { animation: slotPop .25s ease; }
+    @keyframes slotPop { 0% { transform: scale(.7);} 60% { transform: scale(1.12);} 100% { transform: scale(1);} }
+    .slots.correct .slot { border-color: var(--sage); background: var(--sage-soft); color: #6E7F57; animation: slotPop .35s ease; }
+    .slots.wrong-anim .slot { animation: shake .4s ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-6px);} 40%{transform:translateX(6px);} 60%{transform:translateX(-4px);} 80%{transform:translateX(4px);} }
+
+    /* ===== 字母牌 ===== */
+    .tiles { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 16px; }
+    .tile {
+      width: 48px; height: 54px; border-radius: 10px 13px 11px 12px / 12px 11px 13px 10px;
+      background: linear-gradient(180deg, #FCF7EA, #F0E6CE);
+      border: 2px solid var(--wood); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Quicksand', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--wood-deep);
+      box-shadow: 0 3px 0 var(--wood-line), var(--shadow-sm);
+      transition: all .15s; text-transform: lowercase; user-select: none;
+    }
+    .tile:hover { transform: translateY(-3px); box-shadow: 0 6px 0 var(--wood-line), var(--shadow-sm); }
+    .tile:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--wood-line); }
+    .tile.used { opacity: .22; pointer-events: none; transform: scale(.92); box-shadow: none; }
+    .tile.bad { animation: tileBad .4s ease; border-color: var(--rose); color: var(--rose); }
+    @keyframes tileBad { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px) rotate(-4deg);} 75%{transform:translateX(5px) rotate(4deg);} }
+
+    /* ===== 反馈条 ===== */
+    .feedback {
+      min-height: 46px; display: flex; align-items: center; justify-content: center; gap: 8px;
+      font-family: 'LXGW WenKai', serif; font-size: 1.02rem; letter-spacing: 1px;
+      margin-bottom: 14px; text-align: center; padding: 0 10px; line-height: 1.6;
+    }
+    .feedback.good { color: #6E7F57; }
+    .feedback.bad { color: var(--rose); }
+    .feedback.notice { color: var(--gold); }
+    .feedback.record { color: var(--seal); font-size: 1.15rem; animation: recordPop .5s ease; }
+    @keyframes recordPop { 0%{transform:scale(.6);opacity:0;} 60%{transform:scale(1.08);} 100%{transform:scale(1);opacity:1;} }
+
+    /* ===== 操作行 ===== */
+    .action-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .act-btn {
+      font-family: 'LXGW WenKai', serif; font-size: .92rem; letter-spacing: 1px;
+      padding: 10px 20px; border-radius: var(--r-sm); cursor: pointer;
+      background: var(--card); color: var(--ink); border: 1.5px solid rgba(123,98,71,.45);
+      box-shadow: var(--shadow-sm); transition: all .2s; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .act-btn:hover { border-color: var(--wood); transform: translateY(-2px); }
+    .act-btn:disabled { opacity: .4; pointer-events: none; }
+    .act-btn.warn { color: var(--seal); border-color: rgba(158,81,64,.5); }
+    .act-btn.warn:hover { background: #F7EAE5; }
+    .act-btn .cnt { font-family: 'Quicksand', sans-serif; font-weight: 700; color: var(--gold); }
+
+    /* ===== 结算 ===== */
+    .result-plaque { text-align: center; }
+    .result-score {
+      font-family: 'Quicksand', sans-serif; font-size: 3.4rem; font-weight: 700; color: var(--eng);
+      line-height: 1; margin: 8px 0 2px;
+    }
+    .result-score .unit { font-size: 1rem; color: var(--ink-faint); font-family: 'LXGW WenKai', serif; }
+    .result-verdict { font-family: 'LXGW WenKai', serif; font-size: 1.1rem; color: var(--ink); margin-top: 6px; min-height: 1.8em; }
+    .result-verdict.record { color: var(--seal); }
+    .new-record-seal {
+      display: inline-block; margin-top: 10px; padding: 6px 18px;
+      font-family: 'LXGW WenKai', serif; color: var(--seal); letter-spacing: 3px; font-size: 1rem;
+      border: 2.5px solid var(--seal); border-radius: 8px; transform: rotate(-4deg);
+      opacity: .85; box-shadow: inset 0 0 8px rgba(158,81,64,.15);
+    }
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin: 20px 0; }
+    .stat-box {
+      background: var(--card); border: 1.5px solid rgba(123,98,71,.35); border-radius: var(--r-sm);
+      padding: 12px; text-align: center;
+    }
+    .stat-box .k { font-size: .7rem; letter-spacing: 2px; color: var(--ink-faint); margin-bottom: 5px; }
+    .stat-box .v { font-family: 'Quicksand', sans-serif; font-size: 1.35rem; font-weight: 700; color: var(--ink); }
+
+    .section-title {
+      font-family: 'LXGW WenKai', serif; font-size: 1.15rem; letter-spacing: 3px; color: var(--ink);
+      margin: 26px 0 12px; display: flex; align-items: center; gap: 10px;
+    }
+    .section-title::before, .section-title::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(123,98,71,.4));
+    }
+    .section-title::after { background: linear-gradient(90deg, rgba(123,98,71,.4), transparent); }
+
+    /* 错词讲解卡 */
+    .wrong-card {
+      background: linear-gradient(170deg, #FDFAF1, var(--card));
+      border: 1.5px solid rgba(188,136,120,.45); border-radius: var(--r-card);
+      padding: 18px 20px; margin-bottom: 12px; box-shadow: var(--shadow-sm); position: relative;
+    }
+    .wrong-card::before {
+      content: ''; position: absolute; left: 0; top: 12px; bottom: 12px; width: 4px;
+      background: var(--rose); border-radius: 0 4px 4px 0; opacity: .55;
+    }
+    .wrong-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
+    .wrong-word { font-family: 'Quicksand', sans-serif; font-size: 1.4rem; font-weight: 700; color: var(--ink); }
+    .wrong-ph { font-family: 'Quicksand', sans-serif; color: var(--ink-faint); font-size: .9rem; }
+    .wrong-pos { font-size: .82rem; color: var(--ink-dim); font-style: italic; }
+    .wrong-cn { font-family: 'LXGW WenKai', serif; color: var(--seal); font-size: 1rem; }
+    .wrong-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+    .wrong-sentence { font-family: 'Quicksand', sans-serif; font-size: .98rem; line-height: 1.8; color: var(--ink); padding-right: 44px; }
+    .wrong-sentence b { color: var(--eng); }
+    .wrong-sc { font-size: .82rem; color: var(--ink-dim); margin-top: 6px; line-height: 1.7; }
+    .wrong-tip {
+      margin-top: 10px; padding: 10px 14px; font-size: .84rem; line-height: 1.8; color: var(--ink-dim);
+      background: rgba(179,148,90,.1); border-left: 3px solid rgba(179,148,90,.5); border-radius: 0 10px 10px 0;
+    }
+    .wrong-tip b { color: var(--gold); }
+    .wrong-card .speak-btn { border-color: rgba(188,136,120,.5); color: var(--rose); }
+    .wrong-card .speak-btn:hover { background: #F5E7E1; }
+
+    /* 全部回顾 */
+    .review-list { display: flex; flex-direction: column; gap: 6px; }
+    .review-row {
+      display: flex; align-items: center; gap: 12px; padding: 9px 14px;
+      background: var(--card); border: 1.5px solid rgba(123,98,71,.3); border-radius: var(--r-sm);
+      font-size: .9rem;
+    }
+    .review-row .mark { font-size: 1rem; width: 22px; text-align: center; }
+    .review-row .rw { font-family: 'Quicksand', sans-serif; font-weight: 700; min-width: 110px; }
+    .review-row .rc { color: var(--ink-dim); flex: 1; }
+    .review-row .rs { font-family: 'Quicksand', sans-serif; font-weight: 700; color: var(--gold); }
+
+    .end-actions { display: flex; gap: 12px; justify-content: center; margin-top: 28px; flex-wrap: wrap; }
+    .big-btn.small { font-size: 1rem; padding: 12px 34px; letter-spacing: 2px; }
+
+    .perfect-note {
+      text-align: center; font-family: 'LXGW WenKai', serif; color: #6E7F57; font-size: 1.05rem;
+      padding: 18px; background: var(--sage-dim); border: 1.5px dashed rgba(135,151,111,.5);
+      border-radius: var(--r-card); line-height: 1.9;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px);} to { opacity: 1; transform: translateY(0);} }
+    .fade-in { animation: fadeIn .45s ease; }
+
+    footer { text-align: center; padding: 24px 0 34px; color: var(--ink-faint); font-size: .78rem; letter-spacing: 2px; position: relative; z-index: 1; }
+    footer .kai { display: block; font-size: .95rem; color: var(--ink-dim); margin-bottom: 6px; letter-spacing: 3px; }
+
+    @media (max-width: 640px) {
+      .top-title h1 { font-size: 1rem; letter-spacing: 1px; }
+      .top-title span { display: none; }
+      .plaque h1 { font-size: 1.6rem; letter-spacing: 3px; }
+      .clue-text { font-size: 1.1rem; }
+      .sentence-text { font-size: 1rem; }
+      .slot { width: 36px; height: 45px; font-size: 1.2rem; }
+      .tile { width: 40px; height: 46px; font-size: 1.2rem; }
+      .back-link .back-text { display: none; }
+      .wood-btn { padding: 7px 10px; font-size: .8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="deco-layer" id="decoLayer"></div>
+
+<!-- 顶部木梁 -->
+<div class="topbar">
+  <a class="back-link" id="backLink" href="./index.html?subject=english">← <span class="back-text" id="backText">返回书馆</span></a>
+  <div class="top-title">
+    <h1>英语填字游戏</h1>
+    <span>GAOKAO WORD QUEST</span>
+  </div>
+  <div class="top-actions">
+    <button class="wood-btn on" id="voiceToggle" title="语音开关">🔊 语音</button>
+    <button class="wood-btn danger hidden" id="topEndBtn">🏁 结束</button>
+  </div>
+</div>
+
+<main class="container">
+
+  <!-- ================= 开始页 ================= -->
+  <section id="screenStart" class="fade-in">
+    <div class="plaque">
+      <i class="plaque-pegs"></i>
+      <div class="sys-tag">高考核心词 · 拼写闯关</div>
+      <h1 class="kai">英语<span class="seal-word">填字游戏</span></h1>
+      <div class="h1-en">GAOKAO WORD QUEST</div>
+      <p class="sub">以近年高考真题与 3500 核心词为纲：高频词汇、熟词生义、词性转换、固定搭配——<br>看释义与真题例句，拼出正确的单词。</p>
+      <div class="divider"></div>
+    </div>
+
+    <!-- 历史战绩 -->
+    <div class="record-grid" id="recordGrid">
+      <div class="record-card">
+        <div class="lbl">历史最佳</div>
+        <div class="val" id="bestScore">—</div>
+        <div class="sub-lbl" id="bestMeta">尚未出征</div>
+      </div>
+      <div class="record-card">
+        <div class="lbl">出征次数</div>
+        <div class="val" id="totalGames">0</div>
+        <div class="sub-lbl">次挑战</div>
+      </div>
+      <div class="record-card">
+        <div class="lbl">生涯正确率</div>
+        <div class="val" id="totalAcc">—</div>
+        <div class="sub-lbl" id="totalAnswers">0 题作答</div>
+      </div>
+      <div class="record-card">
+        <div class="lbl">当前难度</div>
+        <div class="val small" id="levelBadge">初阶 · 见习</div>
+        <div class="sub-lbl">随战绩自适应调整</div>
+      </div>
+    </div>
+
+    <!-- 主题选择 -->
+    <div class="theme-bar" id="themeBar">
+      <button class="theme-chip active" data-theme="all">📚 全部主题</button>
+      <button class="theme-chip" data-theme="成长">🌱 成长励志</button>
+      <button class="theme-chip" data-theme="科技">🔬 科技之光</button>
+      <button class="theme-chip" data-theme="文化">🏮 文化习俗</button>
+      <button class="theme-chip" data-theme="环境">🌿 自然环保</button>
+      <button class="theme-chip" data-theme="社会">🏘 社会生活</button>
+    </div>
+
+    <button class="big-btn eng" id="startBtn">开 始 闯 关</button>
+
+    <!-- 语音设置 -->
+    <div class="voice-row">
+      <span class="voice-lbl">🔊 发音人</span>
+      <select id="voiceSelect" class="voice-select"></select>
+      <button class="act-btn" id="voiceTestBtn">试听</button>
+    </div>
+    <p class="voice-hint">觉得语音机械？试试切换发音人 —— Edge 浏览器的 Natural 神经语音最接近真人，Chrome 推荐 Google 语音。</p>
+
+    <div class="howto">
+      <b>闯关须知</b><br>
+      · 每局 <b>10</b> 题，每页一题，点字母牌拼出单词后自动进入下一题<br>
+      · 释义 + 高考真题风格例句是线索；🔊 按钮可朗读单词与例句<br>
+      · 答对有高分评价与连对加成，答错有温柔鼓励；接近或超越历史最佳会有提示<br>
+      · 💡 提示卡每局 3 张；随时可点「结束作答」，结算时附错词讲解与语音<br>
+      · 难度会依据你的历史战绩自动升降 —— 答得越稳，词越难
+    </div>
+  </section>
+
+  <!-- ================= 对局页 ================= -->
+  <section id="screenGame" class="hidden">
+    <!-- HUD -->
+    <div class="hud">
+      <div class="hud-cell"><div class="k">得分</div><div class="v eng" id="hudScore">0</div></div>
+      <div class="hud-cell"><div class="k">历史最佳</div><div class="v gold" id="hudBest">—</div></div>
+      <div class="hud-cell"><div class="k">用时</div><div class="v" id="hudTime">0:00</div></div>
+      <div class="hud-cell"><div class="k">进度</div><div class="v" id="hudProgress">1/10</div></div>
+      <div class="hud-cell"><div class="k">连对</div><div class="v fire" id="hudStreak">—</div></div>
+      <div class="hud-cell"><div class="k">难度</div><div class="v" id="hudLevel" style="font-size:.95rem;">初阶</div></div>
+    </div>
+
+    <!-- 纪录进度条 -->
+    <div class="record-track">
+      <div class="lbl-row"><span id="recordBarLbl">向历史最佳进发</span><span id="recordBarPct">0%</span></div>
+      <div class="record-bar"><div class="record-fill" id="recordFill"></div></div>
+    </div>
+
+    <!-- 题卡 -->
+    <div class="clue-card" id="clueCard">
+      <div class="clue-tags" id="clueTags"></div>
+      <div class="clue-text" id="clueText"></div>
+      <div class="clue-phonetic" id="cluePhonetic"></div>
+      <div class="sentence-panel">
+        <button class="speak-btn" id="speakSentenceBtn" title="朗读例句">🔊</button>
+        <div class="sentence-text" id="sentenceText"></div>
+        <div class="sentence-cn hidden" id="sentenceCn"></div>
+        <button class="translate-toggle" id="translateToggle">显示翻译 ▾</button>
+      </div>
+    </div>
+
+    <!-- 拼写槽 -->
+    <div class="slots" id="slots"></div>
+
+    <!-- 字母牌 -->
+    <div class="tiles" id="tiles"></div>
+
+    <!-- 反馈 -->
+    <div class="feedback" id="feedback">选出字母，拼出这个高考核心词</div>
+
+    <!-- 操作 -->
+    <div class="action-row">
+      <button class="act-btn" id="hintBtn">💡 提示 <span class="cnt" id="hintCnt">3</span></button>
+      <button class="act-btn" id="speakWordBtn">🔊 听发音</button>
+      <button class="act-btn" id="backspaceBtn">⌫ 撤回</button>
+      <button class="act-btn" id="skipBtn">⏭ 跳过</button>
+      <button class="act-btn warn" id="endBtn">🏁 结束作答</button>
+    </div>
+  </section>
+
+  <!-- ================= 结算页 ================= -->
+  <section id="screenEnd" class="hidden">
+    <div class="plaque result-plaque">
+      <i class="plaque-pegs"></i>
+      <div class="sys-tag">本局战报 · REPORT</div>
+      <div class="result-score"><span id="finalScore">0</span><span class="unit"> 分</span></div>
+      <div class="result-verdict" id="finalVerdict"></div>
+      <div id="newRecordSeal" class="hidden"><span class="new-record-seal">新 纪 录</span></div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-box"><div class="k">答对 / 作答</div><div class="v" id="statCorrect">0/0</div></div>
+      <div class="stat-box"><div class="k">本局正确率</div><div class="v" id="statAcc">—</div></div>
+      <div class="stat-box"><div class="k">用时</div><div class="v" id="statTime">0:00</div></div>
+      <div class="stat-box"><div class="k">最长连对</div><div class="v" id="statStreak">0</div></div>
+      <div class="stat-box"><div class="k">历史最佳</div><div class="v" id="statBest">—</div></div>
+    </div>
+
+    <div id="wrongSection">
+      <div class="section-title">错词讲解 · 点击 🔊 听读音</div>
+      <div id="wrongList"></div>
+    </div>
+
+    <div class="section-title">本局回顾</div>
+    <div class="review-list" id="reviewList"></div>
+
+    <div class="end-actions">
+      <button class="big-btn eng small" id="againBtn">再 来 一 局</button>
+      <button class="big-btn small" id="homeBtn" style="background:linear-gradient(180deg,#836A4D,#6E5840);">返 回 书 馆</button>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span class="kai">词海拾贝，日拱一卒</span>
+  <span>高中全学科绘本馆 // GAOKAO WORD QUEST</span>
+</footer>
+
+<script>
+/* =====================================================================
+   词库 —— 以高中课程标准 3500 词为范围，参照近年高考全国卷考情：
+   高频核心词 / 熟词生义 / 词性转换 / 固定搭配
+   lv: 1 初阶 2 进阶 3 挑战   th: 主题   mode: fresh=熟词生义 transform=词性转换
+===================================================================== */
+var WORD_BANK = [
+  /* ---------- LV1 初阶 · 高频基础词 ---------- */
+  {w:'achieve',ph:'əˈtʃiːv',pos:'v.',cn:'实现；取得',s:'With effort, you will ______ your dream of college.',sc:'只要努力，你就能实现上大学的梦想。',ex:'高频动词',tip:'achieve one\'s dream/goal 是高考写作的黄金搭配。',lv:1,th:'成长'},
+  {w:'habit',ph:'ˈhæbɪt',pos:'n.',cn:'习惯',s:'Reading before bed is a good ______.',sc:'睡前阅读是个好习惯。',ex:'高频名词',tip:'form/develop a habit 养成习惯，完形填空常客。',lv:1,th:'成长'},
+  {w:'effort',ph:'ˈefət',pos:'n.',cn:'努力',s:'Success comes from hard work and ______.',sc:'成功来自勤奋与努力。',ex:'高频名词',tip:'make an effort to do sth. 努力做某事，写作提分句型。',lv:1,th:'成长'},
+  {w:'chance',ph:'tʃɑːns',pos:'n.',cn:'机会',s:'The speech contest is a great ______ to show yourself.',sc:'演讲比赛是展示自我的好机会。',ex:'高频名词',tip:'take a chance 抓住机会；by chance 偶然。',lv:1,th:'成长'},
+  {w:'honest',ph:'ˈɒnɪst',pos:'adj.',cn:'诚实的',s:'An ______ person never cheats in exams.',sc:'诚实的人从不在考试中作弊。',ex:'高频形容词',tip:'注意 h 不发音，前面用 an 不用 a。',lv:1,th:'成长'},
+  {w:'patient',ph:'ˈpeɪʃnt',pos:'adj.',cn:'耐心的',s:'Our teacher is always ______ with slow learners.',sc:'我们的老师对学得慢的学生总是很有耐心。',ex:'高频形容词',tip:'be patient with sb. 对某人有耐心；它作名词是"病人"。',lv:1,th:'成长'},
+  {w:'proud',ph:'praʊd',pos:'adj.',cn:'自豪的',s:'We are ______ of our school\'s 100-year history.',sc:'我们为学校的百年历史感到自豪。',ex:'高频形容词',tip:'be proud of = take pride in，写作可互相替换。',lv:1,th:'文化'},
+  {w:'active',ph:'ˈæktɪv',pos:'adj.',cn:'积极的；活跃的',s:'He takes an ______ part in class discussions.',sc:'他积极参与课堂讨论。',ex:'高频形容词',tip:'take an active part in 积极参加，固定搭配。',lv:1,th:'成长'},
+  {w:'improve',ph:'ɪmˈpruːv',pos:'v.',cn:'提高；改善',s:'Practising every day can ______ your English.',sc:'每天练习能提高你的英语。',ex:'高频动词',tip:'improve 后接技能类名词，写作万能动词。',lv:1,th:'成长'},
+  {w:'offer',ph:'ˈɒfə',pos:'v.',cn:'（主动）提供',s:'Volunteers ______ help to visitors in the museum.',sc:'志愿者在博物馆里主动为参观者提供帮助。',ex:'高频动词',tip:'offer sth. to sb. = provide sb. with sth.，注意搭配差异。',lv:1,th:'社会'},
+  {w:'reduce',ph:'rɪˈdjuːs',pos:'v.',cn:'减少',s:'We should ______ waste to protect the earth.',sc:'我们应该减少浪费来保护地球。',ex:'环保高频词',tip:'reduce waste/pollution 是环保类阅读与写作的核心搭配。',lv:1,th:'环境'},
+  {w:'protect',ph:'prəˈtekt',pos:'v.',cn:'保护',s:'Everyone should ______ wild animals.',sc:'人人都应该保护野生动物。',ex:'环保高频词',tip:'protect...from/against... 保护……免受……，常考搭配。',lv:1,th:'环境'},
+  {w:'waste',ph:'weɪst',pos:'v./n.',cn:'浪费',s:'Don\'t ______ water; it is precious.',sc:'不要浪费水，水很宝贵。',ex:'环保高频词',tip:'a waste of time/money 浪费时间/金钱，口语写作常用。',lv:1,th:'环境'},
+  {w:'energy',ph:'ˈenədʒi',pos:'n.',cn:'能源；精力',s:'Solar power is a clean kind of ______.',sc:'太阳能是一种清洁能源。',ex:'环保高频词',tip:'clean/renewable energy 清洁/可再生能源，高考环保主题热词。',lv:1,th:'环境'},
+  {w:'create',ph:'kriˈeɪt',pos:'v.',cn:'创造',s:'AI can ______ pictures from simple text now.',sc:'如今人工智能可以用简单的文字生成图画。',ex:'科技高频词',tip:'creative（有创造力的）是它的形容词，写作高级词。',lv:1,th:'科技'},
+  {w:'invent',ph:'ɪnˈvent',pos:'v.',cn:'发明',s:'Chinese people ______ed the compass long ago.',sc:'中国人很久以前发明了指南针。',ex:'科技高频词',tip:'invent 发明（从无到有）；discover 发现（本来就有），常考辨析。',lv:1,th:'科技'},
+  {w:'discover',ph:'dɪˈskʌvə',pos:'v.',cn:'发现',s:'Scientists ______ new stars with telescopes.',sc:'科学家用望远镜发现新的恒星。',ex:'科技高频词',tip:'discovery 是名词形式，词性转换常考。',lv:1,th:'科技'},
+  {w:'culture',ph:'ˈkʌltʃə',pos:'n.',cn:'文化',s:'Tea is an important part of Chinese ______.',sc:'茶是中华文化的重要组成部分。',ex:'文化高频词',tip:'traditional Chinese culture 传统文化，近年高考书面表达高频主题。',lv:1,th:'文化'},
+  {w:'festival',ph:'ˈfestɪvl',pos:'n.',cn:'节日',s:'The Spring ______ is the biggest holiday in China.',sc:'春节是中国最盛大的节日。',ex:'文化高频词',tip:'注意首字母大写构成专有名词：the Mid-Autumn Festival。',lv:1,th:'文化'},
+  {w:'museum',ph:'mjuˈziːəm',pos:'n.',cn:'博物馆',s:'The Palace ______ lies in the centre of Beijing.',sc:'故宫博物院位于北京市中心。',ex:'文化高频词',tip:'参观博物馆是高考听说与写作常见情境。',lv:1,th:'文化'},
+  {w:'journey',ph:'ˈdʒɜːni',pos:'n.',cn:'旅程',s:'The long ______ to the west changed Xuanzang\'s life.',sc:'漫长的西行之旅改变了玄奘的一生。',ex:'高频名词',tip:'journey 指长途旅程；trip 短途；voyage 航海/航空，常考辨析。',lv:1,th:'文化'},
+  {w:'result',ph:'rɪˈzʌlt',pos:'n.',cn:'结果',s:'I was pleased with the ______ of the exam.',sc:'我对考试结果很满意。',ex:'高频名词',tip:'as a result 结果；result in 导致；result from 源于，三个短语都是考点。',lv:1,th:'成长'},
+  {w:'reason',ph:'ˈriːzn',pos:'n.',cn:'原因；理由',s:'The ______ for his success is hard work.',sc:'他成功的原因是努力。',ex:'高频名词',tip:'the reason for... / the reason why...，定语从句常考句式。',lv:1,th:'成长'},
+  {w:'choice',ph:'tʃɔɪs',pos:'n.',cn:'选择',s:'Every ______ you make shapes your future.',sc:'你做的每个选择都塑造着你的未来。',ex:'高频名词',tip:'动词是 choose（过去式 chose），词形转换常考。',lv:1,th:'成长'},
+  {w:'health',ph:'helθ',pos:'n.',cn:'健康',s:'Running every morning is good for our ______.',sc:'每天晨跑有益健康。',ex:'高频名词',tip:'healthy 是形容词；be good for one\'s health 高频句型。',lv:1,th:'成长'},
+  {w:'useful',ph:'ˈjuːsfl',pos:'adj.',cn:'有用的',s:'A dictionary is a ______ tool for learners.',sc:'词典对学习者来说是有用的工具。',ex:'高频形容词',tip:'use + -ful 后缀构词，注意是 a useful 不是 an（u 发 /j/）。',lv:1,th:'成长'},
+  {w:'careful',ph:'ˈkeəfl',pos:'adj.',cn:'细心的；小心的',s:'Be ______ when you cross the road.',sc:'过马路时要小心。',ex:'高频形容词',tip:'反义词 careless；carefully 是副词，语法填空常考词性转换。',lv:1,th:'社会'},
+  {w:'share',ph:'ʃeə',pos:'v.',cn:'分享；分担',s:'Good friends ______ happiness and sadness.',sc:'好朋友分享快乐、分担忧愁。',ex:'高频动词',tip:'share sth. with sb. 与某人分享某物。',lv:1,th:'社会'},
+  {w:'accept',ph:'əkˈsept',pos:'v.',cn:'（欣然）接受',s:'She gladly ______ed the birthday gift.',sc:'她欣然接受了生日礼物。',ex:'高频动词',tip:'accept 主观接受 ≠ receive 客观收到，经典辨析。',lv:1,th:'社会'},
+  {w:'refuse',ph:'rɪˈfjuːz',pos:'v.',cn:'拒绝',s:'He ______d to give up despite many failures.',sc:'尽管失败多次，他仍拒绝放弃。',ex:'高频动词',tip:'refuse to do sth. 拒绝做某事，注意接不定式。',lv:1,th:'成长'},
+  {w:'remind',ph:'rɪˈmaɪnd',pos:'v.',cn:'提醒；使想起',s:'The old photo ______s me of my school days.',sc:'这张老照片让我想起学生时代。',ex:'高频动词',tip:'remind sb. of sth. 使某人想起某事，完形高频搭配。',lv:1,th:'成长'},
+  {w:'book',ph:'bʊk',pos:'v.',cn:'预订（熟词生义）',s:'I ______ed two train tickets online yesterday.',sc:'我昨天在网上订了两张火车票。',ex:'熟词生义',tip:'book 不只"书"——作动词是"预订"，听力与阅读高频考点。',lv:1,th:'社会',mode:'fresh',common:'书'},
+
+  /* ---------- LV2 进阶 · 中难高频 + 熟词生义 ---------- */
+  {w:'environment',ph:'ɪnˈvaɪrənmənt',pos:'n.',cn:'环境',s:'Planting trees helps improve the ______.',sc:'植树有助于改善环境。',ex:'环保核心词',tip:'拼写易错：envi-ron-ment，中间有 n！environmental 是形容词。',lv:2,th:'环境'},
+  {w:'pollution',ph:'pəˈluːʃn',pos:'n.',cn:'污染',s:'Air ______ is a serious problem in big cities.',sc:'空气污染是大城市的严重问题。',ex:'环保核心词',tip:'动词 pollute → 名词 pollution，词性转换高频考点。',lv:2,th:'环境'},
+  {w:'volunteer',ph:'ˌvɒlənˈtɪə',pos:'n./v.',cn:'志愿者；自愿做',s:'Each ______ wore a red hat at the Games.',sc:'运动会上每位志愿者都戴着红帽子。',ex:'高频名词',tip:'volunteer to do sth. 自愿做某事；志愿活动是高考写作常考情境。',lv:2,th:'社会'},
+  {w:'traditional',ph:'trəˈdɪʃənl',pos:'adj.',cn:'传统的',s:'Paper-cutting is a ______ Chinese art.',sc:'剪纸是一门中国传统艺术。',ex:'文化核心词',tip:'tradition + -al；传统文化类书面表达几乎必用。',lv:2,th:'文化'},
+  {w:'celebrate',ph:'ˈselɪbreɪt',pos:'v.',cn:'庆祝',s:'Families get together to ______ the Mid-Autumn Festival.',sc:'家家团聚庆祝中秋节。',ex:'文化核心词',tip:'名词 celebration；celebrate the festival 固定搭配。',lv:2,th:'文化'},
+  {w:'ancient',ph:'ˈeɪnʃənt',pos:'adj.',cn:'古代的',s:'The Great Wall is an ______ wonder of the world.',sc:'长城是古代的世界奇迹。',ex:'文化核心词',tip:'ancient China 古代中国，前面用 an。',lv:2,th:'文化'},
+  {w:'knowledge',ph:'ˈnɒlɪdʒ',pos:'n.',cn:'知识',s:'Reading opens the door to ______.',sc:'阅读打开知识之门。',ex:'高频名词',tip:'不可数名词！不说 knowledges；k 不发音。',lv:2,th:'成长'},
+  {w:'attention',ph:'əˈtenʃn',pos:'n.',cn:'注意力；关注',s:'Please pay ______ to your handwriting.',sc:'请注意你的书写。',ex:'固定搭配',tip:'pay attention to 注意，to 是介词后接 doing，经典考点。',lv:2,th:'成长'},
+  {w:'confidence',ph:'ˈkɒnfɪdəns',pos:'n.',cn:'自信',s:'Practice gives you ______ in speaking English.',sc:'练习让你开口说英语时有自信。',ex:'高频名词',tip:'have confidence in 对……有信心；形容词 confident。',lv:2,th:'成长'},
+  {w:'challenge',ph:'ˈtʃælɪndʒ',pos:'n./v.',cn:'挑战',s:'The gaokao is a big ______ for every student.',sc:'高考对每个学生都是一场巨大的挑战。',ex:'高频名词',tip:'face/meet the challenge 面对挑战；accept the challenge 接受挑战。',lv:2,th:'成长'},
+  {w:'courage',ph:'ˈkʌrɪdʒ',pos:'n.',cn:'勇气',s:'It takes ______ to admit one\'s mistakes.',sc:'承认错误需要勇气。',ex:'高频名词',tip:'动词 encourage（鼓励）= en- + courage，一串词一起记。',lv:2,th:'成长'},
+  {w:'curious',ph:'ˈkjʊəriəs',pos:'adj.',cn:'好奇的',s:'Young children are ______ about everything.',sc:'小孩子对一切都充满好奇。',ex:'高频形容词',tip:'be curious about 对……好奇；名词 curiosity。',lv:2,th:'成长'},
+  {w:'generous',ph:'ˈdʒenərəs',pos:'adj.',cn:'慷慨的',s:'It is ______ of him to share his notes with everyone.',sc:'他肯把笔记分享给大家，真慷慨。',ex:'高频形容词',tip:'It is + adj. + of sb. to do 句型常考，形容人的品质用 of。',lv:2,th:'社会'},
+  {w:'grateful',ph:'ˈɡreɪtfl',pos:'adj.',cn:'感激的',s:'I am truly ______ for your help.',sc:'我真心感激你的帮助。',ex:'高频形容词',tip:'be grateful to sb. for sth.；感谢信必备词。',lv:2,th:'社会'},
+  {w:'responsible',ph:'rɪˈspɒnsəbl',pos:'adj.',cn:'负责任的',s:'Everyone should be ______ for their own choices.',sc:'每个人都应该为自己的选择负责。',ex:'高频形容词',tip:'be responsible for 对……负责；名词 responsibility。',lv:2,th:'成长'},
+  {w:'independent',ph:'ˌɪndɪˈpendənt',pos:'adj.',cn:'独立的',s:'College life teaches us to be ______.',sc:'大学生活教会我们独立。',ex:'高频形容词',tip:'in- 否定前缀 + dependent；名词 independence（独立/独立性）。',lv:2,th:'成长'},
+  {w:'convenient',ph:'kənˈviːniənt',pos:'adj.',cn:'方便的',s:'It is ______ to pay by phone in China.',sc:'在中国用手机支付很方便。',ex:'科技核心词',tip:'主语是物不是人！It is convenient for sb. to do 句型。',lv:2,th:'科技'},
+  {w:'necessary',ph:'ˈnesəsəri',pos:'adj.',cn:'必要的',s:'Enough sleep is ______ for good memory.',sc:'充足的睡眠对好记性必不可少。',ex:'高频形容词',tip:'拼写口诀：一个 c 两个 s；It is necessary for sb. to do。',lv:2,th:'成长'},
+  {w:'technology',ph:'tekˈnɒlədʒi',pos:'n.',cn:'科技；技术',s:'Modern ______ changes the way we learn.',sc:'现代科技改变着我们的学习方式。',ex:'科技核心词',tip:'科技类阅读高频主题词；形容词 technological。',lv:2,th:'科技'},
+  {w:'research',ph:'rɪˈsɜːtʃ',pos:'n./v.',cn:'研究',s:'His ______ focuses on clean energy.',sc:'他的研究聚焦于清洁能源。',ex:'科技核心词',tip:'do/carry out research 做研究；researcher 研究者。',lv:2,th:'科技'},
+  {w:'experience',ph:'ɪkˈspɪəriəns',pos:'n.',cn:'经历；经验',s:'The trip to the village was an unforgettable ______.',sc:'那次乡村之行是一段难忘的经历。',ex:'高频名词',tip:'作"经验"不可数，作"经历"可数——语法填空常考点。',lv:2,th:'成长'},
+  {w:'develop',ph:'dɪˈveləp',pos:'v.',cn:'发展；培养',s:'Reading helps ______ good thinking habits.',sc:'阅读有助于培养良好的思维习惯。',ex:'高频动词',tip:'develop a habit/interest；名词 development，词性转换高频。',lv:2,th:'成长'},
+  {w:'continue',ph:'kənˈtɪnjuː',pos:'v.',cn:'继续',s:'After a short rest, we ______d our work.',sc:'短暂休息后，我们继续工作。',ex:'高频动词',tip:'continue to do = continue doing，两种接法都对。',lv:2,th:'成长'},
+  {w:'increase',ph:'ɪnˈkriːs',pos:'v.',cn:'增加；增长',s:'Regular exercise can ______ your energy.',sc:'规律锻炼能增强你的精力。',ex:'高频动词',tip:'反义词 decrease；increase by 增加了 / increase to 增加到。',lv:2,th:'成长'},
+  {w:'suffer',ph:'ˈsʌfə',pos:'v.',cn:'遭受；受苦',s:'Many areas ______ from drought every year.',sc:'许多地区每年都遭受干旱。',ex:'固定搭配',tip:'suffer from 遭受（疾病/灾害），完形阅读高频搭配。',lv:2,th:'环境'},
+  {w:'affect',ph:'əˈfekt',pos:'v.',cn:'影响',s:'The weather can ______ our moods.',sc:'天气会影响我们的情绪。',ex:'易混辨析',tip:'affect 是动词，effect 是名词——高考最爱考的一对！',lv:2,th:'成长'},
+  {w:'recommend',ph:'ˌrekəˈmend',pos:'v.',cn:'推荐；建议',s:'Our teacher ______ed a good novel to us.',sc:'老师向我们推荐了一本好小说。',ex:'高频动词',tip:'recommend sth. to sb.；recommend doing sth.，书信写作必备。',lv:2,th:'文化'},
+  {w:'current',ph:'ˈkʌrənt',pos:'n.',cn:'水流；气流（熟词生义）',s:'The boat was pushed downstream by the strong ______.',sc:'小船被强劲的水流冲向下游。',ex:'熟词生义',tip:'current 常见义是"当前的"，此处为"水流/电流"，近年阅读多次出现。',lv:2,th:'环境',mode:'fresh',common:'当前的'},
+  {w:'check',ph:'tʃek',pos:'v.',cn:'抑制；控制（熟词生义）',s:'We must ______ the spread of the forest fire.',sc:'我们必须控制山火的蔓延。',ex:'熟词生义',tip:'check 除"检查"外还可表"抑制"，如 check the spread of disease。',lv:2,th:'社会',mode:'fresh',common:'检查'},
+  {w:'address',ph:'əˈdres',pos:'v.',cn:'向……发表演讲；处理（熟词生义）',s:'The headmaster will ______ the whole school on Monday.',sc:'校长周一将向全校发表演讲。',ex:'熟词生义',tip:'address 作动词可读 /əˈdres/，表"演讲、处理（问题）"。',lv:2,th:'社会',mode:'fresh',common:'地址'},
+  {w:'cover',ph:'ˈkʌvə',pos:'v.',cn:'报道；行走（路程）（熟词生义）',s:'The reporter was sent to ______ the sports meeting.',sc:'那位记者被派去报道运动会。',ex:'熟词生义',tip:'cover 还有"覆盖、走完、够付"等义，阅读需依语境判断。',lv:2,th:'社会',mode:'fresh',common:'覆盖；盖子'},
+  {w:'present',ph:'prɪˈzent',pos:'v.',cn:'颁发；呈现（熟词生义）',s:'The mayor will ______ the prizes to the winners.',sc:'市长将为获奖者颁奖。',ex:'熟词生义',tip:'present 作动词重音在第二音节；present sth. to sb. 颁奖给某人。',lv:2,th:'社会',mode:'fresh',common:'礼物；现在的'},
+  {w:'fine',ph:'faɪn',pos:'n.',cn:'罚款；罚金（熟词生义）',s:'He got a ______ for parking in the wrong place.',sc:'他因违章停车收到一张罚单。',ex:'熟词生义',tip:'fine 作名词是"罚金"，作动词是"处以罚款"，法律类语境常见。',lv:2,th:'社会',mode:'fresh',common:'好的；晴朗的'},
+  {w:'novel',ph:'ˈnɒvl',pos:'adj.',cn:'新颖的（熟词生义）',s:'That is a ______ idea I have never heard before.',sc:'那是个我从未听过的新颖点子。',ex:'熟词生义',tip:'novel 作形容词 = new and unusual，科技类阅读高频。',lv:2,th:'科技',mode:'fresh',common:'小说'},
+  {w:'plant',ph:'plɑːnt',pos:'n.',cn:'工厂（熟词生义）',s:'A new power ______ will be built near the town.',sc:'一座新发电厂将建在小镇附近。',ex:'熟词生义',tip:'power plant 发电厂、chemical plant 化工厂，环保阅读常见。',lv:2,th:'环境',mode:'fresh',common:'植物'},
+
+  /* ---------- LV3 挑战 · 词性转换 + 长难词 + 熟词生义 ---------- */
+  {w:'frequency',ph:'ˈfriːkwənsi',pos:'n.',cn:'频率；频繁',s:'The ______ of extreme weather has increased in recent years.',sc:'近年来极端天气出现的频率有所增加。',ex:'词性转换 · 全国卷考点',tip:'frequent（频繁的）→ frequency，-t 变 -cy，语法填空真题考过！',lv:3,th:'环境',mode:'transform',base:'frequent'},
+  {w:'diversity',ph:'daɪˈvɜːsəti',pos:'n.',cn:'多样性',s:'The ______ of cultures makes the world colourful.',sc:'文化的多样性让世界多姿多彩。',ex:'词性转换',tip:'diverse（多样的）→ diversity，-se 变 -sity。',lv:3,th:'文化',mode:'transform',base:'diverse'},
+  {w:'responsibility',ph:'rɪˌspɒnsəˈbɪləti',pos:'n.',cn:'责任',s:'Protecting the earth is everyone\'s ______.',sc:'保护地球是每个人的责任。',ex:'词性转换',tip:'responsible → responsibility，-ble 变 -bility，同类还有 able→ability。',lv:3,th:'环境',mode:'transform',base:'responsible'},
+  {w:'curiosity',ph:'ˌkjʊəriˈɒsəti',pos:'n.',cn:'好奇心',s:'________ drives scientists to explore the unknown.',sc:'好奇心驱使科学家探索未知。',ex:'词性转换',tip:'curious → curiosity，注意去掉 u 再加 -osity。',lv:3,th:'成长',mode:'transform',base:'curious'},
+  {w:'generosity',ph:'ˌdʒenəˈrɒsəti',pos:'n.',cn:'慷慨；大方',s:'Her ______ touched everyone in the small town.',sc:'她的慷慨感动了小镇上的每个人。',ex:'词性转换',tip:'generous → generosity，与 curious→curiosity 同规律。',lv:3,th:'社会',mode:'transform',base:'generous'},
+  {w:'awareness',ph:'əˈweənəs',pos:'n.',cn:'意识',s:'Environmental ______ is rising among young people.',sc:'年轻人的环保意识正在增强。',ex:'词性转换',tip:'aware → awareness，-ness 名词后缀；raise awareness 提高意识。',lv:3,th:'环境',mode:'transform',base:'aware'},
+  {w:'achievement',ph:'əˈtʃiːvmənt',pos:'n.',cn:'成就；达成',s:'The award honours her great ______ in physics.',sc:'这个奖项表彰她在物理学上的伟大成就。',ex:'词性转换',tip:'achieve → achievement，-ment 名词后缀；a sense of achievement 成就感。',lv:3,th:'成长',mode:'transform',base:'achieve'},
+  {w:'development',ph:'dɪˈveləpmənt',pos:'n.',cn:'发展',s:'The ______ of AI brings both chances and challenges.',sc:'人工智能的发展带来机遇也带来挑战。',ex:'词性转换',tip:'develop → development；with the development of... 是写作万能开头。',lv:3,th:'科技',mode:'transform',base:'develop'},
+  {w:'contribution',ph:'ˌkɒntrɪˈbjuːʃn',pos:'n.',cn:'贡献',s:'Yuan Longping made a great ______ to the world.',sc:'袁隆平为世界做出了巨大贡献。',ex:'词性转换',tip:'contribute → contribution；make a contribution to 为……做贡献。',lv:3,th:'社会',mode:'transform',base:'contribute'},
+  {w:'graduation',ph:'ˌɡrædʒuˈeɪʃn',pos:'n.',cn:'毕业',s:'After ______, he became a village teacher.',sc:'毕业后，他成了一名乡村教师。',ex:'词性转换',tip:'graduate → graduation，-te 变 -tion，同类：educate→education。',lv:3,th:'成长',mode:'transform',base:'graduate'},
+  {w:'decision',ph:'dɪˈsɪʒn',pos:'n.',cn:'决定',s:'Think twice before making a big ______.',sc:'做重大决定前要三思。',ex:'词性转换',tip:'decide → decision，-de 变 -sion；make a decision 做决定。',lv:3,th:'成长',mode:'transform',base:'decide'},
+  {w:'permission',ph:'pəˈmɪʃn',pos:'n.',cn:'许可；准许',s:'You need ______ to enter the laboratory.',sc:'进入实验室需要许可。',ex:'词性转换',tip:'permit → permission；ask for permission 请求许可，注意双写 t 变 ss。',lv:3,th:'社会',mode:'transform',base:'permit'},
+  {w:'success',ph:'səkˈses',pos:'n.',cn:'成功',s:'________ comes to those who are well prepared.',sc:'成功属于有准备的人。',ex:'词性转换',tip:'succeed(v.) → success(n.) → successful(adj.) → successfully(adv.)，一族全记。',lv:3,th:'成长',mode:'transform',base:'succeed'},
+  {w:'failure',ph:'ˈfeɪljə',pos:'n.',cn:'失败',s:'________ is the mother of success.',sc:'失败是成功之母。',ex:'词性转换',tip:'fail → failure，-ure 名词后缀，同类：please→pleasure。',lv:3,th:'成长',mode:'transform',base:'fail'},
+  {w:'strength',ph:'streŋθ',pos:'n.',cn:'力量；优势',s:'Teamwork is our greatest ______.',sc:'团队合作是我们最大的优势。',ex:'词性转换',tip:'strong → strength，与 long→length、wide→width 同规律。',lv:3,th:'社会',mode:'transform',base:'strong'},
+  {w:'length',ph:'leŋθ',pos:'n.',cn:'长度',s:'The Yangtze River is about 6,300 km in ______.',sc:'长江长约 6300 千米。',ex:'词性转换',tip:'long → length；in length 在长度上，地理类说明文常用。',lv:3,th:'文化',mode:'transform',base:'long'},
+  {w:'belief',ph:'bɪˈliːf',pos:'n.',cn:'信念；相信',s:'His ______ in himself never shook.',sc:'他对自己的信念从未动摇。',ex:'词性转换',tip:'believe → belief，-ve 变 -f，同类：relieve→relief（缓解）。',lv:3,th:'成长',mode:'transform',base:'believe'},
+  {w:'anxiety',ph:'æŋˈzaɪəti',pos:'n.',cn:'焦虑',s:'Deep breathing can reduce exam ______.',sc:'深呼吸可以缓解考试焦虑。',ex:'词性转换',tip:'anxious → anxiety，心理健康是近年高考阅读热门话题。',lv:3,th:'成长',mode:'transform',base:'anxious'},
+  {w:'variety',ph:'vəˈraɪəti',pos:'n.',cn:'多样；种类',s:'The school cafeteria offers a ______ of dishes.',sc:'学校食堂提供各式各样的菜品。',ex:'词性转换',tip:'various → variety；a variety of = varieties of 各种各样的。',lv:3,th:'社会',mode:'transform',base:'various'},
+  {w:'ability',ph:'əˈbɪləti',pos:'n.',cn:'能力',s:'Practice improves your ______ to write in English.',sc:'练习能提升你用英语写作的能力。',ex:'词性转换',tip:'able → ability；the ability to do sth.，注意接不定式。',lv:3,th:'成长',mode:'transform',base:'able'},
+  {w:'phenomenon',ph:'fəˈnɒmɪnən',pos:'n.',cn:'现象',s:'Lightning is a common natural ______ in summer.',sc:'闪电是夏天常见的自然现象。',ex:'阅读障碍词',tip:'复数是 phenomena（希腊语源），说明文高频词。',lv:3,th:'科技'},
+  {w:'significant',ph:'sɪɡˈnɪfɪkənt',pos:'adj.',cn:'重要的；显著的',s:'The discovery is ______ for cancer research.',sc:'这一发现对癌症研究意义重大。',ex:'阅读高频词',tip:'= very important；名词 significance，写作替换 important 提分。',lv:3,th:'科技'},
+  {w:'consequence',ph:'ˈkɒnsɪkwəns',pos:'n.',cn:'后果；结果',s:'Every action has a ______, good or bad.',sc:'每个行为都有后果，或好或坏。',ex:'阅读高频词',tip:'as a consequence = as a result 因此，议论文高级连接词。',lv:3,th:'成长'},
+  {w:'atmosphere',ph:'ˈætməsfɪə',pos:'n.',cn:'大气；氛围',s:'The old library has a quiet and warm ______.',sc:'这座老图书馆有一种安静而温暖的氛围。',ex:'阅读高频词',tip:'既指"大气层"也指"气氛"，依语境判断。',lv:3,th:'文化'},
+  {w:'therefore',ph:'ˈðeəfɔː',pos:'adv.',cn:'因此；所以',s:'It rained heavily; ______, the match was put off.',sc:'雨下得很大，因此比赛被推迟了。',ex:'逻辑连接词',tip:'比 so 更正式的"因此"，写作升级词汇，注意后有逗号。',lv:3,th:'成长'},
+  {w:'appreciate',ph:'əˈpriːʃieɪt',pos:'v.',cn:'欣赏；感激',s:'I really ______ your help with my English study.',sc:'我非常感激你对我英语学习的帮助。',ex:'高频动词',tip:'appreciate doing sth.；I would appreciate it if... 感谢信高级句型。',lv:3,th:'社会'},
+  {w:'opportunity',ph:'ˌɒpəˈtjuːnəti',pos:'n.',cn:'机会',s:'The job fair is a good ______ for graduates.',sc:'招聘会对毕业生来说是个好机会。',ex:'高频名词',tip:'= chance，但更正式；take the opportunity to do 借机做某事。',lv:3,th:'社会'},
+  {w:'communicate',ph:'kəˈmjuːnɪkeɪt',pos:'v.',cn:'交流；沟通',s:'Music helps people ______ across cultures.',sc:'音乐帮助人们跨文化交流。',ex:'高频动词',tip:'communicate with sb.；名词 communication，词性转换常考。',lv:3,th:'文化'},
+  {w:'effect',ph:'ɪˈfekt',pos:'n.',cn:'影响；效果',s:'The new traffic rule had a good ______.',sc:'新的交通规则产生了良好的效果。',ex:'易混辨析',tip:'effect 是名词（have an effect on），affect 是动词——别再混淆！',lv:3,th:'社会'},
+  {w:'consume',ph:'kənˈsjuːm',pos:'v.',cn:'消耗；消费',s:'Private cars ______ a large amount of energy.',sc:'私家车消耗大量能源。',ex:'阅读障碍词',tip:'consumer 消费者；consumption 消耗/消费，环保阅读高频。',lv:3,th:'环境'},
+  {w:'observe',ph:'əbˈzɜːv',pos:'v.',cn:'庆祝；遵守（熟词生义）',s:'People there still ______ the old harvest festival.',sc:'那里的人们仍然庆祝古老的丰收节。',ex:'熟词生义',tip:'observe 常见义"观察"，此处为"庆祝（节日）、遵守（规则）"。',lv:3,th:'文化',mode:'fresh',common:'观察'},
+  {w:'charge',ph:'tʃɑːdʒ',pos:'v.',cn:'收费；负责（熟词生义）',s:'The hotel ______s 100 yuan for breakfast.',sc:'这家酒店早餐收费一百元。',ex:'熟词生义',tip:'charge sb. money for sth. 收费；in charge of 负责；take charge 接管。',lv:3,th:'社会',mode:'fresh',common:'充电；控告'},
+  {w:'weather',ph:'ˈweðə',pos:'v.',cn:'经受住（风雨）（熟词生义）',s:'The old bridge has ______ed many storms.',sc:'这座老桥经受住了无数次暴风雨。',ex:'熟词生义',tip:'weather 作动词 = 平安渡过（困难），文学性较强，阅读偶现。',lv:3,th:'环境',mode:'fresh',common:'天气'},
+  {w:'escape',ph:'ɪˈskeɪp',pos:'v.',cn:'被忘掉；未被注意（熟词生义）',s:'I\'m afraid his name ______s me for the moment.',sc:'不好意思，我一时想不起他的名字了。',ex:'熟词生义',tip:'escape 常见义"逃跑"，His name escapes me 是地道口语表达。',lv:3,th:'社会',mode:'fresh',common:'逃跑'}
+];
+
+/* =====================================================================
+   数据与状态
+===================================================================== */
+var LS_KEY = 'eng_wordquest_v1';
+var LEVEL_NAMES = {1:'初阶 · 见习', 2:'进阶 · 熟手', 3:'挑战 · 词豪'};
+var LEVEL_SHORT = {1:'初阶', 2:'进阶', 3:'挑战'};
+var RUN_LENGTH = 10;
+var HINTS_PER_RUN = 3;
+
+var profile = loadProfile();
+var run = null;
+
+function loadProfile(){
+  try {
+    var p = JSON.parse(localStorage.getItem(LS_KEY));
+    if(p && typeof p === 'object') return normalizeProfile(p);
+  } catch(e){}
+  return normalizeProfile({});
+}
+function normalizeProfile(p){
+  return {
+    best: p.best || null,           // {score, time, acc, date}
+    games: p.games || 0,
+    answers: p.answers || 0,
+    correct: p.correct || 0,
+    recent: p.recent || [],          // 最近 15 题对错
+    recLevel: p.recLevel || 1,       // 推荐难度
+    wrong: p.wrong || {},            // 错词本 {word: count}
+    voiceOn: p.voiceOn !== false,
+    voiceName: p.voiceName || null   // 用户选定的发音人
+  };
+}
+function saveProfile(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify(profile)); } catch(e){}
+}
+function recentAcc(){
+  if(!profile.recent.length) return null;
+  var s = profile.recent.reduce(function(a,b){ return a + (b?1:0); }, 0);
+  return s / profile.recent.length;
+}
+function pushRecent(ok){
+  profile.recent.push(ok);
+  if(profile.recent.length > 15) profile.recent.shift();
+}
+
+/* =====================================================================
+   语音 —— 智能优选最自然的英语发音人
+   优先级：用户手动选择 > Edge Natural 神经语音 > Google 语音 > macOS 优质语音 > 任意 en-US
+===================================================================== */
+var voicesCache = [];
+function refreshVoices(){
+  if(!('speechSynthesis' in window)) return;
+  voicesCache = speechSynthesis.getVoices().filter(function(v){ return v.lang.toLowerCase().indexOf('en') === 0; });
+  renderVoiceOptions();
+}
+if('speechSynthesis' in window){
+  refreshVoices();
+  speechSynthesis.onvoiceschanged = refreshVoices;
+}
+function pickVoice(){
+  if(!voicesCache.length) return null;
+  // 用户手动选择优先
+  if(profile.voiceName){
+    var chosen = voicesCache.find(function(v){ return v.name === profile.voiceName; });
+    if(chosen) return chosen;
+  }
+  var byName = [
+    /natural/i,                 // Edge 在线神经语音（最自然）
+    /google us english/i,       // Chrome 谷歌语音
+    /google.*english/i,
+    /samantha|ava|allison|zoe|susan/i,  // macOS 优质语音
+    /online/i                   // 其他在线语音
+  ];
+  for(var i = 0; i < byName.length; i++){
+    var v = voicesCache.find(function(x){ return byName[i].test(x.name); });
+    if(v) return v;
+  }
+  return voicesCache.find(function(x){ return /en[-_]US/i.test(x.lang); }) || voicesCache[0];
+}
+function speak(text, rate){
+  if(!profile.voiceOn || !('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  var u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US';
+  u.rate = rate || 0.88;
+  u.pitch = 1.05;
+  var v = pickVoice();
+  if(v){ u.voice = v; u.lang = v.lang; }
+  speechSynthesis.speak(u);
+}
+function stopSpeak(){
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+}
+
+/* 发音人选择器（开始页） */
+function renderVoiceOptions(){
+  var sel = $('voiceSelect');
+  if(!sel) return;
+  var current = sel.value;
+  sel.innerHTML = '';
+  if(!voicesCache.length){
+    sel.innerHTML = '<option value="">（本机未检测到英语发音人 · 推荐用最新版 Edge / Chrome 打开）</option>';
+    return;
+  }
+  // 排序：Natural/Google 优先展示
+  var sorted = voicesCache.slice().sort(function(a, b){
+    function score(v){
+      if(/natural/i.test(v.name)) return 0;
+      if(/google/i.test(v.name)) return 1;
+      if(/online/i.test(v.name)) return 2;
+      return 3;
+    }
+    return score(a) - score(b);
+  });
+  sorted.forEach(function(v){
+    var opt = document.createElement('option');
+    opt.value = v.name;
+    var tag = /natural/i.test(v.name) ? '（推荐·神经语音）' : (/google/i.test(v.name) ? '（推荐）' : '');
+    opt.textContent = v.name.replace('Microsoft ', '').replace(' Online (Natural)', '') + tag;
+    sel.appendChild(opt);
+  });
+  var auto = document.createElement('option');
+  auto.value = '';
+  auto.textContent = '✨ 自动优选';
+  sel.insertBefore(auto, sel.firstChild);
+  sel.value = profile.voiceName || current || '';
+}
+
+/* =====================================================================
+   鼓励语料
+===================================================================== */
+var PRAISE = [
+  '完美！高考核心词稳稳拿下！',
+  '太出色了，这个掌握度无可挑剔！',
+  '精彩！这就是 130+ 的词汇功底！',
+  '漂亮！命题人看到都会为你点头！',
+  '出色的拼写！节奏完全在你手中！',
+  '一词中的！保持这个手感！',
+  '干净利落，这就是学霸的稳度！'
+];
+var PRAISE_RETRY = [
+  '拼对了！知错能改，善莫大焉！',
+  '成功拿下！坚持的人运气都不会差！',
+  '对了！每一次修正都是进步！'
+];
+var CHEER = [
+  '这个字母不太对，再想想～',
+  '差一点点！换个字母试试',
+  '别急，慢慢拼，你可以的',
+  '这个单词有点调皮，稳住！',
+  '错误是学习的路标，继续！',
+  '再试一次，你离答案更近了'
+];
+var STREAK_MSG = {3:'三连对！状态火热！', 5:'五连对！无人能挡！', 8:'八连对！词王附体！'};
+
+function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+/* =====================================================================
+   界面工具
+===================================================================== */
+function $(id){ return document.getElementById(id); }
+function showScreen(name){
+  ['screenStart','screenGame','screenEnd'].forEach(function(s){
+    $(s).classList.toggle('hidden', s !== name);
+  });
+  $('topEndBtn').classList.toggle('hidden', name !== 'screenGame');
+  $('backText').textContent = name === 'screenStart' ? '返回书馆' : '返回';
+  if(name !== 'screenGame') stopSpeak();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+function fmtTime(sec){
+  var m = Math.floor(sec / 60), s = sec % 60;
+  return m + ':' + (s < 10 ? '0' : '') + s;
+}
+function setFeedback(msg, cls){
+  var fb = $('feedback');
+  fb.className = 'feedback ' + (cls || '');
+  fb.innerHTML = msg;
+}
+
+/* 开始页战绩渲染 */
+function renderStart(){
+  $('bestScore').textContent = profile.best ? profile.best.score : '—';
+  $('bestMeta').textContent = profile.best
+    ? '用时 ' + fmtTime(profile.best.time) + ' · 正确率 ' + Math.round(profile.best.acc * 100) + '%'
+    : '尚未出征';
+  $('totalGames').textContent = profile.games;
+  $('totalAcc').textContent = profile.answers ? Math.round(profile.correct / profile.answers * 100) + '%' : '—';
+  $('totalAnswers').textContent = profile.answers + ' 题作答';
+  $('levelBadge').textContent = LEVEL_NAMES[profile.recLevel] || LEVEL_NAMES[1];
+}
+
+/* =====================================================================
+   对局逻辑
+===================================================================== */
+var themeFilter = 'all';
+
+function pickWord(level, usedSet){
+  var pool = WORD_BANK.filter(function(e){
+    if(usedSet.has(e.w)) return false;
+    if(themeFilter !== 'all' && e.th !== themeFilter) return false;
+    return true;
+  });
+  if(!pool.length) return null;
+  // 主难度 60% / 相邻难度 40%
+  var main = pool.filter(function(e){ return e.lv === level; });
+  var near = pool.filter(function(e){ return e.lv !== level && Math.abs(e.lv - level) === 1; });
+  var source = (main.length && (Math.random() < 0.6 || !near.length)) ? main : (near.length ? near : main);
+  if(!source.length) source = pool;
+  // 错词优先复现（间隔重复）
+  var wrongOnes = source.filter(function(e){ return profile.wrong[e.w]; });
+  if(wrongOnes.length && Math.random() < 0.35) return pick(wrongOnes);
+  return pick(source);
+}
+
+function buildQuestion(entry){
+  var mode = entry.mode || 'normal';
+  if(mode === 'normal' && Math.random() < 0.3) mode = 'cloze'; // 仅例句模式，+2 分
+  var q = {
+    entry: entry, mode: mode,
+    answer: entry.w.toLowerCase(),
+    slots: [], tiles: [],
+    mistakes: 0, hintUsed: false, done: false,
+    startTime: Date.now()
+  };
+  // 免费揭示首字母（辅助随战绩递减）
+  var acc = recentAcc();
+  var freeFirst = entry.lv === 1 || (entry.lv === 2 && (acc === null || acc < 0.85)) || (entry.lv === 3 && (acc === null || acc < 0.6));
+  var letters = q.answer.split('');
+  q.slots = letters.map(function(ch, i){
+    return {ch: ch, filled: freeFirst && i === 0, locked: freeFirst && i === 0, tileIdx: (freeFirst && i === 0) ? -1 : null};
+  });
+  // 字母牌：答案字母（去掉免费首字母）+ 干扰字母
+  var need = letters.filter(function(ch, i){ return !(freeFirst && i === 0); });
+  var distractorPool = 'aeionrtlsucdmpghbyfkwv'.split('').filter(function(c){ return letters.indexOf(c) === -1; });
+  var distractN = entry.lv === 3 ? 4 : 3;
+  while(need.length < q.answer.length - (freeFirst?1:0) + distractN){
+    var c = distractorPool.splice(Math.floor(Math.random() * distractorPool.length), 1)[0];
+    if(!c) break;
+    need.push(c);
+  }
+  // 洗牌
+  for(var i = need.length - 1; i > 0; i--){
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = need[i]; need[i] = need[j]; need[j] = t;
+  }
+  q.tiles = need;
+  return q;
+}
+
+function newRun(){
+  run = {
+    score: 0, streak: 0, bestStreak: 0,
+    correct: 0, answered: 0,
+    level: profile.recLevel || 1,
+    levelAdjustedUp: false, levelAdjustedDown: false,
+    hints: HINTS_PER_RUN,
+    qIndex: 0, q: null,
+    usedWords: new Set(),
+    log: [],             // {entry, ok, pts, mistakes}
+    startTime: Date.now(),
+    nearRecordWarned: false, recordBroken: false,
+    timer: null
+  };
+  showScreen('screenGame');
+  $('hintCnt').textContent = run.hints;
+  $('hintBtn').disabled = false;
+  updateHud();
+  nextQuestion();
+  run.timer = setInterval(function(){
+    $('hudTime').textContent = fmtTime(Math.floor((Date.now() - run.startTime) / 1000));
+  }, 1000);
+}
+
+function nextQuestion(){
+  if(run.qIndex >= RUN_LENGTH){ endRun(); return; }
+  var entry = pickWord(run.level, run.usedWords);
+  if(!entry){
+    // 主题词库耗尽 → 放开主题过滤兜底
+    themeFilter = 'all';
+    entry = pickWord(run.level, run.usedWords);
+    if(!entry){ endRun(); return; }
+  }
+  run.usedWords.add(entry.w);
+  run.q = buildQuestion(entry);
+  run.qIndex++;
+  renderQuestion();
+}
+
+function renderQuestion(){
+  var q = run.q, e = q.entry;
+  updateHud();
+
+  // 标签
+  var modeTag = q.mode === 'transform' ? '<span class="tag mode">词性转换</span>'
+    : q.mode === 'fresh' ? '<span class="tag mode">熟词生义</span>'
+    : q.mode === 'cloze' ? '<span class="tag mode">语境推断 +2分</span>' : '';
+  $('clueTags').innerHTML =
+    '<span class="tag theme">' + e.th + '</span>' +
+    '<span class="tag exam">' + e.ex + '</span>' + modeTag +
+    '<span class="tag">' + LEVEL_SHORT[e.lv] + '</span>';
+
+  // 线索文案
+  var clueHtml = '';
+  if(q.mode === 'transform'){
+    clueHtml = '【词性转换】<span class="base-word">' + e.base + '</span> 的正确形式 —— ' + e.pos + ' ' + e.cn;
+  } else if(q.mode === 'fresh'){
+    clueHtml = '【熟词生义】不是「' + e.common + '」！此处意为「' + e.cn.replace('（熟词生义）','') + '」';
+  } else if(q.mode === 'cloze'){
+    clueHtml = '根据下面的例句语境，推断并拼出所缺单词（' + e.pos + '）';
+  } else {
+    clueHtml = e.pos + ' ' + e.cn;
+  }
+  $('clueText').innerHTML = clueHtml;
+  $('cluePhonetic').textContent = (q.mode === 'fresh') ? '' : '';  // 音标在答对后揭晓，避免剧透拼写
+
+  // 例句
+  $('sentenceText').innerHTML = e.s.replace('______', '<span class="blank" id="blankSpan">' + '？'.repeat(1) + '</span>');
+  $('sentenceCn').textContent = e.sc;
+  $('sentenceCn').classList.add('hidden');
+  $('translateToggle').textContent = '显示翻译 ▾';
+
+  // 拼写槽
+  var slotsEl = $('slots');
+  slotsEl.className = 'slots';
+  slotsEl.innerHTML = '';
+  q.slots.forEach(function(slot, i){
+    var d = document.createElement('div');
+    d.className = 'slot' + (slot.filled ? (slot.locked ? ' locked' : ' filled') : '');
+    d.textContent = slot.filled ? slot.ch : '';
+    d.dataset.idx = i;
+    d.addEventListener('click', function(){ removeLetter(i); });
+    slotsEl.appendChild(d);
+  });
+
+  // 字母牌
+  var tilesEl = $('tiles');
+  tilesEl.innerHTML = '';
+  q.tiles.forEach(function(ch, i){
+    var t = document.createElement('div');
+    t.className = 'tile';
+    t.textContent = ch;
+    t.dataset.idx = i;
+    t.addEventListener('click', function(){ placeLetter(i); });
+    tilesEl.appendChild(t);
+  });
+
+  setFeedback('第 ' + run.qIndex + ' 题 · ' + (q.mode === 'cloze' ? '靠语境推断，加油！' : '选出字母，拼出这个高考核心词'), '');
+  $('clueCard').classList.remove('fade-in');
+  void $('clueCard').offsetWidth;
+  $('clueCard').classList.add('fade-in');
+}
+
+function placeLetter(tileIdx){
+  var q = run.q;
+  if(!q || q.done) return;
+  var tileEl = $('tiles').children[tileIdx];
+  if(!tileEl || tileEl.classList.contains('used')) return;
+  // 找第一个空槽
+  var slotIdx = -1;
+  for(var i = 0; i < q.slots.length; i++){
+    if(!q.slots[i].filled){ slotIdx = i; break; }
+  }
+  if(slotIdx === -1) return;
+  var ch = q.tiles[tileIdx];
+  if(ch === q.slots[slotIdx].ch){
+    // 正确
+    q.slots[slotIdx].filled = true;
+    q.slots[slotIdx].tileIdx = tileIdx;
+    tileEl.classList.add('used');
+    var slotEl = $('slots').children[slotIdx];
+    slotEl.textContent = ch;
+    slotEl.classList.add('filled', 'pop');
+    setTimeout(function(){ slotEl.classList.remove('pop'); }, 300);
+    if(q.slots.every(function(s){ return s.filled; })) onWordComplete();
+  } else {
+    // 错误
+    q.mistakes++;
+    tileEl.classList.add('bad');
+    setTimeout(function(){ tileEl.classList.remove('bad'); }, 450);
+    setFeedback(pick(CHEER), 'bad');
+  }
+}
+
+function removeLetter(slotIdx){
+  var q = run.q;
+  if(!q || q.done) return;
+  var slot = q.slots[slotIdx];
+  if(!slot || !slot.filled || slot.locked) return;
+  slot.filled = false;
+  var slotEl = $('slots').children[slotIdx];
+  slotEl.textContent = '';
+  slotEl.classList.remove('filled');
+  if(slot.tileIdx !== null && slot.tileIdx >= 0){
+    $('tiles').children[slot.tileIdx].classList.remove('used');
+  }
+  slot.tileIdx = null;
+}
+
+function useHint(){
+  var q = run.q;
+  if(!q || q.done || run.hints <= 0) return;
+  // 找一个未填槽，匹配一张未用字母牌
+  for(var i = 0; i < q.slots.length; i++){
+    if(!q.slots[i].filled){
+      var ch = q.slots[i].ch;
+      for(var t = 0; t < q.tiles.length; t++){
+        if(q.tiles[t] === ch && !$('tiles').children[t].classList.contains('used')){
+          run.hints--;
+          q.hintUsed = true;
+          $('hintCnt').textContent = run.hints;
+          if(run.hints <= 0) $('hintBtn').disabled = true;
+          placeLetter(t);
+          setFeedback('提示卡生效！一个字母已就位', 'notice');
+          return;
+        }
+      }
+    }
+  }
+}
+
+function onWordComplete(){
+  var q = run.q, e = q.entry;
+  q.done = true;
+  var elapsed = (Date.now() - q.startTime) / 1000;
+
+  // 计分
+  var base = {1:10, 2:15, 3:20}[e.lv] + (q.mode === 'cloze' ? 2 : 0);
+  var mult = q.mistakes === 0 ? 1 : (q.mistakes <= 2 ? 0.6 : 0.4);
+  if(q.hintUsed) mult = Math.min(mult, 0.6);
+  var timeBonus = elapsed <= 20 ? 4 : (elapsed <= 40 ? 2 : 0);
+  var streakBonus = 0;
+  run.streak++;
+  if(run.streak >= 3) streakBonus = Math.min(2 * (run.streak - 2), 6);
+  var pts = Math.round(base * mult) + timeBonus + (q.mistakes === 0 ? streakBonus : 0);
+  run.score += pts;
+  run.correct++;
+  run.answered++;
+  run.bestStreak = Math.max(run.bestStreak, run.streak);
+  pushRecent(true);
+  profile.answers++; profile.correct++;
+  if(profile.wrong[e.w] && q.mistakes === 0) delete profile.wrong[e.w]; // 已攻克
+  run.log.push({entry: e, ok: true, pts: pts, mistakes: q.mistakes, mode: q.mode});
+
+  // 揭晓音标与例句答案
+  $('cluePhonetic').textContent = '/' + e.ph + '/';
+  var blank = $('blankSpan');
+  if(blank) blank.textContent = e.w;
+  $('slots').classList.add('correct');
+
+  // 反馈
+  var msgs = [];
+  if(q.mistakes === 0){
+    msgs.push(pick(PRAISE));
+    if(STREAK_MSG[run.streak]) msgs.push(STREAK_MSG[run.streak]);
+  } else {
+    msgs.push(pick(PRAISE_RETRY));
+  }
+  msgs.push('+' + pts + ' 分');
+  setFeedback(msgs.join('　'), 'good');
+
+  // 纪录提示
+  checkRecord();
+
+  // 自适应难度（局内微调）
+  adjustLevelInRun();
+
+  // 语音朗读：先读单词，稍作停顿再读完整例句
+  speak(e.w, 0.88);
+  setTimeout(function(){
+    if(run && run.q === q){
+      speak(e.s.replace('______', e.w), 0.75);
+    }
+  }, 1300);
+
+  updateHud();
+  saveProfile();
+
+  // 停留更久：按句长动态计算，保证看清答案、听完朗读再进入下一题
+  var dwell = Math.max(3400, 1900 + e.s.split(' ').length * 430);
+  setTimeout(function(){
+    if(run) nextQuestion();
+  }, Math.min(dwell, 9000));
+}
+
+function onSkip(){
+  var q = run.q;
+  if(!q || q.done) return;
+  q.done = true;
+  run.streak = 0;
+  run.answered++;
+  pushRecent(false);
+  profile.answers++;
+  profile.wrong[q.entry.w] = (profile.wrong[q.entry.w] || 0) + 1;
+  run.log.push({entry: q.entry, ok: false, pts: 0, mistakes: 99, mode: q.mode});
+  var blank = $('blankSpan');
+  if(blank) blank.textContent = q.entry.w;
+  $('cluePhonetic').textContent = '/' + q.entry.ph + '/';
+  setFeedback('答案揭晓：<b class="en-font" style="color:var(--eng);">' + q.entry.w + '</b> —— 没关系，结算页有详细讲解，继续加油！', 'notice');
+  updateHud();
+  saveProfile();
+  setTimeout(function(){ if(run) nextQuestion(); }, 2000);
+}
+
+function checkRecord(){
+  if(!profile.best) return;
+  var best = profile.best.score;
+  if(!run.recordBroken && run.score > best){
+    run.recordBroken = true;
+    setFeedback('🏆 超越自我！你已打破历史最佳纪录（' + best + ' 分）！继续冲！', 'record');
+    $('recordFill').classList.add('record-breaking');
+  } else if(!run.nearRecordWarned && run.score <= best && best - run.score <= 20){
+    run.nearRecordWarned = true;
+    setTimeout(function(){
+      if(run && !run.recordBroken){
+        setFeedback('⚑ 距离你的历史最佳只差 ' + (best - run.score) + ' 分，冲刺就在眼前！', 'notice');
+      }
+    }, 1600);
+  }
+}
+
+function adjustLevelInRun(){
+  if(run.answered < 4) return;
+  var acc = run.correct / run.answered;
+  if(acc >= 0.9 && run.level < 3 && !run.levelAdjustedUp){
+    run.level++;
+    run.levelAdjustedUp = true;
+    setTimeout(function(){ if(run) setFeedback('📈 表现优异，难度上调至「' + LEVEL_SHORT[run.level] + '」！', 'notice'); }, 1700);
+  } else if(acc <= 0.4 && run.level > 1 && !run.levelAdjustedDown){
+    run.level--;
+    run.levelAdjustedDown = true;
+    setTimeout(function(){ if(run) setFeedback('🌿 已为你调整到更合适的难度，稳住节奏！', 'notice'); }, 1700);
+  }
+}
+
+function updateHud(){
+  if(!run) return;
+  $('hudScore').textContent = run.score;
+  $('hudBest').textContent = profile.best ? profile.best.score : '—';
+  $('hudTime').textContent = fmtTime(Math.floor((Date.now() - run.startTime) / 1000));
+  $('hudProgress').textContent = Math.min(run.qIndex, RUN_LENGTH) + '/' + RUN_LENGTH;
+  $('hudStreak').textContent = run.streak >= 2 ? run.streak + '🔥' : '—';
+  $('hudLevel').textContent = LEVEL_SHORT[run.level];
+  // 纪录进度条
+  var target = profile.best ? Math.max(profile.best.score, 1) : 200;
+  var pct = Math.min(100, Math.round(run.score / target * 100));
+  $('recordFill').style.width = pct + '%';
+  $('recordBarPct').textContent = pct + '%';
+  $('recordBarLbl').textContent = profile.best
+    ? (run.recordBroken ? '🏆 新纪录进行中！' : '向历史最佳（' + profile.best.score + ' 分）进发')
+    : '首战 · 目标 200 分';
+}
+
+/* =====================================================================
+   结算
+===================================================================== */
+function endRun(){
+  if(!run) return;
+  clearInterval(run.timer);
+  stopSpeak();
+  var totalTime = Math.floor((Date.now() - run.startTime) / 1000);
+  var acc = run.answered ? run.correct / run.answered : 0;
+
+  // 更新最佳纪录
+  var isNewRecord = false;
+  if(run.answered > 0 && (!profile.best || run.score > profile.best.score)){
+    isNewRecord = !!profile.best; // 首局不盖"新纪录"章，只立档
+    profile.best = {score: run.score, time: totalTime, acc: acc, date: new Date().toISOString().slice(0,10)};
+  }
+  profile.games++;
+
+  // 更新推荐难度（依最近战绩）
+  var ra = recentAcc();
+  if(ra !== null && profile.recent.length >= 8){
+    if(ra >= 0.85 && profile.recLevel < 3) profile.recLevel++;
+    else if(ra <= 0.5 && profile.recLevel > 1) profile.recLevel--;
+  }
+  saveProfile();
+
+  // 渲染
+  $('finalScore').textContent = run.score;
+  var verdict, vcls = '';
+  if(run.answered === 0){
+    verdict = '本局未作答 —— 词海等你再来拾贝！';
+  } else if(run.recordBroken){
+    verdict = '🏆 新纪录诞生！你超越了过去的自己，这就是坚持的力量！';
+    vcls = 'record';
+  } else if(acc >= 0.9){
+    verdict = '接近完美的表现！你的词汇功底令人赞叹！';
+  } else if(acc >= 0.7){
+    verdict = '稳健发挥！再巩固几个错词，下一局冲击纪录！';
+  } else if(acc >= 0.5){
+    verdict = '不错的开始！错词讲解已备好，吃透它们你会更强！';
+  } else {
+    verdict = '每一次练习都算数！看看下面的讲解，慢慢来，词海无边回头是岸～';
+  }
+  $('finalVerdict').textContent = verdict;
+  $('finalVerdict').className = 'result-verdict ' + vcls;
+  $('newRecordSeal').classList.toggle('hidden', !run.recordBroken);
+
+  $('statCorrect').textContent = run.correct + '/' + run.answered;
+  $('statAcc').textContent = run.answered ? Math.round(acc * 100) + '%' : '—';
+  $('statTime').textContent = fmtTime(totalTime);
+  $('statStreak').textContent = run.bestStreak;
+  $('statBest').textContent = profile.best ? profile.best.score : '—';
+
+  // 错词讲解
+  var wrongs = run.log.filter(function(l){ return !l.ok || l.mistakes >= 2; });
+  var wrongList = $('wrongList');
+  wrongList.innerHTML = '';
+  if(!wrongs.length && run.answered > 0){
+    $('wrongSection').classList.remove('hidden');
+    wrongList.innerHTML = '<div class="perfect-note">本局零错词 —— 全部稳稳拿下！<br>这份专注值得最热烈的掌声，去挑战更高难度吧！</div>';
+  } else if(!run.answered){
+    $('wrongSection').classList.add('hidden');
+  } else {
+    $('wrongSection').classList.remove('hidden');
+    wrongs.forEach(function(l){
+      var e = l.entry;
+      var sentenceHtml = e.s.replace('______', '<b>' + e.w + '</b>');
+      var card = document.createElement('div');
+      card.className = 'wrong-card fade-in';
+      card.innerHTML =
+        '<button class="speak-btn" data-say="' + e.w + '" title="朗读单词与例句">🔊</button>' +
+        '<div class="wrong-head">' +
+          '<span class="wrong-word">' + e.w + '</span>' +
+          '<span class="wrong-ph">/' + e.ph + '/</span>' +
+          '<span class="wrong-pos">' + e.pos + '</span>' +
+          '<span class="wrong-cn">' + e.cn + '</span>' +
+        '</div>' +
+        '<div class="wrong-tags">' +
+          '<span class="tag exam">' + e.ex + '</span>' +
+          '<span class="tag theme">' + e.th + '</span>' +
+          (e.base ? '<span class="tag mode">词形：' + e.base + ' → ' + e.w + '</span>' : '') +
+        '</div>' +
+        '<div class="wrong-sentence">' + sentenceHtml + '</div>' +
+        '<div class="wrong-sc">' + e.sc + '</div>' +
+        '<div class="wrong-tip"><b>讲解</b>　' + e.tip + '</div>';
+      wrongList.appendChild(card);
+    });
+    // 讲解卡语音：读单词 + 例句
+    wrongList.querySelectorAll('.speak-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var w = btn.dataset.say;
+        var e = WORD_BANK.find(function(x){ return x.w === w; });
+        if(e){
+          btn.classList.add('speaking');
+          speak(e.w + '. ' + e.s.replace('______', e.w), 0.75);
+          setTimeout(function(){ btn.classList.remove('speaking'); }, 2600);
+        }
+      });
+    });
+  }
+
+  // 本局回顾
+  var reviewList = $('reviewList');
+  reviewList.innerHTML = '';
+  if(!run.log.length){
+    reviewList.innerHTML = '<div class="perfect-note" style="background:var(--card);border-color:rgba(123,98,71,.3);color:var(--ink-dim);">本局暂无作答记录</div>';
+  }
+  run.log.forEach(function(l){
+    var row = document.createElement('div');
+    row.className = 'review-row';
+    row.innerHTML =
+      '<span class="mark">' + (l.ok ? (l.mistakes === 0 ? '🌟' : '✅') : (l.mistakes === 99 ? '⏭' : '💪')) + '</span>' +
+      '<span class="rw">' + l.entry.w + '</span>' +
+      '<span class="rc">' + l.entry.cn + '</span>' +
+      '<span class="rs">' + (l.pts ? '+' + l.pts : '—') + '</span>';
+    reviewList.appendChild(row);
+  });
+
+  showScreen('screenEnd');
+  renderStart();
+  var keepRun = run;
+  run = null;
+}
+
+/* =====================================================================
+   事件绑定
+===================================================================== */
+$('startBtn').addEventListener('click', function(){ newRun(); });
+$('againBtn').addEventListener('click', function(){ newRun(); });
+$('homeBtn').addEventListener('click', function(){ location.href = './index.html?subject=english'; });
+$('backLink').addEventListener('click', function(ev){
+  if(!$('screenStart').classList.contains('hidden')) return; // 主界面保持默认跳转
+  ev.preventDefault();
+  if(run){ clearInterval(run.timer); run = null; } // 对局中返回 = 放弃本局，需停表
+  renderStart();
+  showScreen('screenStart');
+});
+$('endBtn').addEventListener('click', function(){ endRun(); });
+$('topEndBtn').addEventListener('click', function(){ endRun(); });
+$('hintBtn').addEventListener('click', useHint);
+$('skipBtn').addEventListener('click', onSkip);
+$('backspaceBtn').addEventListener('click', function(){
+  var q = run && run.q;
+  if(!q || q.done) return;
+  for(var i = q.slots.length - 1; i >= 0; i--){
+    if(q.slots[i].filled && !q.slots[i].locked){ removeLetter(i); return; }
+  }
+});
+$('speakSentenceBtn').addEventListener('click', function(){
+  var e = run && run.q && run.q.entry;
+  if(!e) return;
+  var btn = this;
+  btn.classList.add('speaking');
+  var text = e.s.replace('______', e.w);
+  speak(text, 0.75);
+  setTimeout(function(){ btn.classList.remove('speaking'); }, 2400);
+});
+$('speakWordBtn').addEventListener('click', function(){
+  var q = run && run.q;
+  if(!q) return;
+  speak(q.entry.w);
+});
+$('translateToggle').addEventListener('click', function(){
+  var cn = $('sentenceCn');
+  var hidden = cn.classList.toggle('hidden');
+  this.textContent = hidden ? '显示翻译 ▾' : '隐藏翻译 ▴';
+});
+$('voiceToggle').addEventListener('click', function(){
+  profile.voiceOn = !profile.voiceOn;
+  this.classList.toggle('on', profile.voiceOn);
+  this.textContent = profile.voiceOn ? '🔊 语音' : '🔇 静音';
+  if(!profile.voiceOn) stopSpeak();
+  saveProfile();
+});
+$('themeBar').addEventListener('click', function(ev){
+  var chip = ev.target.closest('.theme-chip');
+  if(!chip) return;
+  document.querySelectorAll('.theme-chip').forEach(function(c){ c.classList.remove('active'); });
+  chip.classList.add('active');
+  themeFilter = chip.dataset.theme;
+});
+$('voiceSelect').addEventListener('change', function(){
+  profile.voiceName = this.value || null;
+  saveProfile();
+});
+$('voiceTestBtn').addEventListener('click', function(){
+  var btn = this;
+  btn.classList.add('speaking');
+  speak('Practice makes perfect. Welcome to the word quest!', 0.75);
+  setTimeout(function(){ btn.classList.remove('speaking'); }, 2800);
+});
+
+/* 键盘输入 */
+document.addEventListener('keydown', function(ev){
+  if(!run || !run.q || run.q.done) return;
+  var key = ev.key.toLowerCase();
+  if(/^[a-z]$/.test(key)){
+    var tiles = $('tiles').children;
+    for(var i = 0; i < run.q.tiles.length; i++){
+      if(run.q.tiles[i] === key && !tiles[i].classList.contains('used')){
+        placeLetter(i);
+        return;
+      }
+    }
+    // 键盘敲了不存在的字母 = 失误提示（不计分惩罚）
+    setFeedback('字母牌里没有「' + key + '」，再观察一下～', 'bad');
+  } else if(ev.key === 'Backspace'){
+    ev.preventDefault();
+    $('backspaceBtn').click();
+  }
+});
+
+/* 离开页面前清理语音 */
+window.addEventListener('beforeunload', stopSpeak);
+
+/* ===== 漂浮纹样 ===== */
+(function(){
+  var layer = $('decoLayer');
+  var glyphs = ['✦','❧','✿','❦','✧','Aa','✎'];
+  for(var i = 0; i < 9; i++){
+    var d = document.createElement('span');
+    d.className = 'deco';
+    d.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+    d.style.left = (Math.random() * 100) + '%';
+    d.style.fontSize = (13 + Math.random() * 10) + 'px';
+    d.style.animationDuration = (26 + Math.random() * 22) + 's';
+    d.style.animationDelay = (Math.random() * 24) + 's';
+    layer.appendChild(d);
+  }
+})();
+
+/* 初始化语音按钮状态 */
+$('voiceToggle').classList.toggle('on', profile.voiceOn);
+$('voiceToggle').textContent = profile.voiceOn ? '🔊 语音' : '🔇 静音';
+
+renderStart();
+</script>
+</body>
+</html>

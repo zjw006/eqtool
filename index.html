@@ -45,6 +45,9 @@
       --teal: #6E8B7B;        /* 皮克 · 灰青 */
       --teal-soft: #DFE7E0;
       --teal-dim: rgba(110,139,123,.14);
+      --eng: #6E7FA0;         /* 英语 · 灰调靛蓝 */
+      --eng-soft: #DEE3EC;
+      --eng-dim: rgba(110,127,160,.14);
       --wood-dim: rgba(123,98,71,.14);
       --wood-soft: #E7DCC6;
       --seal-dim: rgba(158,81,64,.12);
@@ -420,9 +423,9 @@
     <p class="sub" data-i18n="subtitle">翻开每一学科的绘本，在故事与交互中遇见另一个世界 — 让抽象概念变得温暖可触</p>
     <div class="divider"></div>
     <div class="stats-bar">
-      <div class="stat-item"><div class="num" id="statTotal">38</div><div class="lbl" data-i18n="statModules">模块</div></div>
-      <div class="stat-item"><div class="num" id="statSubjects">4</div><div class="lbl" data-i18n="statSubjects">学科</div></div>
-      <div class="stat-item"><div class="num" id="statCats">12</div><div class="lbl" data-i18n="statCats">分类</div></div>
+      <div class="stat-item"><div class="num" id="statTotal">39</div><div class="lbl" data-i18n="statModules">模块</div></div>
+      <div class="stat-item"><div class="num" id="statSubjects">5</div><div class="lbl" data-i18n="statSubjects">学科</div></div>
+      <div class="stat-item"><div class="num" id="statCats">13</div><div class="lbl" data-i18n="statCats">分类</div></div>
     </div>
   </div>
 </header>
@@ -436,9 +439,10 @@
 
   <!-- 学科页签（一级） -->
   <div class="subject-bar" id="subjectBar">
-    <button class="subject-tab active" data-subject="all" data-i18n="subjectAll">全部<span class="count" id="cntSubjectAll">(38)</span></button>
+    <button class="subject-tab active" data-subject="all" data-i18n="subjectAll">全部<span class="count" id="cntSubjectAll">(39)</span></button>
     <button class="subject-tab" data-subject="math" data-i18n="subjectMath">数学<span class="count" id="cntSubjectMath">(31)</span></button>
     <button class="subject-tab" data-subject="chinese" data-i18n="subjectChinese">语文<span class="count" id="cntSubjectChinese">(4)</span></button>
+    <button class="subject-tab" data-subject="english" data-i18n="subjectEnglish">英语<span class="count" id="cntSubjectEnglish">(1)</span></button>
     <button class="subject-tab" data-subject="chemistry" data-i18n="subjectChemistry">化学<span class="count" id="cntSubjectChemistry">(1)</span></button>
     <button class="subject-tab" data-subject="physics" data-i18n="subjectPhysics">物理<span class="count" id="cntSubjectPhysics">(2)</span></button>
   </div>
@@ -858,6 +862,17 @@
       <span class="game-tag" style="background: var(--phys-dim); color: var(--phys);">物理</span>
     </a>
 
+    <!-- ========== ENGLISH (英语) ========== -->
+    <a class="game-card cat-english" href="./english-crossword.html" data-cat="english" data-subject="english"
+       data-title-zh="英语填字游戏" data-title-en="Gaokao Word Quest"
+       data-desc-zh="以近年高考真题与 3500 核心词为纲的拼词闯关：高频核心词、熟词生义、词性转换三大考点，语音朗读 + 错词讲解，历史最佳纪录对比，难度随战绩自适应——每页一题，拼对即闯下一关！"
+       data-desc-en="A spelling quest built on real Gaokao papers and the 3,500 core words: high-frequency vocabulary, polysemy traps and word-form conversion — with TTS reading, mistake review, best-score tracking and adaptive difficulty. One question per page, spell to advance!">
+      <div class="game-icon">🔤</div>
+      <h3 data-i18n-card="title">英语填字游戏</h3>
+      <p data-i18n-card="desc">以近年高考真题与 3500 核心词为纲的拼词闯关：高频核心词、熟词生义、词性转换三大考点，语音朗读 + 错词讲解，历史最佳纪录对比，难度随战绩自适应——每页一题，拼对即闯下一关！</p>
+      <span class="game-tag" style="background: var(--eng-dim); color: var(--eng);">英语</span>
+    </a>
+
     <!-- ========== DISABLED ========== -->
     <a class="game-card disabled" href="javascript:void(0)" onclick="return false;" data-cat="app" data-subject="math"
        data-title-zh="数学卷积 — 人生卷积计算器" data-title-en="Life Convolution Calculator"
@@ -891,6 +906,7 @@ var i18n = {
     subjectAll: '全部',
     subjectMath: '数学',
     subjectChinese: '语文',
+    subjectEnglish: '英语',
     subjectChemistry: '化学',
     subjectPhysics: '物理',
     tabAll: '全部',
@@ -914,6 +930,7 @@ var i18n = {
     tagChemEnergy: '化学',
     tagFermionBoson: '物理',
     tagAtomicStructure: '物理',
+    tagEnglish: '英语',
     footerKai: '翻开每一页都是新世界',
     footer: '高中全学科绘本馆 // HIGH SCHOOL PICTURE BOOK',
     emptyState: '未找到匹配模块',
@@ -930,6 +947,7 @@ var i18n = {
     subjectAll: 'ALL',
     subjectMath: 'MATH',
     subjectChinese: 'CHINESE',
+    subjectEnglish: 'ENGLISH',
     subjectChemistry: 'CHEMISTRY',
     subjectPhysics: 'PHYSICS',
     tabAll: 'ALL',
@@ -953,6 +971,7 @@ var i18n = {
     tagChemEnergy: 'CHEMISTRY',
     tagFermionBoson: 'PHYSICS',
     tagAtomicStructure: 'PHYSICS',
+    tagEnglish: 'ENGLISH',
     footerKai: 'Every page is a new world',
     footer: 'High School Picture Book // 高中全学科绘本馆',
     emptyState: 'NO MODULES FOUND',
@@ -1144,6 +1163,13 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
     });
   });
 
+  // 支持 ?subject=xxx 直达学科页签（子页面"返回书馆"时定位来源页签）
+  var urlSubject = new URLSearchParams(location.search).get('subject');
+  if(urlSubject){
+    var targetTab = document.querySelector('.subject-tab[data-subject="' + urlSubject + '"]');
+    if(targetTab) targetTab.click();
+  }
+
   // Sub-tab click
   subTabs.forEach(function(tab){
     tab.addEventListener('click', function(){
@@ -1158,8 +1184,8 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
   searchBox.addEventListener('input', filterCards);
 
   // ===== COUNT UPDATE =====
-  var subjectCounts = {all: 0, math: 0, chinese: 0, chemistry: 0, physics: 0};
-  var catCounts = {algebra: 0, function: 0, geometry: 0, sequence: 0, probability: 0, app: 0, chinese: 0, 'pick-theorem': 0, 'math-symbols': 0, 'chem-energy': 0, 'fermion-boson': 0, 'atomic-structure': 0};
+  var subjectCounts = {all: 0, math: 0, chinese: 0, english: 0, chemistry: 0, physics: 0};
+  var catCounts = {algebra: 0, function: 0, geometry: 0, sequence: 0, probability: 0, app: 0, chinese: 0, english: 0, 'pick-theorem': 0, 'math-symbols': 0, 'chem-energy': 0, 'fermion-boson': 0, 'atomic-structure': 0};
   var enabledCats = {};
 
   cards.forEach(function(c){
@@ -1186,6 +1212,7 @@ document.querySelectorAll('.lang-btn').forEach(function(btn){
   document.getElementById('cntSubjectAll').textContent = '(' + subjectCounts.all + ')';
   document.getElementById('cntSubjectMath').textContent = '(' + subjectCounts.math + ')';
   document.getElementById('cntSubjectChinese').textContent = '(' + subjectCounts.chinese + ')';
+  document.getElementById('cntSubjectEnglish').textContent = '(' + subjectCounts.english + ')';
   document.getElementById('cntSubjectChemistry').textContent = '(' + subjectCounts.chemistry + ')';
   document.getElementById('cntSubjectPhysics').textContent = '(' + subjectCounts.physics + ')';
 
