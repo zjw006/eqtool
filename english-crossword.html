@@ -545,7 +545,7 @@
       <select id="voiceSelect" class="voice-select"></select>
       <button class="act-btn" id="voiceTestBtn">试听</button>
     </div>
-    <p class="voice-hint">觉得语音机械？试试切换发音人 —— Edge 浏览器的 Natural 神经语音最接近真人，Chrome 推荐 Google 语音。</p>
+    <p class="voice-hint">🎧 内置真人级 MP3 音频（Aria 神经语音），手机 / 电脑均可直接播放。下方发音人选择仅用于浏览器 TTS 兜底。</p>
 
     <div class="howto">
       <b>闯关须知</b><br>
@@ -840,7 +840,50 @@ function pickVoice(){
   }
   return voicesCache.find(function(x){ return /en[-_]US/i.test(x.lang); }) || voicesCache[0];
 }
-function speak(text, rate){
+/* ===== MP3 音频播放（优先，适配手机等无 TTS 环境） ===== */
+var audioCache = {};
+var currentAudio = null;
+function _playMp3(path){
+  if(!profile.voiceOn) return false;
+  var audio = audioCache[path];
+  if(!audio){
+    audio = new Audio(path);
+    audio.preload = 'auto';
+    audioCache[path] = audio;
+  }
+  audio.pause();
+  audio.currentTime = 0;
+  currentAudio = audio;
+  var p = audio.play();
+  if(p && p.catch){ p.catch(function(){}); }
+  return true;
+}
+function playWordAudio(w){ return _playMp3('./audio/words/' + w + '.mp3'); }
+function playSentenceAudio(w){ return _playMp3('./audio/sentences/' + w + '.mp3'); }
+/* 先读单词，稍作停顿再读例句（MP3 版） */
+function playWordThenSentence(w){
+  if(!profile.voiceOn) return;
+  stopSpeak();
+  var wPath = './audio/words/' + w + '.mp3';
+  var sPath = './audio/sentences/' + w + '.mp3';
+  if(!audioCache[wPath]){ audioCache[wPath] = new Audio(wPath); audioCache[wPath].preload = 'auto'; }
+  if(!audioCache[sPath]){ audioCache[sPath] = new Audio(sPath); audioCache[sPath].preload = 'auto'; }
+  var wa = audioCache[wPath];
+  var sa = audioCache[sPath];
+  wa.pause(); wa.currentTime = 0;
+  currentAudio = wa;
+  wa.onended = function(){
+    if(profile.voiceOn){
+      sa.pause(); sa.currentTime = 0;
+      currentAudio = sa;
+      sa.play();
+    }
+  };
+  wa.play();
+}
+
+/* ===== TTS 兜底（用于无对应 MP3 的文本） ===== */
+function speakTts(text, rate){
   if(!profile.voiceOn || !('speechSynthesis' in window)) return;
   speechSynthesis.cancel();
   var u = new SpeechSynthesisUtterance(text);
@@ -851,7 +894,10 @@ function speak(text, rate){
   if(v){ u.voice = v; u.lang = v.lang; }
   speechSynthesis.speak(u);
 }
+function speak(text, rate){ speakTts(text, rate); }
+
 function stopSpeak(){
+  if(currentAudio){ currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
   if('speechSynthesis' in window) speechSynthesis.cancel();
 }
 
@@ -1228,13 +1274,8 @@ function onWordComplete(){
   // 自适应难度（局内微调）
   adjustLevelInRun();
 
-  // 语音朗读：先读单词，稍作停顿再读完整例句
-  speak(e.w, 0.88);
-  setTimeout(function(){
-    if(run && run.q === q){
-      speak(e.s.replace('______', e.w), 0.75);
-    }
-  }, 1300);
+  // 语音朗读：先读单词，紧接着读完整例句（MP3 优先，TTS 兜底）
+  playWordThenSentence(e.w);
 
   updateHud();
   saveProfile();
@@ -1408,8 +1449,8 @@ function endRun(){
         var e = WORD_BANK.find(function(x){ return x.w === w; });
         if(e){
           btn.classList.add('speaking');
-          speak(e.w + '. ' + e.s.replace('______', e.w), 0.75);
-          setTimeout(function(){ btn.classList.remove('speaking'); }, 2600);
+          playWordThenSentence(e.w);
+          setTimeout(function(){ btn.classList.remove('speaking'); }, 5000);
         }
       });
     });
@@ -1467,14 +1508,13 @@ $('speakSentenceBtn').addEventListener('click', function(){
   if(!e) return;
   var btn = this;
   btn.classList.add('speaking');
-  var text = e.s.replace('______', e.w);
-  speak(text, 0.75);
-  setTimeout(function(){ btn.classList.remove('speaking'); }, 2400);
+  playSentenceAudio(e.w);
+  setTimeout(function(){ btn.classList.remove('speaking'); }, 4000);
 });
 $('speakWordBtn').addEventListener('click', function(){
   var q = run && run.q;
   if(!q) return;
-  speak(q.entry.w);
+  playWordAudio(q.entry.w);
 });
 $('translateToggle').addEventListener('click', function(){
   var cn = $('sentenceCn');
