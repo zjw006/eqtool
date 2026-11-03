@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#12161c">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%2312161c' stroke='%23ffd54f'/%3E%3Cpath d='M12 7h8M14 7v8l-6 9h16l-6-9V7' fill='none' stroke='%2357b8ff' stroke-width='2'/%3E%3C/svg%3E">
+  <title>反应炉 · 化学卡牌对战</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/site-frame.css">
+</head>
+<body>
+<a class="back-to-library" href="../index.html?subject=chemistry">← 返回书馆</a>
+<main id="game" aria-label="反应炉游戏区">
+  <header class="topbar">
+    <div class="brand">反应炉 <small>REACTOR</small></div>
+    <div class="turn-meta"><b id="round">回合 1</b><span id="deck-count">牌库 30</span></div>
+    <div class="top-actions"><button id="sound-btn" class="icon-btn" aria-label="声音设置">♪</button><button id="rules-btn" class="icon-btn" aria-label="反应规则">?</button><button id="pause-btn" class="icon-btn" aria-label="暂停">Ⅱ</button></div>
+  </header>
+  <div id="tutorial-strip">点一张牌，再点釜。能打反应就打；打不了别硬出——牌一进釜就公开，会递刀就留着，先看看对手动什么。</div>
+
+  <section id="reactor-zone" class="reactor-zone" aria-label="公共反应釜">
+    <div class="zone-label"><span>PUBLIC REACTOR · 公共釜</span><b id="reactor-count">0 / 8</b></div>
+    <div id="reactor" class="reactor temp-0" role="button" tabindex="0" aria-label="点击投放选中的牌">
+      <div class="glass-glint"></div><div id="liquid" class="liquid"></div><div id="tokens" class="tokens"></div><div id="steam" class="steam" aria-hidden="true"></div>
+      <div id="reactor-hint" class="reactor-hint"><span>＋</span><b>选择手牌，再点击投放</b><small>气体上浮 · 液体互溶 · 固体沉底</small></div>
+      <div id="fx" class="fx" aria-hidden="true"></div><button id="reaction-label" class="reaction-label" aria-label="跳过反应式"></button>
+    </div>
+    <div id="condition-rack" class="condition-rack" aria-label="釜内条件"></div><div id="temp-label" class="temp-label">常温</div>
+  </section>
+
+  <section class="status-section">
+    <div id="opponent-panel" class="player-panel opponent">
+      <div class="player-line"><span class="player-name"><i></i><b id="opponent-name">玩家 B</b><em>对手</em></span><span id="opponent-hp" class="hp-number">20</span></div>
+      <div id="opponent-health" class="health" aria-label="对手耐久"></div>
+      <div class="opponent-bottom"><div id="opponent-hand" class="card-backs"></div><span id="opponent-hand-count">3 张手牌</span></div>
+    </div>
+    <div class="current-strip"><span id="current-pill">玩家 A 的回合</span><div id="energy" class="energy" aria-label="能量"></div><span id="catalyst-label"></span></div>
+  </section>
+
+  <section class="hand-section">
+    <div class="hand-heading"><span>你的手牌 <small>长按查看详情</small></span><div class="hand-tools"><button id="guide-btn" aria-label="获得出牌提示">✦ 提示</button><span id="hand-count">3 / 3</span></div></div>
+    <div id="guide-bubble" class="guide-bubble"><i></i><span id="guide-text"></span></div>
+    <div id="preview-bar" class="preview-bar" role="status"></div>
+    <div id="hand" class="hand" aria-label="当前玩家手牌"></div>
+    <button id="end-turn" class="end-turn"><span>结束回合</span><small>结算并交给对手</small><b>→</b></button>
+  </section>
+  <div id="toast" class="toast" role="status"></div>
+</main>
+
+<div id="title-screen" class="overlay title-screen visible">
+  <button id="title-sound-btn" class="icon-btn title-settings" aria-label="声音设置">⚙</button>
+  <div class="title-mark"><span>H₂</span><i></i><span>O₂</span></div>
+  <p class="eyebrow">PVE / PVP · 化学卡牌对战</p><h1>反应炉</h1><p class="subtitle">一张实验台，一场化学博弈。</p>
+  <div class="title-rules"><span><b>3</b> 点能量</span><span><b>8</b> 个物质位</span><span><b>12</b> 条反应</span></div>
+  <div class="mode-buttons"><button id="pve-btn" class="primary-btn"><span>PVE 人机对战<small>玩家先手 · 简单 AI</small></span><b>→</b></button><button id="pvp-btn" class="secondary-btn"><span>PVP 玩家对战<small>本地双人热座</small></span><b>→</b></button></div>
+  <button id="title-rules-btn" class="text-btn">查看反应表与玩法</button>
+</div>
+
+<div id="handoff" class="overlay handoff">
+  <div class="handoff-icon">↻</div><p class="eyebrow">PASS THE DEVICE</p><h2>请交给对手</h2><p id="next-player">玩家 B 的回合</p>
+  <button id="continue-btn" class="primary-btn">已交接，继续</button><small>你的手牌已隐藏</small>
+</div>
+
+<div id="pause-screen" class="overlay compact-overlay"><p class="eyebrow">EXPERIMENT PAUSED</p><h2>实验暂停</h2><button id="resume-btn" class="primary-btn">继续实验</button><button id="restart-pause-btn" class="text-btn">重新开局</button></div>
+
+<div id="gameover" class="overlay gameover"><p class="eyebrow">EXPERIMENT COMPLETE</p><div id="winner-symbol" class="winner-symbol">△</div><h2 id="winner-text">玩家 A 获胜</h2><p id="end-reason"></p><div id="game-stats" class="game-stats"></div><button id="restart-btn" class="primary-btn">再来一局</button></div>
+
+<div id="rules-modal" class="modal" role="dialog" aria-modal="true" aria-label="玩法与反应表"><div class="modal-card rules-card"><div class="modal-head"><h2>实验手册</h2><button class="close-btn" data-close="rules-modal">×</button></div><div class="rules-body"><p>双方共用反应釜。选牌后点击釜投放，反应自动结算；反应对对手造成伤害，耐久归零或牌库抽空时结算胜负。</p><div id="reaction-list"></div><h3>幻想牌与釜容量</h3><p>贤者之石转化为任一物质；量子隧穿选择只差条件的反应；反物质氢选择釜内物质湮灭。釜满 8 个物质时，点击釜内圆片可弃置一个。</p></div></div></div>
+
+<div id="sound-modal" class="modal" role="dialog" aria-modal="true" aria-label="声音设置"><div class="modal-card sound-card"><div class="modal-head"><h2>声音设置</h2><button class="close-btn" data-close="sound-modal">×</button></div><p>默认开启，开关状态会保留在此浏览器。</p><label class="toggle-row"><span>合成音效<small>投放、反应与爆釜</small></span><input id="sfx-toggle" type="checkbox"><i></i></label><label class="toggle-row"><span>中文语音<small>反应方程式与换边播报</small></span><input id="voice-toggle" type="checkbox"><i></i></label><label class="toggle-row"><span>出牌引导<small>仅 PVE，第 2–3 回合自动提示</small></span><input id="guide-toggle" type="checkbox"><i></i></label></div></div>
+
+<div id="choice-modal" class="modal" role="dialog" aria-modal="true"><div class="modal-card choice-card"><div class="modal-head"><h2 id="choice-title">选择</h2></div><p id="choice-desc"></p><div id="choice-options" class="choice-options"></div></div></div>
+
+<script src="js/data.js"></script><script src="js/engine.js"></script><script src="js/ai.js"></script><script src="js/audio.js"></script><script src="js/ui.js"></script><script src="js/main.js"></script>
+</body>
+</html>

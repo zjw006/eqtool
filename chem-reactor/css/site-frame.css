@@ -1,0 +1,55 @@
+/* 绘本馆接入适配：仅调整页面外框与导航，不改动原型游戏配色与玩法。 */
+html, body {
+  background: #EDE3CD;
+}
+body {
+  background: radial-gradient(ellipse 70% 60% at 50% 0%, #F6EFE0 0%, #E7DCC4 62%, #DFD2B8 100%);
+  color: #473E31;
+}
+body:before {
+  background: radial-gradient(ellipse 55% 40% at 50% 18%, rgba(179, 148, 90, .18), transparent 65%), transparent;
+}
+
+/* 宽屏时保留原型深色实验台，只把桌面留白换成纸张底 */
+@media (min-width: 600px) {
+  #game {
+    box-shadow: 0 18px 46px rgba(74, 59, 42, .22), 0 0 0 1px rgba(122, 98, 71, .18);
+  }
+  .back-to-library {
+    display: inline-flex !important;
+  }
+  /* 标题页 / 暂停页收进游戏画框，避免宽屏下整屏纯黑 */
+  .overlay {
+    left: 50%;
+    right: auto;
+    width: min(100%, 430px);
+    transform: translateX(-50%);
+    border-radius: 18px;
+    box-shadow: 0 18px 46px rgba(74, 59, 42, .22);
+  }
+}
+
+/* 返回书馆（仅宽屏显示，不遮挡手机端游戏顶栏） */
+.back-to-library {
+  display: none;
+  position: fixed;
+  left: 24px;
+  top: 24px;
+  z-index: 600;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 15px;
+  border: 1px solid rgba(122, 98, 71, .35);
+  border-radius: 999px;
+  background: rgba(251, 246, 233, .92);
+  color: #5C4934;
+  font: 600 13px/1 "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  letter-spacing: .02em;
+  text-decoration: none;
+  box-shadow: 0 3px 10px rgba(74, 59, 42, .14);
+  transition: background .15s, transform .15s;
+}
+.back-to-library:hover {
+  background: #FBF6E9;
+  transform: translateY(-1px);
+}
