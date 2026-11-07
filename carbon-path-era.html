@@ -1,0 +1,3501 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#02070a">
+<title>碳途纪元 · 原型 v0.4</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%2302070a'/><circle cx='8' cy='8' r='3.5' fill='%237fe9ff'/></svg>">
+<style>
+  html,body{margin:0;padding:0;height:100%;background:#02070a;overflow:hidden;
+    -webkit-tap-highlight-color:transparent;touch-action:none;user-select:none;}
+  #c{display:block;position:fixed;inset:0;}
+  #diag{position:fixed;left:8px;top:8px;color:#9fe;font:12px/1.4 monospace;
+    white-space:pre;pointer-events:none;opacity:0;transition:opacity .2s;}
+  #diag.on{opacity:.85;}
+  .back-to-library{display:none;}
+  @media (min-width:820px){
+    .back-to-library{position:fixed;left:24px;top:24px;z-index:9999;display:inline-flex;align-items:center;gap:6px;
+      padding:9px 15px;border:1px solid rgba(122,98,71,.35);border-radius:999px;background:rgba(251,246,233,.92);
+      color:#5C4934;font:600 13px/1 "PingFang SC","Microsoft YaHei",system-ui,sans-serif;text-decoration:none;
+      box-shadow:0 3px 10px rgba(74,59,42,.14);transition:background .15s,transform .15s;}
+    .back-to-library:hover{background:#FBF6E9;transform:translateY(-1px);}
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<a class="back-to-library" href="./index.html?subject=chemistry">← 返回书馆</a>
+<div id="diag"></div>
+<script src="tone.min.js"></script>
+<script>
+(() => {
+'use strict';
+
+/* ============ 基础常量 ============ */
+const W = 750, H = 1624;
+const HORIZON = 422, BASE_Y = 1170;
+const LANE_W = 220;
+const SPEED = 32;                 // 世界单位/秒
+const ATOM_RATIO = 0;             // 原子相对地面静止：以玩家全速冲来
+const CLOSE = SPEED * (1 - ATOM_RATIO);
+const MAX_PARTICLES = 200;
+const SLOT_MAX = 4;
+const FUEL_MAX = 3;
+const PROBE = /(^|#)probe/.test(location.hash);
+const DASHMODE = /(^|#)dash/.test(location.hash);
+const HINTMODE = /(^|#)hint/.test(location.hash);
+const BENCH = /(^|#)bench/.test(location.hash);
+const NOAUDIO = /(^|#)(test|bench|probe|flow|endwin|endlose|otest|wtest|cueshot|deathshot|otest2)/.test(location.hash);
+const FLOW = /(^|#)flow/.test(location.hash);
+const ENDMODE = /(^|#)end(win|lose)/.exec(location.hash);
+const SLOWMODE = /(^|#)slow/.test(location.hash);
+const BOOMMODE = /(^|#)boom/.test(location.hash);
+const WTEST = /(^|#)wtest/.test(location.hash);
+const OTEST = /(^|#)otest/.test(location.hash);
+const WINSHOT = /(^|#)winshot/.test(location.hash);
+const CUESHOT = /(^|#)cueshot/.test(location.hash);
+const GATESHOT2 = /(^|#)gateshot2/.test(location.hash);
+const GATESHOT = /(^|#)gateshot/.test(location.hash) && !GATESHOT2;
+const DEATHSHOT = /(^|#)deathshot/.test(location.hash);
+const MTEST = /(^|#)mtest/.test(location.hash);
+const OTEST2 = /(^|#)otest2/.test(location.hash);
+const DEMO = /(^|#)demo/.test(location.hash);
+const TEST = /[?&]test=1/.test(location.search) || /(^|#)test/.test(location.hash);
+
+const COL = {
+  bg0:'#02070a', bg1:'#082330',
+  cyan:'#7fe9ff', lane:'rgba(120,235,255,',
+  H:'#e8322a', O:'#7CFF4D', white:'#ffffff'
+};
+const VALENCE = { H:1, O:2, H2:2 };
+const SPEC_FREQ = { H:207.7, O:244.5 };     // v0.3 §3.1 谱线音高
+const BOND_E = { H:0.97, O:1.03, H2:0.97 };
+
+/* ============ 画布 ============ */
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d', { alpha:false });
+let vw=0, vh=0, dpr=1, scale=1, ox=0, oy=0;
+
+function resize(){
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  vw = window.innerWidth; vh = window.innerHeight;
+  canvas.width  = Math.max(1, Math.floor(vw*dpr));
+  canvas.height = Math.max(1, Math.floor(vh*dpr));
+  canvas.style.width = vw+'px'; canvas.style.height = vh+'px';
+  scale = Math.min(vw/W, vh/H);
+  ox = (vw - W*scale)/2; oy = (vh - H*scale)/2;
+}
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => setTimeout(resize, 120));
+
+function frameBegin(){
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0,0,vw,vh);
+  const s = scale*dpr;
+  ctx.setTransform(s,0,0,s, ox*dpr, oy*dpr);
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0,0,W,H); ctx.clip();
+}
+function frameEnd(){ ctx.restore(); }
+
+/* ============ 辉光贴图（禁 shadowBlur） ============ */
+function makeGlow(rgb, hard){
+  const S=128, cv=document.createElement('canvas'); cv.width=cv.height=S;
+  const g=cv.getContext('2d');
+  const grd=g.createRadialGradient(S/2,S/2,0,S/2,S/2,S/2);
+  grd.addColorStop(0,   `rgba(${rgb},1)`);
+  grd.addColorStop(0.22,`rgba(${rgb},${hard?0.75:0.55})`);
+  grd.addColorStop(0.52,`rgba(${rgb},0.16)`);
+  grd.addColorStop(1,   `rgba(${rgb},0)`);
+  g.fillStyle=grd; g.fillRect(0,0,S,S);
+  return cv;
+}
+const SPR = {
+  white: makeGlow('255,255,255'),
+  cyan : makeGlow('127,233,255'),
+  H    : makeGlow('232,50,42'),
+  O    : makeGlow('124,255,77'),
+  spec : makeGlow('255,255,255')
+};
+function glow(x,y,r,spr,alpha){
+  if(r<=0.5||alpha<=0.002) return;
+  if(CARTOON) alpha *= 0.60;                 // 卡通风：辉光退到辅助位置
+  ctx.globalCompositeOperation='lighter';
+  ctx.globalAlpha = Math.min(1, alpha);
+  ctx.drawImage(spr, x-r, y-r, r*2, r*2);
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation='source-over';
+}
+
+/* ============ 背景预渲染 ============ */
+let bgCanvas=null;
+function buildBackground(){
+  const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
+  const g=cv.getContext('2d');
+  const grd=g.createLinearGradient(0,0,0,H);
+  grd.addColorStop(0,'#02070a'); grd.addColorStop(.18,'#04121a');
+  grd.addColorStop(.27,'#082330'); grd.addColorStop(.34,'#071a23');
+  grd.addColorStop(.75,'#041017'); grd.addColorStop(1,'#020a0e');
+  g.fillStyle=grd; g.fillRect(0,0,W,H);
+
+  // 远景辉光
+  g.globalCompositeOperation='lighter';
+  g.globalAlpha=.10; g.drawImage(SPR.cyan, W/2-330, HORIZON-300, 660, 660);
+  g.globalAlpha=1; g.globalCompositeOperation='source-over';
+
+  // 能级横线（化学语言）
+  for(let i=0;i<5;i++){
+    g.strokeStyle=`rgba(90,220,240,${0.05+i*0.012})`;
+    g.lineWidth=1; g.beginPath();
+    const y=300+i*26; g.moveTo(90,y); g.lineTo(W-90,y); g.stroke();
+  }
+  // 透视网格
+  for(let k=1;k<=26;k++){
+    const t=k/26, y=HORIZON+(H-HORIZON)*Math.pow(t,2.1);
+    g.strokeStyle=`rgba(70,200,225,${(0.10*(1-t*0.55)).toFixed(3)})`;
+    g.beginPath(); g.moveTo(0,y); g.lineTo(W,y); g.stroke();
+  }
+  for(let i=-8;i<=8;i++){
+    g.strokeStyle='rgba(60,180,205,0.032)';
+    g.beginPath(); g.moveTo(W/2,HORIZON); g.lineTo(W/2+i*96,H); g.stroke();
+  }
+  bgCanvas=cv;
+}
+
+/* ============ 车道线 ============ */
+function lanePath(off){
+  // 从玩家身后（z<0，铺满屏幕下沿）一直采样到接近地平线
+  const N = 30;
+  ctx.beginPath();
+  for(let i=0;i<=N;i++){
+    const t = i/N;
+    const z = -9 + Math.pow(t, 1.7) * 560;
+    const p = projN(z, off);
+    if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
+  }
+}
+function drawLanes(strength){
+  const tr=G.tint[0]|0, tg=G.tint[1]|0, tb=G.tint[2]|0;
+  for(let i=0;i<3;i++){
+    const off = (i-1)*220;
+    const slopeGain = 1 + ((G.slope||0) * 0.55);
+    const a=(i===1?0.62:0.46)*strength*Math.max(0.45, Math.min(1.5, slopeGain));
+    ctx.globalCompositeOperation='lighter';
+    // 外层光晕
+    ctx.strokeStyle=`rgba(${tr},${tg},${tb},${(a*0.22).toFixed(3)})`;
+    ctx.lineWidth=7; lanePath(off); ctx.stroke();
+    // 主色
+    ctx.strokeStyle=`rgba(${tr},${tg},${tb},${a.toFixed(3)})`;
+    ctx.lineWidth=CARTOON ? 3.2 : 1.8; lanePath(off); ctx.stroke();
+    if(CARTOON){
+      // 亮芯描边：让线条像"画上去的"而不是"发光的"
+      ctx.strokeStyle=`rgba(${Math.min(255,tr+70)},${Math.min(255,tg+20)},${Math.min(255,tb+10)},0.55)`;
+      ctx.lineWidth=1.2; lanePath(off); ctx.stroke();
+    }
+    ctx.globalCompositeOperation='source-over';
+  }
+  // 轨道侧刻度尺：贴着两条外车道外侧的小短横
+  for(const off of [-220, 220]){
+    const dir = off < 0 ? -1 : 1;
+    for(let k=1;k<=24;k++){
+      const z = -6 + Math.pow(k/24, 1.6) * 300;
+      const pn = projN(z, off);
+      if(pn.k < 0.07) continue;
+      const len = 5 * pn.k + 3;
+      ctx.strokeStyle = 'rgba(120,230,250,' + (0.08 + 0.22*pn.k).toFixed(3) + ')';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pn.x + dir*5, pn.y);
+      ctx.lineTo(pn.x + dir*(5+len), pn.y);
+      ctx.stroke();
+    }
+  }
+
+  // 边界双点
+  for(const off of [-330,330]){
+    for(let k=1;k<=40;k++){
+      const z = -6 + Math.pow(k/40, 1.7) * 380;
+      const p = proj(z, off);
+      const al = 0.10 + (k/40)*0.18;
+      ctx.fillStyle=`rgba(110,225,245,${al.toFixed(3)})`;
+      ctx.beginPath(); ctx.arc(p.x,p.y-4,1.1,0,7); ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x,p.y+4,1.1,0,7); ctx.fill();
+    }
+  }
+}
+
+/* ============ 赛道弯曲 ============ */
+// 玩家脚下不弯（保证车道可读），越远弯得越多；相位由里程驱动
+const ARC_LEN = 130;      // 一段弧沿路的长度
+const ARC_GAP = 40;       // 弧与弧之间的直道
+const ARC_AMP = 140;      // 横向摆幅（世界单位，投影时乘 k）
+const CURVE_ON = false;   // 曲线赛道开关：当前阶段用直线，实现保留
+const CARTOON = true;     // 轻度卡通：描边 + 减辉光 + 加线宽（false 回到纯发光风）
+const SLIDE_ON = false;   // 坡道关闭：速度恒定
+
+// 坡度：+1 = 急下坡（加速），-1 = 上坡（减速）
+function slopeAt(){
+  if(!SLIDE_ON) return 0;
+  return Math.sin(G.dist * 0.010);
+}
+const ORDER_RULE = false; // H-O-H 次序规则开关：默认关闭（与教学脚本冲突，待重设计）
+function arcOffset(z){
+  const s = G.dist * 0.80 + z;                 // 沿路弧长（允许负 z：弧穿过玩家）
+  const P = ARC_LEN + ARC_GAP;
+  let t = s % P; if(t < 0) t += P;             // 取正模
+  const i = Math.floor(s / P);
+  const sign = ((i % 2) + 2) % 2 === 0 ? 1 : -1;
+  if(t > ARC_LEN) return 0;                    // 直道段
+  const u = t / ARC_LEN;
+  const prof = Math.sin(Math.PI * u);
+  return sign * ARC_AMP * prof * prof;         // 两端斜率为 0，接直道不拐角
+}
+function roadX(z){
+  if(!CURVE_ON) return 0;                      // 直线赛道
+  return arcOffset(z);
+}
+
+/* ============ 投影 ============ */
+function proj(relZ, laneOff){
+  const z = relZ;
+  const k = 1/(1 + z/26);
+  const hz = HORIZON + (G.horizonShift||0);
+  return {
+    x: W/2 + (roadX(z) - G.roadBase)*k + (laneOff||0)*k,
+    y: hz + (BASE_Y-hz)*k,
+    k
+  };
+}
+
+/* ============ 音频 ============ */
+const Audio_ = {
+  ac:null, master:null, musicGain:null, sfxGain:null,
+  muted:false, started:false,
+  init(){
+    if(this.ac || NOAUDIO) return;
+    try{
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return;
+      this.ac = new AC();
+      this.master = this.ac.createGain(); this.master.gain.value = 0.85;
+      this.master.connect(this.ac.destination);
+      this.sfxGain = this.ac.createGain(); this.sfxGain.gain.value = 0.7;
+      this.sfxGain.connect(this.master);
+      this.musicGain = this.ac.createGain(); this.musicGain.gain.value = 0.75;
+      this.musicGain.connect(this.master);
+
+      // 噪声源（一次性生成，whoosh 与风声共用）
+      const len = Math.floor(this.ac.sampleRate * 1.5);
+      this.noiseBuf = this.ac.createBuffer(1, len, this.ac.sampleRate);
+      const d = this.noiseBuf.getChannelData(0);
+      for(let i=0;i<len;i++) d[i] = Math.random()*2-1;
+
+      // S8 常驻风声：带通噪声，cutoff 跟速度
+      const src = this.ac.createBufferSource();
+      src.buffer = this.noiseBuf; src.loop = true;
+      const bp = this.ac.createBiquadFilter();
+      bp.type='bandpass'; bp.frequency.value=520; bp.Q.value=0.8;
+      const g = this.ac.createGain(); g.gain.value = 0;
+      src.connect(bp); bp.connect(g); g.connect(this.master);
+      src.start();
+      this.wind = {src, bp, g};
+    }catch(e){ this.ac=null; }
+  },
+  resume(){ if(this.ac && this.ac.state==='suspended') this.ac.resume(); },
+  tone(freq, dur, type, gain, dest, when){
+    if(!this.ac || this.muted) return;
+    const t0 = (when!=null? when : this.ac.currentTime);
+    const o = this.ac.createOscillator(), g = this.ac.createGain();
+    o.type = type||'sine'; o.frequency.setValueAtTime(freq, t0);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.001,gain||0.15), t0+0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+    o.connect(g); g.connect(dest||this.sfxGain);
+    o.start(t0); o.stop(t0+dur+0.02);
+    return o;
+  },
+  snap(kind, combo){
+    // 钢琴：每加一个键升一级（半音阶梯，封顶一个八度）
+    try{
+      if(Music && Music.piano){
+        const step = Music._step || 0;
+        const ch = Music.chordAt(step);
+        const base = ROOT * Math.pow(2, (ch[0] + 24 + Music.transpose)/12);
+        const lvl = Math.min(12, Math.max(0, (combo||1) - 1) * 2);   // 每键 +2 半音
+        Music.piano.triggerAttackRelease(base * Math.pow(2, lvl/12), '16n', Tone.now() + 0.01);
+      }
+    }catch(e){}
+  },
+  molecule(types){
+    const t = this.ac? this.ac.currentTime : 0;
+    types.forEach((k,i)=>{
+      let f = SPEC_FREQ[k] || 207.7;
+      try{ f = Music.harmonize(f, 12); }catch(e){}
+      this.tone(f, 0.5, 'sine', 0.14, null, t+i*0.012);
+    });
+  },
+  dash(){
+    if(!this.ac || this.muted) return;
+    const t0=this.ac.currentTime;
+    const o=this.ac.createOscillator(), g=this.ac.createGain();
+    o.type='sawtooth'; o.frequency.setValueAtTime(900,t0);
+    o.frequency.exponentialRampToValueAtTime(180,t0+0.35);
+    g.gain.setValueAtTime(0.14,t0);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+0.4);
+    o.connect(g); g.connect(this.sfxGain); o.start(t0); o.stop(t0+0.42);
+  },
+  reject(){
+    this.tone(220,0.25,'sine',0.20);
+    this.tone(207.7,0.34,'sine',0.16);
+  },
+  breakBond(){
+    this.tone(320,0.10,'square',0.05);
+    this.tone(160,0.22,'sine',0.12);
+  },
+  ui(){ this.tone(2000,0.05,'square',0.05); },
+
+  // S7 换道 whoosh：带通噪声上扫 + 声像随方向
+  whoosh(dir){
+    if(!this.ac || this.muted || !this.noiseBuf) return;
+    const t0 = this.ac.currentTime;
+    if(t0 - (this._lastWhoosh||0) < 0.08) return;
+    this._lastWhoosh = t0;
+    const src = this.ac.createBufferSource();
+    src.buffer = this.noiseBuf;
+    const bp = this.ac.createBiquadFilter();
+    bp.type='bandpass'; bp.Q.value=1.1;
+    bp.frequency.setValueAtTime(420, t0);
+    bp.frequency.exponentialRampToValueAtTime(1150, t0+0.12);
+    const g = this.ac.createGain();
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(0.16, t0+0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+0.16);
+    src.connect(bp); bp.connect(g);
+    if(this.ac.createStereoPanner){
+      const pn = this.ac.createStereoPanner();
+      pn.pan.value = Math.max(-1, Math.min(1, dir*0.5));
+      g.connect(pn); pn.connect(this.sfxGain);
+    } else {
+      g.connect(this.sfxGain);
+    }
+    src.start(t0); src.stop(t0+0.18);
+  },
+
+  // S8 风声：音量与截止频率跟速度
+  setWind(mul){
+    if(!this.wind) return;
+    const m = this.muted ? 0 : 1;
+    if(mul >= 1){
+      // 加速：频率上扫、音量上扬
+      this.wind.g.gain.value = (0.012 + 0.055*(mul-1))*m;
+      this.wind.bp.frequency.value = 420 + 900*(mul-1);
+      this.wind.bp.Q.value = 0.8;
+    } else {
+      // 减速：频率下沉、轻微变闷变厚（"被拖住"的摩擦感）
+      const k = 1 - mul;                       // 0 → 1
+      this.wind.g.gain.value = (0.012 + 0.020*k)*m;
+      this.wind.bp.frequency.value = 420 - 210*k;
+      this.wind.bp.Q.value = 1.6;              // Q 调高 → 更闷的窄带
+    }
+  }
+};
+
+/* 化学音阶（v0.3 §3.1 五条谱线，升八度） */
+const SCALE = [145.0, 207.7, 216.4, 231.3, 244.5].map(f=>f*2);
+const BPM = 128;
+const STEP_T = 60 / BPM / 4;          // 16 分音符时长
+const BEAT16 = STEP_T;                // 生成器用的节拍格（秒）
+// A 小调四和弦：Am - F - C - G（半音偏移，相对 A2=110Hz）
+const CHORDS = [
+  [0, 3, 7],      // Am
+  [-4, 0, 5],     // F
+  [3, 7, 10],     // C
+  [-2, 2, 7]      // G
+];
+const ROOT = 110;                     // A2
+
+const Music = {
+  on:false, built:false, transpose:0, seq:null,
+  kick:null, bass:null, arp:null,
+  _n:0,
+
+  build(){
+    if(this.built) return;
+    if(typeof Tone === 'undefined'){ console.warn('Tone.js 未加载'); return; }
+    this.kick = new Tone.MembraneSynth({
+      pitchDecay:0.05, octaves:7,
+      envelope:{ attack:0.001, decay:0.22, sustain:0, release:0.10 }
+    }).toDestination();
+    this.kick.volume.value = -8;
+
+    this.bass = new Tone.MonoSynth({
+      oscillator:{ type:'triangle' },
+      envelope:{ attack:0.008, decay:0.18, sustain:0.55, release:0.25 },
+      filter:{ Q:1, type:'lowpass' }
+    }).toDestination();
+    this.bass.volume.value = -14;
+
+    this.arp = new Tone.PolySynth(Tone.Synth, {
+      oscillator:{ type:'sine' },
+      envelope:{ attack:0.004, decay:0.16, sustain:0, release:0.22 }
+    }).toDestination();
+    this.arp.volume.value = -16;
+
+    // 军鼓：噪声 + 高通
+    this.snare = new Tone.NoiseSynth({
+      noise:{ type:'white' },
+      envelope:{ attack:0.001, decay:0.16, sustain:0, release:0.05 }
+    }).toDestination();
+    this.snare.volume.value = -18;
+    this.snareFilter = new Tone.Filter(1400, 'highpass').toDestination();
+    this.snare.disconnect(); this.snare.connect(this.snareFilter);
+
+    // 踩镲：高通噪声，极短
+    this.hat = new Tone.NoiseSynth({
+      noise:{ type:'white' },
+      envelope:{ attack:0.001, decay:0.045, sustain:0, release:0.01 }
+    }).toDestination();
+    this.hat.volume.value = -26;
+    this.hatFilter = new Tone.Filter(7000, 'highpass').toDestination();
+    this.hat.disconnect(); this.hat.connect(this.hatFilter);
+
+    // 混响：给弦乐和钢琴空间感
+    this.reverb = new Tone.Reverb({ decay:3.6, preDelay:0.02, wet:0.42 }).toDestination();
+    try{ this.reverb.generate(); }catch(e){}
+
+    // 弦乐铺底：锯齿波 + 慢起音 + 低通
+    this.stringsFilter = new Tone.Filter(950, 'lowpass');
+    this.stringsFilter.connect(this.reverb);
+    this.strings = new Tone.PolySynth(Tone.Synth, {
+      oscillator:{ type:'sawtooth' },
+      envelope:{ attack:0.85, decay:0.5, sustain:0.55, release:2.4 }
+    }).connect(this.stringsFilter);
+    this.strings.volume.value = -33;
+
+    // 弦乐滑音：单声部 + portamento，换道时音高滑过去
+    this.glide = new Tone.MonoSynth({
+      oscillator:{ type:'sawtooth' },
+      envelope:{ attack:0.028, decay:0.22, sustain:0.22, release:0.30 },
+      filter:{ type:'lowpass', Q:1 },
+      filterEnvelope:{ attack:0.005, decay:0.12, sustain:0.2, release:0.2, baseFrequency:900, octaves:1.8 },
+      portamento: 0.16
+    }).connect(this.stringsFilter);
+    this.glide.volume.value = -25;
+
+    // 保留一个拨奏（备用）
+    this.pluck = new Tone.PolySynth(Tone.Synth, {
+      oscillator:{ type:'sawtooth' },
+      envelope:{ attack:0.006, decay:0.16, sustain:0.05, release:0.25 }
+    }).connect(this.stringsFilter);
+    this.pluck.volume.value = -28;
+
+    // 门前预告用的钢琴（更响）
+    this.pianoLoud = new Tone.FMSynth({
+      harmonicity: 2.5,
+      modulationIndex: 5,
+      envelope:{ attack:0.002, decay:0.9, sustain:0.05, release:1.6 },
+      modulationEnvelope:{ attack:0.002, decay:0.4, sustain:0.1, release:0.7 }
+    }).connect(this.reverb);
+    this.pianoLoud.volume.value = -9;
+
+    // 钢琴感：FM 合成，快起音 + 长衰减
+    this.piano = new Tone.FMSynth({
+      harmonicity: 2.5,
+      modulationIndex: 5,
+      envelope:{ attack:0.002, decay:0.75, sustain:0.06, release:1.2 },
+      modulationEnvelope:{ attack:0.002, decay:0.35, sustain:0.1, release:0.6 }
+    }).connect(this.reverb);
+    this.piano.volume.value = -21;
+
+    this.built = true;
+  },
+
+  chordAt(step){ return CHORDS[Math.floor(step/16) % CHORDS.length]; },
+  hz(step, idx){
+    const ch = this.chordAt(step);
+    const semi = ch[idx % ch.length] + (Math.floor(step/16)%2===0 ? 12 : 24) + this.transpose;
+    return ROOT * Math.pow(2, semi/12);
+  },
+
+  startSeq(){
+    if(this.seq) return;
+    const self = this;
+    const STEPS = new Array(16).fill(0).map((_,i)=>i);
+    // 固定动机：和弦音序 0-1-2-1，每 2 步一个音，两小节一轮
+    const MOTIF = [0, 1, 2, 1, 0, 2, 1, 2];
+    // 节奏型（16 分网格）
+    const KICK  = [0, 6, 8, 11];          // 四踩 + 一个切分
+    const SNARE = [4, 12];                // 第 2、4 拍
+    const HAT   = [1,3,5,7,9,11,13,15];   // 反拍 8 分
+
+    this.seq = new Tone.Sequence((time, step) => {
+      self._n++;
+      self._step = (self._step || 0) + 1;
+
+      // 底鼓
+      if(KICK.indexOf(step) >= 0) self.kick.triggerAttackRelease('C1', '8n', time);
+      // 军鼓
+      if(SNARE.indexOf(step) >= 0) self.snare.triggerAttackRelease('16n', time);
+      // 踩镲
+      if(HAT.indexOf(step) >= 0) self.hat.triggerAttackRelease('32n', time);
+
+      // 低音：每小节两次
+      if(step === 0 || step === 8){
+        const ch = self.chordAt(step);
+        const f = ROOT * Math.pow(2, (ch[0]-12+self.transpose)/12);
+        self.bass.triggerAttackRelease(f, '8n', time);
+      }
+
+      // 动机：每 2 步一个音
+      if(step % 2 === 0){
+        const idx = Math.floor(step/2) % MOTIF.length;
+        const deg = MOTIF[idx];
+        const ch = self.chordAt(step);
+        const semi = ch[deg % ch.length] + 12 + self.transpose;
+        const f = ROOT * Math.pow(2, semi/12);
+        // 每两小节升八度一次，制造起伏
+        const lift = (Math.floor(step/32) % 2 === 0) ? 1 : 2;
+        self.arp.triggerAttackRelease(f*lift, '16n', time);
+      }
+
+      // 弦乐：每小节开头铺一个和弦（持续一整小节）
+      if(step === 0){
+        const ch = self.chordAt(step);
+        const notes = ch.map(semi => ROOT * Math.pow(2, (semi + 12 + self.transpose)/12));
+        self.strings.triggerAttackRelease(notes, '1m', time);
+      }
+
+      // 钢琴：每小节第 1、3 拍点一个高音，音色和琶音错开
+      if(step === 0 || step === 8){
+        const idx = (Math.floor(step/8) % 2) ? 1 : 0;
+        const ch = self.chordAt(step);
+        const f = ROOT * Math.pow(2, (ch[idx] + 24 + self.transpose)/12);
+        self.piano.triggerAttackRelease(f, '8n', time);
+      }
+
+      // 每小节最后一拍加一个高音点缀
+      if(step === 14){
+        const ch = self.chordAt(step);
+        const f = ROOT * Math.pow(2, (ch[2] + 24 + self.transpose)/12);
+        self.arp.triggerAttackRelease(f, '32n', time);
+      }
+    }, STEPS, '16n');
+    this.seq.loop = true;
+    this.seq.start(0);
+  },
+
+  start(){
+    if(this.on) return;
+    this.build();
+    if(!this.built) return;
+    const go = ()=>{
+      Tone.Transport.bpm.value = BPM;
+      this.startSeq();
+      Tone.Transport.start();
+      this.on = true;
+    };
+    try{
+      const pr = Tone.start();
+      if(pr && pr.then) pr.then(go).catch(go);
+      else go();
+    }catch(e){ go(); }
+  },
+
+  stop(){
+    try{ Tone.Transport.stop(); }catch(e){}
+    this.on = false;
+  },
+  pause(){
+    try{
+      if(!this.on) return;
+      Tone.Transport.pause();
+      Tone.getDestination().volume.rampTo(-60, 0.04);   // 立刻静音
+    }catch(e){}
+  },
+  resume(){
+    try{
+      if(!this.on) return;
+      Tone.getDestination().volume.rampTo(0, 0.08);
+      Tone.Transport.start();
+    }catch(e){}
+  },
+  duck(sec, db){
+    try{ if(typeof Tone!=='undefined') Tone.getDestination().volume.rampTo(db, sec); }catch(e){}
+  },
+  unduck(){
+    try{ if(typeof Tone!=='undefined') Tone.getDestination().volume.rampTo(0, 0.35); }catch(e){}
+  },
+
+  // 接近终点门的钢琴琶音（high=true 时高八度）
+  gateArp(high){
+    try{
+      if(!this.pianoLoud) return;
+      const ch = this.chordAt(this._step || 0);
+      const oct = high ? 24 : 12;
+      const t0 = Tone.now() + 0.02;
+      ch.forEach((semi,i)=>{
+        const f = ROOT * Math.pow(2, (semi + oct + this.transpose)/12);
+        this.pianoLoud.triggerAttackRelease(f, '8n', t0 + i*0.13);
+      });
+      // 收尾一个高音
+      const f2 = ROOT * Math.pow(2, (ch[2] + oct + 12 + this.transpose)/12);
+      this.pianoLoud.triggerAttackRelease(f2, '4n', t0 + ch.length*0.13 + 0.05);
+    }catch(e){}
+  },
+
+  // 供音效吸附用：把任意频率拉到当前和弦音
+  harmonize(freq, octShift){
+    const step = this._step || 0;
+    const ch = this.chordAt(step);
+    let best = freq, err0 = 1e9;
+    for(let oct=-1; oct<=2; oct++){
+      for(const semi of ch){
+        const cand = ROOT * Math.pow(2, (semi + 12*oct + (octShift||0))/12);
+        const err = Math.abs(Math.log(cand/freq));
+        if(err < err0){ err0 = err; best = cand; }
+      }
+    }
+    return best;
+  }
+};
+function pow2(semi){ return Math.pow(2, semi/12); }
+
+/* ============ 序章区段表（v0.1 §7） ============ */
+const SEGS = [
+  { id:1, name:'落单', dur:11, gap:1.80, tint:[ 90,225,245] },
+  { id:2, name:'成双', dur:11, gap:1.60, tint:[140,170,255] },
+  { id:3, name:'抢氧·门口', dur:0, gap:0.85, tint:[120,240,250] },
+  { id:4, name:'电解', dur:0,  gap:99,  tint:[235,245,255] }
+];
+
+/* ============ 游戏状态 ============ */
+const G = {
+  mode:'title',          // title | play | pause | win | lose
+  time:0, dist:0,
+  hitstop:0, shake:0, flash:0,
+  combo:0, bestCombo:0,
+  gateFail:0,
+  gate:null,
+  atoms:[], walls:[], parts:[], floats:[],
+  player:null,
+  trail:[],
+  phase:0,
+  finished:false,
+  spawnTimer:0,
+  spawnLaneLast:[-99,-99,-99]
+};
+
+function resetGame(level){
+  G.level = level || 'main';
+  G.tutorial = (G.level==='tutorial');
+  G.slowT = 0; G.hint = {n:0, t:0}; G.taughtLane = false;
+  G.time=0; G.dist=0; G.hitstop=0; G.shake=0; G.flash=0;
+  G.combo=0; G.bestCombo=0; G.gateFail=0;
+  G.newRecord = false; G._gp1 = false; G._gp2 = false; G.musicT = 0; G.lastStep = -1;
+  G.atoms=[]; G.walls=[]; G.parts=[]; G.floats=[];
+  // 开局先给两颗近处原子，避免"手无寸键撞墙即死"
+  G.atoms.push({lane:1, relZ:46, type:'H', taken:false, born:0, wob:0});
+  G.atoms.push({lane:0, relZ:66, type:'H', taken:false, born:0, wob:0});
+  G.trail=[]; G.phase=0; G.finished=false; G.spawnTimer=0.6;
+  G.spawnLaneLast=[-99,-99,-99]; G.lastLane=null;
+  G.stats={breaks:0,dashes:0,wallHits:0,gateFails:0,resonant:0,spawned:0};
+  G.lastGateComp=''; G.lastGatePass=false;
+  G.player = {
+    lane:1, x:0, targetX:0, vx:0,
+    fuel:1.0, slots:SLOT_MAX, used:0,
+    exciteT:0, exciteCd:0, dashT:0, smashGrace:0, dashCd:0, boostT:0, hillBoost:0, bumpT:0, squash:0, popT:0, pipFlashT:0,
+    speedMul:1, bounceT:0,
+    alive:true
+  };
+  G.gate = { relZ: G.tutorial?480:120, passed:false, done:false, active: !!G.tutorial, lane:1, window:16 };
+  G.ghosts = []; G.ghostT = 0;
+  G.camS = 1; G.camX = 0; G.camY = 0; G.camKick = 0;
+  G.segIdx = 0; G.segT = 0; G.tint = [90,225,245]; G.tintTarget = [90,225,245];
+  G.molDone = false; G.hill = 0; G.hillKicked = false; G.roadBase = 0; G.tutOPhase = false; G.slope = 0; G.horizonShift = 0; G.finalGate = false; G.clusters = []; G.clusterT = 0; G.collapseT = 0; G.wallT = -2.2; G.cue = null; G.taughtLane = false; G.taughtBreak = false;
+  // 路侧参照物（纯背景，不参与任何判定）
+  G.props = [];
+  for(let i=0;i<42;i++){
+    const side = (i%2) ? 1 : -1;
+    G.props.push({
+      z: 20 + Math.random()*320,
+      off: side * (360 + Math.random()*200),
+      kind: i % 4,
+      size: 1.0 + Math.random()*1.1,
+      ph: Math.random()*6.28
+    });
+  }
+  G.amb = [];
+  for(let i=0;i<26;i++){
+    G.amb.push({ z: 3 + Math.random()*72, lane:(Math.random()*3)|0,
+                 ph: Math.random()*6.28, dead:0, side:(Math.random()<0.5?-1:1) });
+  }
+  buildWallsLater();
+}
+
+function buildWallsLater(){
+  // 通过门后才生成，这里先占位
+  G.walls = [];
+}
+
+/* ============ 输入 ============ */
+const Input = {
+  down:false, sx:0, sy:0, t0:0, moved:false,
+  onDown(x,y){
+    this.down=true; this.sx=x; this.sy=y; this.t0=performance.now(); this.moved=false;
+    Audio_.init(); Audio_.resume();
+    if(G.mode==='title'){ startGame('main'); return; }
+    if(G.mode==='win'||G.mode==='lose'){ startGame('main'); return; }
+    if(G.mode==='pause'){ handlePauseTap(x,y); return; }
+  },
+  onUp(x,y){
+    if(!this.down) return;
+    this.down=false;
+    const dx=x-this.sx, dy=y-this.sy;
+    const adx=Math.abs(dx), ady=Math.abs(dy);
+    const dt=performance.now()-this.t0;
+    if(G.mode!=='play') return;
+    // 引导中：只接受对应方向
+    if(G.cue){
+      if(G.cue.type==='lane' && adx > 24){ moveLane(dx>0?1:-1); G.cue=null; G.taughtLane=true; return; }
+      if(G.cue.type==='down' && dy > 24){ G.cue=null; G.taughtBreak=true; onDownSwipe(); return; }
+      return;
+    }
+    // 暂停键热区
+    if(adx<26 && ady<26 && x>W*0.86 && y<W*0.16){ togglePause(); return; }
+    if(Math.max(adx,ady) < 30){ return; }   // 轻点，无操作
+    // 只有"明显竖"才算上下滑；斜向一律当换道（误判成换道无害，误判成断键要命）
+    const vertical = ady > adx*1.45 && ady > 40;
+    if(vertical){
+      // 刚换过道：下滑多半是躲门的残留手势，不当断键处理
+      if(dy>0){
+        // 先看身边有没有可抓的氧——抓氧优先，不受换道保护影响
+        const p2 = G.player;
+        const oReady = G.atoms.some(a => !a.taken && a.type==='O' && a.lane===p2.lane && a.relZ < 26 && a.relZ > -2.5);
+        if(!oReady && (G.time - (G.lastLaneT||-9)) < 0.35) return;
+      }
+      if(dy>0) onDownSwipe(); else onUpSwipe();
+    }
+    else if(adx > 12){ moveLane(dx>0?1:-1); }
+  },
+  onMove(x,y){
+    if(!this.down) return;
+    if(Math.abs(x-this.sx)>30 || Math.abs(y-this.sy)>30) this.moved=true;
+  }
+};
+
+function attachInput(){
+  const toDesign = (clientX, clientY) => ({ x:(clientX-ox)/scale, y:(clientY-oy)/scale });
+  canvas.addEventListener('pointerdown', e=>{ const p=toDesign(e.clientX,e.clientY); Input.onDown(p.x,p.y); }, {passive:true});
+  canvas.addEventListener('pointermove', e=>{ const p=toDesign(e.clientX,e.clientY); Input.onMove(p.x,p.y); }, {passive:true});
+  canvas.addEventListener('pointerup',   e=>{ const p=toDesign(e.clientX,e.clientY); Input.onUp(p.x,p.y); }, {passive:true});
+  canvas.addEventListener('pointercancel', ()=>{ Input.down=false; }, {passive:true});
+  window.addEventListener('keydown', e=>{
+    if(e.repeat) return;
+    if(G.cue){
+      if(G.cue.type==='lane' && (e.key==='ArrowLeft'||e.key==='a')){ moveLane(-1); G.cue=null; G.taughtLane=true; return; }
+      if(G.cue.type==='lane' && (e.key==='ArrowRight'||e.key==='d')){ moveLane(1); G.cue=null; G.taughtLane=true; return; }
+      if(G.cue.type==='down' && (e.key==='ArrowDown'||e.key==='s')){ G.cue=null; G.taughtBreak=true; onDownSwipe(); return; }
+    }
+    if(e.key==='ArrowLeft'||e.key==='a') moveLane(-1);
+    else if(e.key==='ArrowRight'||e.key==='d') moveLane(1);
+    else if(e.key==='ArrowDown'||e.key==='s') onDownSwipe();
+    else if(e.key==='ArrowUp'||e.key==='w') onUpSwipe();
+    else if(e.key==='Escape'||e.key==='p') { if(G.mode==='play') togglePause(); else if(G.mode==='pause') togglePause(); }
+    else if(e.key==='r') startGame();
+    else if(e.key==='m' || e.key==='M'){ G.showMusicDbg = !G.showMusicDbg; }
+    else if(e.key==='m') { Audio_.muted=!Audio_.muted; }
+    else if(e.key===' ') { if(G.mode==='title'||G.mode==='win'||G.mode==='lose') startGame(); }
+  });
+}
+
+/* ============ 动作 ============ */
+function moveLane(dir){
+  G.lastLaneT = G.time;
+  // 换道音：弦乐滑音，对齐到背景音乐的 16 分网格
+  try{
+    if(Music && Music.glide && Music.on){
+      // 对齐到下一个 16 分音符（手动计算，避免 nextSubdivision 的时序问题）
+      const spb = 60 / BPM / 4;                     // 16 分音符的秒数
+      const now = Tone.now() + 0.006;
+      let delay = 0;
+      try{
+        const tp = Tone.Transport.seconds % 1000;    // 传输位置
+        const next = Math.ceil((tp + 0.01) / spb) * spb;
+        delay = Math.max(0, next - tp);
+        if(delay > 0.14) delay = 0;                  // 太长就不等了，直接响
+      }catch(e){ delay = 0; }
+      const t0 = now + delay;
+      const ch = Music.chordAt(Music._step || 0);
+      const from = ROOT * Math.pow(2, (ch[dir > 0 ? 0 : 2] + 12 + Music.transpose)/12);
+      const to   = ROOT * Math.pow(2, (ch[dir > 0 ? 2 : 0] + 24 + Music.transpose)/12);
+      Music.glide.triggerAttackRelease(from, 0.14, t0);
+      Music.glide.triggerAttackRelease(to,   0.22, t0 + 0.12);
+    }
+  }catch(e){}
+  if(G.mode!=='play') return;
+  const p=G.player;
+  const nl = Math.max(0, Math.min(2, p.lane+dir));
+  if(nl===p.lane) return;
+  p.lane=nl;
+  p.targetX=(nl-1)*LANE_W;
+  G.camX = -dir*10;          // 镜头先反向一甩，再回正
+  G.camS += 0.012;           // 轻微前推
+  Audio_.whoosh(dir);
+  spawnRing(proj(0,p.targetX), 18, 'cyan');
+}
+
+function onDownSwipe(){
+  if(G.mode!=='play') return;
+  const p=G.player;
+  if(p.exciteT>0) return;                 // 激发态/弛豫期禁断键
+  // ① 身边有氧：按下滑把它成键（满了先挤掉多余的 H）
+  const oAtom = G.atoms.find(a => !a.taken && a.type==='O' && a.lane===p.lane && a.relZ < 26 && a.relZ > -2.5);
+  if(oAtom){
+    let slot = SLOT_MAX - p.used;
+    if(slot < 2){
+      const hIdx = G.trail.map((t,i)=>t.type==='H'?i:-1).filter(i=>i>=0);
+      while(slot < 2 && hIdx.length){
+        const idx = hIdx.pop();
+        const dropped = G.trail.splice(idx,1)[0];
+        p.used -= VALENCE[dropped.type];
+        slot += VALENCE[dropped.type];
+        burst(dropped.node.x, dropped.node.y, 8, SPR.H);
+      }
+    }
+    if(slot >= 2){
+      oAtom.taken = true;
+      attachAtom(oAtom);
+      return;
+    }
+  }
+  // ② 否则拆键：只有身边有原子时才生效
+  const nearAtom = G.atoms.some(a => !a.taken && a.lane===p.lane && a.relZ < 14 && a.relZ > -0.5);
+  if(!nearAtom) return;
+  if(G.trail.length>0) breakLastBond();
+  else rejectBuzz('empty');
+}
+
+function startDash(){
+  const p=G.player;
+  if(p.dashT>0 || p.fuel<1) return;
+  G.stats.dashes++;
+  p.fuel-=1;
+  p.dashT=0.55; p.smashGrace=0.30;
+  p.squash = 0.16;
+  G.flash = Math.max(G.flash, 0.25);
+  G.camKick += 0.075;
+  Audio_.dash();
+  G.shake=Math.max(G.shake,5);
+  spawnRing(proj(0,p.x), 40, 'white');
+  addFloat('断键冲刺', W/2, BASE_Y-150, 'cyan', 0.8);
+}
+
+function breakLastBond(){
+  const p=G.player;
+  const last = G.trail.pop();
+  if(!last) return;
+  G.stats.breaks++; G.molDone = false;
+  p.used -= VALENCE[last.type];
+  const gained = 0;
+  const n = last.node;
+
+  // 断口：白裂 + 双层冲击波 + 慢放
+  spawnRing(n, 24, 'white');
+  spawnRing(n, 10, 'cyan');
+  G.parts.push({crack:true, x:n.x, y:n.y, life:0.18, max:0.18, r:14});
+  burst(n.x, n.y, 20, last.type==='O'?SPR.O:SPR.H);
+  G.shake=Math.max(G.shake,6);
+  // 拆键不打断节奏：不再顿帧/慢放
+  p.popT = 0.10;
+  p.pipFlashT = 0.28;
+
+  if(gained > 0.01){
+    Audio_.breakBond();
+    // 能量点飞向玩家
+    G.parts.push({homer:true, x:n.x, y:n.y, life:0.45, max:0.45, r:3, type:'fuel'});
+  } else {
+    // 燃料已满：能量点飞一半就熄灭，配一声闷响
+    Audio_.tone(90, 0.18, 'sine', 0.06);
+    G.parts.push({homer:true, fizzle:true, x:n.x, y:n.y, life:0.26, max:0.26, r:2.5, type:'fuel'});
+  }
+}
+
+function onUpSwipe(){
+  if(G.mode!=='play') return;
+  const p=G.player;
+  if(p.exciteT>0 || p.exciteCd>0) return;
+  p.exciteT=0.8; p.exciteCd=2.8;
+  G.camKick += 0.045;
+  Audio_.tone(SPEC_FREQ.H*3, 0.20,'sine',0.10);
+  spawnFan();
+}
+
+function rejectBuzz(kind){
+  Audio_.reject();
+  G.shake=Math.max(G.shake,6);
+  addFloat(kind==='no-fuel'?'燃料不足':'无键可断', W/2, BASE_Y-120, 'cyan', 0.7);
+}
+
+/* ============ 键位满了：零文字提示 ============ */
+function triggerHint(){
+  if(!G.hint) return;
+  if(G.hint.n>=4) return;
+  G.hint.n++;
+  G.hint.t = 3.2;
+  if(G.hint.n===1){
+    G.hitstop = Math.max(G.hitstop, 0.30);
+    G.slowT = 0.55;
+    Audio_.tone(150, 0.35, 'sine', 0.10);
+  } else {
+    Audio_.tone(170, 0.18, 'sine', 0.06);
+  }
+}
+
+/* ============ 粒子 / 飘字 / 冲击波 ============ */
+function burst(x,y,n,spr){
+  for(let i=0;i<n && G.parts.length<MAX_PARTICLES;i++){
+    const a=Math.random()*Math.PI*2, sp=60+Math.random()*260;
+    G.parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-40,life:0.5+Math.random()*0.5,max:1,spr,r:3+Math.random()*5});
+  }
+}
+function spawnRing(pos, r, col){
+  G.parts.push({ring:true,x:pos.x,y:pos.y,r0:r*0.6,r1:r*1.8,life:0.34,max:0.34,col:col||'cyan'});
+}
+function spawnFan(){
+  const p=G.player;
+  G.fan = { t:0, dur:0.24, x:W/2+p.x, y:BASE_Y };
+  // 光谱粒子
+  for(let i=0;i<26 && G.parts.length<MAX_PARTICLES;i++){
+    const hue = i/26;
+    G.parts.push({fan:true,hue,x:G.fan.x,y:G.fan.y,vx:(Math.random()-0.5)*120,vy:-160-Math.random()*180,life:0.5,max:0.5,r:4});
+  }
+}
+function addFloat(text,x,y,color,life){
+  G.floats.push({text,x,y,color,life:life||1.0,max:life||1.0,vy:-26});
+}
+
+/* ============ 生成 ============ */
+function spawnAtom(){
+  if(G.tutorial){ tutorialSpawn(); return; }
+  const S = SEGS[G.segIdx];
+  if(!S || S.gap >= 90) return;
+
+  const have={H:0,O:0};
+  for(const t of G.trail) have[t.type]++;
+  const p = G.player;
+  let type=null, lane=p.lane;
+
+  // 原子连续生成：一直是"有东西在飞"，不再等玩家吸完才刷
+  if(G.segIdx===0){                                    // 落单：全是 H
+    type='H';
+  } else if(G.segIdx===1){                              // 成双：一半在别的道
+    type='H';
+    if(Math.random() < 0.55) lane = (p.lane + 1 + ((Math.random()*2)|0)) % 3;
+  } else {                                              // 抢氧 / 坡顶：优先补缺，其余是干扰
+    if(have.O < 1 && (Math.random() < 0.70 || (SLOT_MAX-p.used) <= 2)) type='O';
+    else if(false) type='H2';   // H2 原子对暂停：会破坏 H-O-H 次序
+    else type='H';
+    if(Math.random() < 0.5) lane = (Math.random()*3)|0;
+  }
+  if(G.segIdx>=2){
+    if(have.O < 1 && Math.random() < 0.85) type='O';
+    if(Math.random() < 0.65) lane = p.lane;
+    else lane = (Math.random()*3)|0;
+  }
+
+  // 只避免"在生成点附近叠一起"，而不是禁止整条车道
+  for(const a of G.atoms){
+    if(!a.taken && a.lane===lane && Math.abs(a.relZ - 16) < 4) return;
+  }
+  G.lastLane = lane;
+  G.stats.spawned++;
+  const rz = 128;                      // 从远处生成，让玩家提前看到走向
+  // 追原子 = 躲墙：优先挑没有墙逼近的车道
+  const walled = {};
+  for(const w of G.walls){ if(!w.broken && w.relZ>0 && w.relZ<170 && w.lane!==undefined) walled[w.lane]=1; }
+  let finalLane = lane;
+  if(walled[finalLane]){
+    const freeLanes = [0,1,2].filter(l=>!walled[l]);
+    if(freeLanes.length) finalLane = freeLanes[(Math.random()*freeLanes.length)|0];
+  }
+  G.atoms.push({ lane: finalLane, relZ:rz, type, taken:false, born:G.time, wob:Math.random()*6.28 });
+}
+
+/* 教学关：缺什么给什么，保证零文字可教 */
+function tutorialSpawn(){
+  const p=G.player;
+  const have={H:0,O:0};
+  for(const tr of G.trail) have[tr.type]++;
+  if(G.atoms.some(a=>!a.taken)) return;
+  let type=null, lane=p.lane;
+  // 前 3 次门失败前：坚持"先塞满 3H"的教学剧本；之后转入救援模式，直接补 O
+  if(have.H<3 && G.gateFail<3) type='H';
+  else if(have.O<1) type='O';
+  else return;
+  if(type==='H' && have.H===1 && !G.taughtLane && G.trail.length>=1){
+    lane=(p.lane+1)%3;
+    G.taughtLane=true;
+  }
+  G.atoms.push({lane, relZ:22, type, taken:false, born:G.time, wob:Math.random()*6.28, tut:true});
+  G.spawnTimer = 1.7;
+}
+
+/* ============ 区段推进 ============ */
+function spawnGate(){
+  const g = G.gate;
+  g.active = true;
+  g.missed = false;
+  g.relZ = 130;
+  g.window = 16;
+  g.lane = (Math.random()*3)|0;
+  Audio_.tone(216.4, 0.6, 'sine', 0.09);
+}
+
+function enterSegment(i){
+  G.segIdx = i; G.segT = 0;
+  const S = SEGS[i];
+  if(!S) return;
+  G.tintTarget = S.tint;
+  if(i===3){                       // 电解：三堵墙
+    G.walls = [
+      {relZ:34, broken:false, hitDone:false, seed:0, hits:0},
+      {relZ:58, broken:false, hitDone:false, seed:1, hits:0},
+      {relZ:82, broken:false, hitDone:false, seed:2, hits:0}
+    ];
+    Audio_.tone(145.0, 0.9, 'sine', 0.10);
+  }
+  // 转场闪光
+  G.flash = Math.max(G.flash, 0.18);
+  spawnRing({x:W/2, y:HORIZON+40}, 30, 'cyan');
+}
+
+/* ============ 更新 ============ */
+function update(dt){
+  if(G.mode!=='play') return;
+  // 首次引导：暂停等玩家做对动作（③躲墙 ④拆键）
+  if(G.cue){ G.cue.t += dt; return; }
+  if(!G.tutorial && !NOAUDIO){          // 自测/基准模式跳过引导
+    const p0 = G.player;
+    // ③ 墙就在自己这条道上、且马上就要撞上
+    if(!G.taughtLane){
+      const w = G.walls.find(w => !w.broken && w.lane === p0.lane && w.relZ < 26 && w.relZ > 4);
+      if(w){
+        // 找最近的安全车道，决定箭头指向
+        const blocked = {};
+        for(const w2 of G.walls){ if(!w2.broken && w2.lane!==undefined && Math.abs(w2.relZ - w.relZ) < 40) blocked[w2.lane]=1; }
+        const free = [0,1,2].filter(l => !blocked[l]);
+        let dir = 0;
+        if(free.length){
+          const best = free.reduce((a,l)=> Math.abs(l-p0.lane) < Math.abs(a-p0.lane) ? l : a, free[0]);
+          dir = best - p0.lane;
+        }
+        G.cue = { type:'lane', t:0, dir: dir || (p0.lane>0 ? -1 : 1), lane:p0.lane };
+        return;
+      }
+    }
+    // ④ 氧进窗口、且自己就在这条道上
+    if(!G.taughtBreak){
+      // 只有在"键位塞满、氧已经放不下"时才提示下滑（氢是自动吸附的，不需要教）
+      const slotFree = SLOT_MAX - p0.used;
+      if(slotFree < 2){
+        const o = G.atoms.find(a => !a.taken && a.type==='O' && a.lane===p0.lane && a.relZ < 24 && a.relZ > 6);
+        if(o && G.trail.length > 0){ G.cue = { type:'down', t:0, lane:p0.lane }; return; }
+      }
+    }
+  }
+  if(G.hitstop>0){ G.hitstop-=dt; return; }
+  if(G.slowT>0){ G.slowT-=dt; dt*=0.35; }
+
+  const p=G.player;
+  G.time+=dt;
+
+  // 速度
+  let mul=1;
+  if(p.bounceT>0){ mul*=0.5; p.bounceT-=dt; }
+  if(p.exciteT>0){ mul*=1.35; p.exciteT-=dt; }
+  if(p.boostT>0){ mul*=1.15; p.boostT-=dt; }
+  if(p.bumpT>0){ mul*=0.72; p.bumpT-=dt; }
+  // 滑梯：下坡加速、上坡减速
+  const slope = slopeAt();
+  if(slope) mul *= (1 + slope*0.30);
+  G.slope = slope;
+  G.horizonShift += ((SLIDE_ON ? -slope*92 : 0) - G.horizonShift) * Math.min(1, dt*2.2);
+  if(p.popT>0) p.popT=Math.max(0,p.popT-dt*4);
+  if(p.pipFlashT>0) p.pipFlashT=Math.max(0,p.pipFlashT-dt*2.2);
+  if(p.squash) p.squash *= Math.pow(0.0008, dt);
+
+  // 能垒段：整个区段 4 都是上坡，门在坡顶且会闭合
+  G.hill = 0;   // 能垒段取消：速度只升不降
+  if(p.dashT>0){ p.dashT-=dt; }
+  if(p.smashGrace>0) p.smashGrace-=dt;
+  if(p.exciteCd>0) p.exciteCd-=dt;
+  p.speedMul=mul;
+
+  G.spd = 1 + Math.min(12, (G.time/40)*12)/32;    // 40 秒内 32 → 44
+  const dying = G.collapseT > 0;                 // 湮灭中：世界冻结
+  if(!dying) G.musicT += dt;                     // 音乐时钟（与 BPM 对齐）
+  const stepNow = Math.floor(G.musicT / BEAT16);
+  const adv = dying ? 0 : SPEED*(G.spd||1)*mul*dt;
+  G.dist += adv;
+  G.roadBase = roadX(0);
+
+  // 进坡瞬间：镜头被拽远一次
+  if(!G.tutorial && G.segIdx===2 && G.segT >= 10 && !G.hillKicked){
+    G.hillKicked = true;
+    G.camKick -= 0.075;
+  }
+
+  // 区段计时：前两段按时间推进；第三段起进入"门口循环"，门通过才进电解
+  if(!G.tutorial && G.segIdx < 2){
+    G.segT += dt;
+    if(G.segT >= SEGS[G.segIdx].dur) enterSegment(G.segIdx + 1);
+  } else if(!G.tutorial && G.segIdx === 2){
+    G.segT += dt;
+    // 门只在最后出现：第三段跑满后，终点门在前方升起
+    if(G.segT >= 8 && !G.finalGate){
+      G.finalGate = true;
+      G.gate = { relZ: 130, passed:false, done:false, active:true, lane: (Math.random()*3)|0, window:16 };
+      G.flash = Math.max(G.flash, 0.30);
+      addFloat('终点', W/2, 640, 'white', 1.2);
+      Audio_.tone(415.3, 0.7, 'sine', 0.05);
+    }
+  }
+  // 轨道色渐变
+  for(let i=0;i<3;i++) G.tint[i] += (G.tintTarget[i] - G.tint[i])*Math.min(1, dt*1.6);
+
+  /* S6 镜头速度耦合 */
+  let camTarget = 1;
+  if(p.dashT > 0) camTarget += 0.150*(p.dashT/0.55);   // 冲刺 dolly in
+  camTarget -= 0.015*(mul - 1);                         // 速度越高，视场越开
+  if(mul < 1) camTarget -= 0.060*(1 - mul);             // 减速：镜头被拖远
+  G.camS += (camTarget - G.camS)*Math.min(1, dt*14);
+  G.camX *= Math.pow(0.012, dt);                        // 换道横移脉冲，约 0.1s 衰减
+  G.camKick *= Math.pow(0.0625, dt);                     // 瞬间推拉，半衰约 0.25s
+  Audio_.setWind(mul);
+  const bob = Math.sin(G.time*9.0)*2.0*mul;             // bob 随速度
+  G.camY += (bob - G.camY)*Math.min(1, dt*10);
+
+  // 换道缓动
+  const ease = 1-Math.pow(1-Math.min(1,dt/0.15),3);
+  p.vx += (p.targetX-p.vx)*ease*0.55;
+  if(Math.abs(p.targetX-p.vx)<1) p.vx=p.targetX;
+
+  // 生成：对齐到 16 分节拍格（原子）
+  const newStep = (stepNow !== G.lastStep);
+  if(newStep && !dying && !G.gate.passed){
+    // 每几格出一个原子：落单段 16 格（一小节），成双段 12 格，抢氧段 8 格
+    const atomEvery = G.tutorial ? 5 : (G.segIdx >= 2 ? 8 : (G.segIdx === 1 ? 12 : 16));
+    if(stepNow % atomEvery === 0) spawnAtom();
+  }
+
+  // 原子推进
+  for(const a of G.atoms){
+    if(!dying) a.relZ -= CLOSE*(G.spd||1)*dt*(mul);
+    // 吸附判定
+    if(!a.taken){
+      const sameLane = a.lane===p.lane;
+      const free = SLOT_MAX - p.used;
+      const window_ = p.exciteT>0 ? 9.5 : 6.5;   // 补偿：全速接近时窗口要加宽
+      // 键位够就自动吸氧；键位满了才需要下滑（挤掉一个氢）
+      const oAuto = (a.type!=='O') || (free >= VALENCE['O']);
+      if(oAuto && sameLane && a.relZ<window_ && a.relZ>-1){
+        let slot = free;
+        // 键位满了：如果来的是氧、身上还有多余的氢，就挤掉一个氢给它腾位（不给能量）
+        if(slot < VALENCE[a.type] && a.type==='O'){
+          const hIdx = G.trail.map((t,i)=>t.type==='H'?i:-1).filter(i=>i>=0);
+          while(slot < 2 && hIdx.length){
+            const idx = hIdx.pop();
+            const dropped = G.trail.splice(idx,1)[0];
+            p.used -= VALENCE[dropped.type];
+            slot += VALENCE[dropped.type];
+            burst(dropped.node.x, dropped.node.y, 8, SPR.H);
+          }
+        }
+        if(slot >= VALENCE[a.type]){
+          a.taken=true;
+          attachAtom(a);
+        }
+      }
+    }
+  }
+  G.atoms = G.atoms.filter(a=>!a.taken && a.relZ>-1.2);
+
+  // 门
+  const gate=G.gate;
+  // 门开/关：结构齐 = 开
+  {
+    const cc = composition(G.trail);
+    G.gateOpen = G.tutorial ? true : (cc.H===2 && cc.O===1);
+  }
+  if(gate.active && !gate.passed){
+    gate.relZ -= adv;
+    if(gate.relZ < 1.0){
+      const gx = (gate.lane-1)*LANE_W;
+      // 终点门横跨三条道：站在任何一条道都算穿过
+      if(G.tutorial || G.finalGate || Math.abs(p.vx - gx) <= LANE_W*0.9) judgeGate();
+      else missGate();
+    }
+  } else if(!gate.passed && (G.segIdx===2 || G.tutorial) && !gate.active && gate.missed){
+    // 错过之后，2 秒后会有一道新的门
+    gate.missT = (gate.missT||0) - dt;
+    if(gate.missT <= 0) spawnGate();
+  }
+
+  // 墙
+  for(const w of G.walls){
+    if(w.broken) continue;
+    w.relZ -= adv;
+    if(w.relZ<1.4 && w.relZ>-1.4 && !w.hitDone){
+      const sameLane = (w.lane===undefined) || (w.lane===p.lane);
+      if(sameLane){
+        if(p.dashT>0 || p.smashGrace>0){ smashWall(w); }
+        else { hitWall(w); }
+      }
+    }
+  }
+  G.walls = G.walls.filter(w=>w.relZ > -10);
+
+  // 教学关：过门后生成一堵墙（撞墙教学）
+  if(G.tutorial && gate.passed && !G.finished && G.walls.length===0 && G.time>gate.passTime+0.6){
+    G.walls.push({relZ:34, broken:false, hitDone:false, seed:0, hits:0});
+  }
+
+  // 判定终点：结构对 + 穿过终点门
+  const endReached = G.tutorial
+    ? (gate.passed && G.walls.length>0 && G.walls.every(w=>w.broken))
+    : (G.finalGate && gate.passed);
+  if(!G.finished && endReached){
+    G.finished=true; G.mode='win'; G.flash=1;
+    commitRecord();
+    if(G.tutorial) G.tutorialDone=true;
+    Audio_.molecule(['H','H','O']);
+  }
+
+  // 散架倒计时：演完才出结算
+  if(G.collapseT > 0){
+    G.collapseT -= dt;
+    const dur = G.collapseMax || 1.55;
+    const elapsed = dur - G.collapseT;
+    G.player.vanish = Math.min(1, elapsed/0.35);   // 0.35 秒内彻底消失
+    if(G.collapseT <= 0){ G.collapseT = 0; G.mode = 'lose'; }
+  }
+
+  // 接近终点门：钢琴预告
+  if(G.finalGate && G.gate.active && !G.gate.passed){
+    const gz = G.gate.relZ;
+    if(gz < 100 && gz > 0 && !G._gp1){ G._gp1 = true; Music.gateArp(false); }
+    if(gz < 52  && gz > 0 && !G._gp2){ G._gp2 = true; Music.gateArp(true);  }
+  }
+
+  // 惰性分子团：撞上即死
+  for(const c of G.clusters){
+    c.relZ -= adv;
+    c.spin += dt*0.9;
+    if(!c.done && c.relZ < 2.4 && c.relZ > -2.0){
+      if(Math.abs(p.vx - (c.lane-1)*LANE_W) < LANE_W*0.42){
+        c.done = true;
+        G.flash = 1; G.shake = 16; G.hitstop = 0.10;
+        G.camKick -= 0.14;
+        burst(W/2 + p.vx, BASE_Y-60, 50, SPR.white);
+        Audio_.reject();
+        fatal('结构散架');
+        G.loseCause = '惰性分子团';
+      }
+    }
+  }
+  G.clusters = G.clusters.filter(c => c.relZ > -10 && !c.done);
+  // 墙体生成：每 12 格（三个四分音符）一批，对齐节拍
+  if(!G.tutorial && !dying && G.segIdx <= 2 && !G.finalGate){
+    if(newStep && stepNow % 12 === 0 && stepNow > 26){
+      const l1 = (Math.random()*3)|0;
+      const r = Math.random();
+      G.walls.push({ relZ: 105, lane: l1, broken:false, hitDone:false, hits:0, seed:0 });
+      if(r < 0.34){
+        // 并排双墙：两条道被封，只剩一条
+        const others = [0,1,2].filter(l=>l!==l1);
+        G.walls.push({ relZ: 105, lane: others[(Math.random()*2)|0], broken:false, hitDone:false, hits:0, seed:0 });
+      } else if(r < 0.55){
+        // 错位双墙：先躲一面，再立刻躲第二面（制造连环换道）
+        const others = [0,1,2].filter(l=>l!==l1);
+        G.walls.push({ relZ: 82, lane: others[(Math.random()*2)|0], broken:false, hitDone:false, hits:0, seed:0 });
+      }
+    }
+  }
+
+  G.lastStep = stepNow;
+
+  // 路侧参照物：世界静止，随玩家前进后退
+  for(const pr of G.props){
+    pr.z -= adv;
+    if(pr.z < -14){
+      pr.z += 340;
+      pr.off = (Math.random()<0.5?-1:1) * (360 + Math.random()*200);
+      pr.kind = (Math.random()*4)|0;
+      pr.size = 1.0 + Math.random()*1.1;
+    }
+  }
+
+  // 氛围粒子：相对地面静止，被玩家以全速穿过（S2）
+  for(const a of G.amb){
+    a.z -= SPEED*mul*dt;
+    if(a.z < -3){
+      a.z += 74; a.lane=(Math.random()*3)|0; a.dead=0;
+    }
+  }
+  // 残影采样（S4）
+  p.ghostT -= dt;
+  if(p.ghostT<=0){
+    p.ghostT = 0.03;
+    G.ghosts.push({x: W/2+p.vx, y: BASE_Y, t: 0.30, dash: p.dashT>0});
+    if(G.ghosts.length>14) G.ghosts.shift();
+  }
+  for(const gg of G.ghosts) gg.t -= dt;
+  G.ghosts = G.ghosts.filter(gg=>gg.t>0);
+
+  // 拖尾弹簧
+  updateTrail(dt);
+
+  // 粒子
+  updateParticles(dt);
+
+  // 飘字
+  for(const f of G.floats){ f.life-=dt; f.y+=f.vy*dt; f.vy*=0.96; }
+  G.floats = G.floats.filter(f=>f.life>0);
+
+  // 震屏衰减
+  G.shake*=Math.pow(0.02,dt);
+  if(G.shake<0.2) G.shake=0;
+  G.flash=Math.max(0, G.flash-dt*2.2);
+  if(G.reforge>0) G.reforge=Math.max(0, G.reforge-dt*1.4);
+  if(G.hint && G.hint.t>0) G.hint.t=Math.max(0,G.hint.t-dt);
+
+  // BGM 转调
+  if(G.gate.passed) Music.transpose = 4;
+  else if(G.time>12) Music.transpose = 2;
+}
+
+/* 致命事件：先散架，再结算 */
+function fatal(reason, quiet){
+  if(G.collapseT > 0 || G.mode !== 'play') return;
+  G.collapseT = 1.55;                    // 湮灭演出时长
+  G.collapseMax = 1.55;
+  G.loseCause = reason;
+  G.flash = Math.max(G.flash, 0.9);
+  G.shake = Math.max(G.shake, 18);
+  G.hitstop = Math.max(G.hitstop, 0.12);
+  G.camKick -= 0.18;
+  if(!quiet){
+    Audio_.reject();
+    Audio_.tone(70, 0.6, 'sine', 0.09);
+  }
+  Music.duck(1.5, -60);      // 音乐随湮灭淡出
+
+  // 玩家湮灭：核心炸开 + 三层冲击环 + 向外飞散
+  const px = W/2 + G.player.vx, py = BASE_Y - 60;
+  for(let i=0;i<3;i++) spawnRing({x:px,y:py}, 30 + i*28, i===0?'white':'cyan');
+  burst(px, py, 70, SPR.white);
+  burst(px, py, 40, SPR.cyan);
+  for(let i=0;i<26;i++){
+    const ang = Math.random()*Math.PI*2, sp = 90 + Math.random()*260;
+    G.parts.push({ x:px, y:py, vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp - 60,
+                   life:0.8, max:0.8, r:1.5+Math.random()*2.5, spr:SPR.cyan });
+  }
+  // 拖尾逐颗炸开
+  for(const t of G.trail){
+    burst(t.node.x, t.node.y, 16, t.type==='O' ? SPR.O : SPR.H);
+    spawnRing(t.node, 22, 'white');
+  }
+  G.trail = []; G.player.used = 0;
+  G.player.vanish = 0;                   // 0→1 逐渐湮灭
+}
+
+function attachAtom(a){
+  const p=G.player;
+  p.used += VALENCE[a.type];
+  const pos = proj(a.relZ, (a.lane-1)*LANE_W);
+  // 氧是二价桥接原子：若已有两个 H，自动插到中间，形成 H-O-H
+  const entry = { type:a.type, node:{x:pos.x,y:pos.y,vx:0,vy:0}, born:G.time };
+  let insertAt = G.trail.length;
+  if(a.type === 'O' && !G.trail.some(t=>t.type==='O')){
+    const hIdx = G.trail.map((t,i)=>t.type==='H'?i:-1).filter(i=>i>=0);
+    if(hIdx.length >= 2) insertAt = hIdx[hIdx.length-1];
+  }
+  G.trail.splice(insertAt, 0, entry);
+  p.squash = 0.16;
+  G.combo++;
+  G.bestCombo=Math.max(G.bestCombo,G.combo);
+  Audio_.snap(a.type, G.combo);
+  Audio_.tone((a.type==='O'?244.5:207.7)*4, 0.18, 'sine', 0.05);   // 高八度泛音
+  G.flash = Math.max(G.flash, 0.42);                                // 全屏白闪
+  p.popT = 0.20;                                                    // 主角过曝一瞬
+  G.camKick += 0.022;
+  spawnRing(pos, 26, a.type==='H'?'red':'green');
+  burst(pos.x, pos.y, 18, a.type==='O'?SPR.O:SPR.H);
+  // 飘字：连击
+  if(G.combo>=3 && G.combo%3===0) addFloat('链式反应 ×'+G.combo, W/2, 700, 'cyan', 1.0);
+  // 分子完成提示
+  const comp = composition(G.trail);
+  if(comp.H===2 && comp.O===1 && !G.molDone){
+    G.molDone = true;
+    G.hitstop = Math.max(G.hitstop, 0.075);      // 4.5 帧
+    G.flash = Math.max(G.flash, 0.68);
+    G.shake = Math.max(G.shake, 9);
+    p.popT = 0.35;
+    G.camKick += 0.05;
+    burst(W/2 + p.vx, BASE_Y - 70, 44, SPR.white);
+    spawnRing({x:W/2+p.vx, y:BASE_Y-70}, 60, 'white');
+    spawnRing({x:W/2+p.vx, y:BASE_Y-70}, 110, 'cyan');
+    addFloat('H₂O', W/2, 776, 'white', 1.2);
+    Audio_.molecule(['H','H','O']);
+    Audio_.tone(207.7*4, 0.5, 'sine', 0.06);
+  }
+}
+
+function composition(trail){
+  const c={H:0,O:0};
+  for(const t of trail){
+    if(t.type==='H2') c.H += 2;
+    else c[t.type] = (c[t.type]||0)+1;
+  }
+  return c;
+}
+
+function judgeGate(){
+  const gate=G.gate;
+  const c=composition(G.trail);
+  const okComp = c.H===2 && c.O===1;
+  // 结构次序：必须是 H-O-H（氧在中间）。H₂ 原子对展开成两个 H
+  const orderSeq = G.trail.map(t => t.type==='H2' ? 'HH' : t.type).join('');
+  const okOrder = ORDER_RULE ? (orderSeq === 'HOH') : true;
+  // 接入角：以横向偏移代理（1 车道宽 = 90°，0.65 车道 = 约 45°）
+  const dx = Math.abs(G.player.vx - (gate.lane-1)*LANE_W);
+  const align = dx / LANE_W;                  // 0 = 正对，1 = 一整条道
+  const okAngle = G.finalGate ? true : align <= 0.65;
+  const resonant = align <= 0.25;
+  const ok = okComp && okOrder && okAngle;
+  G.lastGateComp = c.H+'H'+c.O+'O'; G.lastGatePass = ok;
+  if(ok){
+    gate.passed=true; gate.passTime=G.time;
+    G.gateOpen = true;
+    G.flash=0.7;
+
+    addFloat('放热', W/2, 600, 'cyan', 1.0);
+    if(resonant){
+      G.stats.resonant++;
+      G.player.boostT = 4.0;
+      G.camKick += 0.060;
+      addFloat('共振', W/2, 660, 'white', 1.2);
+      G.flash = 1.0;
+      G.shake = Math.max(G.shake, 5);
+    }
+    Audio_.molecule(['H','H','O']);
+    addFloat('共振', W/2, 640, 'white', 1.2);
+    for(let i=0;i<60;i++){ /* 门溶解 */ }
+    burst(W/2, HORIZON+18, 40, SPR.white);
+    if(G.tutorial){
+      G.walls.push({relZ:34, broken:false, hitDone:false, seed:0});
+      G.walls[0].hits = 0;
+    }
+    // 正式关：终点门通过即胜利，由上面的"判定终点"统一处理
+    G.shake=Math.max(G.shake,7);
+  } else if(!G.tutorial){
+    // 结构不齐：门是关着的，撞上去直接湮灭（钢琴重击，无其它音效）
+    G.gateFail++;
+    G.combo = 0;
+    try{
+      if(Music && Music.piano){
+        const st = Music._step || 0;
+        const ch = Music.chordAt(st);
+        const t0 = Tone.now() + 0.01;
+        ch.forEach((semi,i)=>{
+          const f = ROOT * Math.pow(2, (semi - 12 + Music.transpose)/12);
+          Music.piano.triggerAttackRelease(f, '2n', t0 + i*0.02);
+        });
+      }
+    }catch(e){}
+    gate.active = false; gate.done = true;   // 关门，避免每帧重复判定
+    fatal('撞门湮灭', true);
+    return;
+  } else {
+    G.gateFail++;
+    gate.relZ = 170;
+    gate.window = 16;
+    G.spawnTimer = 0.15;
+    { G.reforge = 1.0; addFloat('重铸', W/2, 640, 'cyan', 1.0); }
+    Audio_.reject();
+    G.shake=Math.max(G.shake,8);
+    G.hitstop=Math.max(G.hitstop,0.06);
+    G.player.bounceT=0.9;
+    G.player.squash = -0.26;
+    G.camKick -= 0.095;
+    // 结构对但角度斜：只弹回，不动结构
+    if(okComp && !okOrder){
+      addFloat('次序不对', W/2, 700, 'cyan', 1.0);
+      G.camKick -= 0.05;
+      if(!G.tutorial && G.gateFail>=3){ fatal('结构散架'); }
+      return;
+    }
+    if(okComp && !okAngle){
+      addFloat('切入角过斜', W/2, 700, 'cyan', 1.0);
+      if(!G.tutorial && G.gateFail>=3){ fatal('结构散架'); }
+      return;
+    }
+    // 震散一格键：教学关前两次不替玩家做，逼他自己断键（第 3 次兜底）
+    // 只有教学关兜底弹出；正式关不再自动补偿，玩家必须自己断键腾位
+    if(G.trail.length && G.tutorial && G.gateFail>=3){
+      const lost=G.trail.pop();
+      G.player.used-=VALENCE[lost.type];
+      burst(lost.node.x, lost.node.y, 18, SPR.white);
+    }
+    addFloat('结构不符', W/2, 700, 'cyan', 1.0);
+    if(!G.tutorial && G.gateFail>=3){ fatal("结构散架"); }
+  }
+}
+
+function bumpPlayer(a){
+  const p = G.player;
+  p.bumpT = 0.40;
+  p.squash = -0.22;
+  G.camKick -= 0.095;
+  const pos = proj(a.relZ, (a.lane-1)*LANE_W);
+  burst(pos.x, pos.y, 8, a.type==='O'?SPR.O:SPR.H);
+  spawnRing(pos, 12, 'cyan');
+  Audio_.tone(120, 0.10, 'sine', 0.05);
+}
+
+function missGate(){
+  const g = G.gate;
+  if(!g.active || g.passed) return;
+  g.active = false;
+  g.missed = true;
+  g.missT = 2.0;
+  G.missCount = (G.missCount||0) + 1;
+  if(!G.tutorial && G.finalGate){ fatal('结构散架'); return; }   // 躲掉终点门 = 失败
+  if(!G.tutorial && G.missCount >= 6){
+    fatal('结构散架');
+    return;
+  }
+  Audio_.tone(170, 0.12, 'sine', 0.05);
+  spawnRing(proj(0, (g.lane-1)*LANE_W), 26, 'cyan');
+}
+
+function gateTimeout(){
+  const g = G.gate;
+  if(!g.active || g.passed) return;
+  g.window = 16;
+  g.relZ = 140;
+  G.gateFail++;
+  Audio_.reject();
+  G.shake = Math.max(G.shake, 8);
+  G.hitstop = Math.max(G.hitstop, 0.05);
+  addFloat('能垒拦截', W/2, 700, 'cyan', 1.1);
+  if(!G.tutorial && G.gateFail >= 4) fatal('能垒超时');
+}
+
+function smashWall(w){
+  w.broken=true;
+  w.hitDone=true;
+  Audio_.dash();
+  G.shake=Math.max(G.shake,9);
+  G.hitstop=Math.max(G.hitstop,0.05);
+  const pos=proj(0, (w.seed-1)*LANE_W*0.6);
+  burst(pos.x, pos.y-40, 30, SPR.cyan);
+  spawnRing(pos, 40, 'white');
+  addFloat('分解', pos.x, pos.y-90, 'cyan',0.8);
+}
+
+function hitWall(w){
+  G.stats.wallHits++;
+  G.combo = 0;                          // 撞墙断连
+  w.hits = (w.hits||0) + 1;
+  w.hitDone = true;
+  w.broken = true;                      // 撞上就碎，直接穿过
+
+  const lane = (w.lane===undefined) ? 1 : w.lane;
+  const pos = proj(w.relZ, (lane-1)*LANE_W);
+  // 碎裂特效：两层冲击环 + 碎屑 + 短白闪
+  spawnRing(pos, 52, 'white');
+  spawnRing(pos, 26, 'cyan');
+  burst(pos.x, pos.y - 30, 40, SPR.cyan);
+  G.flash = Math.max(G.flash, 0.22);
+  G.shake = Math.max(G.shake, 10);
+  Audio_.breakBond();
+
+  // 掉一个键；身上没有键 = 死
+  if(G.trail.length > 0){
+    const dropped = G.trail.pop();
+    G.player.used -= VALENCE[dropped.type];
+    G.molDone = false;
+    burst(dropped.node.x, dropped.node.y, 22, dropped.type==='O'?SPR.O:SPR.H);
+    spawnRing(dropped.node, 26, 'white');
+    addFloat('失键', W/2, 760, 'cyan', 0.9);
+  } else if(!G.tutorial){
+    fatal('撞击湮灭');            // 身上没键：当场湮灭
+  }
+}
+
+/* ============ 拖尾 ============ */
+function updateTrail(dt){
+  const p=G.player;
+  const px=W/2+p.vx, py=BASE_Y;
+  for(let i=0;i<G.trail.length;i++){
+    const n=G.trail[i].node;
+    const tx = px + Math.sin((i+1)*0.95 + G.time*0.6)*34;
+    const ty = py - 72*(i+1);
+    const stiff=170, damp=0.86;
+    n.vx += (tx-n.x)*stiff*dt;
+    n.vy += (ty-n.y)*stiff*dt;
+    n.vx*=Math.pow(damp, dt*60);
+    n.vy*=Math.pow(damp, dt*60);
+    n.x += n.vx*dt;
+    n.y += n.vy*dt;
+  }
+}
+
+/* ============ 粒子更新 ============ */
+function updateParticles(dt){
+  for(const q of G.parts){
+    if(q.ring){ q.life-=dt; continue; }
+    if(q.homer){
+      q.life-=dt;
+      const tx = W/2 + G.player.vx, ty = BASE_Y;
+      q.x += (tx-q.x)*Math.min(1, dt*9);
+      q.y += (ty-q.y)*Math.min(1, dt*9);
+      continue;
+    }
+    q.life-=dt;
+    q.x+=q.vx*dt; q.y+=q.vy*dt;
+    q.vy+= q.fan? 120*dt : 260*dt;
+    q.vx*=0.985;
+  }
+  G.parts=G.parts.filter(q=>q.life>0);
+}
+
+/* ---------- S1 近景刻度流：速度的直接读数 ---------- */
+const TICK_SPACING = 2.5;          // 世界单位；20 u/s ÷ 2.5 = 8 条/秒
+function projN(z, laneOff){
+  const k = 1/(1 + z/26);          // 允许 z<0：玩家身后的前景
+  const hz = HORIZON + (G.horizonShift||0);
+  return { x: W/2 + (roadX(z) - G.roadBase)*k + laneOff*k, y: hz + (BASE_Y-hz)*k, k };
+}
+function drawTicks(){
+  const off = G.dist % TICK_SPACING;
+  for(let i=22;i>=-5;i--){
+    const z = i*TICK_SPACING - off;
+    if(z < -7) continue;
+    const pl = projN(z, -238), pr = projN(z, 238);
+    const major = (i % 4 === 0);
+    const a = (major?0.50:0.30)*(1 - z/78);
+    if(a <= 0.006) continue;
+    ctx.strokeStyle = 'rgba('+(G.tint[0]|0)+','+(G.tint[1]|0)+','+(G.tint[2]|0)+','+a.toFixed(3)+')';
+    ctx.lineWidth = Math.max(0.6, (major?2.0:1.0)*pl.k);
+    ctx.beginPath(); ctx.moveTo(pl.x, pl.y); ctx.lineTo(pr.x, pr.y); ctx.stroke();
+    // 两侧刻度短竖（示波器扫描语言）
+    if(z < 26 && z > -6){
+      const t = Math.max(1.5, 5*pl.k);
+      ctx.beginPath();
+      ctx.moveTo(pl.x, pl.y-t); ctx.lineTo(pl.x, pl.y+t);
+      ctx.moveTo(pr.x, pr.y-t); ctx.lineTo(pr.x, pr.y+t);
+      ctx.stroke();
+    }
+  }
+}
+
+/* ---------- S2 静止悬浮粒子：被玩家穿过 ---------- */
+function drawAmbient(){
+  for(const a of G.amb){
+    if(a.z < 0.6) continue;
+    const pos = proj(a.z, (a.lane-1)*LANE_W);
+    const k = pos.k;
+    const r = 1.8 + 2.4*k;
+    const al = 0.10 + 0.26*k;
+    const x = pos.x + Math.sin(G.time*1.7 + a.ph)*5*k;
+    ctx.fillStyle = 'rgba(160,240,255,'+al.toFixed(3)+')';
+    ctx.beginPath(); ctx.arc(x, pos.y, r, 0, 7); ctx.fill();
+    if(k > 0.5){                      // 近处带一点辉光，强化"掠过"
+      glow(x, pos.y, r*6, SPR.cyan, 0.06*k);
+    }
+  }
+}
+
+/* ---------- S5 速度线：长度 ∝ 速度²，冲刺加密 ---------- */
+/* ---------- 右上角能量条 ---------- */
+function drawEnergyHud(){
+  const p = G.player;
+  const bx = W - 54, by = 150, gap = 30;
+  ctx.save();
+  // 容器
+  ctx.strokeStyle = 'rgba(120,225,245,0.22)';
+  ctx.lineWidth = 1.5;
+  for(let i=0;i<FUEL_MAX;i++){
+    const y = by + i*gap;
+    const filled = p.fuel >= i + 0.5;
+    if(filled){
+      glow(bx, y, 22, SPR.cyan, 0.35);
+      if(p.pipFlashT > 0) glow(bx, y, 40*Math.min(1,p.pipFlashT*3), SPR.white, 0.6*p.pipFlashT);
+    }
+    ctx.fillStyle = filled ? 'rgba(170,245,255,0.95)' : 'rgba(110,190,210,0.12)';
+    ctx.beginPath();
+    ctx.roundRect(bx-16, y-7, 32, 14, 7);
+    ctx.fill();
+    if(filled){
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.beginPath(); ctx.roundRect(bx-11, y-2.5, 22, 5, 2.5); ctx.fill();
+    } else {
+      ctx.strokeStyle = 'rgba(120,225,245,0.22)';
+      ctx.beginPath(); ctx.roundRect(bx-16, y-7, 32, 14, 7); ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+function drawSpeedLines(){
+  const p = G.player, mul = p.speedMul;
+  const up = Math.max(0, mul - 1);            // 加速量
+  const slow = Math.max(0, 1 - mul);          // 减速量
+  const inten = Math.min(1, Math.max(up/0.8, slow/0.38));
+  const accel = up > slow;
+
+  // 巡航时也有少量底噪光带（路面不能是死的），速度变化时加密加亮
+  const n      = 8 + Math.round(18*inten);
+  const flow   = accel ? 1.7 : 0.55;
+  const period = 230;
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  for(let i=0;i<n;i++){
+    const side = (i%2) ? 1 : -1;
+    const off = side * (200 + ((i*67) % 240));
+    let z = ((i*53 - G.dist*flow) % period + period) % period + 2;
+    const len = 42 + 130*inten;
+    const p1 = proj(z, off), p2 = proj(z + len, off);
+    const fade = Math.min(1, p1.k*1.6);
+
+    if(accel){
+      const a = (0.035 + 0.30*inten) * fade * (CARTOON?0.65:1);
+      // 外层光晕
+      ctx.strokeStyle = 'rgba(150,235,255,'+(a*0.45).toFixed(3)+')';
+      ctx.lineWidth = Math.max(1.5, (2.4 + 4.2*inten)*p1.k);
+      ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
+      // 亮芯
+      ctx.strokeStyle = 'rgba(215,250,255,'+a.toFixed(3)+')';
+      ctx.lineWidth = Math.max(0.9, (1.2 + 2.2*inten)*p1.k);
+      ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
+      // 近端拖头
+      if(p1.k > 0.4){
+        ctx.strokeStyle = 'rgba(245,255,255,'+Math.min(1,a*2.2).toFixed(3)+')';
+        ctx.lineWidth = Math.max(0.8, 1.4*inten*p1.k);
+        ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p1.x+(p2.x-p1.x)*0.3, p1.y+(p2.y-p1.y)*0.3); ctx.stroke();
+      }
+    } else {
+      const a = (0.03 + 0.26*inten) * fade;
+      ctx.strokeStyle = 'rgba(150,205,225,'+(a*0.5).toFixed(3)+')';
+      ctx.lineWidth = Math.max(1.2, (1.8 + 2.6*inten)*p1.k);
+      ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
+      ctx.strokeStyle = 'rgba(200,240,250,'+a.toFixed(3)+')';
+      ctx.lineWidth = Math.max(0.7, (0.9 + 1.2*inten)*p1.k);
+      ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+/* ---------- 惰性分子团：灰色、不参与反应、撞上即死 ---------- */
+function drawClusters(){
+  for(const c of G.clusters){
+    const pos = proj(c.relZ, (c.lane-1)*LANE_W);
+    if(pos.k < 0.04) continue;
+    const R = 24*pos.k + 5;
+    const cx = pos.x, cy = pos.y;
+    ctx.save();
+    ctx.fillStyle = 'rgba(150,162,178,0.92)';
+    ctx.strokeStyle = 'rgba(230,238,248,0.85)';
+    ctx.lineWidth = Math.max(1, R*0.16);
+    const off = [[0,-R*0.85],[R*0.78,R*0.55],[-R*0.78,R*0.55]];
+    const pts = off.map(([dx,dy])=>{
+      const a = c.spin;
+      return [cx + dx*Math.cos(a) - dy*Math.sin(a), cy + dx*Math.sin(a) + dy*Math.cos(a)];
+    });
+    // 键
+    ctx.strokeStyle = 'rgba(210,220,232,0.55)';
+    ctx.lineWidth = Math.max(1, R*0.22);
+    for(let i=0;i<3;i++){
+      const a=pts[i], b=pts[(i+1)%3];
+      ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke();
+    }
+    // 三个灰球
+    for(const [x,y] of pts){
+      ctx.fillStyle = 'rgba(150,162,178,0.95)';
+      ctx.beginPath(); ctx.arc(x,y,R*0.46,0,7); ctx.fill();
+      ctx.strokeStyle='rgba(235,242,250,0.9)'; ctx.lineWidth=Math.max(0.8,R*0.12);
+      ctx.beginPath(); ctx.arc(x,y,R*0.46,0,7); ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+/* ---------- 路侧参照物：只用来"看见自己在动" ---------- */
+function drawProps(){
+  const bob = G.time*0.8;
+  for(const pr of G.props){
+    if(pr.z < -10) continue;
+    const pos = proj(pr.z, pr.off);
+    if(pos.k < 0.05) continue;
+    if(pos.x < -60 || pos.x > W+60) continue;
+    const s = pr.size * pos.k;
+    const a = Math.min(0.6, 0.08 + pos.k*0.6);
+    if(a < 0.02) continue;
+    const y = pos.y + Math.sin(bob + pr.ph)*3*pos.k;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(120,225,245,'+a.toFixed(3)+')';
+    ctx.fillStyle = 'rgba(120,225,245,'+(a*0.35).toFixed(3)+')';
+    ctx.lineWidth = Math.max(0.7, 1.6*pos.k);
+    if(pr.kind === 0){
+      // 竖标：一根细柱 + 顶端亮点
+      const h = 34*s;
+      ctx.beginPath(); ctx.moveTo(pos.x, y-h); ctx.lineTo(pos.x, y+h); ctx.stroke();
+      ctx.beginPath(); ctx.arc(pos.x, y-h, Math.max(1.2, 2.6*s), 0, 7); ctx.fill();
+    } else if(pr.kind === 1){
+      // 六边形晶体
+      const r = 9*s;
+      ctx.beginPath();
+      for(let k=0;k<6;k++){
+        const ang = pr.ph + k*Math.PI/3;
+        const px = pos.x + Math.cos(ang)*r, py = y + Math.sin(ang)*r;
+        k ? ctx.lineTo(px,py) : ctx.moveTo(px,py);
+      }
+      ctx.closePath(); ctx.stroke(); ctx.fill();
+    } else if(pr.kind === 2){
+      // 环
+      const r = 7*s;
+      ctx.beginPath(); ctx.arc(pos.x, y, r, 0, 7); ctx.stroke();
+      ctx.globalAlpha = 0.5;
+      ctx.beginPath(); ctx.arc(pos.x, y, r*0.45, 0, 7); ctx.fill();
+      ctx.globalAlpha = 1;
+    } else {
+      // 三角碎片
+      const r = 10*s;
+      ctx.beginPath();
+      for(let k=0;k<3;k++){
+        const ang = pr.ph + k*2*Math.PI/3;
+        const px = pos.x + Math.cos(ang)*r, py = y + Math.sin(ang)*r;
+        k ? ctx.lineTo(px,py) : ctx.moveTo(px,py);
+      }
+      ctx.closePath(); ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+/* ---------- S4 角色残影 ---------- */
+function drawGhosts(){
+  for(const gg of G.ghosts){
+    const a = (gg.t/0.30);
+    glow(gg.x, gg.y, 24, gg.dash?SPR.cyan:SPR.white, a*0.20);
+  }
+}
+
+/* ---------- 首次引导箭头（参考 Subway Surfers 的飞行箭头） ---------- */
+function drawCue(){
+  if(!G.cue) return;
+  const t = G.cue.t;
+  const cx = W/2 + G.player.vx;            // 画在玩家当前车道上
+  const cy = BASE_Y - 210;
+  ctx.save();
+  ctx.globalCompositeOperation='lighter';
+  ctx.fillStyle='rgba(2,7,10,0.45)'; ctx.globalCompositeOperation='source-over';
+  ctx.fillRect(0,0,W,H);
+  ctx.globalCompositeOperation='lighter';
+  const drawChevron=(x,y,dir,alpha,size)=>{
+    ctx.strokeStyle='rgba(190,250,255,'+alpha.toFixed(3)+')';
+    ctx.lineWidth=7; ctx.lineCap='round';
+    ctx.beginPath();
+    if(dir==='left'){ ctx.moveTo(x+size,y-size); ctx.lineTo(x-size,y); ctx.lineTo(x+size,y+size); }
+    else if(dir==='right'){ ctx.moveTo(x-size,y-size); ctx.lineTo(x+size,y); ctx.lineTo(x-size,y+size); }
+    else { ctx.moveTo(x-size,y-size); ctx.lineTo(x,y+size); ctx.lineTo(x+size,y-size); }
+    ctx.stroke();
+  };
+  // 三条箭头依次向外飞
+  for(let i=0;i<3;i++){
+    const ph = ((t*1.6 + i*0.33) % 1);
+    const a = Math.sin(ph*Math.PI) * 0.85;
+    const s2 = 26 + ph*10;
+    if(G.cue.type==='lane'){
+      const d = G.cue.dir || 0;
+      if(d <= 0) drawChevron(cx-90-ph*60, cy, 'left',  a, s2);
+      if(d >= 0) drawChevron(cx+90+ph*60, cy, 'right', a, s2);
+      if(d === 0){ drawChevron(cx-90-ph*60, cy, 'left', a, s2); drawChevron(cx+90+ph*60, cy, 'right', a, s2); }
+    } else {
+      drawChevron(cx, cy-30+ph*60, 'down', a, s2);
+    }
+  }
+  ctx.globalCompositeOperation='source-over';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.font='500 24px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  ctx.fillStyle='rgba(235,252,255,0.85)';
+  ctx.fillText(G.cue.type==='lane' ? '换道躲开' : '下滑抓住氧', cx, cy+150);
+  ctx.restore();
+}
+
+/* ============ 绘制 ============ */
+function draw(t){
+  frameBegin();
+  // S6：以画面中段为锚点做缩放，避免玩家被推离原位
+  {
+    const cx = W/2, cy = 900;
+    // 跟随赛道：远处弯向哪边，镜头就轻微偏一点、转一点
+    const bendFar = roadX(24);
+    const slopeNear = (roadX(18) - roadX(0)) / 18;        // 脚下的局部斜率
+    const roll = Math.max(-0.035, Math.min(0.035, slopeNear * 0.0022));
+    ctx.translate(cx + G.camX - bendFar*0.26, cy + G.camY);
+    ctx.rotate(roll);
+    const camAll = G.camS + G.camKick;
+    ctx.scale(camAll, camAll);
+    ctx.translate(-cx, -cy);
+  }
+  if(bgCanvas) ctx.drawImage(bgCanvas,0,0);
+  if(CARTOON){                                   // 卡通风：底子提亮一点，别那么"深井"
+    ctx.fillStyle='rgba(40,120,150,0.10)';
+    ctx.fillRect(0,0,W,H);
+  }
+  drawLanes(1);
+  drawTicks();
+  drawSpeedLines();
+  drawProps();
+  drawAmbient();
+
+  // 震屏
+  const sh=G.shake;
+  if(sh>0){ ctx.translate((Math.random()-0.5)*sh, (Math.random()-0.5)*sh); }
+
+  drawWalls();
+  drawGate();
+  drawAtoms();
+  drawTrail();
+  drawGhosts();
+  drawPlayer();
+
+  drawHint();
+  drawParticles();
+  drawFloats();
+
+  // 底部收边
+  const g=ctx.createLinearGradient(0,H-160,0,H);
+  g.addColorStop(0,'rgba(2,10,14,0)'); g.addColorStop(1,'rgba(2,10,14,0.9)');
+  ctx.fillStyle=g; ctx.fillRect(0,H-160,W,160);
+
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  // 扫描线
+  ctx.globalAlpha=0.16; ctx.fillStyle='#000';
+  for(let y=0;y<vh;y+=3) ctx.fillRect(0,y,vw,1);
+  ctx.globalAlpha=1;
+
+  if(G.flash>0){
+    ctx.globalCompositeOperation='lighter';
+    ctx.globalAlpha=G.flash*0.35; ctx.fillStyle='#bff';
+    ctx.fillRect(0,0,vw,vh);
+    ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over';
+  }
+
+  frameEnd();
+  drawHUD();
+  if(G.cue && G.mode==='play') drawCue();
+  if(G.showMusicDbg){
+    ctx.save();
+    ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(16, 140, 470, 118);
+    ctx.font='16px monospace'; ctx.textAlign='left'; ctx.textBaseline='top';
+    ctx.fillStyle='#9fe8ff';
+    const tn = (typeof Tone!=='undefined');
+    const lines = [
+      'Tone: ' + (tn ? Tone.version : 'NOT LOADED'),
+      'transport: ' + (tn ? Tone.Transport.state : '-') + '  bpm: ' + (tn ? Tone.Transport.bpm.value : '-'),
+      'music on/built: ' + Music.on + '/' + Music.built,
+      'notes played: ' + (Music._n||0),
+      'audio clock: ' + (Audio_.ac ? Audio_.ac.currentTime.toFixed(2) : '-')
+    ];
+    lines.forEach((t,i)=> ctx.fillText(t, 28, 152 + i*21));
+    ctx.restore();
+  }
+  if(G.mode==='title') drawTitle();
+  if(G.mode==='pause') drawPause();
+  if(G.mode==='win') drawWin();
+  if(G.mode==='lose') drawLose();
+}
+
+function drawAtoms(){
+  for(const a of G.atoms){
+    if(a.taken) continue;
+    const laneOff=(a.lane-1)*LANE_W;
+    const pos=proj(a.relZ, laneOff);
+    if(pos.k<0.05) continue;
+    let alpha=Math.min(1, Math.max(0, (34-a.relZ)/6+0.25));
+    if(a.blocked && !a.taken) alpha *= 0.42;         // 变暗 = 放不下，会撞
+    // 远处也要看得见：最小半径 + 远景光点
+    const baseR = (a.type==='O'?40:(a.type==='H2'?26:30));
+    const r = Math.max(7, baseR*pos.k + 4);
+    if(pos.k < 0.55){
+      // 远距离：亮核 + 光晕，保证在灭点附近也能看见
+      const ga = Math.max(0.35, 0.95 - pos.k*1.4);
+      glow(pos.x, pos.y, 30+r*2.4, a.type==='O'?SPR.O:SPR.H, ga);
+      const core = Math.max(3.8, r*0.6);
+      ctx.fillStyle = a.type==='O' ? 'rgba(150,255,110,'+(0.55+ga*0.4).toFixed(2)+')'
+                                   : 'rgba(255,120,95,'+(0.55+ga*0.4).toFixed(2)+')';
+      ctx.beginPath(); ctx.arc(pos.x, pos.y, core, 0, 7); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(pos.x, pos.y, core+1.2, 0, 7); ctx.stroke();
+    }
+    const spr = a.type==='H'?SPR.H:SPR.O;
+    const bob = Math.sin(G.time*2.2 + a.wob)*2.5*pos.k;
+    glow(pos.x, pos.y+bob, r*4.2, spr, 0.34*alpha);
+    glow(pos.x, pos.y+bob, r*2.0, spr, 0.45*alpha);
+    ctx.globalAlpha=alpha;
+    if(a.type==='H2'){
+      // 原子对：两个 H 由一个短键连成的哑铃
+      const dx=r*0.62;
+      ctx.strokeStyle='rgba(230,250,255,'+(0.5*alpha).toFixed(2)+')';
+      ctx.lineWidth=Math.max(1.2, r*0.16);
+      ctx.beginPath(); ctx.moveTo(pos.x-dx,pos.y+bob); ctx.lineTo(pos.x+dx,pos.y+bob); ctx.stroke();
+      for(const sx of [-1,1]){
+        const gx=pos.x+sx*dx, rr=r*0.72;
+        const g2=ctx.createRadialGradient(gx-rr*0.3,pos.y+bob-rr*0.35,rr*0.1,gx,pos.y+bob,rr);
+        g2.addColorStop(0,'#ff8a7a'); g2.addColorStop(.55,'#e8322a'); g2.addColorStop(1,'#8f0f0b');
+        ctx.fillStyle=g2; ctx.beginPath(); ctx.arc(gx,pos.y+bob,rr,0,7); ctx.fill();
+        ctx.fillStyle='rgba(255,255,255,.8)';
+        ctx.beginPath(); ctx.arc(gx-rr*0.32,pos.y+bob-rr*0.34,rr*0.24,0,7); ctx.fill();
+      }
+    } else {
+      const grd=ctx.createRadialGradient(pos.x-r*0.3,pos.y+bob-r*0.35,r*0.1,pos.x,pos.y+bob,r);
+      if(a.type==='H'){
+        if(CARTOON){ grd.addColorStop(0,'#ffb3a6'); grd.addColorStop(.5,'#ff3b22'); grd.addColorStop(1,'#c01608'); }
+        else { grd.addColorStop(0,'#ff8a7a'); grd.addColorStop(.55,'#e8322a'); grd.addColorStop(1,'#8f0f0b'); }
+      } else {
+        if(CARTOON){ grd.addColorStop(0,'#e4ffcc'); grd.addColorStop(.5,'#6cf52a'); grd.addColorStop(1,'#3fa315'); }
+        else { grd.addColorStop(0,'#d8ffc0'); grd.addColorStop(.5,'#7CFF4D'); grd.addColorStop(1,'#2f8a1c'); }
+      }
+      ctx.fillStyle=grd;
+      ctx.beginPath(); ctx.arc(pos.x,pos.y+bob,r,0,7); ctx.fill();
+      // 边缘暗：让它看起来是球不是贴纸
+      if(CARTOON){
+        ctx.strokeStyle='rgba(255,255,255,0.92)';
+        ctx.lineWidth=Math.max(1.6, r*0.18);
+        ctx.beginPath(); ctx.arc(pos.x,pos.y+bob,r-ctx.lineWidth*0.35,0,7); ctx.stroke();
+        ctx.strokeStyle='rgba(0,0,0,0.30)';
+        ctx.lineWidth=Math.max(1, r*0.10);
+        ctx.beginPath(); ctx.arc(pos.x,pos.y+bob,r+ctx.lineWidth*0.4,0,7); ctx.stroke();
+      } else {
+        ctx.strokeStyle='rgba(0,0,0,0.38)';
+        ctx.lineWidth=Math.max(1.2, r*0.16);
+        ctx.beginPath(); ctx.arc(pos.x,pos.y+bob,r-ctx.lineWidth*0.4,0,7); ctx.stroke();
+      }
+      ctx.fillStyle='rgba(255,255,255,.8)';
+      ctx.beginPath(); ctx.arc(pos.x-r*0.32,pos.y+bob-r*0.34,r*0.24,0,7); ctx.fill();
+      // 球内字母：暗底上红绿难分，字母兜底
+      if(r > 7){
+        ctx.fillStyle='rgba(255,255,255,0.95)';
+        ctx.font='bold '+(r*1.05).toFixed(1)+'px ui-sans-serif,"Microsoft YaHei",sans-serif';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(a.type==='O'?'O':'H', pos.x, pos.y+bob);
+      }
+    }
+    ctx.globalAlpha=1;
+
+    // 预演虚线键（锁定）/ 或者：键位不足，画断头 + ×
+    const free=SLOT_MAX-G.player.used;
+    if(a.blocked && Math.abs(a.lane-G.player.lane)===0 && a.relZ<18){
+      const pp=proj(0, G.player.targetX);
+      const ex=pp.x+(pos.x-pp.x)*0.55, ey=(pp.y-30)+(pos.y-pp.y)*0.55;
+      ctx.save();
+      ctx.strokeStyle='rgba(235,255,255,0.30)';
+      ctx.lineWidth=2; ctx.setLineDash([5,7]);
+      ctx.beginPath(); ctx.moveTo(pp.x,pp.y-30); ctx.lineTo(ex,ey); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.strokeStyle='rgba(235,255,255,0.55)';
+      ctx.lineWidth=2.2;
+      ctx.beginPath();
+      ctx.moveTo(ex-6,ey-6); ctx.lineTo(ex+6,ey+6);
+      ctx.moveTo(ex+6,ey-6); ctx.lineTo(ex-6,ey+6);
+      ctx.stroke();
+      ctx.restore();
+    } else if(Math.abs(a.lane-G.player.lane)===0 && a.relZ<18 && free>=VALENCE[a.type] && G.player.exciteT<=0){
+      const pp=proj(0, G.player.targetX);
+      ctx.save();
+      ctx.strokeStyle='rgba(235,255,255,'+(0.35+0.25*Math.sin(G.time*6)).toFixed(2)+')';
+      ctx.lineWidth=2;
+      ctx.setLineDash([7,9]);
+      ctx.beginPath(); ctx.moveTo(pp.x, pp.y-30); ctx.lineTo(pos.x,pos.y+bob); ctx.stroke();
+      ctx.restore();
+    }
+  }
+}
+
+function drawGate(){
+  const gate=G.gate;
+  if(!gate.active || gate.passed) return;
+  // 终点门：横跨三条道
+  if(G.finalGate){
+    const pos = proj(gate.relZ, 0);
+    const k = pos.k;
+    if(k <= 0.03) return;
+    const halfW = LANE_W*1.62*k;           // 覆盖三条道
+    const top = pos.y - 190*k;
+    const OPEN = !!G.gateOpen;
+    // 关着：暗、无光柱、加横向栅栏；开着：亮、冲天光柱、脉冲
+    if(!OPEN){
+      ctx.save();
+      ctx.fillStyle='rgba(6,10,14,0.55)';
+      ctx.beginPath();
+      ctx.moveTo(pos.x-halfW, pos.y);
+      ctx.lineTo(pos.x-halfW, top);
+      ctx.quadraticCurveTo(pos.x, top - 60*k, pos.x+halfW, top);
+      ctx.lineTo(pos.x+halfW, pos.y);
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle='rgba(120,140,155,0.75)';
+      ctx.lineWidth=Math.max(2,4*k);
+      ctx.beginPath();
+      ctx.moveTo(pos.x-halfW, pos.y);
+      ctx.lineTo(pos.x-halfW, top);
+      ctx.quadraticCurveTo(pos.x, top - 60*k, pos.x+halfW, top);
+      ctx.lineTo(pos.x+halfW, pos.y);
+      ctx.stroke();
+      // 横向栅栏
+      ctx.strokeStyle='rgba(150,170,185,0.5)';
+      ctx.lineWidth=Math.max(1.2,2.2*k);
+      for(let i=1;i<=4;i++){
+        const yy = top + (pos.y-top)*(i/5);
+        const w02 = halfW*(1 - Math.pow(1-i/5,2)*0.15);
+        ctx.beginPath(); ctx.moveTo(pos.x-w02, yy); ctx.lineTo(pos.x+w02, yy); ctx.stroke();
+      }
+      ctx.restore();
+      drawGateMolecule(pos, (96)*k+18, k, 0.35);
+      return;
+    }
+    // 冲天光柱
+    ctx.save();
+    ctx.globalCompositeOperation='lighter';
+    const beam = ctx.createLinearGradient(0, top, 0, top - 620);
+    beam.addColorStop(0,'rgba(160,240,255,0.35)');
+    beam.addColorStop(0.45,'rgba(120,220,255,0.16)');
+    beam.addColorStop(1,'rgba(120,220,255,0)');
+    ctx.fillStyle = beam;
+    ctx.fillRect(pos.x-halfW*0.62, top-620, halfW*1.24, 620);
+    // 更窄更亮的内柱
+    const core = ctx.createLinearGradient(0, top, 0, top - 700);
+    core.addColorStop(0,'rgba(230,252,255,0.75)');
+    core.addColorStop(0.5,'rgba(190,245,255,0.18)');
+    core.addColorStop(1,'rgba(190,245,255,0)');
+    ctx.fillStyle = core;
+    ctx.fillRect(pos.x-halfW*0.16, top-700, halfW*0.32, 700);
+    // 拱门
+    ctx.strokeStyle='rgba(190,250,255,0.9)';
+    ctx.lineWidth=Math.max(2, 5*k);
+    ctx.beginPath();
+    ctx.moveTo(pos.x-halfW, pos.y);
+    ctx.lineTo(pos.x-halfW, top);
+    ctx.quadraticCurveTo(pos.x, top - 60*k, pos.x+halfW, top);
+    ctx.lineTo(pos.x+halfW, pos.y);
+    ctx.stroke();
+    // 门内微光
+    const inner = ctx.createLinearGradient(0, top, 0, pos.y);
+    inner.addColorStop(0,'rgba(150,240,255,0.18)');
+    inner.addColorStop(1,'rgba(150,240,255,0.02)');
+    ctx.fillStyle = inner;
+    ctx.beginPath();
+    ctx.moveTo(pos.x-halfW, pos.y);
+    ctx.lineTo(pos.x-halfW, top);
+    ctx.quadraticCurveTo(pos.x, top - 60*k, pos.x+halfW, top);
+    ctx.lineTo(pos.x+halfW, pos.y);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+    // 中间的 H₂O 剪影照常画
+    const size2 = (96)*k+18;
+    drawGateMolecule(pos, size2, k, 1);
+    return;
+  }
+  const pos=proj(gate.relZ, (gate.lane-1)*LANE_W);
+  const k=pos.k;
+  if(k<=0.04) return;
+  const size=(96)*k+18;
+  let shrink = 0.45 + 0.55*Math.max(0, Math.min(1, (gate.window||16)/16));
+  if(G.reforge>0) shrink = Math.min(1, shrink + 0.35*G.reforge);
+
+  // 弯道遮挡：门与"视线中点"的横向偏离越大，越被弯道挡住
+  const dev = Math.abs(roadX(gate.relZ) - roadX(Math.max(6, gate.relZ*0.45)));
+  const vis = Math.max(0.08, Math.min(1, 1 - dev/150));
+
+  // 对齐时更亮：零文字的"锁定"提示
+  const dxa = Math.abs(G.player.vx - (gate.lane-1)*LANE_W) / LANE_W;
+  const lock = Math.max(0, 1 - dxa/0.65);
+  // 衍射环
+  ctx.save();
+  ctx.globalAlpha = vis;
+  if(vis > 0.35) glow(pos.x,pos.y, size*2.0, SPR.cyan, 0.10*(1-k*0.3)*vis);
+  ctx.strokeStyle='rgba(150,240,255,'+((0.14+0.10*Math.sin(G.time*2))*(0.55+0.75*lock)).toFixed(2)+')';
+  ctx.lineWidth=Math.max(1,1.4*k*2);
+  const ringR = size*0.58*shrink;
+  ctx.beginPath(); ctx.arc(pos.x,pos.y,ringR,0,7); ctx.stroke();
+  // 两根立柱：只在看得清的时候才画——被弯道挡住时你连它在哪条道都不知道
+  if(vis > 0.45){
+    ctx.strokeStyle='rgba(150,240,255,0.35)'; ctx.lineWidth=Math.max(1,1.6*k*2);
+    const pw = size*0.62;
+    ctx.beginPath();
+    ctx.moveTo(pos.x-pw, pos.y-ringR*1.15); ctx.lineTo(pos.x-pw, pos.y+ringR*1.15);
+    ctx.moveTo(pos.x+pw, pos.y-ringR*1.15); ctx.lineTo(pos.x+pw, pos.y+ringR*1.15);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  drawGateMolecule(pos, size, k, vis);
+}
+
+// H₂O 剪影
+function drawGateMolecule(pos, size, k, vis){
+  const w=size*0.82, h=size*0.54;
+  const h1=[pos.x-w*0.42, pos.y-h*0.42];
+  const h2=[pos.x+w*0.42, pos.y-h*0.30];
+  ctx.save();
+  ctx.globalAlpha = vis;
+  ctx.strokeStyle='rgba(235,252,255,'+(0.9*vis).toFixed(2)+')';
+  ctx.lineWidth=Math.max(1.2, 1.8*k*2);
+  ctx.beginPath(); ctx.moveTo(pos.x,pos.y); ctx.lineTo(h1[0],h1[1]); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(pos.x,pos.y); ctx.lineTo(h2[0],h2[1]); ctx.stroke();
+  ctx.beginPath(); ctx.arc(pos.x,pos.y,size*0.11,0,7); ctx.stroke();
+  [h1,h2].forEach(p=>{ ctx.beginPath(); ctx.arc(p[0],p[1],size*0.075,0,7); ctx.stroke(); });
+  ctx.fillStyle='rgba(124,255,77,'+(0.35).toFixed(2)+')';
+  ctx.beginPath(); ctx.arc(pos.x,pos.y,size*0.055,0,7); ctx.fill();
+  [h1,h2].forEach(p=>{ ctx.fillStyle='rgba(232,50,42,0.35)'; ctx.beginPath(); ctx.arc(p[0],p[1],size*0.04,0,7); ctx.fill(); });
+  ctx.restore();
+}
+
+function drawWalls(){
+  for(const w of G.walls){
+    if(w.broken || w.relZ < -10) continue;
+    const lane = (w.lane===undefined) ? 1 : w.lane;
+    const pos = proj(w.relZ, (lane-1)*LANE_W);
+    if(pos.k <= 0.04 || pos.y > H + 60) continue;
+    const R = (46*pos.k + 7) * 1.3;
+    const cx = pos.x, cy = pos.y - R*0.95;
+    ctx.save();
+    // 地面投影，帮助判断它在哪条道
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle='rgba(120,220,245,0.35)';
+    ctx.beginPath(); ctx.ellipse(cx, pos.y, R*0.95, R*0.28, 0, 0, 7); ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // 警示光柱
+    ctx.globalCompositeOperation='lighter';
+    const lgr = ctx.createLinearGradient(cx, cy-R*2.4, cx, cy+R*0.6);
+    lgr.addColorStop(0,'rgba(150,235,255,0)');
+    lgr.addColorStop(0.55,'rgba(150,235,255,0.22)');
+    lgr.addColorStop(1,'rgba(150,235,255,0)');
+    ctx.fillStyle = lgr;
+    ctx.fillRect(cx-R*0.42, cy-R*2.4, R*0.84, R*3.0);
+    ctx.globalCompositeOperation='source-over';
+    ctx.translate(cx, cy);
+    ctx.rotate(Math.PI/4 + Math.sin(G.time*2.2) * 0.06);
+    ctx.fillStyle = 'rgba(120,215,245,0.20)';
+    ctx.strokeStyle = 'rgba(228,252,255,0.95)';
+    ctx.lineWidth = Math.max(1.4, 3.2*pos.k);
+    ctx.beginPath(); ctx.rect(-R*0.72, -R*0.72, R*1.44, R*1.44);
+    ctx.fill(); ctx.stroke();
+    // 内芯
+    ctx.strokeStyle = 'rgba(180,245,255,0.7)';
+    ctx.lineWidth = Math.max(1, 1.6*pos.k);
+    ctx.beginPath(); ctx.rect(-R*0.34, -R*0.34, R*0.68, R*0.68); ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function drawTrail(){
+  const p=G.player;
+  const px=W/2+p.vx, py=BASE_Y;
+  let prev={x:px,y:py-26};
+  for(const t of G.trail){
+    const n=t.node;
+    ctx.strokeStyle='rgba(225,252,255,0.78)';
+    ctx.lineWidth=3.6;
+    ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(prev.x,prev.y); ctx.lineTo(n.x,n.y); ctx.stroke();
+    ctx.strokeStyle='rgba(160,240,255,0.18)';
+    ctx.lineWidth=9;
+    ctx.beginPath(); ctx.moveTo(prev.x,prev.y); ctx.lineTo(n.x,n.y); ctx.stroke();
+    prev=n;
+  }
+  for(const t of G.trail){
+    const n=t.node;
+    const r=t.type==='O'?16:12;
+    const spr=t.type==='O'?SPR.O:SPR.H;
+    glow(n.x,n.y,r*4.6,spr,0.42);
+    glow(n.x,n.y,r*2.0,spr,0.55);
+    if(t.type==='H2'){
+      const dx=r*0.62;
+      ctx.strokeStyle='rgba(230,250,255,0.5)'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(n.x-dx,n.y); ctx.lineTo(n.x+dx,n.y); ctx.stroke();
+      for(const sx of [-1,1]){
+        const gx=n.x+sx*dx, rr=r*0.72;
+        const g2=ctx.createRadialGradient(gx-rr*0.3,n.y-rr*0.35,rr*0.1,gx,n.y,rr);
+        g2.addColorStop(0,'#ff8a7a'); g2.addColorStop(.55,'#e8322a'); g2.addColorStop(1,'#8f0f0b');
+        ctx.fillStyle=g2; ctx.beginPath(); ctx.arc(gx,n.y,rr,0,7); ctx.fill();
+      }
+    } else {
+      const grd=ctx.createRadialGradient(n.x-r*0.3,n.y-r*0.35,r*0.1,n.x,n.y,r);
+      if(t.type==='H'){
+        if(CARTOON){ grd.addColorStop(0,'#ffb3a6'); grd.addColorStop(.5,'#ff3b22'); grd.addColorStop(1,'#c01608'); }
+        else { grd.addColorStop(0,'#ff8a7a'); grd.addColorStop(.55,'#e8322a'); grd.addColorStop(1,'#8f0f0b'); }
+      } else {
+        if(CARTOON){ grd.addColorStop(0,'#e4ffcc'); grd.addColorStop(.5,'#6cf52a'); grd.addColorStop(1,'#3fa315'); }
+        else { grd.addColorStop(0,'#d8ffc0'); grd.addColorStop(.5,'#7CFF4D'); grd.addColorStop(1,'#2f8a1c'); }
+      }
+      ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(n.x,n.y,r,0,7); ctx.fill();
+      if(CARTOON){
+        ctx.strokeStyle='rgba(255,255,255,0.9)';
+        ctx.lineWidth=Math.max(1.4, r*0.18);
+        ctx.beginPath(); ctx.arc(n.x,n.y,r-ctx.lineWidth*0.35,0,7); ctx.stroke();
+      } else {
+        ctx.strokeStyle='rgba(0,0,0,0.38)';
+        ctx.lineWidth=Math.max(1, r*0.16);
+        ctx.beginPath(); ctx.arc(n.x,n.y,r-ctx.lineWidth*0.4,0,7); ctx.stroke();
+      }
+      ctx.fillStyle='rgba(255,255,255,.8)';
+      ctx.beginPath(); ctx.arc(n.x-r*0.32,n.y-r*0.34,r*0.24,0,7); ctx.fill();
+      if(r > 6){
+        ctx.fillStyle='rgba(255,255,255,0.95)';
+        ctx.font='bold '+(r*1.05).toFixed(1)+'px ui-sans-serif,"Microsoft YaHei",sans-serif';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(t.type==='O'?'O':'H', n.x, n.y);
+      }
+    }
+  }
+}
+
+function drawPlayer(){
+  const p=G.player;
+  const x=W/2+p.vx, y=BASE_Y;
+  // 湮灭中：整体淡出并放大
+  const vn = p.vanish || 0;
+  if(vn >= 0.985) return;                        // 完全湮灭：不再绘制
+  if(vn > 0){
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, 1 - vn*1.15);
+    ctx.translate(x, y);
+    ctx.scale(1 + vn*0.45, 1 + vn*0.45);
+    ctx.translate(-x, -y);
+  }
+  const pop = 1 + (p.popT||0)*3.2;                 // 成键/失键瞬间的过曝
+  const fuelGlow = (0.30 + 0.55*(p.fuel/FUEL_MAX));
+  const excite = p.exciteT>0;
+  glow(x,y, 150, SPR.white, 0.16*(excite?1.8:1)+0.10*fuelGlow);
+  glow(x,y, 62*(1+(p.popT||0)*0.5), SPR.cyan, Math.min(1,(0.25+0.35*fuelGlow)*pop));
+  if(excite) glow(x,y, 200, SPR.spec, 0.28);
+
+  // 挤压拉伸：正=被拉长（吸附/冲刺），负=被压扁（被撞）
+  const sq = p.squash || 0;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(1 - 0.10*sq, 1 + 0.14*sq);
+  ctx.translate(-x, -y);
+
+  const r=19*(excite?1.1:1);
+  const grd=ctx.createRadialGradient(x-5,y-6,2,x,y,r);
+  grd.addColorStop(0,'#ffffff'); grd.addColorStop(.55,'#dff9ff'); grd.addColorStop(1,'#8fe6ff');
+  ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill();
+  if(CARTOON){
+    ctx.strokeStyle='rgba(255,255,255,0.95)'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.arc(x,y,r+1,0,7); ctx.stroke();
+  }
+  // 轨道环
+  ctx.save(); ctx.translate(x,y); ctx.rotate(-0.42);
+  ctx.strokeStyle='rgba(190,245,255,0.55)'; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.ellipse(0,0,34,11,0,0,7); ctx.stroke(); ctx.restore();
+  ctx.save(); ctx.translate(x,y); ctx.rotate(0.6);
+  ctx.strokeStyle='rgba(190,245,255,0.22)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.ellipse(0,0,30,9,0,0,7); ctx.stroke(); ctx.restore();
+
+  // 冲刺残影
+  if(p.dashT>0){
+    ctx.globalCompositeOperation='lighter';
+    for(let i=0;i<3;i++){
+      ctx.globalAlpha=0.10*(1-i/3);
+      ctx.fillStyle='#bff';
+      ctx.beginPath(); ctx.arc(x, y+ i*26, 16-i*3, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over';
+  }
+
+
+  ctx.restore();
+
+  // 空键位亮点
+  const free=SLOT_MAX-p.used;
+  for(let i=0;i<free;i++){
+    const ang=-Math.PI/2 + (i-(free-1)/2)*0.5;
+    const rx=x+Math.cos(ang)*26, ry=y+Math.sin(ang)*26;
+    ctx.fillStyle='rgba(255,255,255,0.9)';
+    ctx.beginPath(); ctx.arc(rx,ry,2.4,0,7); ctx.fill();
+  }
+
+  // 光谱扇形
+  if(G.fan){
+    G.fan.t+= (1/60);
+    const t=G.fan.t/G.fan.dur;
+    if(t<1){
+      ctx.save();
+      ctx.translate(G.fan.x,G.fan.y);
+      ctx.globalCompositeOperation='lighter';
+      const R=150*Math.sin(Math.PI*Math.min(1,t));
+      for(let i=0;i<24;i++){
+        const a0=-Math.PI/2 - 1.1 + (2.2*i/24);
+        const a1=a0+2.2/24;
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.arc(0,0,R,a0,a1);
+        ctx.closePath();
+        const hue=200+ (i/24)*160;
+        ctx.fillStyle=`hsla(${hue},100%,65%,${0.22*(1-t)})`;
+        ctx.fill();
+      }
+      ctx.restore();
+    } else G.fan=null;
+  }
+  if(vn > 0) ctx.restore();
+}
+
+function drawParticles(){
+  for(const q of G.parts){
+    if(q.ring){
+      const t=1-q.life/q.max;
+      const r=q.r0+(q.r1-q.r0)*t;
+      ctx.strokeStyle = q.col==='red'?'rgba(232,50,42,':(q.col==='green'?'rgba(124,255,77,':'rgba(160,240,255,');
+      ctx.globalAlpha=0.5*(1-t);
+      ctx.lineWidth=2.5;
+      ctx.beginPath(); ctx.arc(q.x,q.y,r,0,7); ctx.stroke();
+      ctx.globalAlpha=1;
+    } else {
+      const a=q.life/q.max;
+      ctx.globalAlpha=a*0.9;
+      if(q.crack){
+        const t = 1 - q.life/q.max;              // 0→1
+        const L = q.r * (0.6 + t*1.4);
+        ctx.strokeStyle = 'rgba(255,255,255,'+(1-t).toFixed(2)+')';
+        ctx.lineWidth = 3.2*(1-t)+0.8;
+        ctx.beginPath();
+        ctx.moveTo(q.x-L, q.y-L*0.65); ctx.lineTo(q.x+L, q.y+L*0.65);
+        ctx.moveTo(q.x+L*0.9, q.y-L*0.75); ctx.lineTo(q.x-L*0.9, q.y+L*0.75);
+        ctx.stroke();
+        ctx.globalAlpha=1;
+        continue;
+      }
+      if(q.homer){
+        const a0 = q.life/q.max;
+        if(q.fizzle){
+          // 燃料满：能量点走到一半就暗掉
+          ctx.fillStyle='rgba(150,180,195,'+(a0*0.55).toFixed(2)+')';
+          ctx.beginPath(); ctx.arc(q.x,q.y,2.2,0,7); ctx.fill();
+        } else {
+          glow(q.x,q.y,14,SPR.cyan, 0.7*a0);
+          ctx.fillStyle='rgba(200,250,255,'+a0.toFixed(2)+')';
+          ctx.beginPath(); ctx.arc(q.x,q.y,3,0,7); ctx.fill();
+        }
+        ctx.globalAlpha=1;
+        continue;
+      }
+      if(q.fan){
+        ctx.fillStyle=`hsla(${200+q.hue*160},100%,65%,1)`;
+        ctx.fillRect(q.x,q.y,q.r,q.r);
+      } else {
+        ctx.fillStyle= q.type==='H'?'#ff6a5a':(q.type==='O'?'#9dff70':'#bff4ff');
+        ctx.beginPath(); ctx.arc(q.x,q.y,q.r*a+0.6,0,7); ctx.fill();
+      }
+      ctx.globalAlpha=1;
+    }
+  }
+}
+
+function drawFloats(){
+  for(const f of G.floats){
+    const a=Math.min(1, f.life/0.45);
+    ctx.save();
+    ctx.globalAlpha=a;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    const size = f.text.length>6? 22 : (f.text==='H₂O'? 40:26);
+    ctx.font=`600 ${size}px ui-sans-serif,"Microsoft YaHei",sans-serif`;
+    ctx.fillStyle = f.color==='cyan'?'rgba(127,233,255,0.95)':
+                    f.color==='red'?'rgba(232,50,42,0.95)':
+                    f.color==='green'?'rgba(124,255,77,0.95)':'rgba(255,255,255,0.92)';
+    ctx.fillText(f.text, f.x, f.y);
+    ctx.restore();
+  }
+}
+
+/* ============ 键位满了的提示图形 ============ */
+function drawHint(){
+  if(!G.hint || G.hint.t<=0) return;
+  const p=G.player, x=W/2+p.vx, y=BASE_Y;
+  const pulse = 0.5+0.5*Math.sin(performance.now()/110);
+  ctx.save();
+  // 向下双箭头（拇指该往哪滑）
+  ctx.strokeStyle='rgba(190,246,255,'+(0.35+0.5*pulse).toFixed(2)+')';
+  ctx.lineWidth=3.4; ctx.lineCap='round'; ctx.lineJoin='round';
+  for(let i=0;i<2;i++){
+    const yy=y+38+i*18;
+    ctx.beginPath();
+    ctx.moveTo(x-12,yy); ctx.lineTo(x,yy+9); ctx.lineTo(x+12,yy);
+    ctx.stroke();
+  }
+  // 脉动环
+  ctx.strokeStyle='rgba(127,233,255,'+(0.10+0.28*pulse).toFixed(2)+')';
+  ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(x,y,40+9*pulse,0,7); ctx.stroke();
+  ctx.restore();
+}
+
+/* ============ HUD ============ */
+function drawHUD(){
+  ctx.setTransform(dpr*scale,0,0,dpr*scale, ox*dpr, oy*dpr);
+  // 暂停键
+  ctx.save();
+  const x=692,y=92;
+  glow(x,y,34,SPR.cyan,0.14);
+  ctx.strokeStyle='rgba(200,250,255,0.9)'; ctx.lineWidth=2.4;
+  ctx.beginPath(); ctx.moveTo(x-6,y-9); ctx.lineTo(x-6,y+9);
+  ctx.moveTo(x+6,y-9); ctx.lineTo(x+6,y+9); ctx.stroke();
+  ctx.restore();
+
+  // 燃料：只能靠辉光亮度表达（美术即 UI）
+  // 调试信息
+  if(diagOn){
+    ctx.save();
+    ctx.font='12px monospace'; ctx.fillStyle='rgba(160,240,255,0.8)';
+    const p=G.player;
+    ctx.fillText(`t=${G.time.toFixed(1)} fuel=${p.fuel.toFixed(2)} used=${p.used}/${SLOT_MAX} `
+      +`trail=${G.trail.map(t=>t.type).join('')} gateZ=${G.gate.relZ.toFixed(0)} combo=${G.combo}`, 24, 40);
+    ctx.restore();
+  }
+}
+
+let diagOn = false;
+
+/* ============ 标题 / 暂停 / 结算 ============ */
+function drawTitle(){
+  ctx.fillStyle='rgba(2,7,10,0.42)'; ctx.fillRect(0,0,W,H);
+  ctx.save();
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+
+  // 标题
+  ctx.font='700 58px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  ctx.fillStyle='rgba(235,252,255,0.97)';
+  ctx.fillText('碳途纪元', W/2, 560);
+
+  // ── 本关目标卡片
+  const bx = 92, bw = W - 184, by = 660, bh = 220;
+  ctx.strokeStyle='rgba(127,233,255,0.45)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 18); ctx.stroke();
+  const g = ctx.createLinearGradient(0, by, 0, by+bh);
+  g.addColorStop(0,'rgba(127,233,255,0.13)');
+  g.addColorStop(1,'rgba(127,233,255,0.03)');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 18); ctx.fill();
+
+  // 标签
+  ctx.font='600 20px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  ctx.fillStyle='rgba(127,233,255,0.95)';
+  ctx.fillText('本 关 目 标', W/2, by + 52);
+  // 分隔线
+  ctx.strokeStyle='rgba(127,233,255,0.28)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(W/2-70, by+78); ctx.lineTo(W/2+70, by+78); ctx.stroke();
+
+  // 主目标（最大字号 + 发光）
+  ctx.save();
+  ctx.shadowColor='rgba(127,233,255,0.9)';
+  ctx.shadowBlur=26;
+  ctx.font='700 40px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  ctx.fillStyle='#ffffff';
+  ctx.fillText('拼出 H₂O', W/2, by + 124);
+  ctx.restore();
+
+  ctx.font='600 28px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  ctx.fillStyle='rgba(200,250,255,0.95)';
+  ctx.fillText('穿过终点门', W/2, by + 168);
+
+  // 开始
+  ctx.font='500 26px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  const blink = 0.5 + 0.45*Math.sin(performance.now()/420);
+  ctx.fillStyle='rgba(160,245,255,'+blink.toFixed(2)+')';
+  ctx.fillText('点按开始', W/2, 1010);
+
+  ctx.restore();
+}
+
+function drawPause(){
+  ctx.fillStyle='rgba(2,7,10,0.72)'; ctx.fillRect(0,0,W,H);
+  const items=[['继续',760],['重开',880],['静音',1000]];
+  ctx.save();
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(let i=0;i<3;i++){
+    const y=items[i][1];
+    ctx.strokeStyle='rgba(127,233,255,0.28)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(W/2-150,y); ctx.lineTo(W/2+150,y); ctx.stroke();
+    ctx.strokeStyle='rgba(127,233,255,0.85)'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.arc(W/2, y, 0.1, 0, 7); ctx.stroke();
+    ctx.font='400 26px ui-sans-serif,"Microsoft YaHei",sans-serif';
+    ctx.fillStyle= i===2 && Audio_.muted ? 'rgba(127,233,255,0.35)' : 'rgba(235,252,255,0.9)';
+    ctx.fillText(items[i][0], W/2, y-34);
+  }
+  ctx.restore();
+}
+
+function handlePauseTap(x,y){
+  if(y>720 && y<800){ G.mode='play'; Audio_.ui(); }
+  else if(y>840 && y<920){ startGame(); Audio_.ui(); }
+  else if(y>960 && y<1040){ Audio_.muted=!Audio_.muted; Audio_.ui(); }
+}
+
+function drawWin(){
+  ctx.fillStyle='rgba(2,7,10,0.82)'; ctx.fillRect(0,0,W,H);
+  ctx.save();
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+
+  // ── 标题
+  ctx.font='700 46px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  ctx.fillStyle='#ffffff';
+  ctx.fillText('通  关', W/2, 470);
+
+  // ── 分子（带外环）
+  const molY = 610;
+  ctx.strokeStyle='rgba(150,240,255,0.5)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(W/2, molY, 118, 0, 7); ctx.stroke();
+  ctx.font='600 92px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  ctx.fillStyle='rgba(127,233,255,0.95)';
+  ctx.fillText('H₂O', W/2, molY);
+
+  // ── 数据行
+  ctx.font='400 22px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  ctx.fillStyle='rgba(180,235,245,0.72)';
+  ctx.fillText('用时 '+G.time.toFixed(1)+' 秒 · 断键 '+G.stats.breaks+' 次', W/2, 762);
+
+  // ── 奖励卡牌
+  const cy2 = 892, cw = 320, chh = 200;
+  const boxTop = cy2 - chh/2, boxLeft = W/2 - cw/2;
+  ctx.strokeStyle='rgba(127,233,255,0.55)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.roundRect(boxLeft, boxTop, cw, chh, 16); ctx.stroke();
+  ctx.fillStyle='rgba(127,233,255,0.06)';
+  ctx.beginPath(); ctx.roundRect(boxLeft, boxTop, cw, chh, 16); ctx.fill();
+
+  const dot=(x,y,col,r)=>{ ctx.fillStyle=col; ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill(); };
+  const my = boxTop + 58;
+  dot(W/2-58, my, 'rgba(255,60,40,0.95)', 17);
+  dot(W/2,    my, 'rgba(110,245,50,0.95)', 21);
+  dot(W/2+58, my, 'rgba(255,60,40,0.95)', 17);
+  ctx.strokeStyle='rgba(220,245,255,0.55)'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(W/2-58,my); ctx.lineTo(W/2-20,my);
+  ctx.moveTo(W/2+20,my); ctx.lineTo(W/2+58,my); ctx.stroke();
+
+  ctx.font='600 23px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  ctx.fillStyle='rgba(235,252,255,0.95)';
+  ctx.fillText('获得卡牌 · 水', W/2, boxTop + 112);
+
+  const ach = G.stats.breaks===0 ? '成就：一次成型' : (G.stats.breaks<=2 ? '成就：稳手' : '成就：有惊无险');
+  ctx.font='400 18px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  ctx.fillStyle='rgba(255,235,150,0.92)';
+  ctx.fillText(ach, W/2, boxTop + 156);
+
+  // ── 成绩
+  const sc = scoreOf();
+  ctx.font='600 28px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  ctx.fillStyle = G.newRecord ? 'rgba(255,225,120,0.98)' : 'rgba(235,252,255,0.92)';
+  ctx.fillText('成绩 '+sc, W/2, 1050);
+  ctx.font='400 20px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  ctx.fillStyle='rgba(160,235,250,0.7)';
+  const bestTxt = (G.bestNow && G.bestNow.score) ? ('历史最佳 '+G.bestNow.score) : '历史最佳 —';
+  ctx.fillText(G.newRecord ? '新纪录！' : bestTxt, W/2, 1092);
+
+  // ── 提示
+  ctx.font='400 24px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  ctx.fillStyle='rgba(255,255,255,'+(0.55+0.35*Math.sin(performance.now()/320)).toFixed(2)+')';
+  ctx.fillText('点按再来一局', W/2, 1200);
+  ctx.restore();
+}
+
+function drawLose(){
+  ctx.fillStyle='rgba(2,7,10,0.86)'; ctx.fillRect(0,0,W,H);
+  ctx.save();
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+
+  // 标题
+  ctx.font='700 46px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  ctx.fillStyle='rgba(225,245,250,0.95)';
+  ctx.fillText('结 构 散 架', W/2, 500);
+
+  // 破碎的圆 + 叉
+  const cy = 660;
+  ctx.strokeStyle='rgba(190,230,240,0.32)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(W/2, cy, 104, 0, 7); ctx.stroke();
+  ctx.strokeStyle='rgba(190,230,240,0.5)';
+  ctx.beginPath();
+  ctx.moveTo(W/2-38, cy-38); ctx.lineTo(W/2+38, cy+38);
+  ctx.moveTo(W/2+38, cy-38); ctx.lineTo(W/2-38, cy+38);
+  ctx.stroke();
+
+  // 数据
+  ctx.font='400 22px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  ctx.fillStyle='rgba(150,215,230,0.7)';
+  ctx.fillText('撞门 '+G.gateFail+' 次 · 撞墙 '+G.stats.wallHits+' 次', W/2, 830);
+
+  // 成绩
+  ctx.font='600 26px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  ctx.fillStyle='rgba(235,252,255,0.9)';
+  ctx.fillText('成绩 0', W/2, 900);
+  ctx.font='400 20px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  ctx.fillStyle='rgba(160,235,250,0.65)';
+  const bestTxt = (G.bestNow && G.bestNow.score) ? ('历史最佳 '+G.bestNow.score) : '历史最佳 —';
+  ctx.fillText(bestTxt, W/2, 942);
+
+  // 提示
+  ctx.font='400 24px ui-sans-serif,"Microsoft YaHei",sans-serif';
+  ctx.fillStyle='rgba(255,255,255,'+(0.55+0.35*Math.sin(performance.now()/320)).toFixed(2)+')';
+  ctx.fillText('点按重来', W/2, 1040);
+  ctx.restore();
+}
+
+function togglePause(){
+  if(G.mode==='play'){ G.mode='pause'; }
+  else if(G.mode==='pause'){ G.mode='play'; }
+  Audio_.ui();
+}
+
+function startGame(level){
+  resetGame(level || 'main');
+  G.mode='play';
+  Audio_.init(); Audio_.resume();
+  Music.unduck();
+  Music.start();
+}
+
+/* ---------- 成绩与历史最佳 ---------- */
+function scoreOf(){
+  // 1000 − 时间罚 − 断键罚 − 撞墙罚（越低越好）
+  const t = Math.min(60, G.time);
+  const raw = 1000 - t*9 - G.stats.breaks*22 - G.stats.wallHits*30;
+  return Math.max(0, Math.round(raw));
+}
+function loadBest(){
+  try{
+    const v = localStorage.getItem('ctjy_best');
+    if(v) return JSON.parse(v);
+  }catch(e){}
+  return { score:0, time:0, breaks:0, hits:0 };
+}
+function saveBest(rec){
+  try{ localStorage.setItem('ctjy_best', JSON.stringify(rec)); }catch(e){}
+}
+function commitRecord(){
+  const sc = scoreOf();
+  const best = loadBest();
+  if(sc > best.score){
+    G.newRecord = true;
+    G.bestNow = { score:sc, time:+G.time.toFixed(1), breaks:G.stats.breaks, hits:G.stats.wallHits };
+    saveBest(G.bestNow);
+  } else {
+    G.newRecord = false;
+    G.bestNow = best;
+  }
+}
+
+/* ============ 主循环 ============ */
+let last=0, acc=0, botOn=false, frozen=false;
+function loop(ts){
+  requestAnimationFrame(loop);
+  if(!last) last=ts;
+  let dt=(ts-last)/1000; last=ts;
+  if(dt>0.1) dt=0.1;
+  // 音乐：暂停菜单或引导箭头时不播
+  {
+    const shouldPause = (G.mode==='pause') || !!G.cue;
+    if(shouldPause !== G._musicPaused){
+      G._musicPaused = shouldPause;
+      shouldPause ? Music.pause() : Music.resume();
+    }
+  }
+  if(G.mode==='play' && !frozen){
+    if(botOn) botStep();
+    acc+=dt;
+    let guard=0;
+    while(acc>=1/60 && guard<4){ update(1/60); acc-=1/60; guard++; }
+  }
+  draw(ts);
+}
+
+/* 简易机器人：追最近原子 + 遇墙冲刺（也用于自检） */
+function botStep(){
+  let best=null;
+  for(const a of G.atoms){
+    if(a.taken) continue;
+    if(!best || a.relZ < best.relZ) best=a;
+  }
+  if(best && best.relZ<26 && best.lane!==G.player.lane){
+    moveLane(best.lane > G.player.lane ? 1 : -1);
+  }
+  for(const w of G.walls){
+    if(!w.broken && w.relZ<15 && w.relZ>1){ onDownSwipe(); break; }
+  }
+}
+
+/* ============ 自动跑局（平衡自测） ============ */
+function hist(arr){ const h={}; arr.forEach(k=>{ h[k]=(h[k]||0)+1; }); return h; }
+
+// 机器人：氧必须手动下滑——先对道，再下滑抓
+function botGrabO(){
+  const p = G.player;
+  const have = {H:0,O:0};
+  for(const t of G.trail) have[t.type]++;
+  if(have.O >= 1) return false;
+  // 同车道有氧：下滑抓
+  const same = G.atoms.find(a => !a.taken && a.type==='O' && a.lane===p.lane && a.relZ < 13 && a.relZ > 1.5);
+  if(same){ onDownSwipe(); return true; }
+  // 别道有氧：转过去
+  const other = G.atoms.find(a => !a.taken && a.type==='O' && a.relZ < 70 && a.relZ > 10);
+  if(other && other.lane !== p.lane && (SLOT_MAX - p.used) >= 2){
+    moveLane(other.lane > p.lane ? 1 : -1);
+    return true;
+  }
+  return false;
+}
+
+function policyStep(){
+  const p=G.player;
+  if(botGrabO()) return;
+  const need={H:2,O:1};
+  const have={H:0,O:0};
+  for(const t of G.trail) have[t.type]++;
+  const free=SLOT_MAX-p.used;
+  const remH=Math.max(0,need.H-have.H), remO=Math.max(0,need.O-have.O);
+  const done = remH===0 && remO===0;
+
+  // 0) 前方有惰性分子团：必躲（撞上即死）
+  for(const c of G.clusters){
+    if(c.done || c.relZ > 60 || c.relZ < 0) continue;
+    if(c.lane !== p.lane) continue;
+    const safe = [0,1,2].filter(l => l!==c.lane &&
+      !G.clusters.some(o2 => o2!==c && !o2.done && o2.lane===l && Math.abs(o2.relZ-c.relZ) < 26));
+    if(safe.length){
+      const alt = safe.reduce((best,l)=> Math.abs(l-p.lane)<Math.abs(best-p.lane)?l:best, safe[0]);
+      if(alt !== p.lane) moveLane(alt>p.lane?1:-1);
+      return;
+    }
+  }
+
+  // 1) 前方有墙：换道躲开（墙不可撞碎）
+  for(const w of G.walls){
+    if(w.broken || w.lane === undefined) continue;
+    if(w.relZ < 40 && w.relZ > 2 && w.lane === p.lane){
+      const safe = [0,1,2].filter(l => l!==w.lane &&
+        !G.walls.some(w2 => !w2.broken && w2.lane===l && Math.abs(w2.relZ-w.relZ) < 30));
+      if(safe.length){
+        const alt = safe.reduce((b,l)=> Math.abs(l-p.lane)<Math.abs(b-p.lane)?l:b, safe[0]);
+        if(alt !== p.lane){ moveLane(alt>p.lane?1:-1); return; }
+      }
+    }
+  }
+  // 门口：结构齐了就对齐并撞；没齐就躲开
+  if(G.gate.active && !G.gate.passed && G.gate.relZ>1 && G.gate.relZ<60){
+    const cc = composition(G.trail);
+    const ready = (cc.H===2 && cc.O===1);
+    if(ready){
+      if(p.lane !== G.gate.lane) moveLane(G.gate.lane>p.lane?1:-1);
+      return;
+    } else {
+      if(p.lane === G.gate.lane){
+        const alt = [0,1,2].filter(l=>l!==G.gate.lane)[0];
+        moveLane(alt>p.lane?1:-1);
+      }
+      return;
+    }
+  }
+  if(done) return;
+
+  // 2) 需要腾位置：末端是多余原子就断掉
+  const last=G.trail[G.trail.length-1];
+  const excessH = have.H>need.H, excessO = have.O>need.O;
+  const needNextO = remO>0 && have.O===0;
+  const slotsForNext = needNextO?2:1;
+  if(free<slotsForNext && last && ((last.type==='H'&&excessH)||(last.type==='O'&&excessO))){
+    onDownSwipe();
+    return;
+  }
+
+  // 3) 同车道有"不需要"的近原子：躲开
+  for(const a of G.atoms){
+    if(a.taken||a.relZ<0) continue;
+    if(a.lane!==p.lane) continue;
+    const needIt=(a.type==='H'&&remH>0)||(a.type==='O'&&remO>0&&free>=2);
+    if(!needIt && a.relZ<12){
+      const alt=[0,1,2].filter(l=>l!==p.lane)[0];
+      moveLane(alt>p.lane?1:-1);
+      return;
+    }
+  }
+
+  // 4) 追最近的需要原子
+  let best=null, bestScore=1e9;
+  for(const a of G.atoms){
+    if(a.taken||a.relZ<0) continue;
+    const needIt=(a.type==='H'&&remH>0)||(a.type==='O'&&remO>0&&free>=2);
+    if(!needIt) continue;
+    const score=a.relZ + (a.lane!==p.lane?2.5:0);
+    if(score<bestScore){ bestScore=score; best=a; }
+  }
+  if(best && best.lane!==p.lane) moveLane(best.lane>p.lane?1:-1);
+}
+
+/* 普通玩家：追最近原子，但知道"键位满了就断一个" */
+function midStep(){
+  const p=G.player;
+  if(botGrabO()) return;
+  for(const w of G.walls){
+    if(w.broken || w.lane === undefined) continue;
+    if(w.relZ < 40 && w.relZ > 2 && w.lane === p.lane){
+      const safe = [0,1,2].filter(l => l!==w.lane &&
+        !G.walls.some(w2 => !w2.broken && w2.lane===l && Math.abs(w2.relZ-w.relZ) < 30));
+      if(safe.length){
+        const alt = safe.reduce((b,l)=> Math.abs(l-p.lane)<Math.abs(b-p.lane)?l:b, safe[0]);
+        if(alt !== p.lane){ moveLane(alt>p.lane?1:-1); return; }
+      }
+    }
+  }
+  // 门口：结构齐了就对齐并撞；没齐就躲开
+  if(G.gate.active && !G.gate.passed && G.gate.relZ>1 && G.gate.relZ<60){
+    const cc = composition(G.trail);
+    const ready = (cc.H===2 && cc.O===1);
+    if(ready){
+      if(p.lane !== G.gate.lane) moveLane(G.gate.lane>p.lane?1:-1);
+      return;
+    } else {
+      if(p.lane === G.gate.lane){
+        const alt = [0,1,2].filter(l=>l!==G.gate.lane)[0];
+        moveLane(alt>p.lane?1:-1);
+      }
+      return;
+    }
+  }
+  const have={H:0,O:0};
+  for(const t of G.trail) have[t.type]++;
+  const full = (SLOT_MAX-p.used)<1;
+  const wrong = have.H!==2 || have.O!==1;
+  if(full && wrong && G.trail.length){ onDownSwipe(); return; }
+  // 看到"键位满"提示就照做（模拟跟随提示的玩家）
+  if(G.hint.t>0 && G.trail.length && G.atoms.some(a=>a.blocked)){ onDownSwipe(); return; }
+
+  let best=null;
+  for(const a of G.atoms){
+    if(a.taken||a.relZ<0) continue;
+    if(!best || a.relZ<best.relZ) best=a;
+  }
+  if(best && best.lane!==p.lane) moveLane(best.lane>p.lane?1:-1);
+}
+/* 粗糙玩家：只追最近的原子，不会挑组成，也不会主动断键 */
+function naiveStep(){
+  const p=G.player;
+  if(p.dashT<=0 && p.smashGrace<=0){
+    for(const w of G.walls){
+      if(!w.broken && w.relZ<15 && w.relZ>1){ onDownSwipe(); return; }
+    }
+  }
+  // 门口：结构齐了就对齐并撞；没齐就躲开
+  if(G.gate.active && !G.gate.passed && G.gate.relZ>1 && G.gate.relZ<60){
+    const cc = composition(G.trail);
+    const ready = (cc.H===2 && cc.O===1);
+    if(ready){
+      if(p.lane !== G.gate.lane) moveLane(G.gate.lane>p.lane?1:-1);
+      return;
+    } else {
+      if(p.lane === G.gate.lane){
+        const alt = [0,1,2].filter(l=>l!==G.gate.lane)[0];
+        moveLane(alt>p.lane?1:-1);
+      }
+      return;
+    }
+  }
+  let best=null;
+  for(const a of G.atoms){
+    if(a.taken||a.relZ<0) continue;
+    if(!best || a.relZ<best.relZ) best=a;
+  }
+  if(best && best.lane!==p.lane) moveLane(best.lane>p.lane?1:-1);
+}
+
+
+
+function benchWith(stepFn, N){
+  const eps=[];
+  for(let e=0;e<N;e++){
+    startGame();
+    const rec={res:'timeout',t:0,breaks:0,dashes:0,wallHits:0,fails:0,comp:''};
+    let guard=0;
+    while(G.mode==='play' && guard<60*160){
+      stepFn();
+      update(1/60);
+      guard++;
+    }
+    rec.comp = G.lastGateComp || 'none';
+    rec.res = G.mode==='win'?'win':(G.mode==='lose'?'lose':'timeout');
+    rec.t = +G.time.toFixed(1);
+    rec.breaks=G.stats.breaks; rec.dashes=G.stats.dashes;
+    rec.wallHits=G.stats.wallHits; rec.fails=G.gateFail; rec.rsn=G.stats.resonant;
+    eps.push(rec);
+  }
+  const wins=eps.filter(r=>r.res==='win').length;
+  const avg=(k)=>+(eps.reduce((a,b)=>a+b[k],0)/eps.length).toFixed(2);
+  return {
+    winRate:+(wins/eps.length).toFixed(2),
+    gatePassRate:+(eps.filter(r=>r.comp==='2H1O').length/eps.length).toFixed(2),
+    avgTime:avg('t'), avgFirst:0,
+    result:hist(eps.map(r=>r.res)),
+    avgGateFails:avg('fails'),
+    resonanceRate:+(eps.filter(r=>r.rsn>0).length/eps.length).toFixed(2), avgBreaks:avg('breaks'),
+    avgDashes:avg('dashes'), avgWallHits:avg('wallHits')
+  };
+}
+function bench(){
+  const N=24, eps=[];
+  for(let e=0;e<N;e++){
+    startGame();
+    const rec={first:null,res:'timeout',t:0,breaks:0,dashes:0,wallHits:0,fails:0,comp:''};
+    let guard=0;
+    while(G.mode==='play' && guard<60*160){
+      policyStep();
+      update(1/60);
+      guard++;
+      if(rec.first===null && G.trail.length>0) rec.first=+G.time.toFixed(1);
+    }
+    rec.comp = G.lastGateComp || 'none';
+    rec.res = G.mode==='win'?'win':(G.mode==='lose'?'lose':'timeout');
+    rec.t = +G.time.toFixed(1);
+    rec.breaks=G.stats.breaks; rec.dashes=G.stats.dashes;
+    rec.wallHits=G.stats.wallHits; rec.fails=G.gateFail;
+    eps.push(rec);
+  }
+  const wins=eps.filter(r=>r.res==='win').length;
+  const avg=(k)=>+(eps.reduce((a,b)=>a+b[k],0)/eps.length).toFixed(2);
+  // 渲染耗时（软件光栅，仅作参考）
+  startGame();
+  const t0=performance.now();
+  for(let i=0;i<40;i++) draw(i*16);
+  const renderMs=+((performance.now()-t0)/40).toFixed(2);
+
+  return {
+    episodes:N,
+    winRate:+(wins/N).toFixed(2),
+    avgTime:avg('t'),
+    avgFirstAttach:avg('first'),
+    gateComp:hist(eps.map(r=>r.comp)),
+    result:hist(eps.map(r=>r.res)),
+    avgBreaks:avg('breaks'),
+    avgDashes:avg('dashes'),
+    avgWallHits:avg('wallHits'),
+    avgGateFails:avg('fails'),
+    renderMsPerFrame:renderMs,
+    careless: benchWith(naiveStep, 24),
+    average: benchWith(midStep, 24)
+  };
+}
+/* ============ 自检 ============ */
+function selfTest(){
+  const out={errors:[], steps:0, atoms:0, attached:0, gatePassed:false};
+  window.addEventListener('error', e=>out.errors.push(String(e.message)));
+  startGame();
+  // 机器人：追最近原子 + 遇墙冲刺，跑 40 秒逻辑
+  for(let i=0;i<2400;i++){
+    botStep();
+    update(1/60);
+    out.steps++;
+  }
+  out.atoms=G.atoms.length;
+  out.attached=G.trail.length;
+  out.gatePassed=G.gate.passed;
+  out.mode=G.mode;
+  out.fuel=+G.player.fuel.toFixed(2);
+  out.combo=G.combo;
+  out.best=G.bestCombo;
+  out.walls=G.walls.map(w=>w.broken?1:0).join('');
+  out.err=out.errors.length;
+  out.firstErr=out.errors[0]||'';
+
+  // —— 定向场景验证 ——
+  const g1=scenarioGate();
+  out.scGateComp = g1.comp.H+'H'+g1.comp.O+'O';
+  out.scGatePass = g1.passed;
+  out.scAttach   = g1.count;
+  out.scWall     = scenarioWalls();
+  const dg = scenarioDodge();
+  out.dgFails = dg.fails; out.dgInactive = dg.inactiveAfterMiss;
+  out.dgNewGate = dg.newGate; out.dgTrail = dg.trailStill;
+  const rb = scenarioRebuild();
+  out.rbFails = rb.fails; out.rbGateBack = rb.gateBack;
+  out.rbAtoms = rb.atomsAfter; out.rbSpawned = rb.spawned; out.rbComp = rb.comp;
+  out.rbPassed = rb.passed; out.rbMode = rb.mode;
+  const w1 = scenarioWin();
+  out.scWinMode = w1.mode;
+  out.scWinWalls = w1.walls;
+
+  const el=document.getElementById('diag');
+  el.textContent=JSON.stringify(out);
+  el.classList.add('on');
+  return out;
+}
+
+/* 场景一：把 H,H,O 逐个送进同一条道，检查吸附与门的合成判定 */
+function scenarioGate(){
+  startGame();
+  G.gate.active = true;
+  G.gate.relZ = 999;              // 冻结门
+  G.spawnTimer = 999;             // 关掉随机生成
+  G.atoms = [];
+  let count = 0;
+  for(const t of ['H','H','O']){
+    G.atoms.push({lane:1, relZ:7, type:t, taken:false, born:G.time, wob:0});
+    if(t === 'O') onDownSwipe();        // 氧必须手动下滑
+    for(let i=0;i<48;i++) update(1/60);
+  }
+  count = G.trail.length;
+  const comp = composition(G.trail);
+  G.gate.relZ = 1.0;
+  update(1/60);                    // 触发 judgeGate
+  return {comp, passed:G.gate.passed, count};
+}
+
+/* 场景三：过门后连续断键冲刺，应打通三堵墙并通关 */
+function scenarioWin(){
+  startGame('main');
+  G.segIdx = 2; G.segT = 10;
+  G.finalGate = true;
+  G.gate = { relZ:2, passed:false, done:false, active:true, lane:1, window:16 };
+  G.trail = [
+    {type:'H', node:{x:340,y:1040,vx:0,vy:0}},
+    {type:'O', node:{x:375,y:1000,vx:0,vy:0}},
+    {type:'H', node:{x:410,y:960, vx:0,vy:0}}
+  ];
+  G.player.used = 4;
+  for(let i=0;i<40;i++) update(1/60);
+  return {mode:G.mode, walls:G.finalGate?'1':'0'};
+}
+
+
+/* 场景四：坡顶结构不对撞门，应退回并恢复原子供给 */
+function scenarioRebuild(){
+  startGame('main');
+  G.segIdx = 2; G.segT = 10;
+  G.finalGate = true;                 // 该场景只测"重铸"，不刷墙
+  G.gate.active = true; G.gate.relZ = 1.0; G.gate.window = 16; G.gate.lane = 1;
+  G.trail = [{type:'H', node:{x:375,y:1050,vx:0,vy:0}}];
+  G.player.used = 1;
+  update(1/60);                       // 撞门
+  const afterZ = G.gate.relZ;
+  const fails = G.gateFail;
+  for(let i=0;i<1500;i++){ policyStep(); update(1/60); }   // 25 秒
+  return {
+    fails,
+    gateBack: +afterZ.toFixed(0),
+    atomsAfter: G.atoms.length,
+    spawned: G.stats.spawned,
+    comp: composition(G.trail).H+'H'+composition(G.trail).O+'O',
+    passed: G.gate.passed, mode: G.mode
+  };
+}
+
+
+/* 场景五：站在别的道 → 应该"错过"而不是撞门，2 秒后出现新门 */
+function scenarioDodge(){
+  startGame('main');
+  G.segIdx = 2; G.segT = 10;
+  G.gate.active = true; G.gate.relZ = 1.0; G.gate.window = 16;
+  G.gate.lane = 0;
+  G.player.lane = 2; G.player.vx = 220; G.player.targetX = 220;
+  G.trail = [{type:'H', node:{x:375,y:1050,vx:0,vy:0}}];
+  G.player.used = 1;
+  update(1/60);                       // 应触发 missGate
+  const afterFails = G.gateFail;
+  const afterActive = G.gate.active;
+  for(let i=0;i<180;i++) update(1/60);  // 3 秒后新门
+  return { fails: afterFails, inactiveAfterMiss: !afterActive,
+           newGate: G.gate.active, trailStill: G.trail.length };
+}
+
+/* 场景二：前方有墙 + 有燃料 → 下滑应触发冲刺并撞碎 */
+function scenarioWalls(){
+  startGame();
+  G.spawnTimer = 999;
+  G.gate.relZ = 999;
+  G.trail = [{type:'H', node:{x:375,y:1040,vx:0,vy:0}}];
+  G.player.used = 1;
+  G.walls = [{relZ:6, broken:false, hitDone:false, seed:1, hits:0, lane: G.player.lane}];
+  for(let i=0;i<40;i++) update(1/60);
+  return G.trail.length === 0;      // 撞墙掉了一个键
+}
+
+/* ============ 启动 ============ */
+function boot(){
+  resize();
+  buildBackground();
+  attachInput();
+  resetGame();
+  G.mode='title';
+
+  if(PROBE){
+    startGame('tutorial');
+    const log=[];
+    let prev='';
+    for(let i=0;i<2400;i++){
+      midStep(); update(1/60);
+      const cur=G.trail.map(t=>t.type).join('');
+      if(cur!==prev){ log.push({t:+G.time.toFixed(1), trail:cur, used:G.player.used, atoms:G.atoms.map(a=>a.type+a.lane+':'+a.relZ.toFixed(0)).join('|'), mode:G.mode}); prev=cur; }
+    }
+    log.push({end:1, tut:G.tutorial, atoms:G.atoms.length, trail:G.trail.length});
+    const el=document.getElementById('diag');
+    el.textContent=JSON.stringify(log); el.classList.add('on');
+    return;
+  }
+  if(DASHMODE){
+    startGame('main');
+    for(let i=0;i<240;i++){ botStep(); update(1/60); }
+    G.player.fuel = 3;
+    startDash();
+    for(let i=0;i<8;i++) update(1/60);
+    frozen = true;
+    document.getElementById('diag').classList.remove('on');
+    requestAnimationFrame(loop);
+    return;
+  }
+  if(HINTMODE){
+    startGame('tutorial');
+    let g=0;
+    while(g<4000 && !(G.hint.t>0 && G.atoms.some(a=>a.blocked && a.relZ>5 && a.relZ<9))){ naiveStep(); update(1/60); g++; }
+    for(let i=0;i<3;i++) update(1/60);
+    frozen = true;
+    document.getElementById('diag').classList.remove('on');
+    requestAnimationFrame(loop);
+    return;
+  }
+  if(OTEST2){
+    startGame('main');
+    G.spawnTimer = 999; G.walls = []; G.finalGate = true;
+    G.trail = [{type:'H', node:{x:375,y:1050,vx:0,vy:0}}];
+    G.player.used = 1;
+    const res = [];
+    for(const z of [22, 16, 12, 8, 4]){
+      G.trail = [{type:'H', node:{x:375,y:1050,vx:0,vy:0}}];
+      G.player.used = 1;
+      G.atoms = [{lane:G.player.lane, relZ:z, type:'O', taken:false, born:0, wob:0}];
+      onDownSwipe();
+      res.push(z + ':' + (G.trail.length===2 ? 'ok':'NO'));
+    }
+    document.getElementById('diag').classList.add('on');
+    document.getElementById('diag').textContent = JSON.stringify(res);
+    return;
+  }
+  if(DEATHSHOT){
+    startGame('main');
+    G.spawnTimer = 999;
+    G.trail = []; G.player.used = 0;          // 没键，撞墙即湮灭
+    G.walls = [{relZ:6, lane:G.player.lane, broken:false, hitDone:false, hits:0, seed:0}];
+    for(let i=0;i<40;i++) update(1/60);       // 触发湮灭并演 0.6 秒
+    frozen = true;
+    document.getElementById('diag').classList.remove('on');
+    requestAnimationFrame(loop);
+    return;
+  }
+  if(MTEST){
+    startGame('main');
+    Audio_.init(); Audio_.resume(); Music.start();
+    setTimeout(()=>{
+      let tinfo = {};
+      try{
+        tinfo = {
+          toneType: typeof Tone,
+          ver: (typeof Tone!=='undefined') ? Tone.version : null,
+          ctxState: (typeof Tone!=='undefined' && Tone.context) ? Tone.context.state : null,
+          transportState: (typeof Tone!=='undefined') ? Tone.Transport.state : null,
+          bpm: (typeof Tone!=='undefined') ? Tone.Transport.bpm.value : null
+        };
+      }catch(e){ tinfo.err = String(e); }
+      document.getElementById('diag').classList.add('on');
+      document.getElementById('diag').textContent = JSON.stringify(Object.assign({
+        ac: !!Audio_.ac, state: Audio_.ac && Audio_.ac.state,
+        on: Music.on, built: Music.built, played: Music._n||0,
+        t: Audio_.ac && +Audio_.ac.currentTime.toFixed(2)
+      }, tinfo));
+      requestAnimationFrame(loop);
+    }, 1800);
+    return;
+  }
+  if(GATESHOT || GATESHOT2){
+    startGame('main');
+    for(let i=0;i<120;i++) update(1/60);
+    G.finalGate = true;
+    G.gate = { relZ: 120, passed:false, done:false, active:true, lane:1, window:16 };
+    if(GATESHOT){
+      G.trail = [{type:'H',node:{x:340,y:1040,vx:0,vy:0}},{type:'O',node:{x:375,y:1000,vx:0,vy:0}},{type:'H',node:{x:410,y:960,vx:0,vy:0}}];
+      G.player.used = 4;
+    } else {
+      G.trail = [{type:'H',node:{x:375,y:1020,vx:0,vy:0}}];
+      G.player.used = 1;
+    }
+    G.gateOpen = GATESHOT;
+    document.getElementById('diag').classList.remove('on');
+    requestAnimationFrame(loop);
+    return;
+  }
+  if(CUESHOT){
+    startGame('main');
+    for(let i=0;i<150;i++) update(1/60);
+    // 造一面正对玩家的墙，并触发引导
+    G.walls = [{relZ:18, lane:G.player.lane, broken:false, hitDone:false, hits:0, seed:0}];
+    G.taughtLane = false; G.cue = { type:'lane', t:0.2, dir:(G.player.lane>0?-1:1), lane:G.player.lane };
+    document.getElementById('diag').classList.remove('on');
+    requestAnimationFrame(loop);
+    return;
+  }
+  if(WINSHOT){
+    startGame('main');
+    G.time = 41.8; G.stats.breaks = 1; G.gateFail = 0;
+    G.mode = 'win';
+    document.getElementById('diag').classList.remove('on');
+    requestAnimationFrame(loop);
+    return;
+  }
+  if(OTEST){
+    startGame('main');
+    G.spawnTimer = 999; G.walls = []; G.finalGate = true;
+    G.atoms = [{lane:G.player.lane, relZ:6, type:'O', taken:false, born:0, wob:0}];
+    for(let i=0;i<40;i++) update(1/60);
+    const afterPass = G.trail.length;
+    G.atoms.push({lane:G.player.lane, relZ:6, type:'O', taken:false, born:0, wob:0});
+    for(let i=0;i<3;i++) update(1/60);
+    onDownSwipe();
+    for(let i=0;i<3;i++) update(1/60);
+    document.getElementById('diag').classList.add('on');
+    document.getElementById('diag').textContent = JSON.stringify({autoAttach: afterPass, afterSwipe: G.trail.length});
+    return;
+  }
+  if(WTEST){
+    startGame('main');
+    const out = [];
+    for(let i=0;i<600;i++){ update(1/60); if(i%60===0) out.push(G.walls.length); }
+    document.getElementById('diag').classList.add('on');
+    document.getElementById('diag').textContent = JSON.stringify({seg:G.segIdx, walls:out, wt:G.wallT, n:G.walls.length, lane:G.walls[0]&&G.walls[0].lane, z:G.walls[0]&&G.walls[0].relZ});
+    return;
+  }
+  if(BOOMMODE){
+    startGame('main');
+    G.trail = [
+      {type:'H', node:{x:340,y:1040,vx:0,vy:0}, born:0},
+      {type:'H', node:{x:380,y:980,vx:0,vy:0}, born:0}
+    ];
+    G.player.used = 2;
+    attachAtom({type:'O', relZ:2, lane:1});
+    for(let i=0;i<3;i++) update(1/60);
+    frozen = true;
+    document.getElementById('diag').classList.remove('on');
+    requestAnimationFrame(loop);
+    return;
+  }
+  if(SLOWMODE){
+    startGame('main');
+    G.segIdx = 2; G.segT = 10;
+    for(let i=0;i<240;i++){ midStep(); update(1/60); }
+    frozen = true;
+    document.getElementById('diag').classList.remove('on');
+    requestAnimationFrame(loop);
+    return;
+  }
+  if(ENDMODE){
+    startGame('main');
+    let g=0;
+    while(G.mode==='play' && g<60*160){
+      if(ENDMODE[2]==='lose'){ // 故意摆烂：不换道、不断键
+        update(1/60);
+      } else {
+        midStep(); update(1/60);
+      }
+      g++;
+    }
+    frozen = true;
+    document.getElementById('diag').classList.remove('on');
+    requestAnimationFrame(loop);
+    return;
+  }
+  if(FLOW){
+    startGame('main');
+    const ev=[]; let lastSeg=-1, lastPass=false, lastName='';
+    for(let i=0;i<6000;i++){
+      midStep(); update(1/60);
+      const nm=G.walls.map(w=>w.broken?1:0).join('')+'|'+G.gate.passed+'|'+G.mode;
+      if(G.segIdx!==lastSeg){ ev.push({t:+G.time.toFixed(1), seg:G.segIdx, tint:G.tint.map(v=>v|0).join(',')}); lastSeg=G.segIdx; }
+      if(G.gate.passed!==lastPass){ ev.push({t:+G.time.toFixed(1), gate:G.gate.passed?'pass':'wait'}); lastPass=G.gate.passed; }
+      if(nm!==lastName && G.gate.passed){ ev.push({t:+G.time.toFixed(1), walls:nm}); lastName=nm; }
+      if(G.mode!=='play') break;
+    }
+    ev.push({end:G.mode, t:+G.time.toFixed(1)});
+    const el=document.getElementById('diag');
+    el.textContent=JSON.stringify(ev); el.classList.add('on');
+    return;
+  }
+  if(BENCH){
+    const r = bench();
+    const el=document.getElementById('diag');
+    el.textContent=JSON.stringify(r); el.classList.add('on');
+    return;
+  }
+  if(TEST){
+    window.__diag = selfTest();
+    startGame();
+    botOn = true;
+    requestAnimationFrame(loop);
+    return;
+  }
+  if(DEMO){
+    startGame();
+    for(let i=0;i<720;i++){ botStep(); update(1/60); }
+    let g2=0;
+    while(G.hint.t>0 && g2<300){ botStep(); update(1/60); g2++; }
+    frozen = true;
+    document.getElementById('diag').classList.remove('on');
+    requestAnimationFrame(loop);
+    return;
+  }
+  requestAnimationFrame(loop);
+  window.addEventListener('resize', ()=>{ resize(); });
+  document.addEventListener('visibilitychange', ()=>{ if(document.hidden && G.mode==='play') G.mode='pause'; });
+  window.addEventListener('keydown', e=>{ if(e.key==='d') diagOn=!diagOn; });
+}
+
+try{
+  boot();
+}catch(err){
+  const el=document.getElementById('diag');
+  el.textContent='BOOT ERROR: '+ (err && err.stack || err);
+  el.classList.add('on');
+  el.style.opacity=1; el.style.color='#f66';
+}
+})();
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
