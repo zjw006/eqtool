@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#06131b">
+<link rel="icon" href="data:,">
+<title>碳途纪元 · 球面灰盒 v2.2</title>
+<style>
+  :root{
+    color-scheme:dark;
+    --ink:#eafcff;--muted:#9ac4cf;--cyan:#78efff;--line:rgba(120,239,255,.24);
+    --panel:rgba(5,22,30,.88);--safe-top:max(16px,env(safe-area-inset-top));
+    --safe-bottom:max(18px,env(safe-area-inset-bottom));
+  }
+  *{box-sizing:border-box}
+  html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#06131b}
+  body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;color:var(--ink);touch-action:none;user-select:none;-webkit-user-select:none}
+  #scene{position:fixed;inset:0;width:100%;height:100%;display:block;outline:none;background:radial-gradient(circle at 50% 62%,#123e49 0,#081b25 34%,#06131b 72%)}
+  .hidden{display:none!important}
+  #boot{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 60%,#123b47,#06131b 64%);z-index:30;transition:opacity .25s ease}
+  #boot.done{opacity:0;pointer-events:none}
+  .boot-mark{width:74px;height:74px;border:1px solid var(--line);border-radius:50%;position:relative;margin:0 auto 20px;box-shadow:0 0 42px rgba(120,239,255,.12)}
+  .boot-mark:before{content:"";position:absolute;inset:15px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#a9f8ff,#277783 45%,#0d2834 78%)}
+  #boot p{margin:0;color:var(--muted);font-size:14px;letter-spacing:.16em;text-align:center}
+  #hud{position:fixed;inset:0;pointer-events:none;z-index:5;padding:var(--safe-top) max(16px,env(safe-area-inset-right)) var(--safe-bottom) max(16px,env(safe-area-inset-left))}
+  .brand{position:absolute;left:max(18px,env(safe-area-inset-left));top:var(--safe-top);font-size:12px;letter-spacing:.15em;color:var(--muted)}
+  .brand strong{display:block;color:var(--ink);font-size:17px;letter-spacing:.08em;margin-bottom:3px}
+  .score{position:absolute;top:calc(var(--safe-top) + 48px);left:max(18px,env(safe-area-inset-left));font-variant-numeric:tabular-nums}
+  .score b{display:block;font-size:42px;line-height:1;font-weight:650;text-shadow:0 0 22px rgba(120,239,255,.3)}
+  .score span{font-size:12px;color:var(--muted)}
+  .target{position:absolute;top:var(--safe-top);left:50%;transform:translateX(-50%);text-align:center;min-width:142px}
+  .target-label{font-size:11px;letter-spacing:.12em;color:var(--muted);margin-bottom:7px}
+  .slots{display:flex;justify-content:center;gap:7px}
+  .slot{width:31px;height:31px;border:1px solid rgba(154,196,207,.35);border-radius:50%;display:grid;place-items:center;font-size:13px;color:rgba(234,252,255,.42);background:rgba(5,22,30,.38);transition:transform .18s ease,background .18s ease}
+  .slot.filled{color:#06131b;font-weight:800;transform:scale(1.08)}
+  .slot.h.filled{background:#ff735e;border-color:#ffb3a6;box-shadow:0 0 17px rgba(255,115,94,.4)}
+  .slot.o.filled{background:#8bec62;border-color:#d5ffbd;box-shadow:0 0 17px rgba(139,236,98,.35)}
+  #status{position:absolute;top:calc(var(--safe-top) + 59px);left:50%;transform:translateX(-50%);font-size:11px;color:var(--muted);white-space:nowrap}
+  .icon-btn{pointer-events:auto;border:1px solid var(--line);background:rgba(5,22,30,.58);color:var(--ink);width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font:600 18px/1 sans-serif;cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  .icon-btn:hover{background:rgba(31,85,96,.72)}
+  .icon-btn:active{transform:scale(.94)}
+  .icon-btn:focus-visible,.primary:focus-visible,.secondary:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+  #pause-btn{position:absolute;right:max(16px,env(safe-area-inset-right));top:var(--safe-top)}
+  #mute-btn{position:absolute;right:max(76px,calc(env(safe-area-inset-right) + 60px));top:var(--safe-top)}
+  #toast{position:absolute;left:50%;top:30%;transform:translate(-50%,-50%);font-size:22px;font-weight:650;letter-spacing:.1em;text-align:center;opacity:0;transition:opacity .18s ease;text-shadow:0 0 22px currentColor;white-space:nowrap}
+  #toast.show{opacity:1}
+  #impact-flash{position:fixed;inset:0;z-index:8;pointer-events:none;opacity:0;background:#dffcff;mix-blend-mode:screen;will-change:opacity}
+  #run-info{position:absolute;left:max(18px,env(safe-area-inset-left));bottom:var(--safe-bottom);font-size:11px;line-height:1.75;color:var(--muted);font-variant-numeric:tabular-nums}
+  #lane-controls{position:absolute;right:max(18px,env(safe-area-inset-right));bottom:var(--safe-bottom);display:flex;gap:12px;pointer-events:auto}
+  #lane-controls .icon-btn{width:56px;height:56px;font-size:24px;background:rgba(5,22,30,.7)}
+  .overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:24px max(22px,env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) max(22px,env(safe-area-inset-left));background:linear-gradient(180deg,rgba(3,12,18,.14),rgba(3,12,18,.74));backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+  .panel{width:min(100%,430px);padding:30px 28px 26px;border:1px solid var(--line);border-radius:24px;background:var(--panel);box-shadow:0 24px 80px rgba(0,0,0,.32)}
+  .kicker{font-size:11px;letter-spacing:.22em;color:var(--cyan);margin:0 0 12px}
+  h1,h2{margin:0;font-weight:650;letter-spacing:.06em}
+  h1{font-size:38px;line-height:1.16}h2{font-size:32px}
+  .subtitle{margin:10px 0 24px;color:var(--muted);font-size:15px;line-height:1.65}
+  .formula{display:flex;align-items:center;gap:13px;margin:20px 0;padding:17px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .formula .atom{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#06131b}
+  .formula .h{background:#ff735e}.formula .o{background:#8bec62}.formula .plus{color:var(--muted)}
+  .formula .arrow{margin-left:auto;color:var(--cyan);font-size:13px;letter-spacing:.08em}
+  .instructions{font-size:14px;line-height:1.85;color:var(--muted);margin:0 0 24px}
+  .instructions strong{color:var(--ink);font-weight:600}
+  .primary,.secondary{width:100%;min-height:50px;border-radius:14px;font:600 16px/1 sans-serif;cursor:pointer;transition:transform .15s ease,background .15s ease}
+  .primary{border:1px solid #b6f8ff;background:#a4f3fc;color:#08212a;box-shadow:0 0 28px rgba(120,239,255,.16)}
+  .primary:hover{background:#d0fbff}.primary:active,.secondary:active{transform:scale(.98)}
+  .secondary{margin-top:10px;border:1px solid var(--line);background:transparent;color:var(--ink)}
+  .secondary:hover{background:rgba(120,239,255,.08)}
+  .fineprint{font-size:11px;line-height:1.7;color:var(--muted);margin:15px 0 0;text-align:center}
+  .result{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:24px 0}
+  .result div{text-align:center;border-top:1px solid var(--line);padding-top:13px}
+  .result b{display:block;font-size:26px;font-variant-numeric:tabular-nums}.result span{font-size:11px;color:var(--muted)}
+  #error{z-index:40}.error-detail{overflow-wrap:anywhere;font-size:12px;color:#ffc5bb;line-height:1.6;margin-bottom:18px}
+  @media (min-width:800px){.panel{padding:34px 32px 28px}#lane-controls{opacity:.68}.brand{left:28px}.score{left:28px}#pause-btn{right:28px}#mute-btn{right:88px}}
+  @media (max-width:600px){
+    .brand{max-width:120px;font-size:10px;line-height:1.4}
+    .score{top:calc(var(--safe-top) + 54px)}
+    .target{top:calc(var(--safe-top) + 64px)}
+    #status{top:calc(var(--safe-top) + 122px)}
+  }
+  @media (max-width:600px) and (max-height:450px){#toast{top:52%}}
+  @media (max-height:650px){.panel{padding:20px 24px}.subtitle{margin-bottom:12px}.formula{margin:12px 0;padding:10px 0}.instructions{margin-bottom:15px}h1{font-size:31px}.fineprint{margin-top:9px}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  .back-to-library{display:none;}
+  @media (min-width:820px){
+    .back-to-library{position:fixed;left:24px;top:50%;transform:translateY(-50%);z-index:9999;display:inline-flex;align-items:center;gap:6px;
+      padding:9px 15px;border:1px solid rgba(122,98,71,.35);border-radius:999px;background:rgba(251,246,233,.92);
+      color:#5C4934;font:600 13px/1 "PingFang SC","Microsoft YaHei",system-ui,sans-serif;text-decoration:none;
+      box-shadow:0 3px 10px rgba(74,59,42,.14);transition:background .15s,transform .15s;}
+    .back-to-library:hover{background:#FBF6E9;transform:translateY(calc(-50% - 1px));}
+  }
+</style>
+</head>
+<body>
+<canvas id="scene" aria-label="巨大球面三车道跑酷场景"></canvas>
+<a class="back-to-library" href="../index.html?subject=chemistry">← 返回书馆</a>
+<div id="boot"><div><div class="boot-mark"></div><p>正在建立球面坐标</p></div></div>
+
+<div id="hud" class="hidden">
+  <div class="brand"><strong>碳途纪元</strong>球面灰盒 · R 2800</div>
+  <div class="score"><b id="score">0</b><span>交付分子</span></div>
+  <div class="target"><div class="target-label">目标 H₂O</div><div class="slots"><span class="slot h" data-slot="0">H</span><span class="slot h" data-slot="1">H</span><span class="slot o" data-slot="2">O</span></div></div>
+  <div id="status">尚未成键</div>
+  <button id="mute-btn" class="icon-btn" aria-label="关闭音效" title="切换音效（M）">♪</button>
+  <button id="pause-btn" class="icon-btn" aria-label="暂停游戏">Ⅱ</button>
+  <div id="toast"></div>
+  <div id="run-info">弧长 <span id="distance">0</span> u<br>撞墙 <span id="hits">0</span> 次</div>
+  <div id="lane-controls"><button id="left-btn" class="icon-btn" aria-label="向左换道">‹</button><button id="right-btn" class="icon-btn" aria-label="向右换道">›</button></div>
+</div>
+<div id="impact-flash" aria-hidden="true"></div>
+
+<section id="title" class="overlay">
+  <div class="panel">
+    <p class="kicker">SPHERICAL RUNNER · 灰盒 01</p>
+    <h1>在星球表面<br>继续碳途</h1>
+    <p class="subtitle">真实球面遮挡 · 贴身第三人称相机<br>先验证空间感，再谈七章迁移</p>
+    <div class="formula"><span class="atom h">H</span><span class="plus">＋</span><span class="atom h">H</span><span class="plus">＋</span><span class="atom o">O</span><span class="arrow">撞门交付</span></div>
+    <p class="instructions"><strong>左右滑动／方向键</strong>换道，靠近原子自动吸附。<br>集齐 H₂O 后撞门得分；撞墙掉一个原子，<strong>空手撞墙会湮灭</strong>。</p>
+    <button id="start-btn" class="primary">开始球面跑酷</button>
+    <p class="fineprint">Space 开始 · P 暂停 · R 重开 · M 静音<br>含程序化 BGM 与事件音效；暂不包含七章与抓氧操作</p>
+  </div>
+</section>
+
+<section id="pause" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="pause-title">
+  <div class="panel"><p class="kicker">RUN SUSPENDED</p><h2 id="pause-title">轨道已冻结</h2><p class="subtitle">球面仍在这里，随时继续。</p><button id="resume-btn" class="primary">继续跑酷</button><button id="pause-mute-btn" class="secondary">音乐／音效：开</button><button id="pause-restart-btn" class="secondary">重新开始</button></div>
+</section>
+
+<section id="lose" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="lose-title">
+  <div class="panel"><p class="kicker">STRUCTURE LOST</p><h2 id="lose-title">结构散架</h2><p id="best-line" class="subtitle">本次球面航程已结束</p><div class="result"><div><b id="final-score">0</b><span>得分</span></div><div><b id="final-distance">0</b><span>存活秒数</span></div><div><b id="final-hits">0</b><span>撞墙</span></div></div><button id="restart-btn" class="primary">再次进入球面</button><p class="fineprint">最佳成绩仅保存在当前浏览器</p></div>
+</section>
+
+<section id="error" class="overlay hidden" role="alert">
+  <div class="panel"><p class="kicker">WEBGL UNAVAILABLE</p><h2>球面未能建立</h2><p class="subtitle">请使用支持 WebGL 的现代浏览器，并开启硬件加速。</p><p id="error-detail" class="error-detail"></p><button id="reload-btn" class="primary">重新加载</button></div>
+</section>
+
+<script>
+  window.__CAPTURE_ERROR__ = null;
+  window.__showSphereError = function(message){
+    window.__CAPTURE_ERROR__ = String(message || '未知错误');
+    document.getElementById('boot').classList.add('done');
+    document.getElementById('error').classList.remove('hidden');
+    document.getElementById('error-detail').textContent = window.__CAPTURE_ERROR__;
+  };
+  window.addEventListener('error', e => window.__showSphereError(e.message));
+  window.addEventListener('unhandledrejection', e => window.__showSphereError(e.reason));
+  document.getElementById('reload-btn').addEventListener('click', () => location.reload());
+</script>
+<script type="module" src="./sphere.js"></script>
+</body>
+</html>
