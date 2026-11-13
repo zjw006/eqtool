@@ -12,19 +12,26 @@ const GameAudio = (() => {
   let muted = false;
   let musicOn = false, tier = 0, schedTimer = null, nextBeatAt = 0, beat = 0;
 
-  const BPM = 84;
-  const SPB = 60 / BPM;             // 秒 / 拍
+  // 对齐 godot/audio/bgm/bgm_normal.wav 的实测特征：≈140 BPM、F# 调（F#/B/A/C# 最突出）
+  const BPM = 140;
+  const SPB = 60 / BPM;             // 秒 / 拍（≈0.429s）
   const LOOKAHEAD = 0.5;            // 提前排 0.5s
   const TICK_MS = 90;
 
   // A 小调五声，够用且不刺耳
+  // F# 小调：i - iv - VI - III（F#m - Bm - D - A），和采样曲的色度谱一致
+  // 8 小节循环（第二遍把最后一小节换成 E，做个小转折）：i - iv - VI - III | i - iv - VI - VII
   const CHORDS = [
-    [110.0, 164.81, 220.0],   // Am  (A2 E3 A3)
-    [87.31, 130.81, 174.61],  // F   (F2 C3 F3)
-    [130.81, 196.0, 261.63],  // C   (C3 G3 C4)
-    [98.0, 146.83, 196.0],    // G   (G2 D3 G3)
+    [92.50, 138.59, 185.00],   // F#m (F#2 C#3 F#3)
+    [123.47, 185.00, 246.94],  // Bm  (B2 F#3 B3)
+    [146.83, 220.00, 293.66],  // D   (D3 A3 D4)
+    [110.00, 164.81, 220.00],  // A   (A2 E3 A3)
+    [92.50, 138.59, 185.00],   // F#m
+    [123.47, 185.00, 246.94],  // Bm
+    [146.83, 220.00, 293.66],  // D
+    [82.41, 123.47, 164.81],   // E   (E2 B2 E3) 转折
   ];
-  const PENTA = [440.0, 523.25, 587.33, 659.25, 783.99];  // A4 C5 D5 E5 G5
+  const PENTA = [369.99, 440.0, 493.88, 554.37, 659.25];  // F#4 A4 B4 C#5 E5
 
   function init() {
     if (ctx) { if (ctx.state === "suspended") ctx.resume(); return ctx; }
@@ -149,88 +156,118 @@ const GameAudio = (() => {
   function scheduleBar(t0) {
     const chord = CHORDS[Math.floor(beat / 4) % CHORDS.length];
     const barStart = t0;
-    // pad：两个失谐锯齿过低通，整小节缓慢起落
+    // ── pad：失谐锯齿，低通随档位打开 ──
     chord.forEach((f, i) => {
-      if (i > 1 && tier < 1) return;             // 低档留根音+五度，升档再叠八度
-      for (const det of [-6, 6]) {
+      if (i > 1 && tier < 1) return;
+      for (const det of [-7, 7]) {
         const o = ctx.createOscillator();
         const g = ctx.createGain();
         const lp = ctx.createBiquadFilter();
         o.type = "sawtooth";
-        o.frequency.value = f;
+        o.frequency.value = f * 2.0;                 // 抬高八度，F#2 太糊
         o.detune.value = det;
         lp.type = "lowpass";
-        lp.frequency.value = 620 + i * 220;
-        lp.Q.value = 0.7;
-        const peak = (i === 0 ? 0.115 : 0.060) * (tier >= 1 ? 1.0 : 0.9);
+        lp.frequency.value = 1500 + i * 500 + tier * 600;
+        lp.Q.value = 0.9;
+        const peak = (i === 0 ? 0.085 : 0.048) * (tier >= 1 ? 1.0 : 0.85);
         g.gain.setValueAtTime(0.0001, barStart);
-        g.gain.linearRampToValueAtTime(peak, barStart + SPB * 1.4);
+        g.gain.linearRampToValueAtTime(peak, barStart + SPB * 0.35);
         g.gain.linearRampToValueAtTime(0.0001, barStart + SPB * 4.0);
         o.connect(lp); lp.connect(g); g.connect(musicBus);
         o.start(barStart); o.stop(barStart + SPB * 4.05);
       }
     });
-    // 低音：根音低八度长音，托住整小节
-    {
+    // 后半段（第 5 小节起）叠一层高八度微光，避免 4 小节循环听起来太死
+    if (Math.floor(beat / 4) % 8 >= 4) {
+      const f2 = chord[2] * 4.0;
+      const o2 = ctx.createOscillator();
+      const g2 = ctx.createGain();
+      const lp2 = ctx.createBiquadFilter();
+      o2.type = "triangle";
+      o2.frequency.value = f2;
+      lp2.type = "lowpass"; lp2.frequency.value = 4200;
+      g2.gain.setValueAtTime(0.0001, barStart);
+      g2.gain.linearRampToValueAtTime(0.022, barStart + SPB * 0.5);
+      g2.gain.linearRampToValueAtTime(0.0001, barStart + SPB * 3.8);
+      o2.connect(lp2); lp2.connect(g2); g2.connect(musicBus);
+      o2.start(barStart); o2.stop(barStart + SPB * 4.0);
+    }
+    // ── 低音：八分音符跳根音（模仿采样曲的驱动感）──
+    for (let i = 0; i < 8; i++) {
+      const tt = barStart + i * SPB * 0.5;
+      const f = i % 4 === 3 ? chord[1] * 0.5 : chord[0] * 0.5;
       const o = ctx.createOscillator();
       const g = ctx.createGain();
       const lp = ctx.createBiquadFilter();
-      o.type = "sine";
-      o.frequency.value = chord[0] * 0.5;
-      lp.type = "lowpass"; lp.frequency.value = 220;
-      g.gain.setValueAtTime(0.0001, barStart);
-      g.gain.linearRampToValueAtTime(0.16, barStart + SPB * 0.5);
-      g.gain.linearRampToValueAtTime(0.0001, barStart + SPB * 3.6);
+      o.type = "triangle";
+      o.frequency.value = f;
+      lp.type = "lowpass"; lp.frequency.value = 420;
+      g.gain.setValueAtTime(0.0001, tt);
+      g.gain.exponentialRampToValueAtTime(0.13, tt + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001, tt + 0.20);
       o.connect(lp); lp.connect(g); g.connect(musicBus);
-      o.start(barStart); o.stop(barStart + SPB * 3.7);
+      o.start(tt); o.stop(tt + 0.22);
     }
-    // kick：1、3 拍
-    for (const b of [0, 2]) {
-      const t = barStart + b * SPB;
+    // ── kick：四拍全踩（140 BPM 的舞曲感）──
+    for (let b = 0; b < 4; b++) {
+      const tt = barStart + b * SPB;
       const o = ctx.createOscillator();
       const g = ctx.createGain();
       o.type = "sine";
-      o.frequency.setValueAtTime(120, t);
-      o.frequency.exponentialRampToValueAtTime(46, t + 0.16);
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(0.22 + tier * 0.04, t + 0.006);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.20);
+      o.frequency.setValueAtTime(150, tt);
+      o.frequency.exponentialRampToValueAtTime(46, tt + 0.12);
+      g.gain.setValueAtTime(0.0001, tt);
+      g.gain.exponentialRampToValueAtTime(0.20 + tier * 0.03, tt + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, tt + 0.17);
       o.connect(g); g.connect(musicBus);
-      o.start(t); o.stop(t + 0.22);
+      o.start(tt); o.stop(tt + 0.19);
     }
-    // hat：八分音符
-    for (let i = 0; i < 8; i++) {
-      const t = barStart + i * SPB * 0.5;
+    // ── snare：2、4 拍（带通噪声）──
+    for (const b of [1, 3]) {
+      const tt = barStart + b * SPB;
+      const src = ctx.createBufferSource();
+      src.buffer = noiseBuf; src.loop = true;
+      const bp = ctx.createBiquadFilter();
+      bp.type = "bandpass"; bp.frequency.value = 1900; bp.Q.value = 0.9;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, tt);
+      g.gain.exponentialRampToValueAtTime(0.085 + tier * 0.01, tt + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, tt + 0.12);
+      src.connect(bp); bp.connect(g); g.connect(musicBus);
+      src.start(tt); src.stop(tt + 0.14);
+    }
+    // ── 沙锤：十六分音符，反拍更亮 ──
+    for (let i = 0; i < 16; i++) {
+      const tt = barStart + i * SPB * 0.25;
       const src = ctx.createBufferSource();
       src.buffer = noiseBuf; src.loop = true;
       const hp = ctx.createBiquadFilter();
-      hp.type = "highpass"; hp.frequency.value = 7200;
+      hp.type = "highpass"; hp.frequency.value = 8200;
       const g = ctx.createGain();
-      const peak = (i % 2 === 0 ? 0.030 : 0.020) + tier * 0.005;
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(peak, t + 0.003);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
+      const peak = (i % 4 === 2 ? 0.030 : i % 2 === 0 ? 0.020 : 0.013) + tier * 0.004;
+      g.gain.setValueAtTime(0.0001, tt);
+      g.gain.exponentialRampToValueAtTime(peak, tt + 0.002);
+      g.gain.exponentialRampToValueAtTime(0.0001, tt + 0.035);
       src.connect(hp); hp.connect(g); g.connect(musicBus);
-      src.start(t); src.stop(t + 0.06);
+      src.start(tt); src.stop(tt + 0.05);
     }
-    // 高档：五声音阶点缀
+    // ── 一档以上：十六分琶音，按五声音阶在每小节换型 ──
     if (tier >= 1) {
-      for (const b of [1.5, 3.0]) {
-        const f = PENTA[Math.floor(hash01(beat + b) * PENTA.length)];
-        const t = barStart + b * SPB;
+      for (let i = 0; i < 8; i++) {
+        const tt = barStart + i * SPB * 0.5;
+        const f = PENTA[(Math.floor(hash01(beat + i * 1.7) * PENTA.length)) % PENTA.length];
         const o = ctx.createOscillator();
         const g = ctx.createGain();
         o.type = "triangle";
         o.frequency.value = f;
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.05, t + 0.01);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+        g.gain.setValueAtTime(0.0001, tt);
+        g.gain.exponentialRampToValueAtTime(0.045, tt + 0.006);
+        g.gain.exponentialRampToValueAtTime(0.0001, tt + 0.22);
         o.connect(g); g.connect(musicBus);
-        o.start(t); o.stop(t + 0.58);
+        o.start(tt); o.stop(tt + 0.24);
       }
     }
   }
-
   function hash01(v) { return Math.abs(Math.sin(v * 12.9898) * 43758.5453) % 1; }
 
   function scheduler() {

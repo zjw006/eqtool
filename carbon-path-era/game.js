@@ -13,6 +13,7 @@ const EDGE_PAD = 48;
 
 const SPEED_BASE = 25, SPEED_MAX = 35, SPEED_STEP = 1.5, SPEED_PER = 3;
 const BOND_AHEAD = 3.0, BOND_BEHIND = 2.0, BOND_BUFFER = 0.20;
+const SNAP_AHEAD = 5.0, SNAP_BEHIND = 3.5;   // 按下瞬间的吸附窗口，比自动判定更宽（D-76）
 const ATOM_CLEARANCE = 7.0, WALL_SPAN = 20.0, DRAW_AHEAD = 150.0;
 const RAMP_DIST = 240.0;
 const COLLAPSE_LEN = 1.55, SKIP_AFTER = 0.6;
@@ -192,6 +193,7 @@ const G = {
   bigText: "", bigTextColor: COL_CYAN, bigTextA: 0,
   helpPage: 0,
   bondDip: -1, frictionT: 0,
+  chainSway: [0, 0, 0], chainSwayV: [0, 0, 0],
   sparks: [], dust: [], waves: [], shards: [], residue: [], rings: [],
   loose: [],               // 主菜单飘浮圆片用不到，保留占位
 };
@@ -205,6 +207,7 @@ function resetRun() {
   G.collected = []; G.entities = [];
   G.nextAtom = 12; G.nextWall = 46; G.nextGate = 82; G.atomIndex = 0;
   G.bondBuffer = 0; G.collapseT = 0; G.countdownT = 0;
+  G.chainSway = [0, 0, 0]; G.chainSwayV = [0, 0, 0];
   G.shake = 0; G.flash = 0; G.camKick = 0; G.camPan = 0;
   G.playerHidden = false; G.foldT = 0; G.foldActive = false;
   G.trailT = 0; G.fxT = 0;
@@ -281,6 +284,14 @@ function moveLane(dir) {
   if (next === G.lane) return;
   G.lane = next;
   G.laneVel = dir * 6.0;
+  // 换道：头顶链被甩向反方向（D-77）
+  for (let i = 0; i < 3; i++) G.chainSwayV[i] += -dir * (7.5 - i * 1.4);
+  // 换道把身后的拖尾"拨"一下：给横向初速，它们会绕原位置摆回来（D-76）
+  for (const d of G.dust) {
+    if (!d.spring) continue;
+    d.p.x = d.ax ?? d.p.x;
+    d.v.x += -dir * 120;
+  }
 }
 // 下滑压扁曲线（照搬 Godot 的 _dip_curve）：先快速压扁，再回弹过冲一点
 function dipCurve(tt) {
@@ -300,6 +311,20 @@ function dipCurve(tt) {
 function requestBond() {
   if (G.mode !== "play") return;
   G.bondBuffer = BOND_BUFFER;
+  // 按下立即吸附：本车道、吸附窗口内的目标原子直接吸掉（D-76）
+  {
+    const reach = currentSpeed() / SPEED_BASE;
+    let snap = null, snapRel = 1e9;
+    for (const e of G.entities) {
+      if (e.kind !== "atom" || e.hit) continue;
+      if (e.lane !== G.lane) continue;
+      const rel = e.s - G.dist;
+      if (rel > SNAP_AHEAD * reach || rel < -SNAP_BEHIND * reach) continue;
+      if (!targetComplete() && !typeNeeded(e.type)) continue;
+      if (rel < snapRel) { snapRel = rel; snap = e; }
+    }
+    if (snap) { absorbAtom(snap); }
+  }
   // 主角压扁再回弹（D-35）
   G.bondDip = 0;
   G.frictionT = 0.20;
@@ -353,6 +378,12 @@ function checkInteractions() {
 
 function absorbAtom(e) {
   e.hit = true;
+  // 吸附新原子：该节被撞一下，链摆起来（D-77）
+  {
+    const si = clamp(G.collected.length, 0, 2);
+    G.chainSwayV[si] += 6.5;
+    if (si > 0) G.chainSwayV[si - 1] += 2.2;
+  }
 
   const slot = G.collected.length;
   G.collected.push(e.type);
@@ -486,6 +517,10 @@ function stepFx(dt) {
   const upd = (arr, grav) => {
     for (const o of arr) {
       o.t += dt;
+      // 横向弹簧：拉回出生点 x，速度带阻尼 —— 换道被"拨"一下后会摆两下（D-76）
+      if (o.spring) {
+        o.v.x += (-26 * (o.p.x - (o.ax ?? o.p.x)) - 8 * o.v.x) * dt;
+      }
       const drag = o.drag ?? 0;
       if (drag > 0) { const f = Math.exp(-drag * dt); o.v.x *= f; o.v.y *= f; }
       o.p.x += o.v.x * dt;
@@ -527,6 +562,13 @@ function update(dt) {
 
   if (G.mode === "play") {
     G.bondBuffer = Math.max(0, G.bondBuffer - dt);
+    // 头顶链的横向弹簧：第 0 节锚在主角，1/2 节依次跟随上一节（D-77）
+    for (let i = 0; i < 3; i++) {
+      const target = i > 0 ? G.chainSway[i - 1] * 0.85 : 0;
+      const CHAIN_K = 62, CHAIN_C = 7;
+      G.chainSwayV[i] += (-CHAIN_K * (G.chainSway[i] - target) - CHAIN_C * G.chainSwayV[i]) * dt;
+      G.chainSway[i] += G.chainSwayV[i] * dt;
+    }
     if (G.bondDip >= 0) { G.bondDip += dt; if (G.bondDip > 0.35) G.bondDip = -1; }
     G.frictionT = Math.max(0, G.frictionT - dt);
     G.runTime += dt;
@@ -542,10 +584,12 @@ function update(dt) {
       G.trailT += 0.075;
       const pr = 0.6 * scaleAt(0);
       const p = project(0, G.laneXv, 0.42);
-      G.dust.push({ p: { x: p.x + (Math.random() - 0.5) * 16, y: p.y + 5 + Math.random() * 6 },
+      const px = p.x + (Math.random() - 0.5) * 16;
+      G.dust.push({ p: { x: px, y: p.y + 5 + Math.random() * 6 },
         v: { x: (Math.random() - 0.5) * 16 - G.laneVel * 40, y: 26 + Math.random() * 22 },
         t: 0, life: 0.62 + Math.random() * 0.42, color: "#76ccdf",
-        size: pr * (0.29 + Math.random() * 0.09), shrink: true, a0: 0.5, drag: 2.4 });
+        size: pr * (0.29 + Math.random() * 0.09), shrink: true, a0: 0.5, drag: 2.4,
+        spring: true, ax: px });   // 横向弹簧：绕出生点来回摆（D-76）
     }
   } else if (G.mode === "countdown") {
     const d0 = Math.max(1, Math.ceil(Math.max(G.countdownT, 0)));
@@ -575,7 +619,7 @@ function draw() {
   ctx.save();
   ctx.translate(dx, dy);
   drawSky(); drawGround(); drawHorizon(); drawBloom(); drawRoad(); drawRoadPatterns();
-  drawSideDiscs(); drawEntities(); drawPlayer(); drawTrail(); drawFx();
+  drawSideDiscs(); drawAbsorbMarker(); drawEntities(); drawPlayer(); drawTrail(); drawFx();
   ctx.restore();
 
   if (G.mode !== "intro" && G.mode !== "help") drawHud();
@@ -1004,6 +1048,61 @@ function drawSideShape(shape, p, r, fill, line, a, s2) {
 }
 
 
+// 跑道上标出"下滑吸附起点"（D-79 = 方案 A：起点刻度 + 吸附光带）
+// ① 刻度：本车道前方 SNAP_AHEAD·reach 处的虚线 + 两端竖点
+// ② 光带：从刻度铺到原子、越靠原子越亮；原子越过刻度后换成"原子→主角"并整体亮一档
+function drawAbsorbMarker() {
+  if (G.mode !== "play" || targetComplete()) return;
+  const reach = currentSpeed() / SPEED_BASE;
+  const snapRel = SNAP_AHEAD * reach;
+  let best = null, bestRel = 1e9;
+  for (const e of G.entities) {
+    if (e.kind !== "atom" || e.hit) continue;
+    if (e.lane !== G.lane) continue;
+    if (!typeNeeded(e.type)) continue;
+    const rel = e.s - G.dist;
+    if (rel < -1 || rel > snapRel + 6) continue;
+    if (rel < bestRel) { bestRel = rel; best = e; }
+  }
+  if (!best) return;
+  const e0 = env();
+  const half = LANE_W * 0.42;
+  const inside = bestRel <= snapRel;
+  // ── 吸附光带 ──
+  const farRel = !inside ? snapRel : Math.max(bestRel, 0.15);
+  const nearRel = !inside ? bestRel : 0.15;
+  const segs = 24;
+  const aLo = !inside ? 0.075 : 0.10;
+  const aHi = !inside ? 0.26 : 0.34;
+  for (let k = 0; k < segs; k++) {
+    const t0 = k / segs, t1 = (k + 1) / segs;
+    const r0 = lerp(farRel, nearRel, t0), r1 = lerp(farRel, nearRel, t1);
+    const aa = clamp(lerp(aLo, aHi, t0) * (inside ? 1.15 : 1.0), 0, 1);
+    const p0l = project(r0, -half, 0.03), p0r = project(r0, half, 0.03);
+    const p1l = project(r1, -half, 0.03), p1r = project(r1, half, 0.03);
+    ctx.beginPath();
+    ctx.moveTo(p0l.x, p0l.y); ctx.lineTo(p0r.x, p0r.y);
+    ctx.lineTo(p1r.x, p1r.y); ctx.lineTo(p1l.x, p1l.y); ctx.closePath();
+    ctx.fillStyle = rgba(e0.lane, aa); ctx.fill();
+  }
+  // ── 起点刻度：虚线 + 两端竖点 ──
+  const tickA = !inside ? 0.42 : 0.92;
+  const tl = project(snapRel, -half, 0.03), tr = project(snapRel, half, 0.03);
+  ctx.strokeStyle = rgba(e0.lane, tickA); ctx.lineWidth = 2.6;
+  for (let k = 0; k < 5; k++) {
+    const u0 = k / 5, u1 = u0 + 0.58 / 5;
+    ctx.beginPath();
+    ctx.moveTo(lerp(tl.x, tr.x, u0), lerp(tl.y, tr.y, u0));
+    ctx.lineTo(lerp(tl.x, tr.x, u1), lerp(tl.y, tr.y, u1));
+    ctx.stroke();
+  }
+  ctx.lineWidth = 2.4;
+  for (const s of [-1, 1]) {
+    const pe = project(snapRel, half * s, 0.03);
+    ctx.beginPath(); ctx.moveTo(pe.x, pe.y - 7); ctx.lineTo(pe.x, pe.y + 7);
+    ctx.strokeStyle = rgba(e0.lane, tickA * 0.9); ctx.stroke();
+  }
+}
 function drawEntities() {
   const e = env();
   for (const ent of G.entities) {
@@ -1130,8 +1229,7 @@ function drawTrail() {
   const k = scaleAt(0);
   let prev = project(0, G.laneXv, 0.59);
   for (let i = 0; i < Math.min(3, G.collected.length); i++) {
-    const sway = Math.sin((i + 1) * 0.95 + G.fxT * 0.45) * 0.22;
-    const p = project(0, G.laneXv + sway, TRAIL_H[i]);
+    const p = project(0, G.laneXv + (G.chainSway[i] ?? 0), TRAIL_H[i]);
     const r = 0.26 * k;
     const col = MODULE_COLOR[G.collected[i]] || COL_CYAN;
     ctx.beginPath(); ctx.moveTo(prev.x, prev.y); ctx.lineTo(p.x, p.y);
@@ -2029,6 +2127,15 @@ if (shotName && shotName !== "menu") {
     G.mode = "play";
     requestBond();
     for (let i = 0; i < 3; i++) update(1 / 60);
+  }
+  if (shotName === "mark" || shotName === "mark2") {
+    G.mode = "play";
+    G.collected = [G.level.modules[0]];
+    G.entities = [{ kind: "atom", type: G.level.modules[1],
+      s: G.dist + (shotName === "mark" ? 9 : 3), lane: 1, hit: false }];
+    G.lane = 1;
+    G.laneXv = 0;
+    for (let i = 0; i < 2; i++) update(1 / 60);
   }
   if (shotName === "help" || shotName === "help4") {
     G.mode = "help";

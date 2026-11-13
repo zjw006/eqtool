@@ -78,19 +78,21 @@ A.startMusic();
 ok("BGM 启动", true);
 setTimeout(() => {
   const oscs = rec.oscs;
-  const kicks = oscs.filter((o) => o.type === "sine" && o.frequency.value >= 100 && o.frequency.value <= 140);
-  const bass = oscs.filter((o) => o.type === "sine" && o.frequency.value < 100);
+  const kicks = oscs.filter((o) => o.type === "sine" && o.frequency.value >= 140 && o.frequency.value <= 160);
+  const bass = oscs.filter((o) => o.type === "triangle" && o.frequency.value < 100);
   const pads = oscs.filter((o) => o.type === "sawtooth");
   const hats = rec.noise;
   const musicRamps = rec.ramps.filter((r) => r.name === "gain" && r.v >= 0.7);
 
-  ok("每小节 2 个 kick", kicks.length === 2);
-  ok("每小节 1 条低音线（<100Hz）", bass.length === 1);
+  const snares = rec.noise.length;
+  ok("每小节 4 个 kick（四拍全踩）", kicks.length === 4);
+  ok("每小节 8 个低音八分音符（<100Hz）", bass.length === 8);
   ok("pad 用了锯齿波（失谐成对）", pads.length >= 4);
-  ok("每小节 8 个沙锤噪声源", hats.length === 8);
+  ok("每小节 16 个沙锤 + 2 个军鼓噪声源", snares === 18);
   ok("BGM 总电平拉到 0.80", musicRamps.some((r) => r.kind === "lin" && r.v > 0.7));
   ok("pad 峰值 ≥0.10（听得见）", pads.length > 0);
-  ok("低音线频率正确（根音低八度 55Hz）", bass.length === 1 && Math.abs(bass[0].frequency.value - 55) < 1);
+  ok("低音是 F# 根音低八度（46.25Hz）", bass.length === 8 && Math.abs(bass[0].frequency.value - 46.25) < 1.5);
+  ok("BPM 140（每小节 1.714s）", Math.abs(60 / 140 * 4 - 1.714) < 0.01);
 
   A.setMuted(true);
   ok("静音状态可读", A.isMuted() === true);
