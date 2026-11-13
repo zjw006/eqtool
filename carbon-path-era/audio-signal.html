@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>BGM 信号自检</title>
+<style>
+  html, body { margin: 0; background: #04070d; color: #cfe9f2; font-family: "Microsoft YaHei", system-ui, sans-serif; }
+  canvas { display: block; margin: 0 auto; }
+</style>
+</head>
+<body>
+<canvas id="cv" width="720" height="720"></canvas>
+<script>
+// 用 OfflineAudioContext 把 BGM 真正渲染出来，量 RMS/峰值后再画成文字 —— 用来确认"确实有声音"
+const SR = 48000, DUR = 3.0;
+let offline = null;
+window.AudioContext = function () {
+  offline = new OfflineAudioContext(2, Math.floor(SR * DUR), SR);
+  offline.resume = () => Promise.resolve();
+  return offline;
+};
+</script>
+<script src="audio.js"></script>
+<script>
+const cv = document.getElementById("cv");
+const ctx = cv.getContext("2d");
+function draw(lines) {
+  ctx.fillStyle = "#04070d";
+  ctx.fillRect(0, 0, 720, 720);
+  ctx.fillStyle = "#cfe9f2";
+  ctx.font = '700 24px "Microsoft YaHei",system-ui,sans-serif';
+  lines.forEach((l, i) => {
+    ctx.fillStyle = l.startsWith("PASS") ? "#8bec62" : l.startsWith("FAIL") ? "#ff735e" : "#cfe9f2";
+    ctx.font = i < 2 ? '700 26px "Microsoft YaHei",system-ui,sans-serif' : '18px "Microsoft YaHei",system-ui,sans-serif';
+    ctx.fillText(l, 32, 70 + i * 46);
+  });
+}
+
+draw(["载入中…（若一直停在这是脚本没跑起来）"]);
+if (typeof OfflineAudioContext === "undefined") draw(["当前浏览器没有 OfflineAudioContext"]);
+(async () => {
+  const A = window.GameAudio;
+  try {
+    A.init();
+    A.setTier(1);
+    A.startMusic();
+    // 再补一次调度：offline 的 currentTime 恒为 0，先手动多排一小节
+    const buf = await offline.startRendering();
+    const ch = buf.getChannelData(0);
+    const from = Math.floor(SR * 0.3), to = Math.floor(SR * 2.8);
+    let sum = 0, peak = 0;
+    for (let i = from; i < to; i++) {
+      const v = ch[i];
+      sum += v * v;
+      peak = Math.max(peak, Math.abs(v));
+    }
+    const rms = Math.sqrt(sum / (to - from));
+    const lines = [
+      "BGM 离线渲染自检",
+      `时长 ${DUR.toFixed(1)}s · 采样率 ${SR}`,
+      `RMS = ${rms.toFixed(4)}`,
+      `PEAK = ${peak.toFixed(4)}`,
+      rms > 0.01 ? "PASS 背景音有实际音频输出（RMS > 0.01）" : "FAIL 背景音几乎无声（RMS ≤ 0.01）",
+      peak > 0.05 ? "PASS 峰值正常（> 0.05）" : "FAIL 峰值过低",
+      rms < 0.30 ? "PASS 未过载（RMS < 0.30）" : "FAIL 可能过载",
+    ];
+    draw(lines);
+    document.body.setAttribute("data-result", lines.join(" | "));
+  } catch (e) {
+    draw(["渲染失败", String(e), typeof e === "object" && e && e.message ? e.message : ""]);
+  }
+})();
+</script>
+</body>
+</html>

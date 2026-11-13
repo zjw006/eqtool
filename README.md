@@ -2,7 +2,7 @@
 
 一套面向高中全学科的交互式可视化学习工具，用动画和可调参数让抽象概念变得温暖可触。
 
-**版本**: v2.9.0 (2026-08-19)
+**版本**: v2.10.0 (2026-11-13)
 
 ## 在线预览
 
@@ -114,6 +114,10 @@
 | 文件 | 页面 | 说明 |
 |------|------|------|
 | `chem-energy-conversion.html` | 化学能转化为热能和动能 | 从食物消化到火箭推进 — 化学能转化为热能和动能的交互式探索。含食物消化动画（千卡计量）、燃烧反应粒子模拟、内燃机四冲程动画、暖手宝放热演示，全部以千卡 (kcal) 为计量单位。食物选择支持多选，所有属性实时联动更新 |
+| `chem-reactor/index.html` | 反应炉 — 化学卡牌对战 | 向公共反应釜投放物质牌，触发 Zn+HCl→H₂、H₂+O₂ 点燃等 12 条反应连锁，还要提防钠遇水爆釜。含 PVE 人机与本地双人热座两种模式，出牌预览、十二种反应演出与中文语音播报 |
+| `chem-molecule-synthesis/index.html` | 化学分子合成 — 黑白实验台 | 在 7×7 黑白实验台上按住格子，沿横竖折线滑过目标公式的原料，松手即合成分子。30 关分 6 章、30 格分子图鉴与三档星级评价，带重排与连线提示，连错不扣分、无失败态 |
+| `chem-card-lab/index.html` | 化学卡牌 — 链式反应实验室 | 抽元素、买设备、跑 7 条真实配方，再用主产物与副产物交付公共订单，先到 7 分获胜。18 张元素牌、4 类设备、8 张订单，含三档本地 AI、突然死亡规则与 22 步中文语音全链教学 |
+| `carbon-path-era/index.html` | 碳途纪元 — 2D 十三关跑酷 | 从水到 DNA 的 13 关 2D 伪透视跑酷：左右换道吸附原子模块，凑齐本关分子式后撞进分子门交付，达到本关次数即通关。每关开场有原子级结构图与科普介绍，关卡解锁、每关最佳与静音状态存 `localStorage`；纯 Canvas 2D + Web Audio，音效与 84 BPM BGM 全部程序化合成，无依赖、无素材、双击即玩 |
 
 ### 趣味与创意
 
@@ -233,12 +237,25 @@ trigonometry-visualization/
 │   ├── solid-geometry-charts.js        # 立体几何
 │   ├── line-circle-charts.js           # 直线与圆
 │   └── convolution-life-charts.js      # 卷积计算器
+├── carbon-path-era/                    # 碳途纪元 · 2D 十三关跑酷 (Canvas2D + Web Audio, 无依赖)
 ├── classical-chinese/                  # 文言文装叉指南 (React SPA)
 ├── quantum-educator/                   # 量子教育者 (React SPA)
 └── transforms-app/                     # 三大变换演示 (React SPA)
 ```
 
 ## 更新日志
+
+### v2.10.0 (2026-11-13)
+
+- **替换** 碳途纪元（`carbon-path-era/`）：球面三轨跑酷（Three.js 3D 灰盒）→ 2D 十三关网页版
+  - 纯 Canvas 2D + Web Audio，无依赖、无构建、无音视频素材；移除原作者目录下的 `sphere.js` / `three.module.min.js` / `Tone.min.js` / `THREE-LICENSE.txt`
+  - 13 关：H₂O → CO₂ → CH₄ → NH₃ → CH₃OH → C₂H₄ → HCN → CH₂O → 甘氨酸 → 核苷酸 → 酶 → RNA → DNA，每关含原子级结构图与科普介绍
+  - 流程：关卡选择 → 关卡介绍页 → 3·2·1 倒计时 → 跑酷；左右换道吸附原子模块，凑齐本关分子式后撞分子门交付，达到本关次数通关
+  - 投影/判定/节奏常量直接移植自 Godot 版（R=1000、F_PX=780、Y_HORIZON=576，成键窗口前 3.0 / 后 2.0 u，难度按 dist/240 插值）
+  - 音效与 84 BPM 四小节 BGM 全部程序化合成，每 2 次交付升一档；关卡解锁、每关最佳与静音状态存 `localStorage`
+  - 自带 Node 自检：`node selftest.js` 7/7、`node audio-test.js` 13/13
+  - 首页化学页签卡片同步改为「碳途纪元 — 2D 十三关跑酷」
+- **补记** 11 月新增的化学页面（此前未记入文档）：`chem-reactor/`（反应炉卡牌对战）、`chem-molecule-synthesis/`（黑白实验台分子合成）、`chem-card-lab/`（链式反应实验室）、`carbon-path-era/` 初版球面 3D（已被本次 2D 版替换）
 
 ### v2.9.0 (2026-08-19)
 
