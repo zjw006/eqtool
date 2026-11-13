@@ -53,6 +53,27 @@ const ENV = {
   dna:                   { top: "#0a0f14", hor: "#14303a", groundNear: "#060a0e", groundFar: "#0f2530", lane: "#9fe6c3", edge: "#41b48a", accent: "#d6ffe9" },
 };
 
+// 赛道两侧装饰外形（与 Godot 版一一对应，D-64）
+const SIDE_SHAPES = {
+  1: "disc", 2: "rain", 3: "tetra", 4: "pyramid",
+  5: "droplet", 6: "hex", 7: "triple", 8: "carbonyl",
+  9: "beads", 10: "nucleotide", 11: "ribbon",
+  12: "hairpin", 13: "helix",
+};
+const sideShapeOf = (id) => SIDE_SHAPES[id] || "disc";
+
+// 分子越大 → 路外景越大；场景越"稠/深" → 漂得越慢，大的更慢（÷√尺寸）（D-65）
+const SIDE_SCALE = {
+  1: 0.90, 2: 0.90, 3: 1.02, 4: 0.96, 5: 1.08, 6: 1.08, 7: 0.90,
+  8: 0.96, 9: 1.24, 10: 1.32, 11: 1.36, 12: 1.38, 13: 1.42,
+};
+const SIDE_SPEED = {
+  1: 1.15, 2: 1.30, 3: 0.85, 4: 0.95, 5: 0.78, 6: 1.05, 7: 1.00,
+  8: 0.92, 9: 1.05, 10: 0.95, 11: 0.88, 12: 0.95, 13: 0.90,
+};
+const sideScaleOf = (id) => SIDE_SCALE[id] ?? 1.0;
+const sideSpeedOf = (id) => SIDE_SPEED[id] ?? 1.0;
+
 // ───────────────────────── 投影（space2d.gd）─────────────────────────
 const horizonArc = () => Math.sqrt((R_CYL + H_CAM) * (R_CYL + H_CAM) - R_CYL * R_CYL);
 function project(s, x = 0, h = 0) {
@@ -136,8 +157,15 @@ function unlockAudio() {
 
 // ───────────────────────── 游戏状态 ─────────────────────────
 const SAVE_KEY = "carbon_era_2d_web_v1";
-let save = { unlocked: 1, best: {}, muted: false };
-try { const raw = localStorage.getItem(SAVE_KEY); if (raw) save = Object.assign(save, JSON.parse(raw)); } catch (e) {}
+let save = { unlocked: 1, best: {}, muted: false, helpShown: false };
+try {
+  const raw = localStorage.getItem(SAVE_KEY);
+  if (raw) {
+    const d = JSON.parse(raw);
+    save = Object.assign(save, d);
+    save.helpShown = !!d.helpShown;
+  }
+} catch (e) {}
 let MUTED = !!save.muted;
 function setMuted(m) {
   MUTED = !!m;
@@ -162,6 +190,8 @@ const G = {
   trailT: 0, fxT: 0,
   menuSel: 0, introHover: false, introBtn: { x: 214, y: 1138, w: 292, h: 94 },
   bigText: "", bigTextColor: COL_CYAN, bigTextA: 0,
+  helpPage: 0,
+  bondDip: -1, frictionT: 0,
   sparks: [], dust: [], waves: [], shards: [], residue: [], rings: [],
   loose: [],               // 主菜单飘浮圆片用不到，保留占位
 };
@@ -252,12 +282,38 @@ function moveLane(dir) {
   G.lane = next;
   G.laneVel = dir * 6.0;
 }
+// 下滑压扁曲线（照搬 Godot 的 _dip_curve）：先快速压扁，再回弹过冲一点
+function dipCurve(tt) {
+  const tDown = 0.07, tUp = 0.27, depth = 0.42;
+  if (tt < tDown) {
+    const k1 = tt / tDown;
+    const sy1 = 1 - depth * k1 * k1;
+    return { x: Math.pow(sy1, -0.5), y: sy1 };
+  }
+  const k2 = clamp((tt - tDown) / tUp, 0, 1);
+  const easeOut = 1 - Math.pow(1 - k2, 3);
+  const wobble = Math.sin(k2 * Math.PI) * 0.055;
+  const sy2 = lerp(1 - depth, 1 + wobble, easeOut);
+  return { x: Math.pow(sy2, -0.5), y: sy2 };
+}
+
 function requestBond() {
   if (G.mode !== "play") return;
   G.bondBuffer = BOND_BUFFER;
-  // 摩擦火花（表现层）
-  const g = project(0, laneX(G.lane), 0.12);
-  for (let i = 0; i < 12; i++) {
+  // 主角压扁再回弹（D-35）
+  G.bondDip = 0;
+  G.frictionT = 0.20;
+  const ball = project(0, laneX(G.lane), 0.59);
+  addWave(ball, 0.55, 110, 0.22, COL_CYAN);
+  for (let i = 0; i < 5; i++) {
+    const a = Math.random() * TAU, sp = 90 * (0.4 + Math.random());
+    G.sparks.push({ p: { x: ball.x, y: ball.y + 26 }, v: { x: Math.cos(a) * sp, y: Math.sin(a) * sp },
+      t: 0, life: 0.26 + Math.random() * 0.2, color: COL_CYAN, size: 1.4 + Math.random() * 1.4, drag: 3.0 });
+  }
+  // 地面摩擦：白色火花从球前后方甩出（窄扇形，朝屏幕下方）
+  const g = project(0, laneX(G.lane), 0.10);
+  const n = Math.round(14 + 6 * 1.0);
+  for (let i = 0; i < n; i++) {
     const a = Math.PI * 0.5 + (Math.random() - 0.5) * 1.0;
     const sp = 180 + Math.random() * 190;
     G.dust.push({ p: { x: g.x + (Math.random() - 0.5) * 34, y: g.y - 8 + Math.random() * 8 },
@@ -266,6 +322,13 @@ function requestBond() {
   }
 }
 
+// ─── 门的脉冲：成键轻 / 撞门重，放大再缩回，内→外逐圈变亮（D-66）───
+const GATE_PULSE_LEN = 0.46;
+function gatePulseOf(e) {
+  const u = clamp((G.fxT - (e.pulseAt ?? -999)) / GATE_PULSE_LEN, 0, 1);
+  if (u >= 1) return 0;
+  return (e.pulseAmp ?? 0) * Math.sin(Math.PI * u);
+}
 function checkInteractions() {
   const reach = currentSpeed() / SPEED_BASE;
   for (const e of G.entities) {
@@ -282,7 +345,7 @@ function checkInteractions() {
       return;
     } else if (e.kind === "gate") {
       e.hit = true;
-      if (targetComplete()) deliver();
+      if (targetComplete()) deliver(e);
       else { beginCollapse("分子不符"); return; }
     }
   }
@@ -290,6 +353,7 @@ function checkInteractions() {
 
 function absorbAtom(e) {
   e.hit = true;
+
   const slot = G.collected.length;
   G.collected.push(e.type);
   G.bondBuffer = 0;
@@ -321,7 +385,9 @@ function shatterAtom(e) {
   G.shake = Math.max(G.shake, 2.2 * power);
 }
 
-function deliver() {
+function deliver(e) {
+  if (e) { e.pulseAt = G.fxT; e.pulseAmp = 0.45; }
+
   G.deliveries++;
   G.collected = [];
   G.bondBuffer = 0;
@@ -446,8 +512,11 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 
+const IS_SELFTEST = new URLSearchParams(location.search).get("selftest") === "1";
+
 function update(dt) {
-  if (G.mode === "pause") return;
+  if (G.mode === "pause" || G.mode === "help") return;
+
   G.fxT += dt;
   stepFx(dt);
   G.shake *= Math.exp(-9 * dt);
@@ -458,6 +527,8 @@ function update(dt) {
 
   if (G.mode === "play") {
     G.bondBuffer = Math.max(0, G.bondBuffer - dt);
+    if (G.bondDip >= 0) { G.bondDip += dt; if (G.bondDip > 0.35) G.bondDip = -1; }
+    G.frictionT = Math.max(0, G.frictionT - dt);
     G.runTime += dt;
     G.dist += currentSpeed() * dt;
     G.laneXv += (laneX(G.lane) - G.laneXv) * (1 - Math.exp(-dt * 14));
@@ -507,7 +578,7 @@ function draw() {
   drawSideDiscs(); drawEntities(); drawPlayer(); drawTrail(); drawFx();
   ctx.restore();
 
-  if (G.mode !== "intro") drawHud();
+  if (G.mode !== "intro" && G.mode !== "help") drawHud();
   if (G.mode === "intro") drawIntro();
   if (G.mode === "countdown") drawCountdown();
   if (G.mode === "collapse" && G.collapseT > SKIP_AFTER) {
@@ -517,6 +588,8 @@ function draw() {
     ctx.fillText("空格 / 点击 · 跳过", W / 2, H * 0.72);
     ctx.textAlign = "left";
   }
+
+  if (G.mode === "help") drawHelp();
   if (G.mode === "pause") drawPause();
   if (G.mode === "lose") drawLose();
   drawBigText();
@@ -703,6 +776,9 @@ function drawRoadPatterns() {
 
 function drawSideDiscs() {
   const e = env();
+  const shape = sideShapeOf(G.level.id);
+  const sz = sideScaleOf(G.level.id);
+  const sp = sideSpeedOf(G.level.id) / Math.sqrt(Math.max(0.5, sz));
   const wallFill = mix(mix(e.edge, e.groundFar, 0.5), "#000000", 0.16);
   const wallEdge = mix(e.edge, "#ffffff", 0.48);
   const SIDE_STEP = 5.2, SIDE_SLOTS = 24, SIDE_MOTION = 2.0, SIDE_DRIFT = 0.9;
@@ -710,7 +786,7 @@ function drawSideDiscs() {
   for (let i = 0; i < SIDE_SLOTS; i++) {
     const s = hash01(i * 1.37 + 0.11), s2 = hash01(i * 2.71 + 3.70);
     const jit = 0.62 + s * 0.95;
-    const travel = (G.dist * SIDE_MOTION + SIDE_DRIFT * G.fxT) * jit;
+    const travel = (G.dist * SIDE_MOTION + SIDE_DRIFT * G.fxT) * jit * sp;
     const rel = ((i * SIDE_STEP - travel) % span + span) % span - 8;
     if (rel < -3 || rel > 104) continue;
     const side = i % 2 === 0 ? -1 : 1;
@@ -718,16 +794,215 @@ function drawSideDiscs() {
     const hgt = 0.55 + s2 * 2.1 + Math.sin(G.fxT * 0.9 + s * 6.28) * 0.12;
     const sway = Math.sin(G.fxT * 0.75 + s2 * 6.28) * 0.30;
     const p = project(rel, xOff + sway, hgt);
-    const r = (0.15 + s2 * 0.30) * scaleAt(rel);
+    const r = (0.15 + s2 * 0.30) * scaleAt(rel) * sz;
     if (r < 0.8) continue;
     const a = 0.20 + s * 0.10;
     const fade = clamp(1 - (rel - 64) / 38, 0, 1);
-    ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, TAU);
-    ctx.fillStyle = rgba(wallFill, a * fade); ctx.fill();
-    ctx.strokeStyle = rgba(wallEdge, Math.min(1, a * 1.25) * fade);
-    ctx.lineWidth = Math.max(0.6, r * 0.10); ctx.stroke();
+    drawSideShape(shape, p, r, wallFill, wallEdge, a * fade, s2);
   }
 }
+// 赛道两侧装饰外形（D-64）：与 Godot 版 13 种一一对应，颜色取当关 wall_fill/wall_edge
+// p: {x,y}，r: 半径像素，fill/line: 十六进制色，a: 已乘距离淡出的透明度，s2: 每片固定随机
+function drawSideShape(shape, p, r, fill, line, a, s2) {
+  const fa = clamp(a, 0, 1);
+  const fc = rgba(fill, fa);
+  const lc = rgba(line, Math.min(1, fa * 1.25));
+  const lw = Math.max(0.7, r * 0.11);
+  const small = r < 9;
+  let ang = 0;
+  if (shape === "tetra" || shape === "hex" || shape === "ribbon") {
+    ang = Math.sin(G.fxT * 0.55 + s2 * 6.283) * (8 * Math.PI / 180);
+  }
+  const rot = (dx, dy) => ({
+    x: p.x + dx * Math.cos(ang) - dy * Math.sin(ang),
+    y: p.y + dx * Math.sin(ang) + dy * Math.cos(ang),
+  });
+  const poly = (pts, close) => {
+    ctx.beginPath();
+    pts.forEach((q, i) => (i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y)));
+    if (close) ctx.closePath();
+  };
+  switch (shape) {
+    case "rain": {
+      if (small) {
+        ctx.beginPath(); ctx.moveTo(p.x, p.y - r * 1.4); ctx.lineTo(p.x, p.y + r * 1.4);
+        ctx.strokeStyle = lc; ctx.lineWidth = Math.max(1, lw); ctx.stroke();
+      } else {
+        const w = r * 0.38, h = r * 1.45, pts = [];
+        for (let k = 0; k < 12; k++) {
+          const th = (Math.PI * 2 * k) / 12;
+          pts.push({ x: p.x + Math.cos(th) * w, y: p.y + Math.sin(th) * h });
+        }
+        poly(pts, true); ctx.fillStyle = fc; ctx.fill();
+        ctx.strokeStyle = lc; ctx.lineWidth = lw; ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(p.x - r * 0.22, p.y + h * 0.75); ctx.lineTo(p.x - r * 0.22, p.y + h * 1.75);
+        ctx.moveTo(p.x + r * 0.2, p.y + h * 0.55); ctx.lineTo(p.x + r * 0.2, p.y + h * 1.3);
+        ctx.strokeStyle = lc; ctx.lineWidth = Math.max(0.7, lw * 0.6); ctx.stroke();
+      }
+      break;
+    }
+    case "tetra": {
+      const pts = [
+        { x: p.x, y: p.y - r * 1.1 },
+        { x: p.x + r * 0.95, y: p.y + r * 0.62 },
+        { x: p.x - r * 0.95, y: p.y + r * 0.62 },
+      ];
+      poly(pts, true); ctx.fillStyle = fc; ctx.fill();
+      ctx.strokeStyle = lc; ctx.lineWidth = lw; ctx.stroke();
+      if (!small) {
+        ctx.beginPath();
+        pts.forEach((q) => { ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); });
+        ctx.strokeStyle = lc; ctx.lineWidth = Math.max(0.7, lw * 0.6); ctx.stroke();
+      }
+      break;
+    }
+    case "pyramid": {
+      const pts = [
+        { x: p.x, y: p.y - r * 0.7 },
+        { x: p.x + r * 0.9, y: p.y + r * 0.75 },
+        { x: p.x - r * 0.9, y: p.y + r * 0.75 },
+      ];
+      poly(pts, true); ctx.fillStyle = fc; ctx.fill();
+      ctx.strokeStyle = lc; ctx.lineWidth = lw; ctx.stroke();
+      ctx.beginPath(); ctx.arc(p.x, p.y - r * 1.55, Math.max(1, r * 0.2), 0, Math.PI * 2);
+      ctx.strokeStyle = lc; ctx.lineWidth = Math.max(0.7, lw * 0.7); ctx.stroke();
+      break;
+    }
+    case "droplet": {
+      ctx.beginPath(); ctx.arc(p.x - r * 0.25, p.y + r * 0.1, r * 0.72, 0, Math.PI * 2);
+      ctx.fillStyle = fc; ctx.fill(); ctx.strokeStyle = lc; ctx.lineWidth = lw; ctx.stroke();
+      ctx.beginPath(); ctx.arc(p.x + r * 0.75, p.y - r * 0.62, r * 0.42, 0, Math.PI * 2);
+      ctx.fillStyle = fc; ctx.fill();
+      if (!small) { ctx.strokeStyle = lc; ctx.lineWidth = Math.max(0.6, lw * 0.7); ctx.stroke(); }
+      break;
+    }
+    case "hex": {
+      const pts = [];
+      for (let k = 0; k < 6; k++) {
+        const th = (Math.PI * 2 * k) / 6 - Math.PI * 0.5;
+        pts.push(rot(Math.cos(th) * r, Math.sin(th) * r));
+      }
+      poly(pts, true); ctx.fillStyle = fc; ctx.fill();
+      ctx.strokeStyle = lc; ctx.lineWidth = lw; ctx.stroke();
+      if (!small) {
+        ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y); ctx.lineTo(pts[3].x, pts[3].y);
+        ctx.strokeStyle = lc; ctx.lineWidth = Math.max(0.7, lw * 0.7); ctx.stroke();
+      }
+      break;
+    }
+    case "triple": {
+      const xs = [-r * 0.8, -r * 0.12, r * 0.55];
+      const hs = [r * 1.05, r * 0.78, r * 1.3];
+      ctx.beginPath();
+      for (let k = 0; k < 3; k++) {
+        ctx.moveTo(p.x + xs[k], p.y - hs[k] * 0.5);
+        ctx.lineTo(p.x + xs[k], p.y + hs[k] * 0.5);
+      }
+      ctx.strokeStyle = lc; ctx.lineWidth = Math.max(1.2, r * 0.26); ctx.stroke();
+      break;
+    }
+    case "carbonyl": {
+      const pts = [];
+      for (let k = 0; k < 12; k++) {
+        const th = (Math.PI * 2 * k) / 12;
+        pts.push({ x: p.x + Math.cos(th) * r * 0.8, y: p.y + Math.sin(th) * r * 0.55 });
+      }
+      poly(pts, true); ctx.fillStyle = fc; ctx.fill();
+      ctx.strokeStyle = lc; ctx.lineWidth = lw; ctx.stroke();
+      ctx.beginPath(); ctx.arc(p.x + r * 1.05, p.y - r * 0.15, Math.max(1, r * 0.22), 0, Math.PI * 2);
+      ctx.strokeStyle = lc; ctx.lineWidth = Math.max(0.7, lw * 0.7); ctx.stroke();
+      break;
+    }
+    case "beads": {
+      const b = [
+        { x: p.x - r * 0.78, y: p.y + r * 0.18 },
+        { x: p.x, y: p.y - r * 0.28 },
+        { x: p.x + r * 0.78, y: p.y + r * 0.12 },
+      ];
+      ctx.beginPath(); ctx.moveTo(b[0].x, b[0].y); ctx.lineTo(b[1].x, b[1].y); ctx.lineTo(b[2].x, b[2].y);
+      ctx.strokeStyle = lc; ctx.lineWidth = Math.max(0.7, lw * 0.7); ctx.stroke();
+      b.forEach((q) => {
+        ctx.beginPath(); ctx.arc(q.x, q.y, Math.max(1.2, r * 0.34), 0, Math.PI * 2);
+        ctx.fillStyle = fc; ctx.fill();
+        ctx.strokeStyle = lc; ctx.lineWidth = Math.max(0.6, lw * 0.7); ctx.stroke();
+      });
+      break;
+    }
+    case "nucleotide": {
+      const bw = r * 0.42, rad = Math.max(0.5, bw * 0.35);
+      const blocks = [
+        { x: p.x - bw * 0.5, y: p.y - r * 0.95, w: bw, h: r * 1.5 },
+        { x: p.x - bw * 0.5, y: p.y + r * 0.35, w: r * 1.35, h: bw },
+        { x: p.x + r * 0.5, y: p.y + r * 0.35, w: bw * 0.8, h: bw * 0.8 },
+      ];
+      blocks.forEach((bb) => {
+        roundRect(bb.x, bb.y, bb.w, bb.h, rad);
+        ctx.fillStyle = fc; ctx.fill();
+        ctx.strokeStyle = lc; ctx.lineWidth = Math.max(0.6, lw * 0.8); ctx.stroke();
+      });
+      break;
+    }
+    case "ribbon": {
+      const n = small ? 9 : 13;
+      const pts = [], pts2 = [];
+      for (let k = 0; k < n; k++) {
+        const tt = k / (n - 1);
+        const xx = lerp(-r, r, tt);
+        const yy = Math.sin(tt * Math.PI * 2) * r * 0.55;
+        pts.push(rot(xx, yy));
+        pts2.push(rot(xx, yy + r * 0.42));
+      }
+      poly(pts, false); ctx.strokeStyle = lc; ctx.lineWidth = Math.max(1, r * 0.22); ctx.stroke();
+      if (!small) {
+        poly(pts2, false); ctx.strokeStyle = rgba(line, fa * 1.25 * 0.75); ctx.lineWidth = Math.max(0.8, r * 0.18); ctx.stroke();
+      }
+      break;
+    }
+    case "hairpin": {
+      ctx.beginPath(); ctx.moveTo(p.x, p.y + r * 1.15); ctx.lineTo(p.x, p.y - r * 0.15);
+      ctx.strokeStyle = lc; ctx.lineWidth = Math.max(0.8, lw * 0.9); ctx.stroke();
+      if (small) {
+        ctx.beginPath(); ctx.arc(p.x, p.y - r * 0.85, r * 0.5, 0, Math.PI * 2);
+        ctx.fillStyle = lc; ctx.fill();
+      } else {
+        ctx.beginPath(); ctx.arc(p.x, p.y - r * 0.85, r * 0.55, 0, Math.PI * 2);
+        ctx.strokeStyle = lc; ctx.lineWidth = Math.max(0.8, lw); ctx.stroke();
+        ctx.beginPath(); ctx.arc(p.x, p.y - r * 0.85, r * 0.28, 0, Math.PI * 2);
+        ctx.fillStyle = fc; ctx.fill();
+      }
+      break;
+    }
+    case "helix": {
+      const m = small ? 9 : 13;
+      const q1 = [], q2 = [], rungs = [];
+      for (let k = 0; k < m; k++) {
+        const t2 = k / (m - 1);
+        const x2 = lerp(-r, r, t2);
+        const ph = t2 * Math.PI * 2;
+        const a1 = { x: p.x + x2, y: p.y + Math.sin(ph) * r * 0.55 };
+        const a2 = { x: p.x + x2, y: p.y - Math.sin(ph) * r * 0.55 };
+        q1.push(a1); q2.push(a2); rungs.push([a1, a2]);
+      }
+      poly(q1, false); ctx.strokeStyle = lc; ctx.lineWidth = Math.max(0.9, r * 0.16); ctx.stroke();
+      poly(q2, false); ctx.strokeStyle = lc; ctx.lineWidth = Math.max(0.9, r * 0.16); ctx.stroke();
+      if (!small) {
+        ctx.beginPath();
+        [3, 6, 9].forEach((k) => {
+          if (k < rungs.length) { ctx.moveTo(rungs[k][0].x, rungs[k][0].y); ctx.lineTo(rungs[k][1].x, rungs[k][1].y); }
+        });
+        ctx.strokeStyle = lc; ctx.lineWidth = Math.max(0.6, lw * 0.6); ctx.stroke();
+      }
+      break;
+    }
+    default: {
+      ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = fc; ctx.fill();
+      ctx.strokeStyle = lc; ctx.lineWidth = lw; ctx.stroke();
+    }
+  }
+}
+
 
 function drawEntities() {
   const e = env();
@@ -761,18 +1036,39 @@ function drawEntities() {
       ctx.strokeStyle = rgba(mix(e.edge, "#ffffff", 0.48), 0.9);
       ctx.lineWidth = Math.max(1.6, r * 0.13); ctx.stroke();
     } else if (ent.kind === "gate") {
-      const c = project(rel, laneX(ent.lane), 0.95);
-      const r = 1.05 * scaleAt(rel);
+      const cc = project(rel, laneX(ent.lane), 0.95);
+      const pulse = gatePulseOf(ent);
+
+      const r = 1.05 * scaleAt(rel) * (1 + pulse);
+      const c = cc;
       const ok = targetComplete();
-      const col = ok ? "#cfe9f2" : COL_CYAN;
-      ctx.beginPath(); ctx.arc(c.x, c.y, r * 1.5, 0, TAU);
-      ctx.strokeStyle = rgba(col, 0.25); ctx.lineWidth = Math.max(2, r * 0.18); ctx.stroke();
-      ctx.beginPath(); ctx.arc(c.x, c.y, r, 0, TAU);
-      ctx.strokeStyle = rgba(col, 0.95); ctx.lineWidth = Math.max(1.5, r * 0.10); ctx.stroke();
-      ctx.fillStyle = rgba(col, 0.9);
+      // 门色跟场景走（与 Godot 版同一条规则：edge 与 accent 混色，只提亮 25%）
+      const gateCol = mix(mix(env().edge, env().accent, 0.5), "#ffffff", 0.25);
+      const col = ok ? mix(gateCol, "#ffffff", 0.45) : gateCol;
+      // 撞门时：放大 → 缩小；亮度跟着走（大 = 亮且偏白，小 = 暗）（D-66）
+      const boost = 1 + pulse * 2.4;
+      const tc = mix(col, "#ffffff", pulse * 0.55);
+      for (let k = 0; k < 4; k++) {
+        const f = lerp(0.56, 1.0, k / 3);
+        const w = Math.max(1, r * lerp(0.045, 0.10, k / 3));
+        const ca = clamp(lerp(0.20, 0.90, Math.pow(k / 3, 1.25)) * boost, 0, 1);
+        ctx.beginPath(); ctx.arc(c.x, c.y, r * f, 0, TAU);
+        ctx.strokeStyle = rgba(tc, ca); ctx.lineWidth = w; ctx.stroke();
+      }
+      ctx.fillStyle = rgba(tc, 0.95);
       ctx.font = FONT(Math.max(10, Math.min(30, r * 0.6)), true);
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.fillText(G.level.formula, c.x, c.y);
+      // 门里的原子/分子：常亮（D-69 去掉了依次点亮，跑太快看不清）
+      const mods = G.level.modules;
+      const n = mods.length;
+      const dotSpan = Math.min(r * 1.5, n * 14);
+      const dotX0 = c.x - dotSpan / 2;
+      for (let i = 0; i < n; i++) {
+        const mx = dotX0 + (dotSpan / Math.max(n, 1)) * (i + 0.5);
+        ctx.beginPath(); ctx.arc(mx, c.y + r * 0.42, 4, 0, TAU);
+        ctx.fillStyle = rgba(MODULE_COLOR[mods[i]] || "#78efff", 1); ctx.fill();
+      }
       ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
     }
   }
@@ -782,8 +1078,21 @@ function drawPlayer() {
   if (G.playerHidden) return;
   const c = project(0, G.laneXv, 0.59);
   const k = scaleAt(0);
-  const rx = 0.6 * k, ry = 0.6 * k;
   const rim = mix(PLAYER_RIM, env().accent, 0.30);
+  // 下划压扁：越按越扁，然后弹回（D-35）
+  const dip = G.bondDip >= 0 ? dipCurve(G.bondDip) : { x: 1, y: 1 };
+  const rx = 0.6 * k * dip.x, ry = 0.6 * k * dip.y;
+  // 地面摩擦光：两条白色扁椭圆，随时间收缩淡出
+  if (G.frictionT > 0) {
+    const gk = clamp(G.frictionT / 0.20, 0, 1);
+    const gp = project(0, G.laneXv, 0.12);
+    ctx.beginPath();
+    ctx.ellipse(gp.x, gp.y, 46 * gk + 12, 9 * gk + 3, 0, 0, TAU);
+    ctx.fillStyle = rgba("#ffffff", 0.30 * gk); ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(gp.x, gp.y, 22 * gk + 6, 4.5 * gk + 2, 0, 0, TAU);
+    ctx.fillStyle = rgba("#ffffff", 0.55 * gk); ctx.fill();
+  }
   // 底部光晕
   const g = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, ry * 2.6);
   g.addColorStop(0, rgba(rim, 0.16)); g.addColorStop(1, rgba(rim, 0));
@@ -1243,6 +1552,157 @@ function drawCountdown() {
   ctx.textAlign = "left";
 }
 
+// ─── 首次进入的 4 页操作帮助（D-74）───
+const HELP_TOTAL = 4;
+const HELP_TITLES = ["目标分子", "左右换道", "下滑成键", "撞门交付"];
+const HELP_BODY = [
+  "顶部显示本关要凑的分子。收集路上的模块，按结构拼起来 —— 第 1 关是 H₂O：两个 H、一个 O。",
+  "用 ← → 或 A / D 在三车道间换道。撞上菱形结构墙会直接湮灭，看到墙要提前让开。",
+  "模块进入当前车道、贴近主角时，按 ↓ 或 S 把它吸到链上；位置对了才吸得到。",
+  "凑齐结构后撞进前方的分子门，就完成一次交付。达到本关要求的交付次数即过关。",
+];
+function helpCard() { return { x: 80, y: 300, w: W - 160, h: 840 }; }
+function helpButton() {
+  const c = helpCard();
+  return { x: c.x + 56, y: c.y + c.h - 132, w: c.w - 112, h: 84 };
+}
+function beginHelp() { G.helpPage = 0; G.mode = "help"; }
+function helpNext() {
+  if (G.helpPage + 1 < HELP_TOTAL) { play("ui"); G.helpPage++; return; }
+  closeHelp();
+}
+function closeHelp() {
+  save.helpShown = true;
+  writeSave();
+  play("ui");
+  G.mode = "countdown";
+  G.countdownT = 3.0;
+  G.helpPage = 0;
+}
+
+function drawHelp() {
+  ctx.fillStyle = "rgba(3,8,10,0.88)";
+  ctx.fillRect(0, 0, W, H);
+  const e = env();
+  const c = helpCard();
+  roundRect(c.x, c.y, c.w, c.h, 28);
+  ctx.fillStyle = "rgba(8,23,28,0.97)"; ctx.fill();
+  ctx.strokeStyle = rgba(e.lane, 0.35); ctx.lineWidth = 1.6; ctx.stroke();
+  // 顶部
+  ctx.textAlign = "left";
+  ctx.font = FONT(17);
+  ctx.fillStyle = rgba(e.accent, 0.7);
+  ctx.fillText("首次进入 · 操作帮助", c.x + 40, c.y + 56);
+  ctx.textAlign = "right";
+  ctx.fillText(`${G.helpPage + 1} / ${HELP_TOTAL}`, c.x + c.w - 40, c.y + 56);
+  ctx.textAlign = "left";
+  ctx.font = FONT(38, true);
+  ctx.fillStyle = "rgba(240,253,255,0.97)";
+  ctx.fillText(HELP_TITLES[G.helpPage], c.x + 40, c.y + 108);
+  // 示意图
+  const img = { x: c.x + 40, y: c.y + 136, w: c.w - 80, h: 320 };
+  drawHelpImage(img, e.lane, e.accent);
+  // 文字
+  ctx.font = FONT(25);
+  ctx.fillStyle = "rgba(206,238,246,0.92)";
+  ctx.textAlign = "left";
+  wrapTextLeft(HELP_BODY[G.helpPage], img.x, img.y + img.h + 46, img.w, 38);
+  // 按钮
+  const b = helpButton();
+  const last = G.helpPage === HELP_TOTAL - 1;
+  roundRect(b.x, b.y, b.w, b.h, 24);
+  ctx.fillStyle = rgba(e.lane, 0.14); ctx.fill();
+  ctx.strokeStyle = rgba(e.lane, 0.85); ctx.lineWidth = 2; ctx.stroke();
+  ctx.textAlign = "center";
+  ctx.fillStyle = "rgba(245,255,255,0.96)";
+  ctx.font = FONT(29, true);
+  ctx.fillText(last ? "关闭教学" : "下一页", b.x + b.w / 2, b.y + b.h / 2 + 10);
+  ctx.font = FONT(13);
+  ctx.fillStyle = "rgba(150,190,200,0.75)";
+  ctx.fillText("点击按钮 · Enter / 空格 也可以　·　Esc 跳过", b.x + b.w / 2, b.y + b.h + 28);
+  ctx.textAlign = "left";
+}
+
+// 左对齐的自动换行（wrapText 是居中版）
+function wrapTextLeft(text, x, y, maxW, lineH) {
+  const chars = [...text];
+  let line = "", yy = y;
+  for (const ch of chars) {
+    const test = line + ch;
+    if (ctx.measureText(test).width > maxW && line.length) {
+      ctx.fillText(line, x, yy); line = ch; yy += lineH;
+    } else line = test;
+  }
+  if (line) ctx.fillText(line, x, yy);
+}
+
+function drawHelpImage(r, lane, accent) {
+  roundRect(r.x, r.y, r.w, r.h, 20);
+  ctx.fillStyle = "rgba(4,16,20,0.9)"; ctx.fill();
+  ctx.strokeStyle = rgba(lane, 0.22); ctx.lineWidth = 1.2; ctx.stroke();
+  const cx = r.x + r.w / 2, cy = r.y + r.h / 2;
+  if (G.helpPage === 0) {
+    const o = { x: cx, y: cy + 44 }, h1 = { x: cx - 96, y: cy - 40 }, h2 = { x: cx + 96, y: cy - 40 };
+    ctx.strokeStyle = rgba(lane, 0.8); ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.lineTo(h1.x, h1.y); ctx.moveTo(o.x, o.y); ctx.lineTo(h2.x, h2.y); ctx.stroke();
+    ctx.beginPath(); ctx.arc(o.x, o.y, 42, 0, TAU); ctx.fillStyle = "#8bec62"; ctx.fill();
+    ctx.beginPath(); ctx.arc(h1.x, h1.y, 27, 0, TAU); ctx.fillStyle = "#ff735e"; ctx.fill();
+    ctx.beginPath(); ctx.arc(h2.x, h2.y, 27, 0, TAU); ctx.fillStyle = "#ff735e"; ctx.fill();
+    ctx.fillStyle = "rgba(8,26,30,0.9)"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.font = FONT(32, true); ctx.fillText("O", o.x, o.y);
+    ctx.font = FONT(24, true); ctx.fillText("H", h1.x, h1.y); ctx.fillText("H", h2.x, h2.y);
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  } else if (G.helpPage === 1) {
+    ctx.strokeStyle = rgba(lane, 0.45); ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, r.y + 52); ctx.lineTo(r.x + 56, r.y + r.h - 40);
+    ctx.moveTo(cx, r.y + 52); ctx.lineTo(r.x + r.w - 56, r.y + r.h - 40);
+    ctx.stroke();
+    const ball = { x: cx, y: cy + 96 };
+    ctx.beginPath(); ctx.arc(ball.x, ball.y, 32, 0, TAU); ctx.fillStyle = "#2b3138"; ctx.fill();
+    ctx.strokeStyle = "rgba(210,236,244,0.9)"; ctx.lineWidth = 3; ctx.stroke();
+    ctx.strokeStyle = "rgba(255,255,255,0.95)"; ctx.lineWidth = 7; ctx.lineCap = "round";
+    for (const s of [-1, 1]) {
+      for (let k = 0; k < 2; k++) {
+        const bx = cx + s * 150 - s * k * 30, by = cy + 96;
+        ctx.beginPath();
+        ctx.moveTo(bx - s * 18, by - 32); ctx.lineTo(bx + s * 16, by); ctx.lineTo(bx - s * 18, by + 32);
+        ctx.stroke();
+      }
+    }
+  } else if (G.helpPage === 2) {
+    const ball = { x: cx, y: cy + 92 };
+    ctx.beginPath(); ctx.arc(ball.x, ball.y, 40, 0, TAU); ctx.fillStyle = "#2b3138"; ctx.fill();
+    ctx.strokeStyle = "rgba(210,236,244,0.9)"; ctx.lineWidth = 3; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy + 6, 28, 0, TAU); ctx.fillStyle = "#ff735e"; ctx.fill();
+    ctx.fillStyle = "rgba(8,26,30,0.9)"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.font = FONT(24, true); ctx.fillText("H", cx, cy + 8);
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+    ctx.strokeStyle = "rgba(255,255,255,0.95)"; ctx.lineWidth = 7;
+    for (let k = 0; k < 2; k++) {
+      const oy = k * 34;
+      ctx.beginPath();
+      ctx.moveTo(cx - 24, cy - 104 + oy); ctx.lineTo(cx, cy - 80 + oy); ctx.lineTo(cx + 24, cy - 104 + oy);
+      ctx.stroke();
+    }
+  } else {
+    const gx = cx, gy = cy + 26;
+    for (let k = 0; k < 3; k++) {
+      ctx.beginPath(); ctx.arc(gx, gy, 92 * (0.62 + 0.19 * k), 0, TAU);
+      ctx.strokeStyle = rgba(lane, 0.30 + 0.25 * k); ctx.lineWidth = 1.5 + k; ctx.stroke();
+    }
+    ctx.fillStyle = rgba(lane, 0.95); ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.font = FONT(34, true); ctx.fillText("H₂O", gx, gy);
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+    const ball = { x: cx, y: r.y + r.h - 44 };
+    ctx.beginPath(); ctx.arc(ball.x, ball.y, 26, 0, TAU); ctx.fillStyle = "#2b3138"; ctx.fill();
+    ctx.strokeStyle = "rgba(210,236,244,0.9)"; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.fillStyle = "rgba(210,250,220,0.95)";
+    ctx.font = FONT(58, true); ctx.textAlign = "center";
+    ctx.fillText("✓", cx, cy - 96);
+    ctx.textAlign = "left";
+  }
+}
 function drawPause() {
   ctx.fillStyle = "rgba(3,13,18,0.72)";
   ctx.fillRect(0, 0, W, H);
@@ -1346,6 +1806,8 @@ function beginCountdown() {
   if (G.mode !== "intro") return;
   unlockAudio();
   play("ui");
+  // 第一次进游戏：先过 4 页操作帮助，再走 3、2、1（D-74）
+  if (!save.helpShown) { beginHelp(); return; }
   G.mode = "countdown";
   G.countdownT = 3.0;
   play("tick", 3);
@@ -1371,6 +1833,11 @@ window.addEventListener("keydown", (ev) => {
     if (k === "enter" || k === " ") beginCountdown();
     else if (k === "escape") backToMenu();
     ev.preventDefault();
+    return;
+  }
+  if (G.mode === "help") {
+    if (k === "enter" || k === " ") { helpNext(); ev.preventDefault(); }
+    else if (k === "escape") closeHelp();
     return;
   }
   if (G.mode === "pause") {
@@ -1413,9 +1880,8 @@ cv.addEventListener("pointerdown", (ev) => {
     if (inRect(p, G.introBtn)) beginCountdown();
     return;
   }
-  if (G.mode === "pause") {
-    if (k === "escape" || k === "enter" || k === " ") { G.mode = "play"; ev.preventDefault(); }
-    else if (k === "m") { setMuted(!MUTED); }
+  if (G.mode === "help") {
+    if (inRect(p, helpButton())) helpNext();
     return;
   }
   if (G.mode === "pause") {
@@ -1509,7 +1975,8 @@ if (new URLSearchParams(location.search).get("selftest") === "1") {
 const qs = new URLSearchParams(location.search);
 const shotName = qs.get("shot");
 if (shotName && shotName !== "menu") {
-  startLevel(0);
+  const shotLevel = Math.max(1, Math.min(LEVELS.length, parseInt(qs.get("level") || "1", 10) || 1));
+  startLevel(shotLevel - 1);
   const N = { intro: 0, countdown: 140, play: 40, bond: 46, collapse: 250, lose: 320 }[shotName] ?? 0;
   if (shotName !== "intro") {
     G.mode = "countdown"; G.countdownT = 3.0;
@@ -1557,6 +2024,23 @@ if (shotName && shotName !== "menu") {
     G.entities = [{ kind: "atom", type: G.level.modules[0], s: G.dist + 1.0, lane: G.lane, hit: false }];
     requestBond();
     for (let i = 0; i < 10; i++) update(1 / 60);
+  }
+  if (shotName === "squash") {
+    G.mode = "play";
+    requestBond();
+    for (let i = 0; i < 3; i++) update(1 / 60);
+  }
+  if (shotName === "help" || shotName === "help4") {
+    G.mode = "help";
+    G.helpPage = shotName === "help" ? 0 : 3;
+    G.entities = [];
+  }
+  if (shotName === "gate") {
+    // 把镜头推到第一个门前面，方便核对门色
+    G.mode = "play";
+    const g = G.entities.find((e) => e.kind === "gate");
+    if (g) G.dist = g.s - 20;
+    for (let i = 0; i < 4; i++) update(1 / 60);
   }
   if (shotName === "collapse") { beginCollapse("撞上结构墙"); for (let i = 0; i < 30; i++) update(1 / 60); }
   if (shotName === "lose") { G.deliveries = 2; G.runTime = 12.4; G.hits = 2; finishLose(); }
